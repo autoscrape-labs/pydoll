@@ -53,21 +53,41 @@ The Commands module provides high-level interfaces for interacting with Chrome D
 
 Commands are typically accessed through the browser or tab instances:
 
-```python
-from pydoll.browser.chromium import Chrome
+=== "Sync"
 
-# Initialize browser
-browser = Chrome()
-await browser.start()
+    ```python
+    from pydoll.sync import Chrome
 
-# Get active tab
-tab = await browser.get_active_tab()
+    # Initialize browser
+    browser = Chrome()
+    browser.start()
 
-# Use commands through the tab
-await tab.navigate("https://example.com")
-element = await tab.find(id="button")
-await element.click()
-```
+    # Get active tab
+    tab = browser.get_active_tab()
+
+    # Use commands through the tab
+    tab.navigate("https://example.com")
+    element = tab.find(id="button")
+    element.click()
+    ```
+
+=== "Async"
+
+    ```python
+    from pydoll.browser.chromium import Chrome
+
+    # Initialize browser
+    browser = Chrome()
+    await browser.start()
+
+    # Get active tab
+    tab = await browser.get_active_tab()
+
+    # Use commands through the tab
+    await tab.navigate("https://example.com")
+    element = await tab.find(id="button")
+    await element.click()
+    ```
 
 ## Command Structure
 

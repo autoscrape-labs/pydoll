@@ -20,25 +20,48 @@
 
 在第一次导航之前调用 `apply_fingerprint()`。只有 profile 中存在的字段会被覆盖；其余保持浏览器的真实值。
 
-```python
-import asyncio
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
+    ```python
+    import time
+    from pydoll.sync import Chrome
 
-from examples.fingerprints import FINGERPRINTS
+    from examples.fingerprints import FINGERPRINTS
 
-async def spoof_fingerprint():
-    async with Chrome() as browser:
-        tab = await browser.start()
+    def spoof_fingerprint():
+        with Chrome() as browser:
+            tab = browser.start()
 
-        # 在第一次导航之前应用。
-        await tab.apply_fingerprint(FINGERPRINTS['macos_m3_new_york'])
+            # 在第一次导航之前应用。
+            tab.apply_fingerprint(FINGERPRINTS['macos_m3_new_york'])
 
-        await tab.go_to('https://abrahamjuliot.github.io/creepjs/')
-        await asyncio.sleep(5)
+            tab.go_to('https://abrahamjuliot.github.io/creepjs/')
+            time.sleep(5)
 
-asyncio.run(spoof_fingerprint())
-```
+    spoof_fingerprint()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+
+    from pydoll.browser.chromium import Chrome
+
+    from examples.fingerprints import FINGERPRINTS
+
+    async def spoof_fingerprint():
+        async with Chrome() as browser:
+            tab = await browser.start()
+
+            # 在第一次导航之前应用。
+            await tab.apply_fingerprint(FINGERPRINTS['macos_m3_new_york'])
+
+            await tab.go_to('https://abrahamjuliot.github.io/creepjs/')
+            await asyncio.sleep(5)
+
+    asyncio.run(spoof_fingerprint())
+    ```
 
 !!! note "`FINGERPRINTS` 从哪来"
     Pydoll 不附带 fingerprint profile。`FINGERPRINTS` 位于 [pydoll 仓库](https://github.com/autoscrape-labs/pydoll) 的 `examples/fingerprints.py`，是 `FingerprintConfig` 结构（来自 `pydoll.protocol.fingerprint.types` 的一个 typed dict）的参考 profile。把这个文件复制到你的项目里，再把每个 profile 适配到你自己的机器和 IP。原样复用一个 profile 是一个共享签名，而不是伪装。
@@ -75,10 +98,19 @@ asyncio.run(spoof_fingerprint())
 
 TLS 握手和 JavaScript 引擎会报告二进制的真实版本；User-Agent 是 `apply_fingerprint()` 唯一改动的部分。读出二进制的版本，把 profile 的主版本号与之保持一致，并在每次 Chrome 升级时更新。
 
-```python
-version = await browser.get_version()
-print(version['product'])  # 例如 'Chrome/152.0.7977.83'
-```
+=== "Sync"
+
+    ```python
+    version = browser.get_version()
+    print(version['product'])  # 例如 'Chrome/152.0.7977.83'
+    ```
+
+=== "Async"
+
+    ```python
+    version = await browser.get_version()
+    print(version['product'])  # 例如 'Chrome/152.0.7977.83'
+    ```
 
 ### 让 locale 和时区匹配你的出口 IP
 
@@ -108,14 +140,27 @@ fingerprint = FingerprintConfig(
 
 一个 browser context 持有一个身份。给同一个 context 再应用第二个不同的 fingerprint，会抛出 `FingerprintContextConflict`。把不同身份放到各自独立的 context 里跑。
 
-```python
-ctx_id = await browser.create_browser_context()
-tab_us = await browser.start()
-tab_br = await browser.new_tab(browser_context_id=ctx_id)
+=== "Sync"
 
-await tab_us.apply_fingerprint(FINGERPRINTS['windows11_rtx3060_nyc'])
-await tab_br.apply_fingerprint(FINGERPRINTS['android_s24_ultra_sao_paulo'])
-```
+    ```python
+    ctx_id = browser.create_browser_context()
+    tab_us = browser.start()
+    tab_br = browser.new_tab(browser_context_id=ctx_id)
+
+    tab_us.apply_fingerprint(FINGERPRINTS['windows11_rtx3060_nyc'])
+    tab_br.apply_fingerprint(FINGERPRINTS['android_s24_ultra_sao_paulo'])
+    ```
+
+=== "Async"
+
+    ```python
+    ctx_id = await browser.create_browser_context()
+    tab_us = await browser.start()
+    tab_br = await browser.new_tab(browser_context_id=ctx_id)
+
+    await tab_us.apply_fingerprint(FINGERPRINTS['windows11_rtx3060_nyc'])
+    await tab_br.apply_fingerprint(FINGERPRINTS['android_s24_ultra_sao_paulo'])
+    ```
 
 见 [Browser contexts](../guides/browser-contexts.md)。
 

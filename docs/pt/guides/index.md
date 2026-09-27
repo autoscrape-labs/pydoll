@@ -4,7 +4,7 @@ Um guia por recurso, cada um com exemplos executáveis. Comece por [Conceitos ce
 
 ## Conceitos centrais
 
-- [Conceitos centrais](core-concepts.md): os objetos tab e browser, o modelo assíncrono, e o que "sem webdriver" significa na prática.
+- [Conceitos centrais](core-concepts.md): os objetos tab e browser, as APIs síncrona e assíncrona, e o que "sem webdriver" significa na prática.
 
 ## Encontrando e extraindo
 

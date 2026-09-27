@@ -626,3 +626,87 @@ class TestRetryDecoratorRealWorldScenarios:
         assert scraper.search_count == 2
         assert scraper.page_refreshed is True
 
+
+
+class TestRetryDecoratorSyncFunctions:
+    """The decorator wraps plain functions with a blocking retry loop."""
+
+    def test_sync_function_is_retried(self):
+        call_count = 0
+
+        @retry(max_retries=2, exceptions=[ElementNotFound], delay=0)
+        def flaky():
+            nonlocal call_count
+            call_count += 1
+            if call_count < 3:
+                raise ElementNotFound("Retry")
+            return "success"
+
+        assert flaky() == "success"
+        assert call_count == 3
+        assert not asyncio.iscoroutinefunction(flaky)
+
+    def test_sync_function_raises_after_exhausting_retries(self):
+        @retry(max_retries=1, exceptions=[ElementNotFound], delay=0)
+        def always_fails():
+            raise ElementNotFound("Retry")
+
+        with pytest.raises(ElementNotFound):
+            always_fails()
+
+    def test_sync_function_does_not_retry_other_exceptions(self):
+        call_count = 0
+
+        @retry(max_retries=3, exceptions=[ElementNotFound], delay=0)
+        def wrong_error():
+            nonlocal call_count
+            call_count += 1
+            raise ValueError("not retried")
+
+        with pytest.raises(ValueError):
+            wrong_error()
+        assert call_count == 1
+
+    def test_sync_callback_receives_instance(self):
+        class Scraper:
+            def __init__(self):
+                self.recovered = 0
+                self.call_count = 0
+
+            def recover(self):
+                self.recovered += 1
+
+            @retry(max_retries=2, exceptions=[ElementNotFound], on_retry=recover, delay=0)
+            def price(self):
+                self.call_count += 1
+                if self.call_count < 3:
+                    raise ElementNotFound("Retry")
+                return "9.99"
+
+        scraper = Scraper()
+        assert scraper.price() == "9.99"
+        assert scraper.recovered == 2
+
+    def test_sync_callback_without_instance(self):
+        calls = []
+
+        @retry(max_retries=1, exceptions=[ElementNotFound], on_retry=lambda: calls.append(1), delay=0)
+        def flaky():
+            if not calls:
+                raise ElementNotFound("Retry")
+            return "ok"
+
+        assert flaky() == "ok"
+        assert calls == [1]
+
+    def test_sync_delay_uses_blocking_sleep(self, monkeypatch):
+        slept = []
+        monkeypatch.setattr("pydoll.decorators.time.sleep", lambda seconds: slept.append(seconds))
+
+        @retry(max_retries=2, exceptions=[ElementNotFound], delay=0.5, exponential_backoff=True)
+        def always_fails():
+            raise ElementNotFound("Retry")
+
+        with pytest.raises(ElementNotFound):
+            always_fails()
+        assert slept == [1.0, 2.0]

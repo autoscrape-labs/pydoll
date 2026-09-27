@@ -8,21 +8,41 @@ It is the measuring side of [Fingerprint injection](../../stealth/fingerprint-in
 
 [fingerprint-scan.com](https://fingerprint-scan.com/) runs a fingerprinting and bot-detection test inside the page and reports a score from 0 to 100, where lower reads as more human. Drive it with Pydoll and screenshot the result:
 
-```python
-import asyncio
-from pydoll.browser.chromium import Chrome
-from examples.fingerprints import FINGERPRINTS
+=== "Sync"
 
-async def scan(profile):
-    async with Chrome() as browser:
-        tab = await browser.start()
-        await tab.apply_fingerprint(FINGERPRINTS[profile])
-        await tab.go_to('https://fingerprint-scan.com/')
-        await asyncio.sleep(15)          # let the score finish computing
-        await tab.take_screenshot(f'{profile}.png')
+    ```python
+    import time
+    from pydoll.sync import Chrome
+    from examples.fingerprints import FINGERPRINTS
 
-asyncio.run(scan('macos_m3_new_york'))
-```
+    def scan(profile):
+        with Chrome() as browser:
+            tab = browser.start()
+            tab.apply_fingerprint(FINGERPRINTS[profile])
+            tab.go_to('https://fingerprint-scan.com/')
+            time.sleep(15)          # let the score finish computing
+            tab.take_screenshot(f'{profile}.png')
+
+    scan('macos_m3_new_york')
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+    from pydoll.browser.chromium import Chrome
+    from examples.fingerprints import FINGERPRINTS
+
+    async def scan(profile):
+        async with Chrome() as browser:
+            tab = await browser.start()
+            await tab.apply_fingerprint(FINGERPRINTS[profile])
+            await tab.go_to('https://fingerprint-scan.com/')
+            await asyncio.sleep(15)          # let the score finish computing
+            await tab.take_screenshot(f'{profile}.png')
+
+    asyncio.run(scan('macos_m3_new_york'))
+    ```
 
 The number on its own means little. Its value is in the comparison: run the same machine with and without the profile, and with a matched profile versus a deliberately mismatched one, and diff the scores. That is how you attribute a change to a specific signal instead of guessing.
 
@@ -57,19 +77,37 @@ That worker pass is the one a naive override fails. CreepJS reads the identity i
 
 The strongest audit does not need a third-party site. For any signal, read it two ways and check they agree, because a disagreement is usually a leak your own overrides created:
 
-```python
-result = await tab.execute_script('''
-    document.head.insertAdjacentHTML('beforeend',
-        '<style>.probe{--g: srgb} @media (color-gamut: p3){.probe{--g: p3}}</style>');
-    const probe = document.createElement('div');
-    probe.className = 'probe';
-    document.body.appendChild(probe);
-    return {
-        matchMedia: matchMedia('(color-gamut: p3)').matches ? 'p3' : 'srgb',
-        css: getComputedStyle(probe).getPropertyValue('--g').trim(),
-    };
-''', return_by_value=True)
-```
+=== "Sync"
+
+    ```python
+    result = tab.execute_script('''
+        document.head.insertAdjacentHTML('beforeend',
+            '<style>.probe{--g: srgb} @media (color-gamut: p3){.probe{--g: p3}}</style>');
+        const probe = document.createElement('div');
+        probe.className = 'probe';
+        document.body.appendChild(probe);
+        return {
+            matchMedia: matchMedia('(color-gamut: p3)').matches ? 'p3' : 'srgb',
+            css: getComputedStyle(probe).getPropertyValue('--g').trim(),
+        };
+    ''', return_by_value=True)
+    ```
+
+=== "Async"
+
+    ```python
+    result = await tab.execute_script('''
+        document.head.insertAdjacentHTML('beforeend',
+            '<style>.probe{--g: srgb} @media (color-gamut: p3){.probe{--g: p3}}</style>');
+        const probe = document.createElement('div');
+        probe.className = 'probe';
+        document.body.appendChild(probe);
+        return {
+            matchMedia: matchMedia('(color-gamut: p3)').matches ? 'p3' : 'srgb',
+            css: getComputedStyle(probe).getPropertyValue('--g').trim(),
+        };
+    ''', return_by_value=True)
+    ```
 
 If `matchMedia` and the CSS path disagree, an override is lying on one path only. The same test applies across realms (page versus worker) and across APIs (the WebGL string versus the WebGPU adapter). A coherent profile passes all of them; a contradiction is a signal you introduced.
 

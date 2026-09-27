@@ -8,21 +8,41 @@ Ela é o lado de medição de [Injeção de fingerprint](../../stealth/fingerpri
 
 O [fingerprint-scan.com](https://fingerprint-scan.com/) roda um teste de fingerprinting e detecção de bots dentro da página e reporta um score de 0 a 100, onde mais baixo é lido como mais humano. Dirija-o com o Pydoll e tire um screenshot do resultado:
 
-```python
-import asyncio
-from pydoll.browser.chromium import Chrome
-from examples.fingerprints import FINGERPRINTS
+=== "Sync"
 
-async def scan(profile):
-    async with Chrome() as browser:
-        tab = await browser.start()
-        await tab.apply_fingerprint(FINGERPRINTS[profile])
-        await tab.go_to('https://fingerprint-scan.com/')
-        await asyncio.sleep(15)          # let the score finish computing
-        await tab.take_screenshot(f'{profile}.png')
+    ```python
+    import time
+    from pydoll.sync import Chrome
+    from examples.fingerprints import FINGERPRINTS
 
-asyncio.run(scan('macos_m3_new_york'))
-```
+    def scan(profile):
+        with Chrome() as browser:
+            tab = browser.start()
+            tab.apply_fingerprint(FINGERPRINTS[profile])
+            tab.go_to('https://fingerprint-scan.com/')
+            time.sleep(15)          # let the score finish computing
+            tab.take_screenshot(f'{profile}.png')
+
+    scan('macos_m3_new_york')
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+    from pydoll.browser.chromium import Chrome
+    from examples.fingerprints import FINGERPRINTS
+
+    async def scan(profile):
+        async with Chrome() as browser:
+            tab = await browser.start()
+            await tab.apply_fingerprint(FINGERPRINTS[profile])
+            await tab.go_to('https://fingerprint-scan.com/')
+            await asyncio.sleep(15)          # let the score finish computing
+            await tab.take_screenshot(f'{profile}.png')
+
+    asyncio.run(scan('macos_m3_new_york'))
+    ```
 
 O número por si só significa pouco. Seu valor está na comparação: rode a mesma máquina com e sem o perfil, e com um perfil combinando versus um deliberadamente incompatível, e compare os scores. É assim que você atribui uma mudança a um sinal específico em vez de adivinhar.
 
@@ -57,19 +77,37 @@ O [SannySoft](https://bot.sannysoft.com/) e o [BrowserScan](https://www.browsers
 
 A auditoria mais forte não precisa de um site de terceiros. Para qualquer sinal, leia-o de duas formas e verifique se elas concordam, porque uma divergência costuma ser um vazamento que os seus próprios overrides criaram:
 
-```python
-result = await tab.execute_script('''
-    document.head.insertAdjacentHTML('beforeend',
-        '<style>.probe{--g: srgb} @media (color-gamut: p3){.probe{--g: p3}}</style>');
-    const probe = document.createElement('div');
-    probe.className = 'probe';
-    document.body.appendChild(probe);
-    return {
-        matchMedia: matchMedia('(color-gamut: p3)').matches ? 'p3' : 'srgb',
-        css: getComputedStyle(probe).getPropertyValue('--g').trim(),
-    };
-''', return_by_value=True)
-```
+=== "Sync"
+
+    ```python
+    result = tab.execute_script('''
+        document.head.insertAdjacentHTML('beforeend',
+            '<style>.probe{--g: srgb} @media (color-gamut: p3){.probe{--g: p3}}</style>');
+        const probe = document.createElement('div');
+        probe.className = 'probe';
+        document.body.appendChild(probe);
+        return {
+            matchMedia: matchMedia('(color-gamut: p3)').matches ? 'p3' : 'srgb',
+            css: getComputedStyle(probe).getPropertyValue('--g').trim(),
+        };
+    ''', return_by_value=True)
+    ```
+
+=== "Async"
+
+    ```python
+    result = await tab.execute_script('''
+        document.head.insertAdjacentHTML('beforeend',
+            '<style>.probe{--g: srgb} @media (color-gamut: p3){.probe{--g: p3}}</style>');
+        const probe = document.createElement('div');
+        probe.className = 'probe';
+        document.body.appendChild(probe);
+        return {
+            matchMedia: matchMedia('(color-gamut: p3)').matches ? 'p3' : 'srgb',
+            css: getComputedStyle(probe).getPropertyValue('--g').trim(),
+        };
+    ''', return_by_value=True)
+    ```
 
 Se o `matchMedia` e o caminho CSS discordam, um override está mentindo em apenas um caminho. O mesmo teste se aplica entre realms (página versus worker) e entre APIs (a string do WebGL versus o adapter do WebGPU). Um perfil coerente passa em todos eles; uma contradição é um sinal que você introduziu.
 

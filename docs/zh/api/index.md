@@ -33,4 +33,4 @@
 | [Constants](core/constants.md) | `By`、`Key`、`PermissionType` 等枚举 | [选择器](../basics/selectors.md) |
 | [Exceptions](core/exceptions.md) | Pydoll 抛出的错误，如 `ElementNotFound` | [查找元素](../guides/element-finding.md#handle-missing-elements) |
 
-Pydoll 的每个操作都是异步且完全类型化的。异步基础请见 [Async Python](../basics/async-python.md)。
+Pydoll 的每个操作都是完全类型化的，并有两种形式：从 `pydoll.sync` 导入以在每次调用时阻塞，或从下面的模块导入以 `await` 它。参考文档记录的是异步形式；同步类具有相同的名称、方法、参数和默认值。异步基础请见 [Async Python](../basics/async-python.md)。

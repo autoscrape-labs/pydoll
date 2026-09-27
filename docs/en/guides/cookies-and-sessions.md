@@ -6,24 +6,44 @@ A logged-in session lives in the browser's cookies. Read them, set them, or save
 
 `tab.get_cookies()` returns every cookie in the tab's browser context, not just the current page's:
 
-```python
-import asyncio
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
+    ```python
+    from pydoll.sync import Chrome
+
+    def main():
+        with Chrome() as browser:
+            tab = browser.start()
+            tab.go_to('https://github.com')
+
+            cookies = tab.get_cookies()
+            print(f'{len(cookies)} cookies')
+            for cookie in cookies:
+                print(f"  {cookie['name']} = {cookie['value'][:16]}...")
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+
+    from pydoll.browser.chromium import Chrome
 
 
-async def main():
-    async with Chrome() as browser:
-        tab = await browser.start()
-        await tab.go_to('https://github.com')
+    async def main():
+        async with Chrome() as browser:
+            tab = await browser.start()
+            await tab.go_to('https://github.com')
 
-        cookies = await tab.get_cookies()
-        print(f'{len(cookies)} cookies')
-        for cookie in cookies:
-            print(f"  {cookie['name']} = {cookie['value'][:16]}...")
+            cookies = await tab.get_cookies()
+            print(f'{len(cookies)} cookies')
+            for cookie in cookies:
+                print(f"  {cookie['name']} = {cookie['value'][:16]}...")
 
-asyncio.run(main())
-```
+    asyncio.run(main())
+    ```
 
 Each cookie is a dict with `name`, `value`, `domain`, `path`, `expires`, `secure`, `httpOnly`, `sameSite`, and a few read-only fields like `size` and `session`.
 
@@ -31,22 +51,41 @@ Each cookie is a dict with `name`, `value`, `domain`, `path`, `expires`, `secure
 
 Pass a list of cookie dicts to `tab.set_cookies()`. Only `name` and `value` are required; the rest are optional and fall back to sensible defaults (`domain` is the current page, `path` is `/`, `secure` and `httpOnly` are `False`).
 
-```python
-await tab.set_cookies([
-    {'name': 'theme', 'value': 'dark', 'domain': 'github.com'},
-    {'name': 'session', 'value': 'abc123', 'domain': 'github.com', 'secure': True, 'httpOnly': True},
-])
-```
+=== "Sync"
+
+    ```python
+    tab.set_cookies([
+        {'name': 'theme', 'value': 'dark', 'domain': 'github.com'},
+        {'name': 'session', 'value': 'abc123', 'domain': 'github.com', 'secure': True, 'httpOnly': True},
+    ])
+    ```
+
+=== "Async"
+
+    ```python
+    await tab.set_cookies([
+        {'name': 'theme', 'value': 'dark', 'domain': 'github.com'},
+        {'name': 'session', 'value': 'abc123', 'domain': 'github.com', 'secure': True, 'httpOnly': True},
+    ])
+    ```
 
 Cookies apply to the whole browser context, so every tab in that context sees them. Set them before you navigate if the site reads them on load.
 
 ## Clear cookies
 
-```python
-await tab.delete_all_cookies()
-```
+=== "Sync"
 
-This clears the tab's context. To clear a specific context, use the browser-level method with its id: `await browser.delete_all_cookies(browser_context_id=ctx)`.
+    ```python
+    tab.delete_all_cookies()
+    ```
+
+=== "Async"
+
+    ```python
+    await tab.delete_all_cookies()
+    ```
+
+This clears the tab's context. To clear a specific context, use the browser-level method with its id: `browser.delete_all_cookies(browser_context_id=ctx)`.
 
 ## Save and restore a session
 
@@ -54,61 +93,119 @@ Log in once, save the cookies, then reload them on later runs to skip the login 
 
 First run, log in and save:
 
-```python
-import asyncio
-import json
-from pathlib import Path
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
+    ```python
+    import json
+    from pathlib import Path
 
-COOKIE_FILE = Path('session.json')
+    from pydoll.sync import Chrome
+
+    COOKIE_FILE = Path('session.json')
+
+    def login_and_save():
+        with Chrome() as browser:
+            tab = browser.start()
+            tab.go_to('https://quotes.toscrape.com/login')
+
+            (tab.find(id='username')).type_text('tester', humanize=True)
+            (tab.find(id='password')).type_text('secret', humanize=True)
+            (tab.find(tag_name='input', type='submit')).click()
+
+            cookies = tab.get_cookies()
+            COOKIE_FILE.write_text(json.dumps(cookies))
+            print(f'Saved {len(cookies)} cookies')
+
+    login_and_save()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+    import json
+    from pathlib import Path
+
+    from pydoll.browser.chromium import Chrome
+
+    COOKIE_FILE = Path('session.json')
 
 
-async def login_and_save():
-    async with Chrome() as browser:
-        tab = await browser.start()
-        await tab.go_to('https://quotes.toscrape.com/login')
+    async def login_and_save():
+        async with Chrome() as browser:
+            tab = await browser.start()
+            await tab.go_to('https://quotes.toscrape.com/login')
 
-        await (await tab.find(id='username')).type_text('tester', humanize=True)
-        await (await tab.find(id='password')).type_text('secret', humanize=True)
-        await (await tab.find(tag_name='input', type='submit')).click()
+            await (await tab.find(id='username')).type_text('tester', humanize=True)
+            await (await tab.find(id='password')).type_text('secret', humanize=True)
+            await (await tab.find(tag_name='input', type='submit')).click()
 
-        cookies = await tab.get_cookies()
-        COOKIE_FILE.write_text(json.dumps(cookies))
-        print(f'Saved {len(cookies)} cookies')
+            cookies = await tab.get_cookies()
+            COOKIE_FILE.write_text(json.dumps(cookies))
+            print(f'Saved {len(cookies)} cookies')
 
-asyncio.run(login_and_save())
-```
+    asyncio.run(login_and_save())
+    ```
 
 Later runs, load the cookies and you are already logged in:
 
-```python
-import asyncio
-import json
-from pathlib import Path
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
+    ```python
+    import json
+    from pathlib import Path
 
-COOKIE_FILE = Path('session.json')
+    from pydoll.sync import Chrome
+
+    COOKIE_FILE = Path('session.json')
+
+    def restore_and_use():
+        saved = json.loads(COOKIE_FILE.read_text())
+        cookies = [
+            {'name': c['name'], 'value': c['value'], 'domain': c['domain'], 'path': c.get('path', '/')}
+            for c in saved
+        ]
+
+        with Chrome() as browser:
+            tab = browser.start()
+            tab.set_cookies(cookies)
+
+            tab.go_to('https://quotes.toscrape.com')
+            logout = tab.find(text='Logout', timeout=5, raise_exc=False)
+            print('Session restored.' if logout else 'Session expired, log in again.')
+
+    restore_and_use()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+    import json
+    from pathlib import Path
+
+    from pydoll.browser.chromium import Chrome
+
+    COOKIE_FILE = Path('session.json')
 
 
-async def restore_and_use():
-    saved = json.loads(COOKIE_FILE.read_text())
-    cookies = [
-        {'name': c['name'], 'value': c['value'], 'domain': c['domain'], 'path': c.get('path', '/')}
-        for c in saved
-    ]
+    async def restore_and_use():
+        saved = json.loads(COOKIE_FILE.read_text())
+        cookies = [
+            {'name': c['name'], 'value': c['value'], 'domain': c['domain'], 'path': c.get('path', '/')}
+            for c in saved
+        ]
 
-    async with Chrome() as browser:
-        tab = await browser.start()
-        await tab.set_cookies(cookies)
+        async with Chrome() as browser:
+            tab = await browser.start()
+            await tab.set_cookies(cookies)
 
-        await tab.go_to('https://quotes.toscrape.com')
-        logout = await tab.find(text='Logout', timeout=5, raise_exc=False)
-        print('Session restored.' if logout else 'Session expired, log in again.')
+            await tab.go_to('https://quotes.toscrape.com')
+            logout = await tab.find(text='Logout', timeout=5, raise_exc=False)
+            print('Session restored.' if logout else 'Session expired, log in again.')
 
-asyncio.run(restore_and_use())
-```
+    asyncio.run(restore_and_use())
+    ```
 
 The reformatting step matters: `get_cookies()` returns full `Cookie` objects with read-only fields (`size`, `session`, and others) that `set_cookies()` does not accept, so copy across just the settable fields.
 
@@ -121,15 +218,29 @@ Once the session is active, [browser-context HTTP requests](http-requests.md) re
 
 Cookies belong to a browser context. Two contexts have separate cookie jars, which is how you run two accounts side by side without one clobbering the other. Set cookies in a specific context with the browser-level method:
 
-```python
-ctx = await browser.create_browser_context()
-tab2 = await browser.new_tab(browser_context_id=ctx)
+=== "Sync"
 
-await browser.set_cookies(
-    [{'name': 'session', 'value': 'second-account', 'domain': 'quotes.toscrape.com'}],
-    browser_context_id=ctx,
-)
-```
+    ```python
+    ctx = browser.create_browser_context()
+    tab2 = browser.new_tab(browser_context_id=ctx)
+
+    browser.set_cookies(
+        [{'name': 'session', 'value': 'second-account', 'domain': 'quotes.toscrape.com'}],
+        browser_context_id=ctx,
+    )
+    ```
+
+=== "Async"
+
+    ```python
+    ctx = await browser.create_browser_context()
+    tab2 = await browser.new_tab(browser_context_id=ctx)
+
+    await browser.set_cookies(
+        [{'name': 'session', 'value': 'second-account', 'domain': 'quotes.toscrape.com'}],
+        browser_context_id=ctx,
+    )
+    ```
 
 See [Browser contexts](browser-contexts.md) for running isolated sessions in parallel.
 

@@ -19,18 +19,35 @@ The page commands module provides functionality for navigating between pages, ma
 
 Page commands are used extensively by the `Tab` class for navigation and page management:
 
-```python
-from pydoll.commands.page_commands import navigate, reload, enable
-from pydoll.connection.connection_handler import ConnectionHandler
+=== "Sync"
 
-# Navigate to a URL
-connection = ConnectionHandler()
-await enable(connection)  # Enable page events
-await navigate(connection, url="https://example.com")
+    ```python
+    from pydoll.commands.page_commands import navigate, reload, enable
+    from pydoll.connection.connection_handler import ConnectionHandler
 
-# Reload the page
-await reload(connection)
-```
+    # Navigate to a URL
+    connection = ConnectionHandler()
+    enable(connection)  # Enable page events
+    navigate(connection, url="https://example.com")
+
+    # Reload the page
+    reload(connection)
+    ```
+
+=== "Async"
+
+    ```python
+    from pydoll.commands.page_commands import navigate, reload, enable
+    from pydoll.connection.connection_handler import ConnectionHandler
+
+    # Navigate to a URL
+    connection = ConnectionHandler()
+    await enable(connection)  # Enable page events
+    await navigate(connection, url="https://example.com")
+
+    # Reload the page
+    await reload(connection)
+    ```
 
 ## Key Functionality
 
@@ -70,22 +87,46 @@ The page commands module provides functions for:
 ## Advanced Features
 
 ### Frame Management
-```python
-# Get all frames in the page
-frame_tree = await get_frame_tree(connection)
-for frame in frame_tree.child_frames:
-    print(f"Frame: {frame.frame.url}")
-```
+=== "Sync"
+
+    ```python
+    # Get all frames in the page
+    frame_tree = get_frame_tree(connection)
+    for frame in frame_tree.child_frames:
+        print(f"Frame: {frame.frame.url}")
+    ```
+
+=== "Async"
+
+    ```python
+    # Get all frames in the page
+    frame_tree = await get_frame_tree(connection)
+    for frame in frame_tree.child_frames:
+        print(f"Frame: {frame.frame.url}")
+    ```
 
 ### Resource Interception
-```python
-# Get resource content
-content = await get_resource_content(
-    connection, 
-    frame_id=frame_id, 
-    url="https://example.com/script.js"
-)
-```
+=== "Sync"
+
+    ```python
+    # Get resource content
+    content = get_resource_content(
+        connection, 
+        frame_id=frame_id, 
+        url="https://example.com/script.js"
+    )
+    ```
+
+=== "Async"
+
+    ```python
+    # Get resource content
+    content = await get_resource_content(
+        connection, 
+        frame_id=frame_id, 
+        url="https://example.com/script.js"
+    )
+    ```
 
 ### Page Events
 The page commands work with various page events:

@@ -2,6 +2,8 @@
 
 Pydoll 自动化你已经安装好的 Chrome 或 Edge，所以配置只有两步：安装包，运行脚本。本页带你从一个空文件夹出发，到一个可运行的脚本，它会打开一个真实页面并从中读取数据。
 
+Pydoll 支持两种形式的 API：同步和异步。它们暴露相同的类和方法；同步 API 在每次调用时阻塞，而如果你的项目已经运行在 `asyncio` 上，或者你想同时驱动多个标签页，就用异步 API。本文档中的每个代码示例都有 **Sync** 和 **Async** 两个标签页，选择与你的代码匹配的那个即可。
+
 **你将学到**
 
 - [如何安装 Pydoll](#install-pydoll)
@@ -32,22 +34,40 @@ pip install git+https://github.com/autoscrape-labs/pydoll.git
 
 创建一个名为 `first_script.py` 的文件：
 
-```python
-import asyncio
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
+    ```python
+    from pydoll.sync import Chrome
+
+    def main():
+        with Chrome() as browser:
+            tab = browser.start()
+            tab.go_to('https://quotes.toscrape.com')
+
+            first_quote = tab.find(class_name='text')
+            print(first_quote.text)
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+
+    from pydoll.browser.chromium import Chrome
 
 
-async def main():
-    async with Chrome() as browser:
-        tab = await browser.start()
-        await tab.go_to('https://quotes.toscrape.com')
+    async def main():
+        async with Chrome() as browser:
+            tab = await browser.start()
+            await tab.go_to('https://quotes.toscrape.com')
 
-        first_quote = await tab.find(class_name='text')
-        print(await first_quote.text)
+            first_quote = await tab.find(class_name='text')
+            print(await first_quote.text)
 
-asyncio.run(main())
-```
+    asyncio.run(main())
+    ```
 
 运行它：
 
@@ -63,37 +83,59 @@ python first_script.py
 
 这里发生了三件事：
 
-- `async with Chrome() as browser` 启动了你已安装的 Chrome，并保证在代码块结束时关闭它，即使脚本失败也是如此。
+- `with Chrome() as browser`（异步 API 中为 `async with`）启动了你已安装的 Chrome，并保证在代码块结束时关闭它，即使脚本失败也是如此。
 - `browser.start()` 返回了一个 [tab](api/browser/tab.md)，你将用这个对象来完成导航、元素查找以及页面上的其他一切操作。
 - `tab.find(class_name='text')` 等待元素出现并返回它。你无需添加 sleep 或编写等待循环；`find()` 会重试直到元素出现或超时到期。
 
-!!! note "第一次接触异步 Python？"
-    每个 Pydoll 调用都在 `async def` 函数内部被 `await`，并由 `asyncio.run(main())` 启动。目前你需要的 asyncio 就这些；文档的其余部分都遵循同样的结构。
+!!! note "同步还是异步？"
+    同步形式从 `pydoll.sync` 导入，像调用任何普通 Python 函数一样调用方法。异步形式从 `pydoll.browser.chromium` 导入，在 `async def` 函数内部 `await` 每个调用，并由 `asyncio.run(main())` 启动。目前你需要的 asyncio 就这些；如果还不熟悉，[异步 Python 实战](basics/async-python.md) 会讲清其余部分。
 
 ## 无头运行 {#run-headless}
 
 在服务器上或在 CI 中没有显示器，因此要以 headless 方式运行浏览器。在创建浏览器时传入选项：
 
-```python
-import asyncio
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
-from pydoll.browser.options import ChromiumOptions
+    ```python
+    from pydoll.sync import Chrome
+    from pydoll.browser.options import ChromiumOptions
+
+    def main():
+        options = ChromiumOptions()
+        options.add_argument('--headless=new')
+
+        with Chrome(options=options) as browser:
+            tab = browser.start()
+            tab.go_to('https://quotes.toscrape.com')
+
+            first_quote = tab.find(class_name='text')
+            print(first_quote.text)
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+
+    from pydoll.browser.chromium import Chrome
+    from pydoll.browser.options import ChromiumOptions
 
 
-async def main():
-    options = ChromiumOptions()
-    options.add_argument('--headless=new')
+    async def main():
+        options = ChromiumOptions()
+        options.add_argument('--headless=new')
 
-    async with Chrome(options=options) as browser:
-        tab = await browser.start()
-        await tab.go_to('https://quotes.toscrape.com')
+        async with Chrome(options=options) as browser:
+            tab = await browser.start()
+            await tab.go_to('https://quotes.toscrape.com')
 
-        first_quote = await tab.find(class_name='text')
-        print(await first_quote.text)
+            first_quote = await tab.find(class_name='text')
+            print(await first_quote.text)
 
-asyncio.run(main())
-```
+    asyncio.run(main())
+    ```
 
 脚本行为完全相同；只是窗口不可见。`ChromiumOptions` 接受任意 Chromium 命令行参数。值得了解的参数见 [浏览器选项](guides/browser-options.md)。
 

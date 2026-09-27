@@ -19,27 +19,53 @@ The input commands module provides functionality for simulating user input inclu
 
 Input commands are used by element interaction methods and can be used directly for advanced input scenarios:
 
-```python
-from pydoll.commands.input_commands import dispatch_mouse_event, dispatch_key_event
-from pydoll.connection.connection_handler import ConnectionHandler
+=== "Sync"
 
-# Simulate mouse click
-connection = ConnectionHandler()
-await dispatch_mouse_event(
-    connection, 
-    type="mousePressed", 
-    x=100, 
-    y=200, 
-    button="left"
-)
+    ```python
+    from pydoll.commands.input_commands import dispatch_mouse_event, dispatch_key_event
+    from pydoll.connection.connection_handler import ConnectionHandler
 
-# Simulate keyboard typing
-await dispatch_key_event(
-    connection,
-    type="keyDown",
-    key="Enter"
-)
-```
+    # Simulate mouse click
+    connection = ConnectionHandler()
+    dispatch_mouse_event(
+        connection, 
+        type="mousePressed", 
+        x=100, 
+        y=200, 
+        button="left"
+    )
+
+    # Simulate keyboard typing
+    dispatch_key_event(
+        connection,
+        type="keyDown",
+        key="Enter"
+    )
+    ```
+
+=== "Async"
+
+    ```python
+    from pydoll.commands.input_commands import dispatch_mouse_event, dispatch_key_event
+    from pydoll.connection.connection_handler import ConnectionHandler
+
+    # Simulate mouse click
+    connection = ConnectionHandler()
+    await dispatch_mouse_event(
+        connection, 
+        type="mousePressed", 
+        x=100, 
+        y=200, 
+        button="left"
+    )
+
+    # Simulate keyboard typing
+    await dispatch_key_event(
+        connection,
+        type="keyDown",
+        key="Enter"
+    )
+    ```
 
 ## Key Functionality
 

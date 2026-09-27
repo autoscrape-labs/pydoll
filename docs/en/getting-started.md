@@ -2,6 +2,8 @@
 
 Pydoll automates the Chrome or Edge you already have installed, so setup is two steps: install the package, run a script. This page takes you from an empty folder to a working script that opens a real page and reads data from it.
 
+Pydoll supports two variations of its API: synchronous and asynchronous. They expose the same classes and methods; the sync API blocks on each call, and the async API is the one to use if your project already runs on `asyncio` or you want to drive many tabs at once. Every code example in these docs has a **Sync** and an **Async** tab, so pick the one that matches your code.
+
 **You will learn**
 
 - [How to install Pydoll](#install-pydoll)
@@ -32,22 +34,40 @@ pip install git+https://github.com/autoscrape-labs/pydoll.git
 
 Create a file called `first_script.py`:
 
-```python
-import asyncio
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
+    ```python
+    from pydoll.sync import Chrome
+
+    def main():
+        with Chrome() as browser:
+            tab = browser.start()
+            tab.go_to('https://quotes.toscrape.com')
+
+            first_quote = tab.find(class_name='text')
+            print(first_quote.text)
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+
+    from pydoll.browser.chromium import Chrome
 
 
-async def main():
-    async with Chrome() as browser:
-        tab = await browser.start()
-        await tab.go_to('https://quotes.toscrape.com')
+    async def main():
+        async with Chrome() as browser:
+            tab = await browser.start()
+            await tab.go_to('https://quotes.toscrape.com')
 
-        first_quote = await tab.find(class_name='text')
-        print(await first_quote.text)
+            first_quote = await tab.find(class_name='text')
+            print(await first_quote.text)
 
-asyncio.run(main())
-```
+    asyncio.run(main())
+    ```
 
 Run it:
 
@@ -63,37 +83,59 @@ A Chrome window opens, loads the page, and your terminal prints the first quote:
 
 Three things happened there:
 
-- `async with Chrome() as browser` launched your installed Chrome and guarantees it closes when the block ends, even if the script fails.
+- `with Chrome() as browser` (or `async with` in the async API) launched your installed Chrome and guarantees it closes when the block ends, even if the script fails.
 - `browser.start()` returned a [tab](api/browser/tab.md), the object you'll use for navigation, element finding, and everything else on the page.
 - `tab.find(class_name='text')` waited for the element to appear and returned it. You don't need to add sleeps or write wait loops; `find()` retries until the element shows up or the timeout expires.
 
-!!! note "New to async Python?"
-    Every Pydoll call is `await`ed inside an `async def` function, and `asyncio.run(main())` starts it. That's all the asyncio you need for now; the rest of the docs follow this same shape.
+!!! note "Sync or async?"
+    The sync form imports from `pydoll.sync` and calls methods like any other Python function. The async form imports from `pydoll.browser.chromium`, `await`s every call inside an `async def`, and starts with `asyncio.run(main())`. That's all the asyncio you need for now; if it is new to you, [Async Python in practice](basics/async-python.md) covers the rest.
 
 ## Run headless {#run-headless}
 
 On a server or in CI there is no display, so run the browser headless. Pass options when creating the browser:
 
-```python
-import asyncio
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
-from pydoll.browser.options import ChromiumOptions
+    ```python
+    from pydoll.sync import Chrome
+    from pydoll.browser.options import ChromiumOptions
+
+    def main():
+        options = ChromiumOptions()
+        options.add_argument('--headless=new')
+
+        with Chrome(options=options) as browser:
+            tab = browser.start()
+            tab.go_to('https://quotes.toscrape.com')
+
+            first_quote = tab.find(class_name='text')
+            print(first_quote.text)
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+
+    from pydoll.browser.chromium import Chrome
+    from pydoll.browser.options import ChromiumOptions
 
 
-async def main():
-    options = ChromiumOptions()
-    options.add_argument('--headless=new')
+    async def main():
+        options = ChromiumOptions()
+        options.add_argument('--headless=new')
 
-    async with Chrome(options=options) as browser:
-        tab = await browser.start()
-        await tab.go_to('https://quotes.toscrape.com')
+        async with Chrome(options=options) as browser:
+            tab = await browser.start()
+            await tab.go_to('https://quotes.toscrape.com')
 
-        first_quote = await tab.find(class_name='text')
-        print(await first_quote.text)
+            first_quote = await tab.find(class_name='text')
+            print(await first_quote.text)
 
-asyncio.run(main())
-```
+    asyncio.run(main())
+    ```
 
 The script behaves exactly the same; the window is invisible. `ChromiumOptions` accepts any Chromium command-line argument. See [Browser options](guides/browser-options.md) for the ones worth knowing.
 

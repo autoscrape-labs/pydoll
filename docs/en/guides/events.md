@@ -6,30 +6,55 @@ Events let you react to what the browser does, as it happens: a page finishing l
 
 Working with events is always the same three steps: enable the domain you care about, register a callback with `on()`, then let the events fire. A callback that is registered before its domain is enabled never runs, so enable first.
 
-```python
-import asyncio
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
-from pydoll.protocol.page.events import PageEvent
+    ```python
+    import time
+    from pydoll.sync import Chrome
+    from pydoll.protocol.page.events import PageEvent
+
+    def main():
+        with Chrome() as browser:
+            tab = browser.start()
+
+            def on_load(event):
+                print('page finished loading')
+
+            tab.enable_page_events()
+            tab.on(PageEvent.LOAD_EVENT_FIRED, on_load)
+
+            tab.go_to('https://news.ycombinator.com')
+            time.sleep(2)
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+
+    from pydoll.browser.chromium import Chrome
+    from pydoll.protocol.page.events import PageEvent
 
 
-async def main():
-    async with Chrome() as browser:
-        tab = await browser.start()
+    async def main():
+        async with Chrome() as browser:
+            tab = await browser.start()
 
-        async def on_load(event):
-            print('page finished loading')
+            async def on_load(event):
+                print('page finished loading')
 
-        await tab.enable_page_events()
-        await tab.on(PageEvent.LOAD_EVENT_FIRED, on_load)
+            await tab.enable_page_events()
+            await tab.on(PageEvent.LOAD_EVENT_FIRED, on_load)
 
-        await tab.go_to('https://news.ycombinator.com')
-        await asyncio.sleep(2)
+            await tab.go_to('https://news.ycombinator.com')
+            await asyncio.sleep(2)
 
-asyncio.run(main())
-```
+    asyncio.run(main())
+    ```
 
-`on(event_name, callback)` returns an integer id you can use later to remove the callback. The callback can be sync or async, and it receives one argument: the event.
+`on(event_name, callback)` returns an integer id you can use later to remove the callback. In the async API the callback can be sync or async; it receives one argument: the event.
 
 <iframe scrolling="no" src="/docs/resources/visuals/events-flow.html" aria-label="Events firing on a page and your callbacks running" style="width: 100%; height: 395px; border: 0;" loading="lazy"></iframe>
 
@@ -48,14 +73,26 @@ Every event is a dict with a `method` name and a `params` payload. You read what
 
 Each event type is a `TypedDict` under `pydoll.protocol.<domain>.events`, so type-hinting a callback gives you autocomplete on the `params` keys:
 
-```python
-from pydoll.protocol.network.events import RequestWillBeSentEvent
+=== "Sync"
+
+    ```python
+    from pydoll.protocol.network.events import RequestWillBeSentEvent
+
+    def on_request(event: RequestWillBeSentEvent):
+        request = event['params']['request']
+        print(f"{request['method']} {request['url']}")
+    ```
+
+=== "Async"
+
+    ```python
+    from pydoll.protocol.network.events import RequestWillBeSentEvent
 
 
-async def on_request(event: RequestWillBeSentEvent):
-    request = event['params']['request']
-    print(f"{request['method']} {request['url']}")
-```
+    async def on_request(event: RequestWillBeSentEvent):
+        request = event['params']['request']
+        print(f"{request['method']} {request['url']}")
+    ```
 
 The examples below assume a running `tab`, as set up in the first example.
 
@@ -63,25 +100,46 @@ The examples below assume a running `tab`, as set up in the first example.
 
 Enable the network domain to see every request go out and every response come back:
 
-```python
-from pydoll.protocol.network.events import NetworkEvent
+=== "Sync"
+
+    ```python
+    from pydoll.protocol.network.events import NetworkEvent
+
+    def on_request(event):
+        print(f"→ {event['params']['request']['url']}")
+
+    def on_response(event):
+        response = event['params']['response']
+        print(f"← {response['status']} {response['url']}")
+
+    tab.enable_network_events()
+    tab.on(NetworkEvent.REQUEST_WILL_BE_SENT, on_request)
+    tab.on(NetworkEvent.RESPONSE_RECEIVED, on_response)
+
+    tab.go_to('https://news.ycombinator.com')
+    ```
+
+=== "Async"
+
+    ```python
+    from pydoll.protocol.network.events import NetworkEvent
 
 
-async def on_request(event):
-    print(f"→ {event['params']['request']['url']}")
+    async def on_request(event):
+        print(f"→ {event['params']['request']['url']}")
 
 
-async def on_response(event):
-    response = event['params']['response']
-    print(f"← {response['status']} {response['url']}")
+    async def on_response(event):
+        response = event['params']['response']
+        print(f"← {response['status']} {response['url']}")
 
 
-await tab.enable_network_events()
-await tab.on(NetworkEvent.REQUEST_WILL_BE_SENT, on_request)
-await tab.on(NetworkEvent.RESPONSE_RECEIVED, on_response)
+    await tab.enable_network_events()
+    await tab.on(NetworkEvent.REQUEST_WILL_BE_SENT, on_request)
+    await tab.on(NetworkEvent.RESPONSE_RECEIVED, on_response)
 
-await tab.go_to('https://news.ycombinator.com')
-```
+    await tab.go_to('https://news.ycombinator.com')
+    ```
 
 To modify or block requests rather than just watch them, see [Request interception](request-interception.md).
 
@@ -89,63 +147,123 @@ To modify or block requests rather than just watch them, see [Request intercepti
 
 Pass `temporary=True` and the callback removes itself after it fires the first time. This is what you want for one-off setup that should not repeat on every later load:
 
-```python
-from pydoll.protocol.page.events import PageEvent
+=== "Sync"
 
-await tab.on(PageEvent.LOAD_EVENT_FIRED, on_load, temporary=True)
+    ```python
+    from pydoll.protocol.page.events import PageEvent
 
-await tab.go_to('https://the-internet.herokuapp.com')  # fires once
-await tab.refresh()                                      # does not fire again
-```
+    tab.on(PageEvent.LOAD_EVENT_FIRED, on_load, temporary=True)
+
+    tab.go_to('https://the-internet.herokuapp.com')  # fires once
+    tab.refresh()                                      # does not fire again
+    ```
+
+=== "Async"
+
+    ```python
+    from pydoll.protocol.page.events import PageEvent
+
+    await tab.on(PageEvent.LOAD_EVENT_FIRED, on_load, temporary=True)
+
+    await tab.go_to('https://the-internet.herokuapp.com')  # fires once
+    await tab.refresh()                                      # does not fire again
+    ```
 
 ## Wait for a specific event
 
-Events pair naturally with `asyncio.Event` when you need to pause until something happens. Register a temporary listener that sets the flag, trigger the action, then await the flag:
+Events pair naturally with an event flag when you need to pause until something happens: `threading.Event` in the sync API, `asyncio.Event` in the async API. Register a temporary listener that sets the flag, trigger the action, then wait on the flag:
 
-```python
-import asyncio
+=== "Sync"
 
-from pydoll.protocol.page.events import PageEvent
+    ```python
+    import threading
+
+    from pydoll.protocol.page.events import PageEvent
 
 
-async def click_and_wait_for_navigation(tab):
-    navigated = asyncio.Event()
+    def click_and_wait_for_navigation(tab):
+        navigated = threading.Event()
 
-    async def on_navigated(event):
-        navigated.set()
+        def on_navigated(event):
+            navigated.set()
 
-    await tab.enable_page_events()
-    await tab.on(PageEvent.FRAME_NAVIGATED, on_navigated, temporary=True)
+        tab.enable_page_events()
+        tab.on(PageEvent.FRAME_NAVIGATED, on_navigated, temporary=True)
 
-    link = await tab.find(text='Form Authentication')
-    await link.click()
+        link = tab.find(text='Form Authentication')
+        link.click()
 
-    await navigated.wait()
-    print('navigation finished')
-```
+        navigated.wait()
+        print('navigation finished')
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+
+    from pydoll.protocol.page.events import PageEvent
+
+
+    async def click_and_wait_for_navigation(tab):
+        navigated = asyncio.Event()
+
+        async def on_navigated(event):
+            navigated.set()
+
+        await tab.enable_page_events()
+        await tab.on(PageEvent.FRAME_NAVIGATED, on_navigated, temporary=True)
+
+        link = await tab.find(text='Form Authentication')
+        await link.click()
+
+        await navigated.wait()
+        print('navigation finished')
+    ```
 
 ## Use the tab inside a callback
 
 `on()` only passes the event to your callback. To use the tab as well (for example, to read a response body), bind it with `functools.partial`:
 
-```python
-from functools import partial
+=== "Sync"
 
-from pydoll.protocol.network.events import NetworkEvent
+    ```python
+    from functools import partial
+
+    from pydoll.protocol.network.events import NetworkEvent
+
+    def capture_json(tab, event):
+        url = event['params']['response']['url']
+        if '/api/' not in url:
+            return
+        request_id = event['params']['requestId']
+        body = tab.get_network_response_body(request_id)
+        print(f'{url}: {body[:80]}')
+
+    tab.enable_network_events()
+    tab.on(NetworkEvent.RESPONSE_RECEIVED, partial(capture_json, tab))
+    ```
+
+=== "Async"
+
+    ```python
+    from functools import partial
+
+    from pydoll.protocol.network.events import NetworkEvent
 
 
-async def capture_json(tab, event):
-    url = event['params']['response']['url']
-    if '/api/' not in url:
-        return
-    request_id = event['params']['requestId']
-    body = await tab.get_network_response_body(request_id)
-    print(f'{url}: {body[:80]}')
+    async def capture_json(tab, event):
+        url = event['params']['response']['url']
+        if '/api/' not in url:
+            return
+        request_id = event['params']['requestId']
+        body = await tab.get_network_response_body(request_id)
+        print(f'{url}: {body[:80]}')
 
 
-await tab.enable_network_events()
-await tab.on(NetworkEvent.RESPONSE_RECEIVED, partial(capture_json, tab))
-```
+    await tab.enable_network_events()
+    await tab.on(NetworkEvent.RESPONSE_RECEIVED, partial(capture_json, tab))
+    ```
 
 Filter early, as above: return as soon as the event is not one you care about, so the expensive work only runs when it should.
 
@@ -153,33 +271,63 @@ Filter early, as above: return as soon as the event is not one you care about, s
 
 Subscribe to dialog events to answer `alert`, `confirm`, and `prompt` boxes automatically instead of letting them block the page:
 
-```python
-from pydoll.protocol.page.events import PageEvent
+=== "Sync"
+
+    ```python
+    from pydoll.protocol.page.events import PageEvent
+
+    def on_dialog(event):
+        if tab.has_dialog():
+            tab.handle_dialog(accept=True)
+
+    tab.enable_page_events()
+    tab.on(PageEvent.JAVASCRIPT_DIALOG_OPENING, on_dialog)
+    tab.go_to('https://the-internet.herokuapp.com/javascript_alerts')
+    ```
+
+=== "Async"
+
+    ```python
+    from pydoll.protocol.page.events import PageEvent
 
 
-async def on_dialog(event):
-    if await tab.has_dialog():
-        await tab.handle_dialog(accept=True)
+    async def on_dialog(event):
+        if await tab.has_dialog():
+            await tab.handle_dialog(accept=True)
 
 
-await tab.enable_page_events()
-await tab.on(PageEvent.JAVASCRIPT_DIALOG_OPENING, on_dialog)
-await tab.go_to('https://the-internet.herokuapp.com/javascript_alerts')
-```
+    await tab.enable_page_events()
+    await tab.on(PageEvent.JAVASCRIPT_DIALOG_OPENING, on_dialog)
+    await tab.go_to('https://the-internet.herokuapp.com/javascript_alerts')
+    ```
 
 ## Clean up when you are done
 
 Keep listeners scoped to the work that needs them. Remove a single callback by its id, or clear them all, and disable a domain once you are finished with it:
 
-```python
-callback_id = await tab.on(NetworkEvent.REQUEST_WILL_BE_SENT, on_request)
+=== "Sync"
 
-# ... do the work that needs it ...
+    ```python
+    callback_id = tab.on(NetworkEvent.REQUEST_WILL_BE_SENT, on_request)
 
-await tab.remove_callback(callback_id)   # remove one
-await tab.clear_callbacks()              # or remove every callback on the tab
-await tab.disable_network_events()       # stop the domain
-```
+    # ... do the work that needs it ...
+
+    tab.remove_callback(callback_id)   # remove one
+    tab.clear_callbacks()              # or remove every callback on the tab
+    tab.disable_network_events()       # stop the domain
+    ```
+
+=== "Async"
+
+    ```python
+    callback_id = await tab.on(NetworkEvent.REQUEST_WILL_BE_SENT, on_request)
+
+    # ... do the work that needs it ...
+
+    await tab.remove_callback(callback_id)   # remove one
+    await tab.clear_callbacks()              # or remove every callback on the tab
+    await tab.disable_network_events()       # stop the domain
+    ```
 
 Enable only the domains you use. DOM events in particular fire very often on dynamic pages, so subscribe to them only while you need them, and keep callbacks fast; offload heavy work to a separate task with `asyncio.create_task` so it does not hold up the next event.
 

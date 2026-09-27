@@ -8,26 +8,48 @@
 
 日常的偏好设置都有辅助方法和属性，所以你无需记住 Chromium 的内部键名或那些魔数就能设置它们。
 
-```python
-import asyncio
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
-from pydoll.browser.options import ChromiumOptions
+    ```python
+    from pydoll.sync import Chrome
+    from pydoll.browser.options import ChromiumOptions
+
+    def main():
+        options = ChromiumOptions()
+        options.set_default_download_directory('/tmp/downloads')
+        options.set_accept_languages('en-US,en')
+        options.block_notifications = True
+        options.block_popups = True
+
+        with Chrome(options=options) as browser:
+            tab = browser.start()
+            tab.go_to('https://news.ycombinator.com')
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+
+    from pydoll.browser.chromium import Chrome
+    from pydoll.browser.options import ChromiumOptions
 
 
-async def main():
-    options = ChromiumOptions()
-    options.set_default_download_directory('/tmp/downloads')
-    options.set_accept_languages('en-US,en')
-    options.block_notifications = True
-    options.block_popups = True
+    async def main():
+        options = ChromiumOptions()
+        options.set_default_download_directory('/tmp/downloads')
+        options.set_accept_languages('en-US,en')
+        options.block_notifications = True
+        options.block_popups = True
 
-    async with Chrome(options=options) as browser:
-        tab = await browser.start()
-        await tab.go_to('https://news.ycombinator.com')
+        async with Chrome(options=options) as browser:
+            tab = await browser.start()
+            await tab.go_to('https://news.ycombinator.com')
 
-asyncio.run(main())
-```
+    asyncio.run(main())
+    ```
 
 可用的辅助方法：
 
@@ -78,54 +100,104 @@ Chromium 以点分路径的形式记录偏好设置（例如 `download.default_d
 - **给配置文件“做旧”。** 一个几秒前才创建的配置文件是个危险信号。把使用时间戳回拨，让它看起来有几周或几个月那么久。
 - **匹配你真实的 Chrome。** 你设置的任何版本字符串（在 `profile` 或 `extensions` 中）都必须与你实际运行的 Chrome 二进制文件相符，否则这种不匹配会暴露你。
 
-```python
-import asyncio
-import time
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
-from pydoll.browser.options import ChromiumOptions
+    ```python
+    import time
 
+    from pydoll.sync import Chrome
+    from pydoll.browser.options import ChromiumOptions
 
-def realistic_options() -> ChromiumOptions:
-    now = int(time.time())
-    installed = now - (90 * 24 * 60 * 60)   # 90 天前
-    last_used = now - (3 * 60 * 60)         # 3 小时前
+    def realistic_options() -> ChromiumOptions:
+        now = int(time.time())
+        installed = now - (90 * 24 * 60 * 60)   # 90 天前
+        last_used = now - (3 * 60 * 60)         # 3 小时前
 
-    options = ChromiumOptions()
-    options.browser_preferences = {
-        'profile': {
-            'created_by_version': '130.0.6723.91',   # 匹配你真实的 Chrome
-            'creation_time': str(installed),
-            'last_engagement_time': str(last_used),
-            'exit_type': 'Normal',
-            'name': 'Person 1',
-            'default_content_setting_values': {
-                'cookies': 1, 'images': 1, 'javascript': 1,
-                'notifications': 2, 'geolocation': 0, 'media_stream': 0,
+        options = ChromiumOptions()
+        options.browser_preferences = {
+            'profile': {
+                'created_by_version': '130.0.6723.91',   # 匹配你真实的 Chrome
+                'creation_time': str(installed),
+                'last_engagement_time': str(last_used),
+                'exit_type': 'Normal',
+                'name': 'Person 1',
+                'default_content_setting_values': {
+                    'cookies': 1, 'images': 1, 'javascript': 1,
+                    'notifications': 2, 'geolocation': 0, 'media_stream': 0,
+                },
             },
-        },
-        'extensions': {'last_chrome_version': '130.0.6723.91'},
-        'intl': {'selected_languages': 'en-US,en'},
-        'spellcheck': {'dictionaries': ['en-US']},
-        'session': {'restore_on_startup': 1, 'startup_urls': ['https://www.google.com']},
-        'homepage': 'https://www.google.com',
-        'safebrowsing': {'enabled': True},
-        'autofill': {'enabled': True},
-        'search': {'suggest_enabled': True},
-        'dns_prefetching': {'enabled': True},
-        'enable_do_not_track': False,
-        'webrtc': {'ip_handling_policy': 'default', 'multiple_routes_enabled': True},
-    }
-    return options
+            'extensions': {'last_chrome_version': '130.0.6723.91'},
+            'intl': {'selected_languages': 'en-US,en'},
+            'spellcheck': {'dictionaries': ['en-US']},
+            'session': {'restore_on_startup': 1, 'startup_urls': ['https://www.google.com']},
+            'homepage': 'https://www.google.com',
+            'safebrowsing': {'enabled': True},
+            'autofill': {'enabled': True},
+            'search': {'suggest_enabled': True},
+            'dns_prefetching': {'enabled': True},
+            'enable_do_not_track': False,
+            'webrtc': {'ip_handling_policy': 'default', 'multiple_routes_enabled': True},
+        }
+        return options
+
+    def main():
+        with Chrome(options=realistic_options()) as browser:
+            tab = browser.start()
+            tab.go_to('https://news.ycombinator.com')
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+    import time
+
+    from pydoll.browser.chromium import Chrome
+    from pydoll.browser.options import ChromiumOptions
 
 
-async def main():
-    async with Chrome(options=realistic_options()) as browser:
-        tab = await browser.start()
-        await tab.go_to('https://news.ycombinator.com')
+    def realistic_options() -> ChromiumOptions:
+        now = int(time.time())
+        installed = now - (90 * 24 * 60 * 60)   # 90 天前
+        last_used = now - (3 * 60 * 60)         # 3 小时前
 
-asyncio.run(main())
-```
+        options = ChromiumOptions()
+        options.browser_preferences = {
+            'profile': {
+                'created_by_version': '130.0.6723.91',   # 匹配你真实的 Chrome
+                'creation_time': str(installed),
+                'last_engagement_time': str(last_used),
+                'exit_type': 'Normal',
+                'name': 'Person 1',
+                'default_content_setting_values': {
+                    'cookies': 1, 'images': 1, 'javascript': 1,
+                    'notifications': 2, 'geolocation': 0, 'media_stream': 0,
+                },
+            },
+            'extensions': {'last_chrome_version': '130.0.6723.91'},
+            'intl': {'selected_languages': 'en-US,en'},
+            'spellcheck': {'dictionaries': ['en-US']},
+            'session': {'restore_on_startup': 1, 'startup_urls': ['https://www.google.com']},
+            'homepage': 'https://www.google.com',
+            'safebrowsing': {'enabled': True},
+            'autofill': {'enabled': True},
+            'search': {'suggest_enabled': True},
+            'dns_prefetching': {'enabled': True},
+            'enable_do_not_track': False,
+            'webrtc': {'ip_handling_policy': 'default', 'multiple_routes_enabled': True},
+        }
+        return options
+
+
+    async def main():
+        async with Chrome(options=realistic_options()) as browser:
+            tab = await browser.start()
+            await tab.go_to('https://news.ycombinator.com')
+
+    asyncio.run(main())
+    ```
 
 !!! note "偏好设置只是其中一层，不是整个 fingerprint"
     偏好设置塑造的是配置文件的身份（使用历史、已启用的功能、语言）。它们不会改变 User-Agent、WebGL、canvas，或网络层的 fingerprint。要处理这些，以及让每一层都保持一致，请看 [Fingerprint 注入](../stealth/fingerprint-injection.md)。

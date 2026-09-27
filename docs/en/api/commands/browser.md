@@ -19,14 +19,27 @@ The browser commands module handles browser-level operations such as version inf
 
 Browser commands are typically used internally by browser classes to manage browser instances:
 
-```python
-from pydoll.commands.browser_commands import get_version
-from pydoll.connection.connection_handler import ConnectionHandler
+=== "Sync"
 
-# Get browser version information
-connection = ConnectionHandler()
-version_info = await get_version(connection)
-```
+    ```python
+    from pydoll.commands.browser_commands import get_version
+    from pydoll.connection.connection_handler import ConnectionHandler
+
+    # Get browser version information
+    connection = ConnectionHandler()
+    version_info = get_version(connection)
+    ```
+
+=== "Async"
+
+    ```python
+    from pydoll.commands.browser_commands import get_version
+    from pydoll.connection.connection_handler import ConnectionHandler
+
+    # Get browser version information
+    connection = ConnectionHandler()
+    version_info = await get_version(connection)
+    ```
 
 ## Available Commands
 

@@ -22,28 +22,50 @@ O campo `webSocketDebuggerUrl` na resposta (algo como `ws://localhost:9222/devto
 
 Crie um objeto browser, chame `connect()` com o endereço WebSocket, e use a aba retornada como qualquer outra:
 
-```python
-import asyncio
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
+    ```python
+    from pydoll.sync import Chrome
+
+    def main():
+        browser = Chrome()
+        tab = browser.connect('ws://localhost:9222/devtools/browser/<id>')
+
+        print(tab.title)
+
+        tab.go_to('https://news.ycombinator.com')
+        headline = tab.find(class_name='titleline')
+        print(headline.text)
+
+        browser.close()
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+
+    from pydoll.browser.chromium import Chrome
 
 
-async def main():
-    browser = Chrome()
-    tab = await browser.connect('ws://localhost:9222/devtools/browser/<id>')
+    async def main():
+        browser = Chrome()
+        tab = await browser.connect('ws://localhost:9222/devtools/browser/<id>')
 
-    print(await tab.title)
+        print(await tab.title)
 
-    await tab.go_to('https://news.ycombinator.com')
-    headline = await tab.find(class_name='titleline')
-    print(await headline.text)
+        await tab.go_to('https://news.ycombinator.com')
+        headline = await tab.find(class_name='titleline')
+        print(await headline.text)
 
-    await browser.close()
+        await browser.close()
 
-asyncio.run(main())
-```
+    asyncio.run(main())
+    ```
 
-`connect()` retorna a primeira aba aberta. Alcance as outras com `await browser.get_opened_tabs()`, exatamente como quando você lança o navegador por conta própria. Veja [Abas](tabs.md).
+`connect()` retorna a primeira aba aberta. Alcance as outras com `browser.get_opened_tabs()`, exatamente como quando você lança o navegador por conta própria. Veja [Abas](tabs.md).
 
 !!! warning "Desconecte com `close()`, não `stop()`"
     Você não lançou este navegador, então não o encerre. `await browser.close()` fecha apenas a conexão WebSocket do Pydoll e deixa o navegador rodando para o que mais o use. `await browser.stop()` envia ao navegador um comando de fechamento e mata o processo, que é o que você quer para um navegador que você iniciou, não um ao qual você se conectou.
@@ -52,25 +74,46 @@ asyncio.run(main())
 
 Normalmente você descobre o endereço em tempo de execução em vez de embuti-lo no código. Consulte o endpoint JSON com qualquer cliente HTTP:
 
-```python
-import asyncio
+=== "Sync"
 
-import aiohttp
-from pydoll.browser.chromium import Chrome
+    ```python
+    import aiohttp
+    from pydoll.sync import Chrome
+
+    def main():
+        with aiohttp.ClientSession() as session:
+            with session.get('http://localhost:9222/json/version') as resp:
+                ws_address = (resp.json())['webSocketDebuggerUrl']
+
+        browser = Chrome()
+        tab = browser.connect(ws_address)
+        print(tab.title)
+        browser.close()
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+
+    import aiohttp
+    from pydoll.browser.chromium import Chrome
 
 
-async def main():
-    async with aiohttp.ClientSession() as session:
-        async with session.get('http://localhost:9222/json/version') as resp:
-            ws_address = (await resp.json())['webSocketDebuggerUrl']
+    async def main():
+        async with aiohttp.ClientSession() as session:
+            async with session.get('http://localhost:9222/json/version') as resp:
+                ws_address = (await resp.json())['webSocketDebuggerUrl']
 
-    browser = Chrome()
-    tab = await browser.connect(ws_address)
-    print(await tab.title)
-    await browser.close()
+        browser = Chrome()
+        tab = await browser.connect(ws_address)
+        print(await tab.title)
+        await browser.close()
 
-asyncio.run(main())
-```
+    asyncio.run(main())
+    ```
 
 Para um navegador em outra máquina, substitua `localhost` pelo endereço do servidor e consulte `http://<host>:9222/json/version` a partir do cliente.
 
@@ -93,22 +136,43 @@ Então conecte a partir do host com `browser.connect('ws://localhost:9222/devtoo
 
 Se você já tem uma integração CDP e o `objectId` de um elemento, envolva-o em um `WebElement` do Pydoll para usar a API de interação de alto nível. Construa um `ConnectionHandler` para o WebSocket da página e passe-o:
 
-```python
-from pydoll.connection import ConnectionHandler
-from pydoll.elements.web_element import WebElement
+=== "Sync"
 
-connection = ConnectionHandler(ws_address='ws://localhost:9222/devtools/page/<id>')
+    ```python
+    from pydoll.connection import ConnectionHandler
+    from pydoll.sync import WebElement
 
-button = WebElement(
-    object_id='<objectId from your CDP call>',
-    connection_handler=connection,
-)
+    connection = ConnectionHandler(ws_address='ws://localhost:9222/devtools/page/<id>')
 
-await button.wait_until(is_visible=True, timeout=5)
-await button.click(x_offset=5, y_offset=5)
+    button = WebElement(
+        object_id='<objectId from your CDP call>',
+        connection_handler=connection,
+    )
 
-await connection.close()
-```
+    button.wait_until(is_visible=True, timeout=5)
+    button.click(x_offset=5, y_offset=5)
+
+    connection.close()
+    ```
+
+=== "Async"
+
+    ```python
+    from pydoll.connection import ConnectionHandler
+    from pydoll.elements.web_element import WebElement
+
+    connection = ConnectionHandler(ws_address='ws://localhost:9222/devtools/page/<id>')
+
+    button = WebElement(
+        object_id='<objectId from your CDP call>',
+        connection_handler=connection,
+    )
+
+    await button.wait_until(is_visible=True, timeout=5)
+    await button.click(x_offset=5, y_offset=5)
+
+    await connection.close()
+    ```
 
 O `objectId` é o que comandos CDP como `Runtime.evaluate` ou `DOM.resolveNode` retornam para um nó. Isso mantém sua configuração existente e toma emprestado por cima as esperas e interações do Pydoll.
 

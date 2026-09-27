@@ -13,18 +13,35 @@ Real automation is more than loading a page: you fill forms, click buttons, wait
 
 `find()` locates elements by their attributes, and `type_text(humanize=True)` types with the variable rhythm of a real user, occasional corrected typos included. You don't need to focus the field first; Pydoll clicks it before typing.
 
-```python
-await tab.go_to('https://quotes.toscrape.com/login')
+=== "Sync"
 
-username = await tab.find(id='username')
-await username.type_text('john', humanize=True)
+    ```python
+    tab.go_to('https://quotes.toscrape.com/login')
 
-password = await tab.find(id='password')
-await password.type_text('SecretPass123', humanize=True)
+    username = tab.find(id='username')
+    username.type_text('john', humanize=True)
 
-submit = await tab.find(tag_name='input', type='submit')
-await submit.click()
-```
+    password = tab.find(id='password')
+    password.type_text('SecretPass123', humanize=True)
+
+    submit = tab.find(tag_name='input', type='submit')
+    submit.click()
+    ```
+
+=== "Async"
+
+    ```python
+    await tab.go_to('https://quotes.toscrape.com/login')
+
+    username = await tab.find(id='username')
+    await username.type_text('john', humanize=True)
+
+    password = await tab.find(id='password')
+    await password.type_text('SecretPass123', humanize=True)
+
+    submit = await tab.find(tag_name='input', type='submit')
+    await submit.click()
+    ```
 
 The login form on this site accepts any username and password, so the values only need to look real.
 
@@ -32,13 +49,25 @@ The login form on this site accepts any username and password, so the values onl
 
 After submitting, the page reloads and shows a Logout link. Finding that link is your confirmation. `find()` waits for it, so there is no sleep between clicking and checking:
 
-```python
-logout_link = await tab.find(text='Logout', timeout=5, raise_exc=False)
-if logout_link:
-    print('Logged in.')
-else:
-    print('Login failed.')
-```
+=== "Sync"
+
+    ```python
+    logout_link = tab.find(text='Logout', timeout=5, raise_exc=False)
+    if logout_link:
+        print('Logged in.')
+    else:
+        print('Login failed.')
+    ```
+
+=== "Async"
+
+    ```python
+    logout_link = await tab.find(text='Logout', timeout=5, raise_exc=False)
+    if logout_link:
+        print('Logged in.')
+    else:
+        print('Login failed.')
+    ```
 
 `raise_exc=False` makes `find()` return `None` instead of raising when the element never appears, which keeps control flow in your hands.
 
@@ -46,22 +75,41 @@ else:
 
 With the session active, switch from interacting to collecting. Declare what a quote looks like once, and `extract_all()` returns a list of validated objects:
 
-```python
-from pydoll.extractor import ExtractionModel, Field
+=== "Sync"
+
+    ```python
+    from pydoll.extractor import ExtractionModel, Field
+
+    class Quote(ExtractionModel):
+        text: str = Field(selector='.text')
+        author: str = Field(selector='.author')
+        tags: list[str] = Field(selector='.tag')
+
+    quotes = tab.extract_all(Quote, scope='.quote', timeout=5)
+
+    for quote in quotes:
+        print(f'{quote.author}: {quote.text}')
+        print(f'  tags: {", ".join(quote.tags)}')
+    ```
+
+=== "Async"
+
+    ```python
+    from pydoll.extractor import ExtractionModel, Field
 
 
-class Quote(ExtractionModel):
-    text: str = Field(selector='.text')
-    author: str = Field(selector='.author')
-    tags: list[str] = Field(selector='.tag')
+    class Quote(ExtractionModel):
+        text: str = Field(selector='.text')
+        author: str = Field(selector='.author')
+        tags: list[str] = Field(selector='.tag')
 
 
-quotes = await tab.extract_all(Quote, scope='.quote', timeout=5)
+    quotes = await tab.extract_all(Quote, scope='.quote', timeout=5)
 
-for quote in quotes:
-    print(f'{quote.author}: {quote.text}')
-    print(f'  tags: {", ".join(quote.tags)}')
-```
+    for quote in quotes:
+        print(f'{quote.author}: {quote.text}')
+        print(f'  tags: {", ".join(quote.tags)}')
+    ```
 
 Each `quote` is a real Pydantic object: `quote.tags` is a `list[str]`, your IDE autocompletes the fields, and `quote.model_dump_json()` serializes it. No element-by-element querying, no manual casting.
 
@@ -71,45 +119,85 @@ Each `quote` is a real Pydantic object: `quote.tags` is a `list[str]`, your IDE 
 
 Create `first_automation.py`:
 
-```python
-import asyncio
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
-from pydoll.extractor import ExtractionModel, Field
+    ```python
+    from pydoll.sync import Chrome
+    from pydoll.extractor import ExtractionModel, Field
+
+    class Quote(ExtractionModel):
+        text: str = Field(selector='.text')
+        author: str = Field(selector='.author')
+        tags: list[str] = Field(selector='.tag')
+
+    def main():
+        with Chrome() as browser:
+            tab = browser.start()
+
+            tab.go_to('https://quotes.toscrape.com/login')
+
+            username = tab.find(id='username')
+            username.type_text('john', humanize=True)
+
+            password = tab.find(id='password')
+            password.type_text('SecretPass123', humanize=True)
+
+            submit = tab.find(tag_name='input', type='submit')
+            submit.click()
+
+            logout_link = tab.find(text='Logout', timeout=5, raise_exc=False)
+            if not logout_link:
+                print('Login failed.')
+                return
+
+            quotes = tab.extract_all(Quote, scope='.quote', timeout=5)
+            for quote in quotes:
+                print(f'{quote.author}: {quote.text}')
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+
+    from pydoll.browser.chromium import Chrome
+    from pydoll.extractor import ExtractionModel, Field
 
 
-class Quote(ExtractionModel):
-    text: str = Field(selector='.text')
-    author: str = Field(selector='.author')
-    tags: list[str] = Field(selector='.tag')
+    class Quote(ExtractionModel):
+        text: str = Field(selector='.text')
+        author: str = Field(selector='.author')
+        tags: list[str] = Field(selector='.tag')
 
 
-async def main():
-    async with Chrome() as browser:
-        tab = await browser.start()
+    async def main():
+        async with Chrome() as browser:
+            tab = await browser.start()
 
-        await tab.go_to('https://quotes.toscrape.com/login')
+            await tab.go_to('https://quotes.toscrape.com/login')
 
-        username = await tab.find(id='username')
-        await username.type_text('john', humanize=True)
+            username = await tab.find(id='username')
+            await username.type_text('john', humanize=True)
 
-        password = await tab.find(id='password')
-        await password.type_text('SecretPass123', humanize=True)
+            password = await tab.find(id='password')
+            await password.type_text('SecretPass123', humanize=True)
 
-        submit = await tab.find(tag_name='input', type='submit')
-        await submit.click()
+            submit = await tab.find(tag_name='input', type='submit')
+            await submit.click()
 
-        logout_link = await tab.find(text='Logout', timeout=5, raise_exc=False)
-        if not logout_link:
-            print('Login failed.')
-            return
+            logout_link = await tab.find(text='Logout', timeout=5, raise_exc=False)
+            if not logout_link:
+                print('Login failed.')
+                return
 
-        quotes = await tab.extract_all(Quote, scope='.quote', timeout=5)
-        for quote in quotes:
-            print(f'{quote.author}: {quote.text}')
+            quotes = await tab.extract_all(Quote, scope='.quote', timeout=5)
+            for quote in quotes:
+                print(f'{quote.author}: {quote.text}')
 
-asyncio.run(main())
-```
+    asyncio.run(main())
+    ```
 
 Run it:
 

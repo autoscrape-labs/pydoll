@@ -4,7 +4,7 @@
 
 ## 核心概念
 
-- [核心概念](core-concepts.md)：tab 和 browser 对象、异步模型，以及“无 webdriver”在实践中意味着什么。
+- [核心概念](core-concepts.md)：tab 和 browser 对象、同步与异步 API，以及“无 webdriver”在实践中意味着什么。
 
 ## 查找与提取
 

@@ -20,13 +20,25 @@
 
 在元素正中心的瞬间点击，以及每 50ms 一次的按键，都是行为 fingerprint。传入 `humanize=True`，Pydoll 会在点击前以拟人的节奏沿曲线路径移动光标，并以变化的节奏打字，偶尔还会出现被纠正的拼写错误：
 
-```python
-search_box = await tab.find(id='search')
-await search_box.type_text('browser automation', humanize=True)
+=== "Sync"
 
-submit = await tab.find(tag_name='button', type='submit')
-await submit.click(humanize=True)
-```
+    ```python
+    search_box = tab.find(id='search')
+    search_box.type_text('browser automation', humanize=True)
+
+    submit = tab.find(tag_name='button', type='submit')
+    submit.click(humanize=True)
+    ```
+
+=== "Async"
+
+    ```python
+    search_box = await tab.find(id='search')
+    await search_box.type_text('browser automation', humanize=True)
+
+    submit = await tab.find(tag_name='button', type='submit')
+    await submit.click(humanize=True)
+    ```
 
 拟人化是按交互逐个选择启用的，所以你可以在行为被监视的地方保留它，在追求速度的地方跳过它。[拟人化交互](human-like-interactions.md) 解释了时序模型以及如何调整它。
 
@@ -34,12 +46,23 @@ await submit.click(humanize=True)
 
 当受保护的页面显示 Turnstile 复选框时，Pydoll 可以帮你检测并点击它：
 
-```python
-async with tab.expect_and_bypass_cloudflare_captcha():
-    await tab.go_to('https://site-protected-by-cloudflare.com')
+=== "Sync"
 
-print('Challenge handled, page loaded.')
-```
+    ```python
+    with tab.expect_and_bypass_cloudflare_captcha():
+        tab.go_to('https://site-protected-by-cloudflare.com')
+
+    print('Challenge handled, page loaded.')
+    ```
+
+=== "Async"
+
+    ```python
+    async with tab.expect_and_bypass_cloudflare_captcha():
+        await tab.go_to('https://site-protected-by-cloudflare.com')
+
+    print('Challenge handled, page loaded.')
+    ```
 
 点击这个控件只是其中一部分：Cloudflare 是否接受这次点击，还取决于你的 IP 信誉，以及浏览器其余部分看起来有多一致。如果挑战一直失败，请仔细阅读 [Captcha 绕过](captcha-bypass.md)，并考虑 [使用住宅 proxy](../guides/proxies.md)。
 

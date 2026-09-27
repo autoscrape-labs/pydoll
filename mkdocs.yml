@@ -44,7 +44,6 @@ nav:
       - Reacting to events:
           - Events: guides/events.md
           - Retrying: guides/retrying.md
-      - Synchronous API: guides/sync-api.md
   - Stealth:
       - Overview: stealth/index.md
       - Evasion techniques: stealth/evasion-techniques.md

@@ -19,15 +19,29 @@ The DOM commands module provides the functionality needed to find, interact with
 
 DOM commands are used extensively by the `WebElement` class and element finding methods:
 
-```python
-from pydoll.commands.dom_commands import query_selector, get_attributes
-from pydoll.connection.connection_handler import ConnectionHandler
+=== "Sync"
 
-# Find element and get its attributes
-connection = ConnectionHandler()
-node_id = await query_selector(connection, selector="#username")
-attributes = await get_attributes(connection, node_id=node_id)
-```
+    ```python
+    from pydoll.commands.dom_commands import query_selector, get_attributes
+    from pydoll.connection.connection_handler import ConnectionHandler
+
+    # Find element and get its attributes
+    connection = ConnectionHandler()
+    node_id = query_selector(connection, selector="#username")
+    attributes = get_attributes(connection, node_id=node_id)
+    ```
+
+=== "Async"
+
+    ```python
+    from pydoll.commands.dom_commands import query_selector, get_attributes
+    from pydoll.connection.connection_handler import ConnectionHandler
+
+    # Find element and get its attributes
+    connection = ConnectionHandler()
+    node_id = await query_selector(connection, selector="#username")
+    attributes = await get_attributes(connection, node_id=node_id)
+    ```
 
 ## Key Functionality
 

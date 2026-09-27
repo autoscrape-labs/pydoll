@@ -4,7 +4,7 @@ One guide per capability, each with runnable examples. Start with [Core concepts
 
 ## Core concepts
 
-- [Core concepts](core-concepts.md): the tab and browser objects, the async model, and what "no webdriver" means in practice.
+- [Core concepts](core-concepts.md): the tab and browser objects, the sync and async APIs, and what "no webdriver" means in practice.
 
 ## Finding and extracting
 

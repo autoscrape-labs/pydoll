@@ -1,8 +1,8 @@
 # Async Python na prática
 
-Toda chamada do Pydoll tem um `await` na frente. Se essa palavra-chave é novidade para você, esta é a página para ler primeiro. Você não precisa dominar o asyncio; precisa só do suficiente para ficar confortável, e para entender por que o Pydoll é construído em cima dele. Cada exemplo aqui roda por conta própria, então cole eles em um arquivo e veja o que acontece.
+Toda chamada da API assíncrona do Pydoll tem um `await` na frente. Se essa palavra-chave é novidade para você, esta é a página para ler primeiro. Se você usa a API síncrona de `pydoll.sync`, nada aqui é obrigatório, mas a seção sobre concorrência mostra o que você ganharia ao trocar. Você não precisa dominar o asyncio; precisa só do suficiente para ficar confortável, e para entender por que o Pydoll é construído em cima dele. Cada exemplo aqui roda por conta própria, então cole eles em um arquivo e veja o que acontece.
 
-## Por que toda chamada do Pydoll é aguardada com await
+## Por que a API assíncrona aguarda toda chamada com await
 
 A automação de navegador passa a maior parte do tempo esperando: uma página carregar, um elemento aparecer, uma requisição de rede voltar. O código Python comum fica parado durante essas esperas. O código async não: enquanto uma tarefa espera, outra pode rodar.
 

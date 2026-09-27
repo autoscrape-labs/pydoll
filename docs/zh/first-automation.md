@@ -13,18 +13,35 @@
 
 `find()` 通过元素的属性定位它们，`type_text(humanize=True)` 以真实用户的可变节奏打字，其中包括偶尔出现并被修正的拼写错误。你无需先聚焦输入框；Pydoll 会在打字前先点击它。
 
-```python
-await tab.go_to('https://quotes.toscrape.com/login')
+=== "Sync"
 
-username = await tab.find(id='username')
-await username.type_text('john', humanize=True)
+    ```python
+    tab.go_to('https://quotes.toscrape.com/login')
 
-password = await tab.find(id='password')
-await password.type_text('SecretPass123', humanize=True)
+    username = tab.find(id='username')
+    username.type_text('john', humanize=True)
 
-submit = await tab.find(tag_name='input', type='submit')
-await submit.click()
-```
+    password = tab.find(id='password')
+    password.type_text('SecretPass123', humanize=True)
+
+    submit = tab.find(tag_name='input', type='submit')
+    submit.click()
+    ```
+
+=== "Async"
+
+    ```python
+    await tab.go_to('https://quotes.toscrape.com/login')
+
+    username = await tab.find(id='username')
+    await username.type_text('john', humanize=True)
+
+    password = await tab.find(id='password')
+    await password.type_text('SecretPass123', humanize=True)
+
+    submit = await tab.find(tag_name='input', type='submit')
+    await submit.click()
+    ```
 
 这个站点上的登录表单接受任意用户名和密码，所以这些值只需要看起来真实即可。
 
@@ -32,13 +49,25 @@ await submit.click()
 
 提交后，页面会重新加载并显示一个 Logout 链接。找到那个链接就是你的确认依据。`find()` 会等待它出现，因此在点击和检查之间不需要 sleep：
 
-```python
-logout_link = await tab.find(text='Logout', timeout=5, raise_exc=False)
-if logout_link:
-    print('Logged in.')
-else:
-    print('Login failed.')
-```
+=== "Sync"
+
+    ```python
+    logout_link = tab.find(text='Logout', timeout=5, raise_exc=False)
+    if logout_link:
+        print('Logged in.')
+    else:
+        print('Login failed.')
+    ```
+
+=== "Async"
+
+    ```python
+    logout_link = await tab.find(text='Logout', timeout=5, raise_exc=False)
+    if logout_link:
+        print('Logged in.')
+    else:
+        print('Login failed.')
+    ```
 
 `raise_exc=False` 让 `find()` 在元素始终没有出现时返回 `None` 而不是抛出异常，从而把控制流保留在你手中。
 
@@ -46,22 +75,41 @@ else:
 
 会话激活后，从交互切换到收集。只需一次声明一条名言长什么样，`extract_all()` 就会返回一组经过校验的对象：
 
-```python
-from pydoll.extractor import ExtractionModel, Field
+=== "Sync"
+
+    ```python
+    from pydoll.extractor import ExtractionModel, Field
+
+    class Quote(ExtractionModel):
+        text: str = Field(selector='.text')
+        author: str = Field(selector='.author')
+        tags: list[str] = Field(selector='.tag')
+
+    quotes = tab.extract_all(Quote, scope='.quote', timeout=5)
+
+    for quote in quotes:
+        print(f'{quote.author}: {quote.text}')
+        print(f'  tags: {", ".join(quote.tags)}')
+    ```
+
+=== "Async"
+
+    ```python
+    from pydoll.extractor import ExtractionModel, Field
 
 
-class Quote(ExtractionModel):
-    text: str = Field(selector='.text')
-    author: str = Field(selector='.author')
-    tags: list[str] = Field(selector='.tag')
+    class Quote(ExtractionModel):
+        text: str = Field(selector='.text')
+        author: str = Field(selector='.author')
+        tags: list[str] = Field(selector='.tag')
 
 
-quotes = await tab.extract_all(Quote, scope='.quote', timeout=5)
+    quotes = await tab.extract_all(Quote, scope='.quote', timeout=5)
 
-for quote in quotes:
-    print(f'{quote.author}: {quote.text}')
-    print(f'  tags: {", ".join(quote.tags)}')
-```
+    for quote in quotes:
+        print(f'{quote.author}: {quote.text}')
+        print(f'  tags: {", ".join(quote.tags)}')
+    ```
 
 每个 `quote` 都是一个真正的 Pydantic 对象：`quote.tags` 是一个 `list[str]`，你的 IDE 会自动补全字段，`quote.model_dump_json()` 会将它序列化。无需逐个元素查询，也无需手动类型转换。
 
@@ -71,45 +119,85 @@ for quote in quotes:
 
 创建 `first_automation.py`：
 
-```python
-import asyncio
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
-from pydoll.extractor import ExtractionModel, Field
+    ```python
+    from pydoll.sync import Chrome
+    from pydoll.extractor import ExtractionModel, Field
+
+    class Quote(ExtractionModel):
+        text: str = Field(selector='.text')
+        author: str = Field(selector='.author')
+        tags: list[str] = Field(selector='.tag')
+
+    def main():
+        with Chrome() as browser:
+            tab = browser.start()
+
+            tab.go_to('https://quotes.toscrape.com/login')
+
+            username = tab.find(id='username')
+            username.type_text('john', humanize=True)
+
+            password = tab.find(id='password')
+            password.type_text('SecretPass123', humanize=True)
+
+            submit = tab.find(tag_name='input', type='submit')
+            submit.click()
+
+            logout_link = tab.find(text='Logout', timeout=5, raise_exc=False)
+            if not logout_link:
+                print('Login failed.')
+                return
+
+            quotes = tab.extract_all(Quote, scope='.quote', timeout=5)
+            for quote in quotes:
+                print(f'{quote.author}: {quote.text}')
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+
+    from pydoll.browser.chromium import Chrome
+    from pydoll.extractor import ExtractionModel, Field
 
 
-class Quote(ExtractionModel):
-    text: str = Field(selector='.text')
-    author: str = Field(selector='.author')
-    tags: list[str] = Field(selector='.tag')
+    class Quote(ExtractionModel):
+        text: str = Field(selector='.text')
+        author: str = Field(selector='.author')
+        tags: list[str] = Field(selector='.tag')
 
 
-async def main():
-    async with Chrome() as browser:
-        tab = await browser.start()
+    async def main():
+        async with Chrome() as browser:
+            tab = await browser.start()
 
-        await tab.go_to('https://quotes.toscrape.com/login')
+            await tab.go_to('https://quotes.toscrape.com/login')
 
-        username = await tab.find(id='username')
-        await username.type_text('john', humanize=True)
+            username = await tab.find(id='username')
+            await username.type_text('john', humanize=True)
 
-        password = await tab.find(id='password')
-        await password.type_text('SecretPass123', humanize=True)
+            password = await tab.find(id='password')
+            await password.type_text('SecretPass123', humanize=True)
 
-        submit = await tab.find(tag_name='input', type='submit')
-        await submit.click()
+            submit = await tab.find(tag_name='input', type='submit')
+            await submit.click()
 
-        logout_link = await tab.find(text='Logout', timeout=5, raise_exc=False)
-        if not logout_link:
-            print('Login failed.')
-            return
+            logout_link = await tab.find(text='Logout', timeout=5, raise_exc=False)
+            if not logout_link:
+                print('Login failed.')
+                return
 
-        quotes = await tab.extract_all(Quote, scope='.quote', timeout=5)
-        for quote in quotes:
-            print(f'{quote.author}: {quote.text}')
+            quotes = await tab.extract_all(Quote, scope='.quote', timeout=5)
+            for quote in quotes:
+                print(f'{quote.author}: {quote.text}')
 
-asyncio.run(main())
-```
+    asyncio.run(main())
+    ```
 
 运行它：
 

@@ -43,10 +43,19 @@ Entropy here measures how unpredictable the path is. Detection systems split the
 
 With `humanize=True`, Pydoll generates movements that answer each of the tells above. The path follows a cubic Bezier curve with randomized control points, so it curves rather than running straight. The velocity along it follows the minimum-jerk profile (`10t^3 - 15t^4 + 6t^5`), giving the bell-shaped curve Fitts's Law predicts, and the duration is computed from Fitts's Law itself. Physiological tremor is added as position noise scaled inversely to velocity (more visible when the cursor moves slowly, matching real physiology), overshoot happens with a set probability before a correction, and occasional micro-pauses simulate brief hesitations.
 
-```python
-await element.click(humanize=True)
-await tab.mouse.click(500, 300, humanize=True)   # coordinate form
-```
+=== "Sync"
+
+    ```python
+    element.click(humanize=True)
+    tab.mouse.click(500, 300, humanize=True)   # coordinate form
+    ```
+
+=== "Async"
+
+    ```python
+    await element.click(humanize=True)
+    await tab.mouse.click(500, 300, humanize=True)   # coordinate form
+    ```
 
 The timing model is configurable through `MouseTimingConfig` assigned to `tab.mouse.timing`. See [Human-like interactions](../../stealth/human-like-interactions.md) for the practical guide.
 
@@ -77,9 +86,17 @@ The two fundamental measurements are dwell time (from `keydown` to `keyup` on on
 
 With `type_text(humanize=True)`, keystroke delays are drawn from a distribution rather than a fixed interval. Punctuation gets extra delay, simulating the pause a typist takes at sentence structure; occasional thinking pauses and rarer distraction pauses simulate moments of thought or interruption. Realistic typos occur at roughly 2% per character across five error types weighted by real-world frequency (adjacent-key, transposition, double-press, skipped character, missed space), each followed by a natural correction sequence.
 
-```python
-await element.type_text('Hello, world!', humanize=True)
-```
+=== "Sync"
+
+    ```python
+    element.type_text('Hello, world!', humanize=True)
+    ```
+
+=== "Async"
+
+    ```python
+    await element.type_text('Hello, world!', humanize=True)
+    ```
 
 See [Human-like interactions](../../stealth/human-like-interactions.md) for how to tune it.
 
@@ -99,11 +116,21 @@ Mouse wheels produce discrete `wheel` events with consistent deltas (often 100 o
 
 Pydoll's humanized scroll answers these: it follows a Bezier easing curve for natural acceleration and deceleration, adds per-frame jitter to the deltas, inserts occasional micro-pauses, sometimes overshoots and corrects, and breaks long distances into multiple "flick" gestures rather than one continuous motion.
 
-```python
-from pydoll.constants import ScrollPosition
+=== "Sync"
 
-await tab.scroll.by(ScrollPosition.DOWN, 800, humanize=True)
-```
+    ```python
+    from pydoll.constants import ScrollPosition
+
+    tab.scroll.by(ScrollPosition.DOWN, 800, humanize=True)
+    ```
+
+=== "Async"
+
+    ```python
+    from pydoll.constants import ScrollPosition
+
+    await tab.scroll.by(ScrollPosition.DOWN, 800, humanize=True)
+    ```
 
 ## Other behavioral signals
 

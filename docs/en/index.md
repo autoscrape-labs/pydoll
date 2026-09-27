@@ -4,7 +4,7 @@
 
 # Pydoll
 
-Pydoll automates Chromium browsers over the Chrome DevTools Protocol, with no webdriver and no manual waits. Use it to scrape data, test web applications, and automate real browser workflows in async Python.
+Pydoll automates Chromium browsers over the Chrome DevTools Protocol, with no webdriver and no manual waits. Use it to scrape data, test web applications, and automate real browser workflows in Python, with a synchronous or an asynchronous API.
 
 ## Installation
 
@@ -24,58 +24,111 @@ New to Pydoll? Follow [Getting started](getting-started.md) for a complete walkt
 
 Open a page, find elements by how you'd describe them to a person, and interact with humanized timing:
 
-```python
-import asyncio
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
+    ```python
+    import time
+    from pydoll.sync import Chrome
+
+    def main():
+        with Chrome() as browser:
+            tab = browser.start()
+            tab.go_to('https://github.com/autoscrape-labs/pydoll')
+
+            star_button = tab.find(
+                tag_name='button',
+                timeout=5,
+                raise_exc=False
+            )
+            if not star_button:
+                print('Button not found.')
+                return
+
+            star_button.click()
+            time.sleep(3)
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+
+    from pydoll.browser.chromium import Chrome
 
 
-async def main():
-    async with Chrome() as browser:
-        tab = await browser.start()
-        await tab.go_to('https://github.com/autoscrape-labs/pydoll')
+    async def main():
+        async with Chrome() as browser:
+            tab = await browser.start()
+            await tab.go_to('https://github.com/autoscrape-labs/pydoll')
 
-        star_button = await tab.find(
-            tag_name='button',
-            timeout=5,
-            raise_exc=False
-        )
-        if not star_button:
-            print('Button not found.')
-            return
+            star_button = await tab.find(
+                tag_name='button',
+                timeout=5,
+                raise_exc=False
+            )
+            if not star_button:
+                print('Button not found.')
+                return
 
-        await star_button.click()
-        await asyncio.sleep(3)
+            await star_button.click()
+            await asyncio.sleep(3)
 
-asyncio.run(main())
-```
+    asyncio.run(main())
+    ```
 
 When the goal is data rather than interaction, define a model and let Pydoll extract it, typed and validated:
 
-```python
-import asyncio
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
-from pydoll.extractor import ExtractionModel, Field
+    ```python
+    from pydoll.sync import Chrome
+    from pydoll.extractor import ExtractionModel, Field
+
+    class Quote(ExtractionModel):
+        text: str = Field(selector='.text')
+        author: str = Field(selector='.author')
+        tags: list[str] = Field(selector='.tag')
+
+    def main():
+        with Chrome() as browser:
+            tab = browser.start()
+            tab.go_to('https://quotes.toscrape.com')
+
+            quotes = tab.extract_all(Quote, scope='.quote', timeout=5)
+            for quote in quotes:
+                print(f'{quote.author}: {quote.text}')
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+
+    from pydoll.browser.chromium import Chrome
+    from pydoll.extractor import ExtractionModel, Field
 
 
-class Quote(ExtractionModel):
-    text: str = Field(selector='.text')
-    author: str = Field(selector='.author')
-    tags: list[str] = Field(selector='.tag')
+    class Quote(ExtractionModel):
+        text: str = Field(selector='.text')
+        author: str = Field(selector='.author')
+        tags: list[str] = Field(selector='.tag')
 
 
-async def main():
-    async with Chrome() as browser:
-        tab = await browser.start()
-        await tab.go_to('https://quotes.toscrape.com')
+    async def main():
+        async with Chrome() as browser:
+            tab = await browser.start()
+            await tab.go_to('https://quotes.toscrape.com')
 
-        quotes = await tab.extract_all(Quote, scope='.quote', timeout=5)
-        for quote in quotes:
-            print(f'{quote.author}: {quote.text}')
+            quotes = await tab.extract_all(Quote, scope='.quote', timeout=5)
+            for quote in quotes:
+                print(f'{quote.author}: {quote.text}')
 
-asyncio.run(main())
-```
+    asyncio.run(main())
+    ```
 
 Models support CSS and XPath selectors, HTML attribute targeting, custom transforms, and nested models. Learn more in [Structured extraction](guides/structured-extraction.md).
 
@@ -83,7 +136,7 @@ Models support CSS and XPath selectors, HTML attribute targeting, custom transfo
 
 - **No webdriver**: Pydoll connects straight to the browser over the Chrome DevTools Protocol. Nothing to download, no version mismatches to debug.
 - **Humanized interactions**: clicks follow curved mouse paths and typing has variable rhythm with occasional corrected typos, so your automation behaves like a person at the keyboard.
-- **Async by design**: built on `asyncio`, so one process can drive many tabs and browsers concurrently.
+- **Sync or async**: the same API blocks call by call from `pydoll.sync`, or runs on `asyncio` so one process can drive many tabs and browsers concurrently.
 - **Cloudflare Turnstile handling**: Pydoll detects the Turnstile widget and clicks it natively. No external captcha service to pay for or integrate.
 - **Network control**: monitor, intercept, and modify requests as the page makes them.
 - **Typed extraction**: declare a Pydantic model and get validated, IDE-friendly objects instead of raw elements.

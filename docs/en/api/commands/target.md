@@ -19,20 +19,39 @@ The target commands module provides functionality for creating, managing, and co
 
 Target commands are used internally by browser classes to manage tabs and windows:
 
-```python
-from pydoll.commands.target_commands import get_targets, create_target, close_target
-from pydoll.connection.connection_handler import ConnectionHandler
+=== "Sync"
 
-# Get all browser targets
-connection = ConnectionHandler()
-targets = await get_targets(connection)
+    ```python
+    from pydoll.commands.target_commands import get_targets, create_target, close_target
+    from pydoll.connection.connection_handler import ConnectionHandler
 
-# Create a new tab
-new_target = await create_target(connection, url="https://example.com")
+    # Get all browser targets
+    connection = ConnectionHandler()
+    targets = get_targets(connection)
 
-# Close a target
-await close_target(connection, target_id=new_target.target_id)
-```
+    # Create a new tab
+    new_target = create_target(connection, url="https://example.com")
+
+    # Close a target
+    close_target(connection, target_id=new_target.target_id)
+    ```
+
+=== "Async"
+
+    ```python
+    from pydoll.commands.target_commands import get_targets, create_target, close_target
+    from pydoll.connection.connection_handler import ConnectionHandler
+
+    # Get all browser targets
+    connection = ConnectionHandler()
+    targets = await get_targets(connection)
+
+    # Create a new tab
+    new_target = await create_target(connection, url="https://example.com")
+
+    # Close a target
+    await close_target(connection, target_id=new_target.target_id)
+    ```
 
 ## Key Functionality
 
@@ -64,41 +83,87 @@ The target commands module provides functions for:
 Different types of targets can be managed:
 
 ### Page Targets
-```python
-# Create a new tab
-page_target = await create_target(
-    connection,
-    url="https://example.com",
-    width=1920,
-    height=1080,
-    browser_context_id=None  # Default context
-)
-```
+=== "Sync"
+
+    ```python
+    # Create a new tab
+    page_target = create_target(
+        connection,
+        url="https://example.com",
+        width=1920,
+        height=1080,
+        browser_context_id=None  # Default context
+    )
+    ```
+
+=== "Async"
+
+    ```python
+    # Create a new tab
+    page_target = await create_target(
+        connection,
+        url="https://example.com",
+        width=1920,
+        height=1080,
+        browser_context_id=None  # Default context
+    )
+    ```
 
 ### Popup Windows
-```python
-# Create a popup window
-popup_target = await create_target(
-    connection,
-    url="https://popup.example.com",
-    width=800,
-    height=600,
-    new_window=True
-)
-```
+=== "Sync"
+
+    ```python
+    # Create a popup window
+    popup_target = create_target(
+        connection,
+        url="https://popup.example.com",
+        width=800,
+        height=600,
+        new_window=True
+    )
+    ```
+
+=== "Async"
+
+    ```python
+    # Create a popup window
+    popup_target = await create_target(
+        connection,
+        url="https://popup.example.com",
+        width=800,
+        height=600,
+        new_window=True
+    )
+    ```
 
 ### Incognito Contexts
-```python
-# Create incognito browser context
-incognito_context = await create_browser_context(connection)
+=== "Sync"
 
-# Create tab in incognito context
-incognito_tab = await create_target(
-    connection,
-    url="https://private.example.com",
-    browser_context_id=incognito_context.browser_context_id
-)
-```
+    ```python
+    # Create incognito browser context
+    incognito_context = create_browser_context(connection)
+
+    # Create tab in incognito context
+    incognito_tab = create_target(
+        connection,
+        url="https://private.example.com",
+        browser_context_id=incognito_context.browser_context_id
+    )
+    ```
+
+=== "Async"
+
+    ```python
+    # Create incognito browser context
+    incognito_context = await create_browser_context(connection)
+
+    # Create tab in incognito context
+    incognito_tab = await create_target(
+        connection,
+        url="https://private.example.com",
+        browser_context_id=incognito_context.browser_context_id
+    )
+    ```
 
 !!! info "Headless vs Headed: how contexts show up"
     Browser contexts are isolated logical environments. In headed mode, the first page created inside a new context will usually open in a new OS window. In headless mode, no window is shown, though the isolation remains purely logical (cookies, storage, cache and auth state are still separate per context). Prefer contexts in headless/CI pipelines for performance and clean isolation.
@@ -113,35 +178,72 @@ Target commands work with various target events:
 - `Target.targetCrashed` - Target crashed
 
 ### Multi-Target Coordination
-```python
-# Manage multiple tabs
-targets = await get_targets(connection)
-page_targets = [t for t in targets if t.type == "page"]
+=== "Sync"
 
-for target in page_targets:
-    # Perform operations on each tab
-    await activate_target(connection, target_id=target.target_id)
-    # ... do work in this tab
-```
+    ```python
+    # Manage multiple tabs
+    targets = get_targets(connection)
+    page_targets = [t for t in targets if t.type == "page"]
+
+    for target in page_targets:
+        # Perform operations on each tab
+        activate_target(connection, target_id=target.target_id)
+        # ... do work in this tab
+    ```
+
+=== "Async"
+
+    ```python
+    # Manage multiple tabs
+    targets = await get_targets(connection)
+    page_targets = [t for t in targets if t.type == "page"]
+
+    for target in page_targets:
+        # Perform operations on each tab
+        await activate_target(connection, target_id=target.target_id)
+        # ... do work in this tab
+    ```
 
 ### Target Isolation
-```python
-# Create isolated browser context for testing
-test_context = await create_browser_context(connection)
+=== "Sync"
 
-# All targets in this context are isolated
-test_tab1 = await create_target(
-    connection, 
-    url="https://test1.com",
-    browser_context_id=test_context.browser_context_id
-)
+    ```python
+    # Create isolated browser context for testing
+    test_context = create_browser_context(connection)
 
-test_tab2 = await create_target(
-    connection,
-    url="https://test2.com", 
-    browser_context_id=test_context.browser_context_id
-)
-```
+    # All targets in this context are isolated
+    test_tab1 = create_target(
+        connection, 
+        url="https://test1.com",
+        browser_context_id=test_context.browser_context_id
+    )
+
+    test_tab2 = create_target(
+        connection,
+        url="https://test2.com", 
+        browser_context_id=test_context.browser_context_id
+    )
+    ```
+
+=== "Async"
+
+    ```python
+    # Create isolated browser context for testing
+    test_context = await create_browser_context(connection)
+
+    # All targets in this context are isolated
+    test_tab1 = await create_target(
+        connection, 
+        url="https://test1.com",
+        browser_context_id=test_context.browser_context_id
+    )
+
+    test_tab2 = await create_target(
+        connection,
+        url="https://test2.com", 
+        browser_context_id=test_context.browser_context_id
+    )
+    ```
 
 !!! note "Browser Integration"
     Target commands are primarily used internally by the `Chrome` and `Edge` browser classes. The high-level browser APIs provide more convenient methods for tab management. 

@@ -33,4 +33,4 @@ Esta seção documenta as classes públicas que você usa diretamente. Os guias 
 | [Constants](core/constants.md) | Enums como `By`, `Key` e `PermissionType` | [Seletores](../basics/selectors.md) |
 | [Exceptions](core/exceptions.md) | Erros que a Pydoll lança, como `ElementNotFound` | [Pesquisa de elementos](../guides/element-finding.md#handle-missing-elements) |
 
-Toda operação da Pydoll é assíncrona e totalmente tipada. Veja [Async Python](../basics/async-python.md) para o básico de `async`/`await`.
+Toda operação da Pydoll é totalmente tipada e existe em duas formas: importe de `pydoll.sync` para bloquear a cada chamada, ou dos módulos abaixo para usar `await`. A referência documenta a forma assíncrona; as classes síncronas têm os mesmos nomes, métodos, argumentos e padrões. Veja [Async Python](../basics/async-python.md) para o básico de `async`/`await`.

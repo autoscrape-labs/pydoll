@@ -21,27 +21,50 @@
 
 Pydoll 会帮你修正这一点。当它检测到 `--user-agent=` 参数时，会用匹配的 `platform` 和完整的 Client Hints 元数据（greased brand 和 brand 顺序按 Chromium 对那个主版本的算法算出）来应用 `Emulation.setUserAgentOverride`，并暴露真实 Chrome 所报告的精简形式 `Chrome/MAJOR.0.0.0`，使每一层都保持一致，新标签页和 workers 也不例外。没有任何东西被注入页面：`navigator.userAgent`、`platform`、`vendor` 和 `appVersion` 全都来自 override 本身。
 
-```python
-import asyncio
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
-from pydoll.browser.options import ChromiumOptions
+    ```python
+    from pydoll.sync import Chrome
+    from pydoll.browser.options import ChromiumOptions
+
+    def main():
+        options = ChromiumOptions()
+        options.add_argument(
+            '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+            'AppleWebKit/537.36 (KHTML, like Gecko) '
+            'Chrome/130.0.0.0 Safari/537.36'
+        )
+
+        with Chrome(options=options) as browser:
+            tab = browser.start()
+            tab.go_to('https://browserleaks.com/javascript')
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+
+    from pydoll.browser.chromium import Chrome
+    from pydoll.browser.options import ChromiumOptions
 
 
-async def main():
-    options = ChromiumOptions()
-    options.add_argument(
-        '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
-        'AppleWebKit/537.36 (KHTML, like Gecko) '
-        'Chrome/130.0.0.0 Safari/537.36'
-    )
+    async def main():
+        options = ChromiumOptions()
+        options.add_argument(
+            '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+            'AppleWebKit/537.36 (KHTML, like Gecko) '
+            'Chrome/130.0.0.0 Safari/537.36'
+        )
 
-    async with Chrome(options=options) as browser:
-        tab = await browser.start()
-        await tab.go_to('https://browserleaks.com/javascript')
+        async with Chrome(options=options) as browser:
+            tab = await browser.start()
+            await tab.go_to('https://browserleaks.com/javascript')
 
-asyncio.run(main())
-```
+    asyncio.run(main())
+    ```
 
 让字符串中的 `Chrome/<version>` 与你实际运行的 Chrome 保持一致；一个你并未运行的版本本身就是一种不匹配。这个覆盖会应用于第一个标签页、通过 `browser.new_tab()` 创建的标签页，以及通过 `browser.get_opened_tabs()` 获取的标签页。
 
@@ -72,11 +95,21 @@ options.webrtc_leak_protection = True   # --force-webrtc-ip-handling-policy=disa
 
 瞬间点击和完全规律的按键是一种行为 fingerprint。传入 `humanize=True`，就能让光标沿一条曲线、以拟人的节奏移动，并以变化的节奏打字，偶尔出现被纠正的拼写错误：
 
-```python
-field = await tab.find(id='search')
-await field.type_text('browser automation', humanize=True)
-await field.click(humanize=True)
-```
+=== "Sync"
+
+    ```python
+    field = tab.find(id='search')
+    field.type_text('browser automation', humanize=True)
+    field.click(humanize=True)
+    ```
+
+=== "Async"
+
+    ```python
+    field = await tab.find(id='search')
+    await field.type_text('browser automation', humanize=True)
+    await field.click(humanize=True)
+    ```
 
 关于时序模型以及如何调整它，参见 [拟人化交互](human-like-interactions.md)。
 
@@ -107,21 +140,41 @@ await field.click(humanize=True)
 
 用 Pydoll 做一个快速自检：
 
-```python
-result = await tab.execute_script('''
-    return {
-        userAgent: navigator.userAgent,
-        webdriver: navigator.webdriver,
-        languages: navigator.languages,
-        plugins: navigator.plugins.length,
-        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-    };
-''')
-fp = result['result']['result']['value']
+=== "Sync"
 
-assert fp['webdriver'] is False, 'navigator.webdriver should be false'
-assert 'HeadlessChrome' not in fp['userAgent'], 'headless leaking in the UA'
-```
+    ```python
+    result = tab.execute_script('''
+        return {
+            userAgent: navigator.userAgent,
+            webdriver: navigator.webdriver,
+            languages: navigator.languages,
+            plugins: navigator.plugins.length,
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        };
+    ''')
+    fp = result['result']['result']['value']
+
+    assert fp['webdriver'] is False, 'navigator.webdriver should be false'
+    assert 'HeadlessChrome' not in fp['userAgent'], 'headless leaking in the UA'
+    ```
+
+=== "Async"
+
+    ```python
+    result = await tab.execute_script('''
+        return {
+            userAgent: navigator.userAgent,
+            webdriver: navigator.webdriver,
+            languages: navigator.languages,
+            plugins: navigator.plugins.length,
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        };
+    ''')
+    fp = result['result']['result']['value']
+
+    assert fp['webdriver'] is False, 'navigator.webdriver should be false'
+    assert 'HeadlessChrome' not in fp['userAgent'], 'headless leaking in the UA'
+    ```
 
 ## 下一步
 

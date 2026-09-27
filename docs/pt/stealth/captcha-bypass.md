@@ -8,24 +8,44 @@ O Pydoll consegue clicar num checkbox do Cloudflare Turnstile para você, o mesm
 
 O context manager espera o widget do Turnstile aparecer durante o bloqueio, clica no seu checkbox e deixa o seu código continuar assim que agiu. Coloque dentro do bloco a navegação que dispara o desafio.
 
-```python
-import asyncio
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
+    ```python
+    from pydoll.sync import Chrome
+
+    def main():
+        with Chrome() as browser:
+            tab = browser.start()
+
+            with tab.expect_and_bypass_cloudflare_captcha():
+                tab.go_to('https://a-site-behind-turnstile.com')
+
+            content = tab.find(id='protected-content', timeout=10, raise_exc=False)
+            print(content.text if content else 'Still challenged.')
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+
+    from pydoll.browser.chromium import Chrome
 
 
-async def main():
-    async with Chrome() as browser:
-        tab = await browser.start()
+    async def main():
+        async with Chrome() as browser:
+            tab = await browser.start()
 
-        async with tab.expect_and_bypass_cloudflare_captcha():
-            await tab.go_to('https://a-site-behind-turnstile.com')
+            async with tab.expect_and_bypass_cloudflare_captcha():
+                await tab.go_to('https://a-site-behind-turnstile.com')
 
-        content = await tab.find(id='protected-content', timeout=10, raise_exc=False)
-        print(await content.text if content else 'Still challenged.')
+            content = await tab.find(id='protected-content', timeout=10, raise_exc=False)
+            print(await content.text if content else 'Still challenged.')
 
-asyncio.run(main())
-```
+    asyncio.run(main())
+    ```
 
 Substitua a URL pelo site que você está automatizando. Não existe uma página pública e estável do Turnstile para apontar.
 
@@ -33,24 +53,45 @@ Substitua a URL pelo site que você está automatizando. Não existe uma página
 
 Quando você não quer envolver uma navegação específica, ative o tratamento em segundo plano: o Pydoll clica no widget sempre que ele aparece, até você desativar.
 
-```python
-import asyncio
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
+    ```python
+    import time
+    from pydoll.sync import Chrome
+
+    def main():
+        with Chrome() as browser:
+            tab = browser.start()
+
+            tab.enable_auto_solve_cloudflare_captcha()
+            tab.go_to('https://a-site-behind-turnstile.com')
+            time.sleep(5)   # dá tempo para o widget aparecer e ser clicado
+
+            tab.disable_auto_solve_cloudflare_captcha()
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+
+    from pydoll.browser.chromium import Chrome
 
 
-async def main():
-    async with Chrome() as browser:
-        tab = await browser.start()
+    async def main():
+        async with Chrome() as browser:
+            tab = await browser.start()
 
-        await tab.enable_auto_solve_cloudflare_captcha()
-        await tab.go_to('https://a-site-behind-turnstile.com')
-        await asyncio.sleep(5)   # dá tempo para o widget aparecer e ser clicado
+            await tab.enable_auto_solve_cloudflare_captcha()
+            await tab.go_to('https://a-site-behind-turnstile.com')
+            await asyncio.sleep(5)   # dá tempo para o widget aparecer e ser clicado
 
-        await tab.disable_auto_solve_cloudflare_captcha()
+            await tab.disable_auto_solve_cloudflare_captcha()
 
-asyncio.run(main())
-```
+    asyncio.run(main())
+    ```
 
 ## Como ele encontra o checkbox
 
@@ -60,10 +101,19 @@ O Pydoll detecta o Turnstile fazendo polling no shadow DOM da página em busca d
 
 Alguns sites renderizam o Turnstile depois do carregamento inicial. `time_to_wait_captcha` (padrão 5 segundos) é quanto tempo o Pydoll espera pelo widget antes de desistir. Aumente para um site lento.
 
-```python
-async with tab.expect_and_bypass_cloudflare_captcha(time_to_wait_captcha=15):
-    await tab.go_to('https://a-site-behind-turnstile.com')
-```
+=== "Sync"
+
+    ```python
+    with tab.expect_and_bypass_cloudflare_captcha(time_to_wait_captcha=15):
+        tab.go_to('https://a-site-behind-turnstile.com')
+    ```
+
+=== "Async"
+
+    ```python
+    async with tab.expect_and_bypass_cloudflare_captcha(time_to_wait_captcha=15):
+        await tab.go_to('https://a-site-behind-turnstile.com')
+    ```
 
 `time_to_wait_captcha` é o único parâmetro de tempo. Se o widget nunca aparecer dentro dessa janela, a interação é ignorada.
 

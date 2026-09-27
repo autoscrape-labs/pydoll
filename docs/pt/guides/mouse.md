@@ -8,39 +8,76 @@ O Pydoll controla o mouse de duas formas: através de um elemento que você enco
 
 O caso comum é clicar em um elemento que você já localizou com `find()` ou `query()`. Chame `click()` nele; você não calcula coordenadas, e o elemento é rolado para a área visível primeiro.
 
-```python
-import asyncio
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
+    ```python
+    from pydoll.sync import Chrome
+
+    def main():
+        with Chrome() as browser:
+            tab = browser.start()
+            tab.go_to('https://the-internet.herokuapp.com/add_remove_elements/')
+
+            add_button = tab.find(text='Add Element')
+            add_button.click()
+
+            # o clique adicionou um botão Delete
+            delete = tab.find(class_name='added-manually')
+            print('Added:', delete.text)
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+
+    from pydoll.browser.chromium import Chrome
 
 
-async def main():
-    async with Chrome() as browser:
-        tab = await browser.start()
-        await tab.go_to('https://the-internet.herokuapp.com/add_remove_elements/')
+    async def main():
+        async with Chrome() as browser:
+            tab = await browser.start()
+            await tab.go_to('https://the-internet.herokuapp.com/add_remove_elements/')
 
-        add_button = await tab.find(text='Add Element')
-        await add_button.click()
+            add_button = await tab.find(text='Add Element')
+            await add_button.click()
 
-        # o clique adicionou um botão Delete
-        delete = await tab.find(class_name='added-manually')
-        print('Added:', await delete.text)
+            # o clique adicionou um botão Delete
+            delete = await tab.find(class_name='added-manually')
+            print('Added:', await delete.text)
 
-asyncio.run(main())
-```
+    asyncio.run(main())
+    ```
 
 O `click()` recebe algumas opções:
 
-```python
-# clica em um ponto deslocado do centro do elemento (pixels)
-await element.click(x_offset=10, y_offset=5)
+=== "Sync"
 
-# mantém o botão pressionado por mais tempo antes de soltar (segundos)
-await element.click(hold_time=0.3)
+    ```python
+    # clica em um ponto deslocado do centro do elemento (pixels)
+    element.click(x_offset=10, y_offset=5)
 
-# humanizado: caminho curvo do cursor até o elemento, depois clique
-await element.click(humanize=True)
-```
+    # mantém o botão pressionado por mais tempo antes de soltar (segundos)
+    element.click(hold_time=0.3)
+
+    # humanizado: caminho curvo do cursor até o elemento, depois clique
+    element.click(humanize=True)
+    ```
+
+=== "Async"
+
+    ```python
+    # clica em um ponto deslocado do centro do elemento (pixels)
+    await element.click(x_offset=10, y_offset=5)
+
+    # mantém o botão pressionado por mais tempo antes de soltar (segundos)
+    await element.click(hold_time=0.3)
+
+    # humanizado: caminho curvo do cursor até o elemento, depois clique
+    await element.click(humanize=True)
+    ```
 
 !!! note "Clique em elemento vs coordenadas brutas"
     Prefira `element.click()`. Ele encontra a posição do elemento para você e sobrevive a mudanças de layout. Recorra à API de coordenadas abaixo apenas quando não há elemento a mirar, como clicar dentro de um `<canvas>` ou arrastar um controle por pixel.
@@ -49,37 +86,70 @@ await element.click(humanize=True)
 
 `tab.mouse` clica, move e arrasta em coordenadas explícitas em pixels CSS, medidas a partir do canto superior esquerdo da página. Você geralmente obtém essas coordenadas a partir dos limites de um elemento (veja [Arrastar um slider](#drag-a-slider)).
 
-```python
-import asyncio
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
-from pydoll.protocol.input.types import MouseButton
+    ```python
+    from pydoll.sync import Chrome
+    from pydoll.protocol.input.types import MouseButton
+
+    def main():
+        with Chrome() as browser:
+            tab = browser.start()
+            tab.go_to('https://the-internet.herokuapp.com/')
+
+            tab.mouse.move(500, 300)                        # move o cursor
+            tab.mouse.click(500, 300)                       # clique esquerdo
+            tab.mouse.click(500, 300, button=MouseButton.RIGHT)  # clique direito
+            tab.mouse.double_click(500, 300)               # clique duplo
+            tab.mouse.drag(100, 200, 500, 400)             # pressiona, move, solta
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+
+    from pydoll.browser.chromium import Chrome
+    from pydoll.protocol.input.types import MouseButton
 
 
-async def main():
-    async with Chrome() as browser:
-        tab = await browser.start()
-        await tab.go_to('https://the-internet.herokuapp.com/')
+    async def main():
+        async with Chrome() as browser:
+            tab = await browser.start()
+            await tab.go_to('https://the-internet.herokuapp.com/')
 
-        await tab.mouse.move(500, 300)                        # move o cursor
-        await tab.mouse.click(500, 300)                       # clique esquerdo
-        await tab.mouse.click(500, 300, button=MouseButton.RIGHT)  # clique direito
-        await tab.mouse.double_click(500, 300)               # clique duplo
-        await tab.mouse.drag(100, 200, 500, 400)             # pressiona, move, solta
+            await tab.mouse.move(500, 300)                        # move o cursor
+            await tab.mouse.click(500, 300)                       # clique esquerdo
+            await tab.mouse.click(500, 300, button=MouseButton.RIGHT)  # clique direito
+            await tab.mouse.double_click(500, 300)               # clique duplo
+            await tab.mouse.drag(100, 200, 500, 400)             # pressiona, move, solta
 
-asyncio.run(main())
-```
+    asyncio.run(main())
+    ```
 
 O `MouseButton` (de `pydoll.protocol.input.types`) tem `LEFT`, `MIDDLE` e `RIGHT`. O `click()` também recebe `click_count` (passe `2` para um clique duplo) e todo método recebe o `humanize` (apenas por palavra-chave).
 
 Para pressionar e soltar separadamente, `down()` e `up()` operam na posição atual do cursor:
 
-```python
-await tab.mouse.move(300, 400)
-await tab.mouse.down(button=MouseButton.LEFT)
-await tab.mouse.move(600, 400)     # arraste manualmente
-await tab.mouse.up(button=MouseButton.LEFT)
-```
+=== "Sync"
+
+    ```python
+    tab.mouse.move(300, 400)
+    tab.mouse.down(button=MouseButton.LEFT)
+    tab.mouse.move(600, 400)     # arraste manualmente
+    tab.mouse.up(button=MouseButton.LEFT)
+    ```
+
+=== "Async"
+
+    ```python
+    await tab.mouse.move(300, 400)
+    await tab.mouse.down(button=MouseButton.LEFT)
+    await tab.mouse.move(600, 400)     # arraste manualmente
+    await tab.mouse.up(button=MouseButton.LEFT)
+    ```
 
 O `tab.mouse` rastreia a posição do cursor entre chamadas, então `down()`/`up()` agem onde quer que o último `move()` ou `click()` tenha deixado.
 
@@ -87,11 +157,21 @@ O `tab.mouse` rastreia a posição do cursor entre chamadas, então `down()`/`up
 
 Por padrão, um movimento ou clique salta direto para o alvo, o que é um indício comportamental. Passe `humanize=True` e o Pydoll move o cursor por um caminho curvo com tempo humano (uma duração baseada na Lei de Fitts, um perfil de velocidade em forma de sino, um pequeno tremor, e ocasional ultrapassagem com correção):
 
-```python
-await tab.mouse.move(500, 300, humanize=True)
-await tab.mouse.click(500, 300, humanize=True)
-await tab.mouse.drag(100, 200, 500, 400, humanize=True)
-```
+=== "Sync"
+
+    ```python
+    tab.mouse.move(500, 300, humanize=True)
+    tab.mouse.click(500, 300, humanize=True)
+    tab.mouse.drag(100, 200, 500, 400, humanize=True)
+    ```
+
+=== "Async"
+
+    ```python
+    await tab.mouse.move(500, 300, humanize=True)
+    await tab.mouse.click(500, 300, humanize=True)
+    await tab.mouse.drag(100, 200, 500, 400, humanize=True)
+    ```
 
 <p align="center">
   <img src="/docs/resources/images/gif-humanized-cursor-path.gif" alt="Cursor humanizado percorrendo dois caminhos curvos" width="760" />
@@ -100,15 +180,29 @@ await tab.mouse.drag(100, 200, 500, 400, humanize=True)
 
 Cliques humanizados em elementos funcionam da mesma forma. Como a posição é rastreada, clicar no elemento A e depois no elemento B traça uma curva natural de um para o outro:
 
-```python
-# instantâneo: o cursor salta direto para cada alvo
-await (await tab.find(id='first')).click()
-await (await tab.find(id='second')).click()
+=== "Sync"
 
-# humanizado: o cursor curva naturalmente de um alvo para o próximo
-await (await tab.find(id='first')).click(humanize=True)
-await (await tab.find(id='second')).click(humanize=True)
-```
+    ```python
+    # instantâneo: o cursor salta direto para cada alvo
+    (tab.find(id='first')).click()
+    (tab.find(id='second')).click()
+
+    # humanizado: o cursor curva naturalmente de um alvo para o próximo
+    (tab.find(id='first')).click(humanize=True)
+    (tab.find(id='second')).click(humanize=True)
+    ```
+
+=== "Async"
+
+    ```python
+    # instantâneo: o cursor salta direto para cada alvo
+    await (await tab.find(id='first')).click()
+    await (await tab.find(id='second')).click()
+
+    # humanizado: o cursor curva naturalmente de um alvo para o próximo
+    await (await tab.find(id='first')).click(humanize=True)
+    await (await tab.find(id='second')).click(humanize=True)
+    ```
 
 Veja [Interações humanizadas](../stealth/human-like-interactions.md) para o modelo completo de tempo e quando a humanização importa.
 
@@ -136,11 +230,21 @@ Todo campo tem um valor padrão, então sobrescreva apenas o que precisar. Veja 
 
 Defina `tab.mouse.debug = True` e o Pydoll desenha o caminho do cursor sobre uma sobreposição transparente: pontos azuis traçam o movimento, pontos vermelhos marcam os cliques. Use para verificar se os caminhos humanizados parecem naturais, depois desligue.
 
-```python
-tab.mouse.debug = True
-await tab.mouse.click(500, 300, humanize=True)
-tab.mouse.debug = False
-```
+=== "Sync"
+
+    ```python
+    tab.mouse.debug = True
+    tab.mouse.click(500, 300, humanize=True)
+    tab.mouse.debug = False
+    ```
+
+=== "Async"
+
+    ```python
+    tab.mouse.debug = True
+    await tab.mouse.click(500, 300, humanize=True)
+    tab.mouse.debug = False
+    ```
 
 ## Exemplos práticos
 
@@ -148,15 +252,29 @@ tab.mouse.debug = False
 
 Leia a posição do controle a partir dos seus limites, depois arraste de lá:
 
-```python
-slider = await tab.query('.slider-handle')
-bounds = await slider.get_bounds_using_js()   # {'x', 'y', 'width', 'height'}, pixels do viewport
+=== "Sync"
 
-start_x = bounds['x'] + bounds['width'] / 2
-start_y = bounds['y'] + bounds['height'] / 2
+    ```python
+    slider = tab.query('.slider-handle')
+    bounds = slider.get_bounds_using_js()   # {'x', 'y', 'width', 'height'}, pixels do viewport
 
-await tab.mouse.drag(start_x, start_y, start_x + 200, start_y, humanize=True)
-```
+    start_x = bounds['x'] + bounds['width'] / 2
+    start_y = bounds['y'] + bounds['height'] / 2
+
+    tab.mouse.drag(start_x, start_y, start_x + 200, start_y, humanize=True)
+    ```
+
+=== "Async"
+
+    ```python
+    slider = await tab.query('.slider-handle')
+    bounds = await slider.get_bounds_using_js()   # {'x', 'y', 'width', 'height'}, pixels do viewport
+
+    start_x = bounds['x'] + bounds['width'] / 2
+    start_y = bounds['y'] + bounds['height'] / 2
+
+    await tab.mouse.drag(start_x, start_y, start_x + 200, start_y, humanize=True)
+    ```
 
 <p align="center">
   <img src="/docs/resources/images/gif-humanized-slider-drag.gif" alt="Handle do slider arrastado por um caminho humanizado" width="760" />
@@ -167,16 +285,31 @@ await tab.mouse.drag(start_x, start_y, start_x + 200, start_y, humanize=True)
 
 Mova o cursor até um elemento para acionar seu estado CSS `:hover`, sem clicar:
 
-```python
-trigger = await tab.query('.dropdown-trigger')
-bounds = await trigger.get_bounds_using_js()
+=== "Sync"
 
-await tab.mouse.move(
-    bounds['x'] + bounds['width'] / 2,
-    bounds['y'] + bounds['height'] / 2,
-    humanize=True,
-)
-```
+    ```python
+    trigger = tab.query('.dropdown-trigger')
+    bounds = trigger.get_bounds_using_js()
+
+    tab.mouse.move(
+        bounds['x'] + bounds['width'] / 2,
+        bounds['y'] + bounds['height'] / 2,
+        humanize=True,
+    )
+    ```
+
+=== "Async"
+
+    ```python
+    trigger = await tab.query('.dropdown-trigger')
+    bounds = await trigger.get_bounds_using_js()
+
+    await tab.mouse.move(
+        bounds['x'] + bounds['width'] / 2,
+        bounds['y'] + bounds['height'] / 2,
+        humanize=True,
+    )
+    ```
 
 <p align="center">
   <img src="/docs/resources/images/gif-hover-menu.gif" alt="Cursor entrando no gatilho do menu e abrindo o dropdown" width="760" />

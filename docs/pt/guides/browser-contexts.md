@@ -6,25 +6,46 @@ Um contexto de navegador é uma sessão isolada dentro de um mesmo processo de n
 
 `create_browser_context()` retorna um id de contexto. Passe-o para `new_tab()` e essa aba vive no contexto isolado.
 
-```python
-import asyncio
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
+    ```python
+    from pydoll.sync import Chrome
+
+    def main():
+        with Chrome() as browser:
+            browser.start()
+
+            context_id = browser.create_browser_context()
+            tab = browser.new_tab('https://github.com', browser_context_id=context_id)
+
+            print(tab.title)
+
+            browser.delete_browser_context(context_id)
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+
+    from pydoll.browser.chromium import Chrome
 
 
-async def main():
-    async with Chrome() as browser:
-        await browser.start()
+    async def main():
+        async with Chrome() as browser:
+            await browser.start()
 
-        context_id = await browser.create_browser_context()
-        tab = await browser.new_tab('https://github.com', browser_context_id=context_id)
+            context_id = await browser.create_browser_context()
+            tab = await browser.new_tab('https://github.com', browser_context_id=context_id)
 
-        print(await tab.title)
+            print(await tab.title)
 
-        await browser.delete_browser_context(context_id)
+            await browser.delete_browser_context(context_id)
 
-asyncio.run(main())
-```
+    asyncio.run(main())
+    ```
 
 A aba que você obtém de `browser.start()` vive no **contexto padrão** permanente. Qualquer aba que você abrir sem um `browser_context_id` também entra nele.
 
@@ -32,18 +53,35 @@ A aba que você obtém de `browser.start()` vive no **contexto padrão** permane
 
 O armazenamento definido em um contexto é invisível para outro. Aqui duas abas escrevem a mesma chave e leem valores diferentes de volta:
 
-```python
-await tab_a.go_to('https://the-internet.herokuapp.com')
-await tab_b.go_to('https://the-internet.herokuapp.com')
+=== "Sync"
 
-await tab_a.execute_script("localStorage.setItem('user', 'Alice')")
-await tab_b.execute_script("localStorage.setItem('user', 'Bob')")
+    ```python
+    tab_a.go_to('https://the-internet.herokuapp.com')
+    tab_b.go_to('https://the-internet.herokuapp.com')
 
-a = await tab_a.execute_script("return localStorage.getItem('user')", return_by_value=True)
-b = await tab_b.execute_script("return localStorage.getItem('user')", return_by_value=True)
-print(a['result']['result']['value'])  # Alice
-print(b['result']['result']['value'])  # Bob
-```
+    tab_a.execute_script("localStorage.setItem('user', 'Alice')")
+    tab_b.execute_script("localStorage.setItem('user', 'Bob')")
+
+    a = tab_a.execute_script("return localStorage.getItem('user')", return_by_value=True)
+    b = tab_b.execute_script("return localStorage.getItem('user')", return_by_value=True)
+    print(a['result']['result']['value'])  # Alice
+    print(b['result']['result']['value'])  # Bob
+    ```
+
+=== "Async"
+
+    ```python
+    await tab_a.go_to('https://the-internet.herokuapp.com')
+    await tab_b.go_to('https://the-internet.herokuapp.com')
+
+    await tab_a.execute_script("localStorage.setItem('user', 'Alice')")
+    await tab_b.execute_script("localStorage.setItem('user', 'Bob')")
+
+    a = await tab_a.execute_script("return localStorage.getItem('user')", return_by_value=True)
+    b = await tab_b.execute_script("return localStorage.getItem('user')", return_by_value=True)
+    print(a['result']['result']['value'])  # Alice
+    print(b['result']['result']['value'])  # Bob
+    ```
 
 Cookies, `localStorage`, `sessionStorage`, IndexedDB, cache e permissões são todos separados por contexto, então um login em um contexto não te autentica em nenhum outro lugar.
 
@@ -63,59 +101,116 @@ Faça login em cada contexto: o cookie cai apenas no pote daquele contexto. Nada
 
 ## Rodar várias sessões lado a lado
 
-Dê a cada conta seu próprio contexto e elas permanecem logadas de forma independente. Como as esperas se sobrepõem, `asyncio.gather` as executa de uma vez.
+Dê a cada conta seu próprio contexto e elas permanecem logadas de forma independente. Abra todas ao mesmo tempo para que as esperas se sobreponham: um pool de threads na API síncrona, `asyncio.gather` na API assíncrona.
 
-```python
-import asyncio
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
+    ```python
+    from concurrent.futures import ThreadPoolExecutor
 
-
-async def open_session(browser, label):
-    context_id = await browser.create_browser_context()
-    tab = await browser.new_tab('https://the-internet.herokuapp.com', browser_context_id=context_id)
-    await tab.execute_script(f"localStorage.setItem('account', '{label}')")
-    return context_id, tab, label
+    from pydoll.sync import Chrome
 
 
-async def main():
-    async with Chrome() as browser:
-        await browser.start()
+    def open_session(browser, label):
+        context_id = browser.create_browser_context()
+        tab = browser.new_tab('https://the-internet.herokuapp.com', browser_context_id=context_id)
+        tab.execute_script(f"localStorage.setItem('account', '{label}')")
+        return context_id, tab, label
 
-        sessions = await asyncio.gather(
-            open_session(browser, 'account-1'),
-            open_session(browser, 'account-2'),
-            open_session(browser, 'account-3'),
-        )
 
-        for context_id, tab, label in sessions:
-            result = await tab.execute_script(
-                "return localStorage.getItem('account')", return_by_value=True
+    def main():
+        with Chrome() as browser:
+            browser.start()
+
+            with ThreadPoolExecutor() as pool:
+                futures = [
+                    pool.submit(open_session, browser, label)
+                    for label in ('account-1', 'account-2', 'account-3')
+                ]
+                sessions = [future.result() for future in futures]
+
+            for context_id, tab, label in sessions:
+                result = tab.execute_script(
+                    "return localStorage.getItem('account')", return_by_value=True
+                )
+                active = result['result']['result']['value']
+                print(f'{label}: {active}')
+                browser.delete_browser_context(context_id)
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+
+    from pydoll.browser.chromium import Chrome
+
+
+    async def open_session(browser, label):
+        context_id = await browser.create_browser_context()
+        tab = await browser.new_tab('https://the-internet.herokuapp.com', browser_context_id=context_id)
+        await tab.execute_script(f"localStorage.setItem('account', '{label}')")
+        return context_id, tab, label
+
+
+    async def main():
+        async with Chrome() as browser:
+            await browser.start()
+
+            sessions = await asyncio.gather(
+                open_session(browser, 'account-1'),
+                open_session(browser, 'account-2'),
+                open_session(browser, 'account-3'),
             )
-            active = result['result']['result']['value']
-            print(f'{label}: {active}')
-            await browser.delete_browser_context(context_id)
 
-asyncio.run(main())
-```
+            for context_id, tab, label in sessions:
+                result = await tab.execute_script(
+                    "return localStorage.getItem('account')", return_by_value=True
+                )
+                active = result['result']['result']['value']
+                print(f'{label}: {active}')
+                await browser.delete_browser_context(context_id)
+
+    asyncio.run(main())
+    ```
 
 ## Dar a um contexto seus próprios cookies
 
 Os métodos de cookies em nível de navegador recebem um `browser_context_id`, então você pode semear ou ler os cookies de um contexto sem navegar em uma aba. Cookies definidos em um contexto nunca aparecem em outro.
 
-```python
-from pydoll.protocol.network.types import CookieParam
+=== "Sync"
 
-context_id = await browser.create_browser_context()
+    ```python
+    from pydoll.protocol.network.types import CookieParam
 
-await browser.set_cookies(
-    [CookieParam(name='session', value='abc123', domain='httpbin.org')],
-    browser_context_id=context_id,
-)
+    context_id = browser.create_browser_context()
 
-in_context = await browser.get_cookies(browser_context_id=context_id)
-in_default = await browser.get_cookies()   # não inclui o cookie acima
-```
+    browser.set_cookies(
+        [CookieParam(name='session', value='abc123', domain='httpbin.org')],
+        browser_context_id=context_id,
+    )
+
+    in_context = browser.get_cookies(browser_context_id=context_id)
+    in_default = browser.get_cookies()   # não inclui o cookie acima
+    ```
+
+=== "Async"
+
+    ```python
+    from pydoll.protocol.network.types import CookieParam
+
+    context_id = await browser.create_browser_context()
+
+    await browser.set_cookies(
+        [CookieParam(name='session', value='abc123', domain='httpbin.org')],
+        browser_context_id=context_id,
+    )
+
+    in_context = await browser.get_cookies(browser_context_id=context_id)
+    in_default = await browser.get_cookies()   # não inclui o cookie acima
+    ```
 
 Veja [Cookies e sessões](cookies-and-sessions.md) para ler, escrever e limpar cookies em profundidade.
 
@@ -123,13 +218,25 @@ Veja [Cookies e sessões](cookies-and-sessions.md) para ler, escrever e limpar c
 
 Passe `proxy_server` ao criar o contexto e toda requisição das abas dele passa por esse proxy. É assim que você roda diferentes geografias ao mesmo tempo.
 
-```python
-us = await browser.create_browser_context(proxy_server='http://us-proxy.example:8080')
-eu = await browser.create_browser_context(proxy_server='http://eu-proxy.example:8080')
+=== "Sync"
 
-us_tab = await browser.new_tab('https://api.ipify.org', browser_context_id=us)
-eu_tab = await browser.new_tab('https://api.ipify.org', browser_context_id=eu)
-```
+    ```python
+    us = browser.create_browser_context(proxy_server='http://us-proxy.example:8080')
+    eu = browser.create_browser_context(proxy_server='http://eu-proxy.example:8080')
+
+    us_tab = browser.new_tab('https://api.ipify.org', browser_context_id=us)
+    eu_tab = browser.new_tab('https://api.ipify.org', browser_context_id=eu)
+    ```
+
+=== "Async"
+
+    ```python
+    us = await browser.create_browser_context(proxy_server='http://us-proxy.example:8080')
+    eu = await browser.create_browser_context(proxy_server='http://eu-proxy.example:8080')
+
+    us_tab = await browser.new_tab('https://api.ipify.org', browser_context_id=us)
+    eu_tab = await browser.new_tab('https://api.ipify.org', browser_context_id=eu)
+    ```
 
 Credenciais na URL do proxy (`http://user:pass@host:port`) são tratadas para você: elas são removidas dos comandos CDP e fornecidas apenas quando o proxy exige autenticação. Veja [Proxies](proxies.md) para o panorama completo, e [Injeção de fingerprint](../stealth/fingerprint-injection.md) para manter uma identidade por contexto.
 
@@ -137,9 +244,17 @@ Credenciais na URL do proxy (`http://user:pass@host:port`) são tratadas para vo
 
 `delete_browser_context()` remove um contexto e fecha todas as abas nele, o que é uma forma rápida de derrubar uma sessão inteira de uma vez.
 
-```python
-await browser.delete_browser_context(context_id)
-```
+=== "Sync"
+
+    ```python
+    browser.delete_browser_context(context_id)
+    ```
+
+=== "Async"
+
+    ```python
+    await browser.delete_browser_context(context_id)
+    ```
 
 !!! warning "Deletar um contexto fecha suas abas"
     Toda aba no contexto é fechada quando você o deleta, então leia antes qualquer coisa que ainda precise. O contexto padrão é permanente e não pode ser deletado; ele fecha quando o navegador para.

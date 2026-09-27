@@ -8,31 +8,59 @@ Pydoll 让你可以观察页面发起的每一个请求、读取响应体、检�
 
 在导航之前启用网络事件，然后注册一个 callback。页面每发起一个请求，Pydoll 就会调用它。
 
-```python
-import asyncio
-from functools import partial
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
-from pydoll.protocol.network.events import NetworkEvent
+    ```python
+    import time
+    from functools import partial
+
+    from pydoll.sync import Chrome
+    from pydoll.protocol.network.events import NetworkEvent
+
+    def on_request(tab, event):
+        request = event['params']['request']
+        print(f"{request['method']} {request['url']}")
+
+    def main():
+        with Chrome() as browser:
+            tab = browser.start()
+
+            tab.enable_network_events()
+            tab.on(NetworkEvent.REQUEST_WILL_BE_SENT, partial(on_request, tab))
+
+            tab.go_to('https://news.ycombinator.com')
+            time.sleep(3)
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+    from functools import partial
+
+    from pydoll.browser.chromium import Chrome
+    from pydoll.protocol.network.events import NetworkEvent
 
 
-async def on_request(tab, event):
-    request = event['params']['request']
-    print(f"{request['method']} {request['url']}")
+    async def on_request(tab, event):
+        request = event['params']['request']
+        print(f"{request['method']} {request['url']}")
 
 
-async def main():
-    async with Chrome() as browser:
-        tab = await browser.start()
+    async def main():
+        async with Chrome() as browser:
+            tab = await browser.start()
 
-        await tab.enable_network_events()
-        await tab.on(NetworkEvent.REQUEST_WILL_BE_SENT, partial(on_request, tab))
+            await tab.enable_network_events()
+            await tab.on(NetworkEvent.REQUEST_WILL_BE_SENT, partial(on_request, tab))
 
-        await tab.go_to('https://news.ycombinator.com')
-        await asyncio.sleep(3)
+            await tab.go_to('https://news.ycombinator.com')
+            await asyncio.sleep(3)
 
-asyncio.run(main())
-```
+    asyncio.run(main())
+    ```
 
 要在导航**之前**启用该域；在启用之前发起的请求不会被捕获。
 
@@ -44,29 +72,55 @@ asyncio.run(main())
 
 响应体并不在事件里；一旦响应到达，你需要通过请求 id 去获取它。先匹配你关心的那个请求，然后调用 `get_network_response_body`。
 
-```python
-import asyncio
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
+    ```python
+    import time
+    from pydoll.sync import Chrome
+
+    def main():
+        with Chrome() as browser:
+            tab = browser.start()
+            tab.enable_network_events()
+
+            tab.go_to('https://httpbin.org/json')
+            time.sleep(2)
+
+            for log in tab.get_network_logs():
+                request_id = log['params']['requestId']
+                url = log['params']['request']['url']
+                if url.endswith('/json'):
+                    body = tab.get_network_response_body(request_id)
+                    print(body)
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+
+    from pydoll.browser.chromium import Chrome
 
 
-async def main():
-    async with Chrome() as browser:
-        tab = await browser.start()
-        await tab.enable_network_events()
+    async def main():
+        async with Chrome() as browser:
+            tab = await browser.start()
+            await tab.enable_network_events()
 
-        await tab.go_to('https://httpbin.org/json')
-        await asyncio.sleep(2)
+            await tab.go_to('https://httpbin.org/json')
+            await asyncio.sleep(2)
 
-        for log in await tab.get_network_logs():
-            request_id = log['params']['requestId']
-            url = log['params']['request']['url']
-            if url.endswith('/json'):
-                body = await tab.get_network_response_body(request_id)
-                print(body)
+            for log in await tab.get_network_logs():
+                request_id = log['params']['requestId']
+                url = log['params']['request']['url']
+                if url.endswith('/json'):
+                    body = await tab.get_network_response_body(request_id)
+                    print(body)
 
-asyncio.run(main())
-```
+    asyncio.run(main())
+    ```
 
 !!! note "响应体仅在响应到达后才存在"
     响应体在请求完成后才可用。重定向和某些资源类型（例如图片）可能没有可读的响应体，所以当你遍历大量请求时，把这个调用包在 `try`/`except` 里。
@@ -75,64 +129,125 @@ asyncio.run(main())
 
 如果你不需要实时 callback，可以让 Pydoll 收集这些请求，之后再用 `get_network_logs` 读取。传入 `filter` 可以只保留包含某个子串的 URL。
 
-```python
-await tab.go_to('https://github.com')
-await asyncio.sleep(3)
+=== "Sync"
 
-all_requests = await tab.get_network_logs()
-api_requests = await tab.get_network_logs(filter='api.github.com')
+    ```python
+    import time
+    tab.go_to('https://github.com')
+    time.sleep(3)
 
-print(f'{len(all_requests)} requests, {len(api_requests)} to the API')
+    all_requests = tab.get_network_logs()
+    api_requests = tab.get_network_logs(filter='api.github.com')
 
-for log in api_requests:
-    print(log['params']['request']['url'])
-```
+    print(f'{len(all_requests)} requests, {len(api_requests)} to the API')
+
+    for log in api_requests:
+        print(log['params']['request']['url'])
+    ```
+
+=== "Async"
+
+    ```python
+    await tab.go_to('https://github.com')
+    await asyncio.sleep(3)
+
+    all_requests = await tab.get_network_logs()
+    api_requests = await tab.get_network_logs(filter='api.github.com')
+
+    print(f'{len(all_requests)} requests, {len(api_requests)} to the API')
+
+    for log in api_requests:
+        print(log['params']['request']['url'])
+    ```
 
 ## 对响应和失败作出反应
 
 订阅响应可以检查状态码，订阅失败可以捕捉那些从未完成的请求。响应的 URL 和状态位于 `event['params']['response']` 之下；失败的原因在 `event['params']['errorText']` 中。
 
-```python
-import asyncio
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
-from pydoll.protocol.network.events import NetworkEvent
+    ```python
+    import time
+    from pydoll.sync import Chrome
+    from pydoll.protocol.network.events import NetworkEvent
+
+    def on_response(event):
+        response = event['params']['response']
+        print(f"{response['status']} {response['url']}")
+
+    def on_failed(event):
+        print(f"failed: {event['params']['errorText']}")
+
+    def main():
+        with Chrome() as browser:
+            tab = browser.start()
+
+            tab.enable_network_events()
+            tab.on(NetworkEvent.RESPONSE_RECEIVED, on_response)
+            tab.on(NetworkEvent.LOADING_FAILED, on_failed)
+
+            tab.go_to('https://news.ycombinator.com')
+            time.sleep(3)
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+
+    from pydoll.browser.chromium import Chrome
+    from pydoll.protocol.network.events import NetworkEvent
 
 
-async def on_response(event):
-    response = event['params']['response']
-    print(f"{response['status']} {response['url']}")
+    async def on_response(event):
+        response = event['params']['response']
+        print(f"{response['status']} {response['url']}")
 
 
-async def on_failed(event):
-    print(f"failed: {event['params']['errorText']}")
+    async def on_failed(event):
+        print(f"failed: {event['params']['errorText']}")
 
 
-async def main():
-    async with Chrome() as browser:
-        tab = await browser.start()
+    async def main():
+        async with Chrome() as browser:
+            tab = await browser.start()
 
-        await tab.enable_network_events()
-        await tab.on(NetworkEvent.RESPONSE_RECEIVED, on_response)
-        await tab.on(NetworkEvent.LOADING_FAILED, on_failed)
+            await tab.enable_network_events()
+            await tab.on(NetworkEvent.RESPONSE_RECEIVED, on_response)
+            await tab.on(NetworkEvent.LOADING_FAILED, on_failed)
 
-        await tab.go_to('https://news.ycombinator.com')
-        await asyncio.sleep(3)
+            await tab.go_to('https://news.ycombinator.com')
+            await asyncio.sleep(3)
 
-asyncio.run(main())
-```
+    asyncio.run(main())
+    ```
 
 ## 仅在需要时启用
 
 在繁忙的页面上，网络事件会增加开销，所以只在自动化中真正需要它的那段代码前后启用，用完之后再禁用：
 
-```python
-await tab.enable_network_events()
-await tab.go_to('https://github.com')
-await asyncio.sleep(3)
-logs = await tab.get_network_logs()
-await tab.disable_network_events()
-```
+=== "Sync"
+
+    ```python
+    import time
+    tab.enable_network_events()
+    tab.go_to('https://github.com')
+    time.sleep(3)
+    logs = tab.get_network_logs()
+    tab.disable_network_events()
+    ```
+
+=== "Async"
+
+    ```python
+    await tab.enable_network_events()
+    await tab.go_to('https://github.com')
+    await asyncio.sleep(3)
+    logs = await tab.get_network_logs()
+    await tab.disable_network_events()
+    ```
 
 ## 下一步
 

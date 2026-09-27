@@ -20,13 +20,25 @@ Start with [Evasion techniques](evasion-techniques.md) for the levers you contro
 
 Instant clicks in the exact center of an element and keystrokes every 50ms are behavioral fingerprints. Pass `humanize=True` and Pydoll moves the cursor along a curved path with human timing before clicking, and types with variable rhythm and occasional corrected typos:
 
-```python
-search_box = await tab.find(id='search')
-await search_box.type_text('browser automation', humanize=True)
+=== "Sync"
 
-submit = await tab.find(tag_name='button', type='submit')
-await submit.click(humanize=True)
-```
+    ```python
+    search_box = tab.find(id='search')
+    search_box.type_text('browser automation', humanize=True)
+
+    submit = tab.find(tag_name='button', type='submit')
+    submit.click(humanize=True)
+    ```
+
+=== "Async"
+
+    ```python
+    search_box = await tab.find(id='search')
+    await search_box.type_text('browser automation', humanize=True)
+
+    submit = await tab.find(tag_name='button', type='submit')
+    await submit.click(humanize=True)
+    ```
 
 Humanization is opt-in per interaction, so you keep it where behavior is watched and skip it where speed matters. [Human-like interactions](human-like-interactions.md) explains the timing model and how to tune it.
 
@@ -34,12 +46,23 @@ Humanization is opt-in per interaction, so you keep it where behavior is watched
 
 When a protected page shows the Turnstile checkbox, Pydoll can detect and click it for you:
 
-```python
-async with tab.expect_and_bypass_cloudflare_captcha():
-    await tab.go_to('https://site-protected-by-cloudflare.com')
+=== "Sync"
 
-print('Challenge handled, page loaded.')
-```
+    ```python
+    with tab.expect_and_bypass_cloudflare_captcha():
+        tab.go_to('https://site-protected-by-cloudflare.com')
+
+    print('Challenge handled, page loaded.')
+    ```
+
+=== "Async"
+
+    ```python
+    async with tab.expect_and_bypass_cloudflare_captcha():
+        await tab.go_to('https://site-protected-by-cloudflare.com')
+
+    print('Challenge handled, page loaded.')
+    ```
 
 Clicking the widget is only part of it: whether Cloudflare accepts the click also depends on your IP reputation and how consistent the rest of your browser looks. If challenges keep failing, work through [Captcha bypass](captcha-bypass.md) and consider [a residential proxy](../guides/proxies.md).
 

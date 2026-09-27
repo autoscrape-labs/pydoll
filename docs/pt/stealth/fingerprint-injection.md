@@ -20,25 +20,48 @@ Um limite honesto de saída: isto é substituição de identidade, não anonimat
 
 Chame `apply_fingerprint()` antes da primeira navegação. Só os campos presentes no perfil são sobrescritos; o resto mantém os valores reais do navegador.
 
-```python
-import asyncio
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
+    ```python
+    import time
+    from pydoll.sync import Chrome
 
-from examples.fingerprints import FINGERPRINTS
+    from examples.fingerprints import FINGERPRINTS
 
-async def spoof_fingerprint():
-    async with Chrome() as browser:
-        tab = await browser.start()
+    def spoof_fingerprint():
+        with Chrome() as browser:
+            tab = browser.start()
 
-        # Aplique antes da primeira navegação.
-        await tab.apply_fingerprint(FINGERPRINTS['macos_m3_new_york'])
+            # Aplique antes da primeira navegação.
+            tab.apply_fingerprint(FINGERPRINTS['macos_m3_new_york'])
 
-        await tab.go_to('https://abrahamjuliot.github.io/creepjs/')
-        await asyncio.sleep(5)
+            tab.go_to('https://abrahamjuliot.github.io/creepjs/')
+            time.sleep(5)
 
-asyncio.run(spoof_fingerprint())
-```
+    spoof_fingerprint()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+
+    from pydoll.browser.chromium import Chrome
+
+    from examples.fingerprints import FINGERPRINTS
+
+    async def spoof_fingerprint():
+        async with Chrome() as browser:
+            tab = await browser.start()
+
+            # Aplique antes da primeira navegação.
+            await tab.apply_fingerprint(FINGERPRINTS['macos_m3_new_york'])
+
+            await tab.go_to('https://abrahamjuliot.github.io/creepjs/')
+            await asyncio.sleep(5)
+
+    asyncio.run(spoof_fingerprint())
+    ```
 
 !!! note "De onde vem `FINGERPRINTS`"
     O Pydoll não distribui perfis de fingerprint. `FINGERPRINTS` fica em `examples/fingerprints.py` no [repositório do pydoll](https://github.com/autoscrape-labs/pydoll), como perfis de referência para o formato `FingerprintConfig` (um typed dict de `pydoll.protocol.fingerprint.types`). Copie esse arquivo para o seu projeto e adapte cada perfil à sua máquina e ao seu IP. Um perfil reusado como está é uma assinatura compartilhada, não um disfarce.
@@ -75,10 +98,19 @@ O kernel e a renderização de texto do OS expõem o OS real em camadas que nenh
 
 O handshake TLS e o motor JavaScript reportam a versão real do binário; o User-Agent é a única parte que `apply_fingerprint()` muda. Leia a versão do binário e mantenha o major do perfil igual a ela, atualizando a cada upgrade do Chrome.
 
-```python
-version = await browser.get_version()
-print(version['product'])  # ex.: 'Chrome/152.0.7977.83'
-```
+=== "Sync"
+
+    ```python
+    version = browser.get_version()
+    print(version['product'])  # ex.: 'Chrome/152.0.7977.83'
+    ```
+
+=== "Async"
+
+    ```python
+    version = await browser.get_version()
+    print(version['product'])  # ex.: 'Chrome/152.0.7977.83'
+    ```
 
 ### Combine locale e fuso horário com o IP de saída
 
@@ -108,14 +140,27 @@ fingerprint = FingerprintConfig(
 
 Um browser context guarda uma identidade. Aplicar um segundo fingerprint, diferente, ao mesmo context levanta `FingerprintContextConflict`. Rode identidades diferentes em contexts separados.
 
-```python
-ctx_id = await browser.create_browser_context()
-tab_us = await browser.start()
-tab_br = await browser.new_tab(browser_context_id=ctx_id)
+=== "Sync"
 
-await tab_us.apply_fingerprint(FINGERPRINTS['windows11_rtx3060_nyc'])
-await tab_br.apply_fingerprint(FINGERPRINTS['android_s24_ultra_sao_paulo'])
-```
+    ```python
+    ctx_id = browser.create_browser_context()
+    tab_us = browser.start()
+    tab_br = browser.new_tab(browser_context_id=ctx_id)
+
+    tab_us.apply_fingerprint(FINGERPRINTS['windows11_rtx3060_nyc'])
+    tab_br.apply_fingerprint(FINGERPRINTS['android_s24_ultra_sao_paulo'])
+    ```
+
+=== "Async"
+
+    ```python
+    ctx_id = await browser.create_browser_context()
+    tab_us = await browser.start()
+    tab_br = await browser.new_tab(browser_context_id=ctx_id)
+
+    await tab_us.apply_fingerprint(FINGERPRINTS['windows11_rtx3060_nyc'])
+    await tab_br.apply_fingerprint(FINGERPRINTS['android_s24_ultra_sao_paulo'])
+    ```
 
 Veja [Browser contexts](../guides/browser-contexts.md).
 

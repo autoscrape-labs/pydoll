@@ -6,7 +6,7 @@ Three things change no matter which tool you come from:
 
 - **No webdriver or bundled browser.** Pydoll drives the Chrome or Edge already on your machine over the DevTools Protocol. There is no `chromedriver` to install or version-match.
 - **No explicit waits.** `find()` and `query()` wait for the element themselves, so the `WebDriverWait` and `expected_conditions` dance goes away.
-- **Async by default.** Every call is `await`ed inside an `async def`, started with `asyncio.run()`. New to that? See [Async Python in practice](basics/async-python.md).
+- **Sync or async, your choice.** Import from `pydoll.sync` for blocking calls, or `await` the same API from `pydoll.browser.chromium`. The tables below show the async form; for the sync form drop `await` and use `with` instead of `async with`. New to async? See [Async Python in practice](basics/async-python.md).
 
 ## From Selenium
 
@@ -47,26 +47,49 @@ WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.LINK_TEXT, 'Lo
 driver.quit()
 ```
 
-```python
-# Pydoll
-import asyncio
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
+    ```python
+    # Pydoll
+
+    from pydoll.sync import Chrome
+
+    def main():
+        with Chrome() as browser:
+            tab = browser.start()
+            tab.go_to('https://quotes.toscrape.com/login')
+
+            (tab.find(id='username')).type_text('tester')
+            (tab.find(id='password')).type_text('secret')
+            (tab.find(tag_name='input', type='submit')).click()
+
+            tab.find(text='Logout', timeout=5)
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    # Pydoll
+    import asyncio
+
+    from pydoll.browser.chromium import Chrome
 
 
-async def main():
-    async with Chrome() as browser:
-        tab = await browser.start()
-        await tab.go_to('https://quotes.toscrape.com/login')
+    async def main():
+        async with Chrome() as browser:
+            tab = await browser.start()
+            await tab.go_to('https://quotes.toscrape.com/login')
 
-        await (await tab.find(id='username')).type_text('tester')
-        await (await tab.find(id='password')).type_text('secret')
-        await (await tab.find(tag_name='input', type='submit')).click()
+            await (await tab.find(id='username')).type_text('tester')
+            await (await tab.find(id='password')).type_text('secret')
+            await (await tab.find(tag_name='input', type='submit')).click()
 
-        await tab.find(text='Logout', timeout=5)
+            await tab.find(text='Logout', timeout=5)
 
-asyncio.run(main())
-```
+    asyncio.run(main())
+    ```
 
 !!! note "`get_attribute` is synchronous"
     Unlike Selenium, where everything on the element is a network round-trip, Pydoll reads attributes from the element it already located, so `get_attribute()` is a plain method with no `await`. Text is still awaited (`await el.text`).
@@ -94,36 +117,73 @@ Both are async and both auto-wait, so migration is mostly renaming. The main con
 - A Playwright **locator** is lazy: it re-resolves the element every time you act on it.
 - A Pydoll `find()` / `query()` returns a **`WebElement`** resolved once, then and there. Call `find()` again if the page replaced the element.
 
-```python
-# Playwright
-from playwright.async_api import async_playwright
+=== "Sync"
 
-async with async_playwright() as p:
-    browser = await p.chromium.launch()
-    page = await browser.new_page()
-    await page.goto('https://quotes.toscrape.com')
-    quote = await page.locator('.quote .text').first.text_content()
-    print(quote)
-    await browser.close()
-```
+    ```python
+    # Playwright
+    from playwright.async_api import async_playwright
 
-```python
-# Pydoll
-import asyncio
+    with async_playwright() as p:
+        browser = p.chromium.launch()
+        page = browser.new_page()
+        page.goto('https://quotes.toscrape.com')
+        quote = page.locator('.quote .text').first.text_content()
+        print(quote)
+        browser.close()
+    ```
 
-from pydoll.browser.chromium import Chrome
+=== "Async"
+
+    ```python
+    # Playwright
+    from playwright.async_api import async_playwright
+
+    async with async_playwright() as p:
+        browser = await p.chromium.launch()
+        page = await browser.new_page()
+        await page.goto('https://quotes.toscrape.com')
+        quote = await page.locator('.quote .text').first.text_content()
+        print(quote)
+        await browser.close()
+    ```
+
+=== "Sync"
+
+    ```python
+    # Pydoll
+
+    from pydoll.sync import Chrome
+
+    def main():
+        with Chrome() as browser:
+            tab = browser.start()
+            tab.go_to('https://quotes.toscrape.com')
+
+            quote = tab.query('.quote .text')
+            print(quote.text)
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    # Pydoll
+    import asyncio
+
+    from pydoll.browser.chromium import Chrome
 
 
-async def main():
-    async with Chrome() as browser:
-        tab = await browser.start()
-        await tab.go_to('https://quotes.toscrape.com')
+    async def main():
+        async with Chrome() as browser:
+            tab = await browser.start()
+            await tab.go_to('https://quotes.toscrape.com')
 
-        quote = await tab.query('.quote .text')
-        print(await quote.text)
+            quote = await tab.query('.quote .text')
+            print(await quote.text)
 
-asyncio.run(main())
-```
+    asyncio.run(main())
+    ```
 
 !!! tip "Behavior you keep from Playwright, and one you gain"
     Auto-waiting and async carry over directly. What Pydoll adds is `humanize=True` on clicks and typing, which moves the cursor along a curved path and types with variable timing. See [Human-like interactions](stealth/human-like-interactions.md).

@@ -265,7 +265,7 @@ with Chrome() as browser:
     print(tab.query('.quote .text').text)
 ```
 
-See the [Synchronous API guide](https://pydoll.tech/docs/guides/sync-api/).
+See [Sync and async](https://pydoll.tech/docs/guides/core-concepts/#sync-and-async) in the docs.
 
 ## Features
 

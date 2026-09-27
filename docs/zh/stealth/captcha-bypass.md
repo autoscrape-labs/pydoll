@@ -8,24 +8,44 @@ Pydoll 可以帮你点击 Cloudflare Turnstile 的复选框，就和真人在这
 
 这个上下文管理器会在代码块执行期间等待 Turnstile 控件出现，点击它的复选框，并在完成操作后让你的代码继续运行。把触发挑战的导航放进这个代码块里。
 
-```python
-import asyncio
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
+    ```python
+    from pydoll.sync import Chrome
+
+    def main():
+        with Chrome() as browser:
+            tab = browser.start()
+
+            with tab.expect_and_bypass_cloudflare_captcha():
+                tab.go_to('https://a-site-behind-turnstile.com')
+
+            content = tab.find(id='protected-content', timeout=10, raise_exc=False)
+            print(content.text if content else 'Still challenged.')
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+
+    from pydoll.browser.chromium import Chrome
 
 
-async def main():
-    async with Chrome() as browser:
-        tab = await browser.start()
+    async def main():
+        async with Chrome() as browser:
+            tab = await browser.start()
 
-        async with tab.expect_and_bypass_cloudflare_captcha():
-            await tab.go_to('https://a-site-behind-turnstile.com')
+            async with tab.expect_and_bypass_cloudflare_captcha():
+                await tab.go_to('https://a-site-behind-turnstile.com')
 
-        content = await tab.find(id='protected-content', timeout=10, raise_exc=False)
-        print(await content.text if content else 'Still challenged.')
+            content = await tab.find(id='protected-content', timeout=10, raise_exc=False)
+            print(await content.text if content else 'Still challenged.')
 
-asyncio.run(main())
-```
+    asyncio.run(main())
+    ```
 
 把 URL 替换成你正在自动化的网站。目前没有公开、稳定的 Turnstile 页面可供指向。
 
@@ -33,24 +53,45 @@ asyncio.run(main())
 
 当你不想包裹某一次具体的导航时，可以启用后台处理：Pydoll 会在控件每次出现时点击它，直到你将其禁用。
 
-```python
-import asyncio
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
+    ```python
+    import time
+    from pydoll.sync import Chrome
+
+    def main():
+        with Chrome() as browser:
+            tab = browser.start()
+
+            tab.enable_auto_solve_cloudflare_captcha()
+            tab.go_to('https://a-site-behind-turnstile.com')
+            time.sleep(5)   # 给控件出现并被点击的时间
+
+            tab.disable_auto_solve_cloudflare_captcha()
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+
+    from pydoll.browser.chromium import Chrome
 
 
-async def main():
-    async with Chrome() as browser:
-        tab = await browser.start()
+    async def main():
+        async with Chrome() as browser:
+            tab = await browser.start()
 
-        await tab.enable_auto_solve_cloudflare_captcha()
-        await tab.go_to('https://a-site-behind-turnstile.com')
-        await asyncio.sleep(5)   # 给控件出现并被点击的时间
+            await tab.enable_auto_solve_cloudflare_captcha()
+            await tab.go_to('https://a-site-behind-turnstile.com')
+            await asyncio.sleep(5)   # 给控件出现并被点击的时间
 
-        await tab.disable_auto_solve_cloudflare_captcha()
+            await tab.disable_auto_solve_cloudflare_captcha()
 
-asyncio.run(main())
-```
+    asyncio.run(main())
+    ```
 
 ## 它如何找到复选框
 
@@ -60,10 +101,19 @@ Pydoll 通过轮询页面的 shadow DOM 来检测 Cloudflare 控件：它会查�
 
 有些网站会在初始加载之后才渲染 Turnstile。`time_to_wait_captcha`（默认 5 秒）是 Pydoll 在放弃之前等待控件出现的时长。对于较慢的网站，可以把它调大。
 
-```python
-async with tab.expect_and_bypass_cloudflare_captcha(time_to_wait_captcha=15):
-    await tab.go_to('https://a-site-behind-turnstile.com')
-```
+=== "Sync"
+
+    ```python
+    with tab.expect_and_bypass_cloudflare_captcha(time_to_wait_captcha=15):
+        tab.go_to('https://a-site-behind-turnstile.com')
+    ```
+
+=== "Async"
+
+    ```python
+    async with tab.expect_and_bypass_cloudflare_captcha(time_to_wait_captcha=15):
+        await tab.go_to('https://a-site-behind-turnstile.com')
+    ```
 
 `time_to_wait_captcha` 是唯一的时序参数。如果控件在这个时间窗口内始终没有出现，这次交互就会被跳过。
 

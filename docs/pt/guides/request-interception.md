@@ -12,33 +12,62 @@ Experimente cada botão: `continue_request()` deixa a requisição chegar ao ser
 
 A interceptação roda no domínio Fetch do Chrome. Habilite-o, registre um handler para o evento de requisição pausada e resolva cada requisição que o handler receber.
 
-```python
-import asyncio
-from functools import partial
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
-from pydoll.protocol.fetch.events import FetchEvent
+    ```python
+    from functools import partial
+
+    from pydoll.sync import Chrome
+    from pydoll.protocol.fetch.events import FetchEvent
+
+    def on_request(tab, event):
+        request_id = event['params']['requestId']
+        url = event['params']['request']['url']
+        print(f'paused: {url}')
+        tab.continue_request(request_id)   # deixa passar sem alteração
+
+    def main():
+        with Chrome() as browser:
+            tab = browser.start()
+
+            tab.enable_fetch_events()
+            tab.on(FetchEvent.REQUEST_PAUSED, partial(on_request, tab))
+
+            tab.go_to('https://books.toscrape.com')
+            tab.disable_fetch_events()
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+    from functools import partial
+
+    from pydoll.browser.chromium import Chrome
+    from pydoll.protocol.fetch.events import FetchEvent
 
 
-async def on_request(tab, event):
-    request_id = event['params']['requestId']
-    url = event['params']['request']['url']
-    print(f'paused: {url}')
-    await tab.continue_request(request_id)   # deixa passar sem alteração
+    async def on_request(tab, event):
+        request_id = event['params']['requestId']
+        url = event['params']['request']['url']
+        print(f'paused: {url}')
+        await tab.continue_request(request_id)   # deixa passar sem alteração
 
 
-async def main():
-    async with Chrome() as browser:
-        tab = await browser.start()
+    async def main():
+        async with Chrome() as browser:
+            tab = await browser.start()
 
-        await tab.enable_fetch_events()
-        await tab.on(FetchEvent.REQUEST_PAUSED, partial(on_request, tab))
+            await tab.enable_fetch_events()
+            await tab.on(FetchEvent.REQUEST_PAUSED, partial(on_request, tab))
 
-        await tab.go_to('https://books.toscrape.com')
-        await tab.disable_fetch_events()
+            await tab.go_to('https://books.toscrape.com')
+            await tab.disable_fetch_events()
 
-asyncio.run(main())
-```
+    asyncio.run(main())
+    ```
 
 !!! warning "Resolva cada requisição pausada, exatamente uma vez"
     Uma requisição pausada segura a página até você agir sobre ela. Cada uma deve terminar em exatamente um entre `continue_request`, `fail_request` ou `fulfill_request`. Esqueça de uma e essa requisição trava até expirar; chame duas e você recebe um erro. Envolva a lógica arriscada do handler em `try`/`except` e continue a requisição no ramo `except`, para que um bug nunca congele a página.
@@ -47,12 +76,23 @@ asyncio.run(main())
 
 A interceptação adiciona um ida e volta pelo seu handler para cada requisição correspondente, então restrinja o escopo. Passe um `resource_type` para pausar apenas um tipo de requisição, e leia `event['params']['resourceType']` no handler para ramificar ainda mais.
 
-```python
-from pydoll.protocol.network.types import ResourceType
+=== "Sync"
 
-# pausa apenas chamadas XHR/fetch, não documentos, imagens ou estilos
-await tab.enable_fetch_events(resource_type=ResourceType.XHR)
-```
+    ```python
+    from pydoll.protocol.network.types import ResourceType
+
+    # pausa apenas chamadas XHR/fetch, não documentos, imagens ou estilos
+    tab.enable_fetch_events(resource_type=ResourceType.XHR)
+    ```
+
+=== "Async"
+
+    ```python
+    from pydoll.protocol.network.types import ResourceType
+
+    # pausa apenas chamadas XHR/fetch, não documentos, imagens ou estilos
+    await tab.enable_fetch_events(resource_type=ResourceType.XHR)
+    ```
 
 `ResourceType` cobre `DOCUMENT`, `STYLESHEET`, `IMAGE`, `MEDIA`, `FONT`, `SCRIPT`, `XHR`, `FETCH` e mais; veja o enum `ResourceType` em `pydoll.protocol.network.types` para o conjunto completo.
 
@@ -60,37 +100,70 @@ await tab.enable_fetch_events(resource_type=ResourceType.XHR)
 
 `fail_request` descarta uma requisição com um motivo de erro. Bloquear imagens e folhas de estilo é uma forma comum de tornar o scraping mais rápido e leve.
 
-```python
-import asyncio
-from functools import partial
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
-from pydoll.protocol.fetch.events import FetchEvent
-from pydoll.protocol.network.types import ErrorReason
+    ```python
+    from functools import partial
+
+    from pydoll.sync import Chrome
+    from pydoll.protocol.fetch.events import FetchEvent
+    from pydoll.protocol.network.types import ErrorReason
+
+    def block_heavy(tab, event):
+        request_id = event['params']['requestId']
+        resource_type = event['params']['resourceType']
+
+        if resource_type in ('Image', 'Stylesheet', 'Font'):
+            tab.fail_request(request_id, ErrorReason.BLOCKED_BY_CLIENT)
+        else:
+            tab.continue_request(request_id)
+
+    def main():
+        with Chrome() as browser:
+            tab = browser.start()
+
+            tab.enable_fetch_events()
+            tab.on(FetchEvent.REQUEST_PAUSED, partial(block_heavy, tab))
+
+            tab.go_to('https://books.toscrape.com')
+            tab.disable_fetch_events()
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+    from functools import partial
+
+    from pydoll.browser.chromium import Chrome
+    from pydoll.protocol.fetch.events import FetchEvent
+    from pydoll.protocol.network.types import ErrorReason
 
 
-async def block_heavy(tab, event):
-    request_id = event['params']['requestId']
-    resource_type = event['params']['resourceType']
+    async def block_heavy(tab, event):
+        request_id = event['params']['requestId']
+        resource_type = event['params']['resourceType']
 
-    if resource_type in ('Image', 'Stylesheet', 'Font'):
-        await tab.fail_request(request_id, ErrorReason.BLOCKED_BY_CLIENT)
-    else:
-        await tab.continue_request(request_id)
+        if resource_type in ('Image', 'Stylesheet', 'Font'):
+            await tab.fail_request(request_id, ErrorReason.BLOCKED_BY_CLIENT)
+        else:
+            await tab.continue_request(request_id)
 
 
-async def main():
-    async with Chrome() as browser:
-        tab = await browser.start()
+    async def main():
+        async with Chrome() as browser:
+            tab = await browser.start()
 
-        await tab.enable_fetch_events()
-        await tab.on(FetchEvent.REQUEST_PAUSED, partial(block_heavy, tab))
+            await tab.enable_fetch_events()
+            await tab.on(FetchEvent.REQUEST_PAUSED, partial(block_heavy, tab))
 
-        await tab.go_to('https://books.toscrape.com')
-        await tab.disable_fetch_events()
+            await tab.go_to('https://books.toscrape.com')
+            await tab.disable_fetch_events()
 
-asyncio.run(main())
-```
+    asyncio.run(main())
+    ```
 
 Valores comuns de `ErrorReason` são `BLOCKED_BY_CLIENT` (parece um bloqueador de anúncios), `FAILED`, `ABORTED`, `TIMED_OUT` e `CONNECTION_REFUSED`, úteis para testar como uma página lida com falhas de rede. A lista completa é o enum `ErrorReason` em `pydoll.protocol.network.types`.
 
@@ -98,35 +171,66 @@ Valores comuns de `ErrorReason` são `BLOCKED_BY_CLIENT` (parece um bloqueador d
 
 `continue_request` pode reescrever a requisição antes que ela seja enviada: mudar a URL, o método, os cabeçalhos ou o corpo. Cabeçalhos são uma lista de dicts `HeaderEntry` (`{'name': ..., 'value': ...}`).
 
-```python
-import asyncio
-from functools import partial
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
-from pydoll.protocol.fetch.events import FetchEvent
-from pydoll.protocol.network.types import ResourceType
+    ```python
+    from functools import partial
+
+    from pydoll.sync import Chrome
+    from pydoll.protocol.fetch.events import FetchEvent
+    from pydoll.protocol.network.types import ResourceType
+
+    def add_header(tab, event):
+        request_id = event['params']['requestId']
+        headers = [
+            {'name': 'X-Automated-By', 'value': 'pydoll'},
+        ]
+        tab.continue_request(request_id, headers=headers)
+
+    def main():
+        with Chrome() as browser:
+            tab = browser.start()
+
+            tab.enable_fetch_events(resource_type=ResourceType.DOCUMENT)
+            tab.on(FetchEvent.REQUEST_PAUSED, partial(add_header, tab))
+
+            tab.go_to('https://httpbin.org/headers')  # devolve os cabeçalhos que recebeu
+            tab.disable_fetch_events()
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+    from functools import partial
+
+    from pydoll.browser.chromium import Chrome
+    from pydoll.protocol.fetch.events import FetchEvent
+    from pydoll.protocol.network.types import ResourceType
 
 
-async def add_header(tab, event):
-    request_id = event['params']['requestId']
-    headers = [
-        {'name': 'X-Automated-By', 'value': 'pydoll'},
-    ]
-    await tab.continue_request(request_id, headers=headers)
+    async def add_header(tab, event):
+        request_id = event['params']['requestId']
+        headers = [
+            {'name': 'X-Automated-By', 'value': 'pydoll'},
+        ]
+        await tab.continue_request(request_id, headers=headers)
 
 
-async def main():
-    async with Chrome() as browser:
-        tab = await browser.start()
+    async def main():
+        async with Chrome() as browser:
+            tab = await browser.start()
 
-        await tab.enable_fetch_events(resource_type=ResourceType.DOCUMENT)
-        await tab.on(FetchEvent.REQUEST_PAUSED, partial(add_header, tab))
+            await tab.enable_fetch_events(resource_type=ResourceType.DOCUMENT)
+            await tab.on(FetchEvent.REQUEST_PAUSED, partial(add_header, tab))
 
-        await tab.go_to('https://httpbin.org/headers')  # devolve os cabeçalhos que recebeu
-        await tab.disable_fetch_events()
+            await tab.go_to('https://httpbin.org/headers')  # devolve os cabeçalhos que recebeu
+            await tab.disable_fetch_events()
 
-asyncio.run(main())
-```
+    asyncio.run(main())
+    ```
 
 !!! note "Os cabeçalhos que você passa substituem os cabeçalhos da requisição"
     Fornecer `headers` define a lista completa de cabeçalhos daquela requisição, não faz merge com os do navegador. Inclua os cabeçalhos que a requisição ainda precisa, não apenas o que você está adicionando.
@@ -137,91 +241,175 @@ Você também pode mudar para onde uma requisição vai passando `url`, ou subst
 
 `fulfill_request` responde a uma requisição você mesmo, então o servidor nunca é contatado. É assim que você desenvolve contra uma API que ainda não existe ou força um payload específico. O `body` é codificado em base64.
 
-```python
-import asyncio
-import base64
-import json
-from functools import partial
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
-from pydoll.protocol.fetch.events import FetchEvent
+    ```python
+    import base64
+    import json
+    from functools import partial
+
+    from pydoll.sync import Chrome
+    from pydoll.protocol.fetch.events import FetchEvent
+
+    def mock_json(tab, event):
+        request_id = event['params']['requestId']
+        url = event['params']['request']['url']
+
+        if url.endswith('/json'):
+            payload = {'source': 'mocked by pydoll', 'items': [1, 2, 3]}
+            body = base64.b64encode(json.dumps(payload).encode()).decode()
+            tab.fulfill_request(
+                request_id,
+                response_code=200,
+                response_headers=[{'name': 'Content-Type', 'value': 'application/json'}],
+                body=body,
+            )
+        else:
+            tab.continue_request(request_id)
+
+    def main():
+        with Chrome() as browser:
+            tab = browser.start()
+
+            tab.enable_fetch_events()
+            tab.on(FetchEvent.REQUEST_PAUSED, partial(mock_json, tab))
+
+            tab.go_to('https://httpbin.org/json')  # normalmente retorna um documento de exemplo
+            tab.disable_fetch_events()
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+    import base64
+    import json
+    from functools import partial
+
+    from pydoll.browser.chromium import Chrome
+    from pydoll.protocol.fetch.events import FetchEvent
 
 
-async def mock_json(tab, event):
-    request_id = event['params']['requestId']
-    url = event['params']['request']['url']
+    async def mock_json(tab, event):
+        request_id = event['params']['requestId']
+        url = event['params']['request']['url']
 
-    if url.endswith('/json'):
-        payload = {'source': 'mocked by pydoll', 'items': [1, 2, 3]}
-        body = base64.b64encode(json.dumps(payload).encode()).decode()
-        await tab.fulfill_request(
-            request_id,
-            response_code=200,
-            response_headers=[{'name': 'Content-Type', 'value': 'application/json'}],
-            body=body,
-        )
-    else:
-        await tab.continue_request(request_id)
+        if url.endswith('/json'):
+            payload = {'source': 'mocked by pydoll', 'items': [1, 2, 3]}
+            body = base64.b64encode(json.dumps(payload).encode()).decode()
+            await tab.fulfill_request(
+                request_id,
+                response_code=200,
+                response_headers=[{'name': 'Content-Type', 'value': 'application/json'}],
+                body=body,
+            )
+        else:
+            await tab.continue_request(request_id)
 
 
-async def main():
-    async with Chrome() as browser:
-        tab = await browser.start()
+    async def main():
+        async with Chrome() as browser:
+            tab = await browser.start()
 
-        await tab.enable_fetch_events()
-        await tab.on(FetchEvent.REQUEST_PAUSED, partial(mock_json, tab))
+            await tab.enable_fetch_events()
+            await tab.on(FetchEvent.REQUEST_PAUSED, partial(mock_json, tab))
 
-        await tab.go_to('https://httpbin.org/json')  # normalmente retorna um documento de exemplo
-        await tab.disable_fetch_events()
+            await tab.go_to('https://httpbin.org/json')  # normalmente retorna um documento de exemplo
+            await tab.disable_fetch_events()
 
-asyncio.run(main())
-```
+    asyncio.run(main())
+    ```
 
 ## Intercepte a resposta, não apenas a requisição
 
 Por padrão, as requisições pausam antes de serem enviadas. Passe `request_stage=RequestStage.RESPONSE` para pausar depois que a resposta chega, para que você possa inspecioná-la ou substituí-la. Para uma única requisição continuada no estágio de requisição, `intercept_response=True` a pausa novamente assim que a resposta dela chega.
 
-```python
-from pydoll.protocol.fetch.types import RequestStage
+=== "Sync"
 
-await tab.enable_fetch_events(request_stage=RequestStage.RESPONSE)
-```
+    ```python
+    from pydoll.protocol.fetch.types import RequestStage
+
+    tab.enable_fetch_events(request_stage=RequestStage.RESPONSE)
+    ```
+
+=== "Async"
+
+    ```python
+    from pydoll.protocol.fetch.types import RequestStage
+
+    await tab.enable_fetch_events(request_stage=RequestStage.RESPONSE)
+    ```
 
 ## Lide com desafios de autenticação
 
 Com `handle_auth=True`, o navegador levanta um desafio de autenticação que você responde com `continue_with_auth`. Isso cobre autenticação HTTP Basic/Digest (401) e autenticação de proxy (407).
 
-```python
-import asyncio
-from functools import partial
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
-from pydoll.protocol.fetch.events import FetchEvent
-from pydoll.protocol.fetch.types import AuthChallengeResponseType
+    ```python
+    from functools import partial
+
+    from pydoll.sync import Chrome
+    from pydoll.protocol.fetch.events import FetchEvent
+    from pydoll.protocol.fetch.types import AuthChallengeResponseType
+
+    def answer_auth(tab, event):
+        request_id = event['params']['requestId']
+        tab.continue_with_auth(
+            request_id,
+            auth_challenge_response=AuthChallengeResponseType.PROVIDE_CREDENTIALS,
+            proxy_username='user',
+            proxy_password='passwd',
+        )
+
+    def main():
+        with Chrome() as browser:
+            tab = browser.start()
+
+            tab.enable_fetch_events(handle_auth=True)
+            tab.on(FetchEvent.AUTH_REQUIRED, partial(answer_auth, tab))
+
+            tab.go_to('https://httpbin.org/basic-auth/user/passwd')
+            tab.disable_fetch_events()
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+    from functools import partial
+
+    from pydoll.browser.chromium import Chrome
+    from pydoll.protocol.fetch.events import FetchEvent
+    from pydoll.protocol.fetch.types import AuthChallengeResponseType
 
 
-async def answer_auth(tab, event):
-    request_id = event['params']['requestId']
-    await tab.continue_with_auth(
-        request_id,
-        auth_challenge_response=AuthChallengeResponseType.PROVIDE_CREDENTIALS,
-        proxy_username='user',
-        proxy_password='passwd',
-    )
+    async def answer_auth(tab, event):
+        request_id = event['params']['requestId']
+        await tab.continue_with_auth(
+            request_id,
+            auth_challenge_response=AuthChallengeResponseType.PROVIDE_CREDENTIALS,
+            proxy_username='user',
+            proxy_password='passwd',
+        )
 
 
-async def main():
-    async with Chrome() as browser:
-        tab = await browser.start()
+    async def main():
+        async with Chrome() as browser:
+            tab = await browser.start()
 
-        await tab.enable_fetch_events(handle_auth=True)
-        await tab.on(FetchEvent.AUTH_REQUIRED, partial(answer_auth, tab))
+            await tab.enable_fetch_events(handle_auth=True)
+            await tab.on(FetchEvent.AUTH_REQUIRED, partial(answer_auth, tab))
 
-        await tab.go_to('https://httpbin.org/basic-auth/user/passwd')
-        await tab.disable_fetch_events()
+            await tab.go_to('https://httpbin.org/basic-auth/user/passwd')
+            await tab.disable_fetch_events()
 
-asyncio.run(main())
-```
+    asyncio.run(main())
+    ```
 
 !!! note "Autenticação de proxy já é automática"
     Você não precisa disso para um proxy normal. Quando você define as credenciais do proxy nas opções do navegador, o Pydoll responde ao desafio do proxy por você. Recorra ao `continue_with_auth` manual apenas para autenticação de servidor ou lógica de credenciais personalizada. Veja [Proxies](proxies.md).

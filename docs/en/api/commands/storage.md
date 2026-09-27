@@ -19,31 +19,61 @@ The storage commands module enables management of all browser storage mechanisms
 
 Storage commands are used for managing browser storage across different mechanisms:
 
-```python
-from pydoll.commands.storage_commands import get_cookies, set_cookies, clear_data_for_origin
-from pydoll.connection.connection_handler import ConnectionHandler
+=== "Sync"
 
-# Get cookies for a domain
-connection = ConnectionHandler()
-cookies = await get_cookies(connection, urls=["https://example.com"])
+    ```python
+    from pydoll.commands.storage_commands import get_cookies, set_cookies, clear_data_for_origin
+    from pydoll.connection.connection_handler import ConnectionHandler
 
-# Set a new cookie
-await set_cookies(connection, cookies=[{
-    "name": "session_id",
-    "value": "abc123",
-    "domain": "example.com",
-    "path": "/",
-    "httpOnly": True,
-    "secure": True
-}])
+    # Get cookies for a domain
+    connection = ConnectionHandler()
+    cookies = get_cookies(connection, urls=["https://example.com"])
 
-# Clear all storage for an origin
-await clear_data_for_origin(
-    connection,
-    origin="https://example.com",
-    storage_types="all"
-)
-```
+    # Set a new cookie
+    set_cookies(connection, cookies=[{
+        "name": "session_id",
+        "value": "abc123",
+        "domain": "example.com",
+        "path": "/",
+        "httpOnly": True,
+        "secure": True
+    }])
+
+    # Clear all storage for an origin
+    clear_data_for_origin(
+        connection,
+        origin="https://example.com",
+        storage_types="all"
+    )
+    ```
+
+=== "Async"
+
+    ```python
+    from pydoll.commands.storage_commands import get_cookies, set_cookies, clear_data_for_origin
+    from pydoll.connection.connection_handler import ConnectionHandler
+
+    # Get cookies for a domain
+    connection = ConnectionHandler()
+    cookies = await get_cookies(connection, urls=["https://example.com"])
+
+    # Set a new cookie
+    await set_cookies(connection, cookies=[{
+        "name": "session_id",
+        "value": "abc123",
+        "domain": "example.com",
+        "path": "/",
+        "httpOnly": True,
+        "secure": True
+    }])
+
+    # Clear all storage for an origin
+    await clear_data_for_origin(
+        connection,
+        origin="https://example.com",
+        storage_types="all"
+    )
+    ```
 
 ## Key Functionality
 
@@ -84,36 +114,77 @@ The storage commands module provides functions for:
 ## Advanced Features
 
 ### Bulk Operations
-```python
-# Clear all storage types for multiple origins
-origins = ["https://example.com", "https://api.example.com"]
-for origin in origins:
-    await clear_data_for_origin(
-        connection,
-        origin=origin,
-        storage_types="cookies,local_storage,session_storage,indexeddb"
-    )
-```
+=== "Sync"
+
+    ```python
+    # Clear all storage types for multiple origins
+    origins = ["https://example.com", "https://api.example.com"]
+    for origin in origins:
+        clear_data_for_origin(
+            connection,
+            origin=origin,
+            storage_types="cookies,local_storage,session_storage,indexeddb"
+        )
+    ```
+
+=== "Async"
+
+    ```python
+    # Clear all storage types for multiple origins
+    origins = ["https://example.com", "https://api.example.com"]
+    for origin in origins:
+        await clear_data_for_origin(
+            connection,
+            origin=origin,
+            storage_types="cookies,local_storage,session_storage,indexeddb"
+        )
+    ```
 
 ### Storage Quotas
-```python
-# Get storage quota information
-quota_info = await get_usage_and_quota(connection, origin="https://example.com")
-print(f"Used: {quota_info.usage} bytes")
-print(f"Quota: {quota_info.quota} bytes")
-```
+=== "Sync"
+
+    ```python
+    # Get storage quota information
+    quota_info = get_usage_and_quota(connection, origin="https://example.com")
+    print(f"Used: {quota_info.usage} bytes")
+    print(f"Quota: {quota_info.quota} bytes")
+    ```
+
+=== "Async"
+
+    ```python
+    # Get storage quota information
+    quota_info = await get_usage_and_quota(connection, origin="https://example.com")
+    print(f"Used: {quota_info.usage} bytes")
+    print(f"Quota: {quota_info.quota} bytes")
+    ```
 
 ### Cross-Origin Storage
-```python
-# Manage storage across different origins
-await set_cookies(connection, cookies=[{
-    "name": "cross_site_token",
-    "value": "token123",
-    "domain": ".example.com",  # Applies to all subdomains
-    "sameSite": "None",
-    "secure": True
-}])
-```
+=== "Sync"
+
+    ```python
+    # Manage storage across different origins
+    set_cookies(connection, cookies=[{
+        "name": "cross_site_token",
+        "value": "token123",
+        "domain": ".example.com",  # Applies to all subdomains
+        "sameSite": "None",
+        "secure": True
+    }])
+    ```
+
+=== "Async"
+
+    ```python
+    # Manage storage across different origins
+    await set_cookies(connection, cookies=[{
+        "name": "cross_site_token",
+        "value": "token123",
+        "domain": ".example.com",  # Applies to all subdomains
+        "sameSite": "None",
+        "secure": True
+    }])
+    ```
 
 ## Storage Types
 

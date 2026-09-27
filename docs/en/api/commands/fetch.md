@@ -19,22 +19,43 @@ The fetch commands module enables network request management, including request 
 
 Fetch commands are used for advanced network interception and request handling:
 
-```python
-from pydoll.commands.fetch_commands import enable, request_paused, continue_request
-from pydoll.connection.connection_handler import ConnectionHandler
+=== "Sync"
 
-# Enable fetch domain
-connection = ConnectionHandler()
-await enable(connection, patterns=[{
-    "urlPattern": "*",
-    "requestStage": "Request"
-}])
+    ```python
+    from pydoll.commands.fetch_commands import enable, request_paused, continue_request
+    from pydoll.connection.connection_handler import ConnectionHandler
 
-# Handle paused requests
-async def handle_paused_request(request_id, request):
-    # Modify request or continue as-is
-    await continue_request(connection, request_id=request_id)
-```
+    # Enable fetch domain
+    connection = ConnectionHandler()
+    enable(connection, patterns=[{
+        "urlPattern": "*",
+        "requestStage": "Request"
+    }])
+
+    # Handle paused requests
+    def handle_paused_request(request_id, request):
+        # Modify request or continue as-is
+        continue_request(connection, request_id=request_id)
+    ```
+
+=== "Async"
+
+    ```python
+    from pydoll.commands.fetch_commands import enable, request_paused, continue_request
+    from pydoll.connection.connection_handler import ConnectionHandler
+
+    # Enable fetch domain
+    connection = ConnectionHandler()
+    await enable(connection, patterns=[{
+        "urlPattern": "*",
+        "requestStage": "Request"
+    }])
+
+    # Handle paused requests
+    async def handle_paused_request(request_id, request):
+        # Modify request or continue as-is
+        await continue_request(connection, request_id=request_id)
+    ```
 
 ## Key Functionality
 
@@ -66,61 +87,130 @@ The fetch commands module provides functions for:
 ## Advanced Features
 
 ### Pattern-Based Interception
-```python
-# Intercept specific URL patterns
-patterns = [
-    {"urlPattern": "*/api/*", "requestStage": "Request"},
-    {"urlPattern": "*.js", "requestStage": "Response"},
-    {"urlPattern": "https://example.com/*", "requestStage": "Request"}
-]
+=== "Sync"
 
-await enable(connection, patterns=patterns)
-```
+    ```python
+    # Intercept specific URL patterns
+    patterns = [
+        {"urlPattern": "*/api/*", "requestStage": "Request"},
+        {"urlPattern": "*.js", "requestStage": "Response"},
+        {"urlPattern": "https://example.com/*", "requestStage": "Request"}
+    ]
+
+    enable(connection, patterns=patterns)
+    ```
+
+=== "Async"
+
+    ```python
+    # Intercept specific URL patterns
+    patterns = [
+        {"urlPattern": "*/api/*", "requestStage": "Request"},
+        {"urlPattern": "*.js", "requestStage": "Response"},
+        {"urlPattern": "https://example.com/*", "requestStage": "Request"}
+    ]
+
+    await enable(connection, patterns=patterns)
+    ```
 
 ### Request Modification
-```python
-# Modify intercepted requests
-async def modify_request(request_id, request):
-    # Add authentication header
-    headers = request.headers.copy()
-    headers["Authorization"] = "Bearer token123"
-    
-    # Continue with modified headers
-    await continue_request(
-        connection,
-        request_id=request_id,
-        headers=headers
-    )
-```
+=== "Sync"
+
+    ```python
+    # Modify intercepted requests
+    def modify_request(request_id, request):
+        # Add authentication header
+        headers = request.headers.copy()
+        headers["Authorization"] = "Bearer token123"
+
+        # Continue with modified headers
+        continue_request(
+            connection,
+            request_id=request_id,
+            headers=headers
+        )
+    ```
+
+=== "Async"
+
+    ```python
+    # Modify intercepted requests
+    async def modify_request(request_id, request):
+        # Add authentication header
+        headers = request.headers.copy()
+        headers["Authorization"] = "Bearer token123"
+
+        # Continue with modified headers
+        await continue_request(
+            connection,
+            request_id=request_id,
+            headers=headers
+        )
+    ```
 
 ### Response Mocking
-```python
-# Mock API responses
-await fulfill_request(
-    connection,
-    request_id=request_id,
-    response_code=200,
-    response_headers=[
-        {"name": "Content-Type", "value": "application/json"},
-        {"name": "Access-Control-Allow-Origin", "value": "*"}
-    ],
-    body='{"status": "success", "data": {"mocked": true}}'
-)
-```
+=== "Sync"
+
+    ```python
+    # Mock API responses
+    fulfill_request(
+        connection,
+        request_id=request_id,
+        response_code=200,
+        response_headers=[
+            {"name": "Content-Type", "value": "application/json"},
+            {"name": "Access-Control-Allow-Origin", "value": "*"}
+        ],
+        body='{"status": "success", "data": {"mocked": true}}'
+    )
+    ```
+
+=== "Async"
+
+    ```python
+    # Mock API responses
+    await fulfill_request(
+        connection,
+        request_id=request_id,
+        response_code=200,
+        response_headers=[
+            {"name": "Content-Type", "value": "application/json"},
+            {"name": "Access-Control-Allow-Origin", "value": "*"}
+        ],
+        body='{"status": "success", "data": {"mocked": true}}'
+    )
+    ```
 
 ### Authentication Handling
-```python
-# Handle authentication challenges
-await continue_with_auth(
-    connection,
-    request_id=request_id,
-    auth_challenge_response={
-        "response": "ProvideCredentials",
-        "username": "user",
-        "password": "pass"
-    }
-)
-```
+=== "Sync"
+
+    ```python
+    # Handle authentication challenges
+    continue_with_auth(
+        connection,
+        request_id=request_id,
+        auth_challenge_response={
+            "response": "ProvideCredentials",
+            "username": "user",
+            "password": "pass"
+        }
+    )
+    ```
+
+=== "Async"
+
+    ```python
+    # Handle authentication challenges
+    await continue_with_auth(
+        connection,
+        request_id=request_id,
+        auth_challenge_response={
+            "response": "ProvideCredentials",
+            "username": "user",
+            "password": "pass"
+        }
+    )
+    ```
 
 ## Request Stages
 
@@ -133,14 +223,27 @@ Fetch commands can intercept requests at different stages:
 
 ## Error Handling
 
-```python
-# Fail requests with specific errors
-await fail_request(
-    connection,
-    request_id=request_id,
-    error_reason="ConnectionRefused"  # or "AccessDenied", "TimedOut", etc.
-)
-```
+=== "Sync"
+
+    ```python
+    # Fail requests with specific errors
+    fail_request(
+        connection,
+        request_id=request_id,
+        error_reason="ConnectionRefused"  # or "AccessDenied", "TimedOut", etc.
+    )
+    ```
+
+=== "Async"
+
+    ```python
+    # Fail requests with specific errors
+    await fail_request(
+        connection,
+        request_id=request_id,
+        error_reason="ConnectionRefused"  # or "AccessDenied", "TimedOut", etc.
+    )
+    ```
 
 ## Integration with Network Commands
 

@@ -6,7 +6,7 @@
 
 - **没有 webdriver 或捆绑的浏览器。** Pydoll 通过 DevTools Protocol 驱动你机器上已有的 Chrome 或 Edge。没有需要安装或版本匹配的 `chromedriver`。
 - **没有显式等待。** `find()` 和 `query()` 自己等待元素，所以 `WebDriverWait` 和 `expected_conditions` 那一套繁琐操作就没有了。
-- **默认异步。** 每个调用都在 `async def` 内部被 `await`，并由 `asyncio.run()` 启动。第一次接触？见 [实践中的异步 Python](basics/async-python.md)。
+- **同步或异步，由你选择。** 从 `pydoll.sync` 导入即可使用阻塞调用，或从 `pydoll.browser.chromium` 导入同一套 API 并 `await` 它。下面的表格展示的是异步形式；同步形式只需去掉 `await`，并用 `with` 代替 `async with`。第一次接触异步？见 [实践中的异步 Python](basics/async-python.md)。
 
 ## 从 Selenium 迁移
 
@@ -47,26 +47,49 @@ WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.LINK_TEXT, 'Lo
 driver.quit()
 ```
 
-```python
-# Pydoll
-import asyncio
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
+    ```python
+    # Pydoll
+
+    from pydoll.sync import Chrome
+
+    def main():
+        with Chrome() as browser:
+            tab = browser.start()
+            tab.go_to('https://quotes.toscrape.com/login')
+
+            (tab.find(id='username')).type_text('tester')
+            (tab.find(id='password')).type_text('secret')
+            (tab.find(tag_name='input', type='submit')).click()
+
+            tab.find(text='Logout', timeout=5)
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    # Pydoll
+    import asyncio
+
+    from pydoll.browser.chromium import Chrome
 
 
-async def main():
-    async with Chrome() as browser:
-        tab = await browser.start()
-        await tab.go_to('https://quotes.toscrape.com/login')
+    async def main():
+        async with Chrome() as browser:
+            tab = await browser.start()
+            await tab.go_to('https://quotes.toscrape.com/login')
 
-        await (await tab.find(id='username')).type_text('tester')
-        await (await tab.find(id='password')).type_text('secret')
-        await (await tab.find(tag_name='input', type='submit')).click()
+            await (await tab.find(id='username')).type_text('tester')
+            await (await tab.find(id='password')).type_text('secret')
+            await (await tab.find(tag_name='input', type='submit')).click()
 
-        await tab.find(text='Logout', timeout=5)
+            await tab.find(text='Logout', timeout=5)
 
-asyncio.run(main())
-```
+    asyncio.run(main())
+    ```
 
 !!! note "`get_attribute` 是同步的"
     与 Selenium 不同（在 Selenium 中，元素上的一切都是一次网络往返），Pydoll 从它已经定位到的元素上读取属性，所以 `get_attribute()` 是一个普通方法，无需 `await`。文本仍然需要 await（`await el.text`）。
@@ -94,36 +117,73 @@ asyncio.run(main())
 - Playwright 的 **locator** 是惰性的：每次你对它进行操作时，它都会重新解析元素。
 - Pydoll 的 `find()` / `query()` 返回一个当场解析一次的 **`WebElement`**。如果页面替换了该元素，就再次调用 `find()`。
 
-```python
-# Playwright
-from playwright.async_api import async_playwright
+=== "Sync"
 
-async with async_playwright() as p:
-    browser = await p.chromium.launch()
-    page = await browser.new_page()
-    await page.goto('https://quotes.toscrape.com')
-    quote = await page.locator('.quote .text').first.text_content()
-    print(quote)
-    await browser.close()
-```
+    ```python
+    # Playwright
+    from playwright.async_api import async_playwright
 
-```python
-# Pydoll
-import asyncio
+    with async_playwright() as p:
+        browser = p.chromium.launch()
+        page = browser.new_page()
+        page.goto('https://quotes.toscrape.com')
+        quote = page.locator('.quote .text').first.text_content()
+        print(quote)
+        browser.close()
+    ```
 
-from pydoll.browser.chromium import Chrome
+=== "Async"
+
+    ```python
+    # Playwright
+    from playwright.async_api import async_playwright
+
+    async with async_playwright() as p:
+        browser = await p.chromium.launch()
+        page = await browser.new_page()
+        await page.goto('https://quotes.toscrape.com')
+        quote = await page.locator('.quote .text').first.text_content()
+        print(quote)
+        await browser.close()
+    ```
+
+=== "Sync"
+
+    ```python
+    # Pydoll
+
+    from pydoll.sync import Chrome
+
+    def main():
+        with Chrome() as browser:
+            tab = browser.start()
+            tab.go_to('https://quotes.toscrape.com')
+
+            quote = tab.query('.quote .text')
+            print(quote.text)
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    # Pydoll
+    import asyncio
+
+    from pydoll.browser.chromium import Chrome
 
 
-async def main():
-    async with Chrome() as browser:
-        tab = await browser.start()
-        await tab.go_to('https://quotes.toscrape.com')
+    async def main():
+        async with Chrome() as browser:
+            tab = await browser.start()
+            await tab.go_to('https://quotes.toscrape.com')
 
-        quote = await tab.query('.quote .text')
-        print(await quote.text)
+            quote = await tab.query('.quote .text')
+            print(await quote.text)
 
-asyncio.run(main())
-```
+    asyncio.run(main())
+    ```
 
 !!! tip "你从 Playwright 保留的行为，以及新获得的一个"
     自动等待和异步会直接沿用过来。Pydoll 新增的是点击和打字上的 `humanize=True`，它让光标沿着弯曲的轨迹移动，并以可变的节奏打字。见 [拟人化交互](stealth/human-like-interactions.md)。

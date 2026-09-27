@@ -6,23 +6,42 @@
 
 把你想要捕获的浏览过程包裹在 `tab.request.record()` 中。页面在这个代码块内请求的一切都会被录制，块退出后 `capture` 对象即准备就绪。
 
-```python
-import asyncio
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
+    ```python
+    from pydoll.sync import Chrome
+
+    def main():
+        with Chrome() as browser:
+            tab = browser.start()
+
+            with tab.request.record() as capture:
+                tab.go_to('https://news.ycombinator.com')
+
+            print(f'captured {len(capture.entries)} requests')
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+
+    from pydoll.browser.chromium import Chrome
 
 
-async def main():
-    async with Chrome() as browser:
-        tab = await browser.start()
+    async def main():
+        async with Chrome() as browser:
+            tab = await browser.start()
 
-        async with tab.request.record() as capture:
-            await tab.go_to('https://news.ycombinator.com')
+            async with tab.request.record() as capture:
+                await tab.go_to('https://news.ycombinator.com')
 
-        print(f'captured {len(capture.entries)} requests')
+            print(f'captured {len(capture.entries)} requests')
 
-asyncio.run(main())
-```
+    asyncio.run(main())
+    ```
 
 ## 保存录制内容
 
@@ -37,35 +56,69 @@ capture.save('recordings/session-1/flow.har')
 
 `capture.entries` 是一个 HAR 条目列表。每个条目都有一个可以直接读取的 `request` 和 `response`，这对于在测试中对流量做断言、或提取特定的调用非常方便。
 
-```python
-async with tab.request.record() as capture:
-    await tab.go_to('https://github.com/autoscrape-labs/pydoll')
+=== "Sync"
 
-for entry in capture.entries:
-    request = entry['request']
-    response = entry['response']
-    print(f"{request['method']} {request['url']} -> {response['status']}")
+    ```python
+    with tab.request.record() as capture:
+        tab.go_to('https://github.com/autoscrape-labs/pydoll')
 
-# 只保留失败的 API 调用
-failed_api = [
-    entry for entry in capture.entries
-    if '/api/' in entry['request']['url'] and entry['response']['status'] >= 400
-]
-```
+    for entry in capture.entries:
+        request = entry['request']
+        response = entry['response']
+        print(f"{request['method']} {request['url']} -> {response['status']}")
+
+    # 只保留失败的 API 调用
+    failed_api = [
+        entry for entry in capture.entries
+        if '/api/' in entry['request']['url'] and entry['response']['status'] >= 400
+    ]
+    ```
+
+=== "Async"
+
+    ```python
+    async with tab.request.record() as capture:
+        await tab.go_to('https://github.com/autoscrape-labs/pydoll')
+
+    for entry in capture.entries:
+        request = entry['request']
+        response = entry['response']
+        print(f"{request['method']} {request['url']} -> {response['status']}")
+
+    # 只保留失败的 API 调用
+    failed_api = [
+        entry for entry in capture.entries
+        if '/api/' in entry['request']['url'] and entry['response']['status'] >= 400
+    ]
+    ```
 
 ## 只录制某些资源类型
 
 录制每一张图片、字体和样式表会产生很大的文件。传入 `resource_types` 可以只保留你关心的种类，这是仅捕获页面 API 流量的常用做法。
 
-```python
-from pydoll.protocol.network.types import ResourceType
+=== "Sync"
 
-# 只保留 fetch/XHR 调用，跳过文档、图片和样式
-async with tab.request.record(
-    resource_types=[ResourceType.FETCH, ResourceType.XHR]
-) as capture:
-    await tab.go_to('https://github.com/autoscrape-labs/pydoll')
-```
+    ```python
+    from pydoll.protocol.network.types import ResourceType
+
+    # 只保留 fetch/XHR 调用，跳过文档、图片和样式
+    with tab.request.record(
+        resource_types=[ResourceType.FETCH, ResourceType.XHR]
+    ) as capture:
+        tab.go_to('https://github.com/autoscrape-labs/pydoll')
+    ```
+
+=== "Async"
+
+    ```python
+    from pydoll.protocol.network.types import ResourceType
+
+    # 只保留 fetch/XHR 调用，跳过文档、图片和样式
+    async with tab.request.record(
+        resource_types=[ResourceType.FETCH, ResourceType.XHR]
+    ) as capture:
+        await tab.go_to('https://github.com/autoscrape-labs/pydoll')
+    ```
 
 常见的 `ResourceType` 值有 `DOCUMENT`、`STYLESHEET`、`SCRIPT`、`IMAGE`、`FONT`、`MEDIA`、`FETCH`、`XHR` 和 `WEB_SOCKET`。完整列表请参见 `pydoll.protocol.network.types` 中的 `ResourceType` 枚举。
 

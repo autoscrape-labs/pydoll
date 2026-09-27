@@ -19,22 +19,43 @@ The runtime commands module enables JavaScript code execution, object inspection
 
 Runtime commands are used for JavaScript execution and runtime management:
 
-```python
-from pydoll.commands.runtime_commands import evaluate, enable
-from pydoll.connection.connection_handler import ConnectionHandler
+=== "Sync"
 
-# Enable runtime events
-connection = ConnectionHandler()
-await enable(connection)
+    ```python
+    from pydoll.commands.runtime_commands import evaluate, enable
+    from pydoll.connection.connection_handler import ConnectionHandler
 
-# Execute JavaScript
-result = await evaluate(
-    connection, 
-    expression="document.title",
-    return_by_value=True
-)
-print(result.value)  # Page title
-```
+    # Enable runtime events
+    connection = ConnectionHandler()
+    enable(connection)
+
+    # Execute JavaScript
+    result = evaluate(
+        connection, 
+        expression="document.title",
+        return_by_value=True
+    )
+    print(result.value)  # Page title
+    ```
+
+=== "Async"
+
+    ```python
+    from pydoll.commands.runtime_commands import evaluate, enable
+    from pydoll.connection.connection_handler import ConnectionHandler
+
+    # Enable runtime events
+    connection = ConnectionHandler()
+    await enable(connection)
+
+    # Execute JavaScript
+    result = await evaluate(
+        connection, 
+        expression="document.title",
+        return_by_value=True
+    )
+    print(result.value)  # Page title
+    ```
 
 ## Key Functionality
 
@@ -64,41 +85,84 @@ The runtime commands module provides functions for:
 ## Advanced Usage
 
 ### Complex JavaScript Execution
-```python
-# Execute complex JavaScript with error handling
-script = """
-try {
-    const elements = document.querySelectorAll('.item');
-    return Array.from(elements).map(el => ({
-        text: el.textContent,
-        href: el.href
-    }));
-} catch (error) {
-    return { error: error.message };
-}
-"""
+=== "Sync"
 
-result = await evaluate(
-    connection,
-    expression=script,
-    return_by_value=True,
-    await_promise=True
-)
-```
+    ```python
+    # Execute complex JavaScript with error handling
+    script = """
+    try {
+        const elements = document.querySelectorAll('.item');
+        return Array.from(elements).map(el => ({
+            text: el.textContent,
+            href: el.href
+        }));
+    } catch (error) {
+        return { error: error.message };
+    }
+    """
+
+    result = evaluate(
+        connection,
+        expression=script,
+        return_by_value=True,
+        await_promise=True
+    )
+    ```
+
+=== "Async"
+
+    ```python
+    # Execute complex JavaScript with error handling
+    script = """
+    try {
+        const elements = document.querySelectorAll('.item');
+        return Array.from(elements).map(el => ({
+            text: el.textContent,
+            href: el.href
+        }));
+    } catch (error) {
+        return { error: error.message };
+    }
+    """
+
+    result = await evaluate(
+        connection,
+        expression=script,
+        return_by_value=True,
+        await_promise=True
+    )
+    ```
 
 ### Object Inspection
-```python
-# Get detailed object properties
-properties = await get_properties(
-    connection,
-    object_id=object_id,
-    own_properties=True,
-    accessor_properties_only=False
-)
+=== "Sync"
 
-for prop in properties:
-    print(f"{prop.name}: {prop.value}")
-```
+    ```python
+    # Get detailed object properties
+    properties = get_properties(
+        connection,
+        object_id=object_id,
+        own_properties=True,
+        accessor_properties_only=False
+    )
+
+    for prop in properties:
+        print(f"{prop.name}: {prop.value}")
+    ```
+
+=== "Async"
+
+    ```python
+    # Get detailed object properties
+    properties = await get_properties(
+        connection,
+        object_id=object_id,
+        own_properties=True,
+        accessor_properties_only=False
+    )
+
+    for prop in properties:
+        print(f"{prop.name}: {prop.value}")
+    ```
 
 ### Console Integration
 Runtime commands integrate with browser console:

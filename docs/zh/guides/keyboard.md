@@ -2,36 +2,69 @@
 
 通过 `tab.keyboard` 驱动键盘输入：往字段里打字、按下 Enter 和 Tab 之类的特殊键，以及运行 Ctrl+A 这样的快捷键。当一个表单需要键盘导航，或者某个 web 应用会响应点击无法触发的组合键时，就该用它。
 
-```python
-import asyncio
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
-from pydoll.constants import Key
+    ```python
+    import time
+    from pydoll.sync import Chrome
+    from pydoll.constants import Key
+
+    def main():
+        with Chrome() as browser:
+            tab = browser.start()
+            tab.go_to('https://www.wikipedia.org')
+
+            search = tab.find(id='searchInput')
+            search.type_text('web scraping', humanize=True)
+
+            tab.keyboard.press(Key.ENTER)
+            time.sleep(2)
+            print(tab.current_url)
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+
+    from pydoll.browser.chromium import Chrome
+    from pydoll.constants import Key
 
 
-async def main():
-    async with Chrome() as browser:
-        tab = await browser.start()
-        await tab.go_to('https://www.wikipedia.org')
+    async def main():
+        async with Chrome() as browser:
+            tab = await browser.start()
+            await tab.go_to('https://www.wikipedia.org')
 
-        search = await tab.find(id='searchInput')
-        await search.type_text('web scraping', humanize=True)
+            search = await tab.find(id='searchInput')
+            await search.type_text('web scraping', humanize=True)
 
-        await tab.keyboard.press(Key.ENTER)
-        await asyncio.sleep(2)
-        print(await tab.current_url)
+            await tab.keyboard.press(Key.ENTER)
+            await asyncio.sleep(2)
+            print(await tab.current_url)
 
-asyncio.run(main())
-```
+    asyncio.run(main())
+    ```
 
 ## 往字段里打字
 
 要逐字符地往获得焦点的元素里打字，在元素上使用 `type_text`。传入 `humanize=True` 可获得可变的节奏并偶尔修正打错的字；不传则用固定、更快的节奏。
 
-```python
-field = await tab.find(id='searchInput')
-await field.type_text('search query', humanize=True)
-```
+=== "Sync"
+
+    ```python
+    field = tab.find(id='searchInput')
+    field.type_text('search query', humanize=True)
+    ```
+
+=== "Async"
+
+    ```python
+    field = await tab.find(id='searchInput')
+    await field.type_text('search query', humanize=True)
+    ```
 
 在下面输入你自己的文本，两种方式都跑一遍。带 `humanize=True` 时节奏会变化、偶尔打错的字会被修正，所以每次运行都不一样；不带时，每个间隔都是固定的 50 毫秒。
 
@@ -39,9 +72,17 @@ await field.type_text('search query', humanize=True)
 
 如果你只需要文本出现、并不关心逐键事件，`insert_text` 会把整个字符串一次性粘贴进去：
 
-```python
-await field.insert_text('search query')   # 瞬时，无按键事件
-```
+=== "Sync"
+
+    ```python
+    field.insert_text('search query')   # 瞬时，无按键事件
+    ```
+
+=== "Async"
+
+    ```python
+    await field.insert_text('search query')   # 瞬时，无按键事件
+    ```
 
 !!! note "`tab.keyboard` 在焦点已经所在处打字"
     在元素上调用的 `type_text` 和 `insert_text` 会替你把该元素设为焦点，因此文本会落在正确的位置。而更底层的 `tab.keyboard` 方法（见下文）不会：它们把按键发送到页面当前获得焦点的任何地方。通过 `tab.keyboard` 打字前，先让字段获得焦点（点击它就会使其获得焦点）。
@@ -50,17 +91,33 @@ await field.insert_text('search query')   # 瞬时，无按键事件
 
 `press()` 执行一次完整的按键（按下、短暂保持、抬起）。用它来按那些触发行为而非输入文本的键：Enter 提交、Tab 在字段间移动、Escape 关闭。
 
-```python
-from pydoll.constants import Key
+=== "Sync"
 
-await tab.keyboard.press(Key.ENTER)
-await tab.keyboard.press(Key.TAB)
-await tab.keyboard.press(Key.ESCAPE)
+    ```python
+    from pydoll.constants import Key
 
-# 方向键和导航键
-await tab.keyboard.press(Key.ARROWDOWN)
-await tab.keyboard.press(Key.END)
-```
+    tab.keyboard.press(Key.ENTER)
+    tab.keyboard.press(Key.TAB)
+    tab.keyboard.press(Key.ESCAPE)
+
+    # 方向键和导航键
+    tab.keyboard.press(Key.ARROWDOWN)
+    tab.keyboard.press(Key.END)
+    ```
+
+=== "Async"
+
+    ```python
+    from pydoll.constants import Key
+
+    await tab.keyboard.press(Key.ENTER)
+    await tab.keyboard.press(Key.TAB)
+    await tab.keyboard.press(Key.ESCAPE)
+
+    # 方向键和导航键
+    await tab.keyboard.press(Key.ARROWDOWN)
+    await tab.keyboard.press(Key.END)
+    ```
 
 `press(key, interval=0.1)` 会在释放前把键保持 `interval` 秒；把它调大可模拟更长的按住。
 
@@ -68,33 +125,67 @@ await tab.keyboard.press(Key.END)
 
 `hotkey()` 按下一个组合并以正确的顺序释放，因此你不用自己计算修饰键的位掩码。把修饰键放在前面。
 
-```python
-from pydoll.constants import Key
+=== "Sync"
 
-await tab.keyboard.hotkey(Key.CONTROL, Key.A)   # 全选
-await tab.keyboard.hotkey(Key.CONTROL, Key.C)   # 复制
-await tab.keyboard.hotkey(Key.CONTROL, Key.SHIFT, Key.ARROWLEFT)  # 向左选中一个词
-```
+    ```python
+    from pydoll.constants import Key
+
+    tab.keyboard.hotkey(Key.CONTROL, Key.A)   # 全选
+    tab.keyboard.hotkey(Key.CONTROL, Key.C)   # 复制
+    tab.keyboard.hotkey(Key.CONTROL, Key.SHIFT, Key.ARROWLEFT)  # 向左选中一个词
+    ```
+
+=== "Async"
+
+    ```python
+    from pydoll.constants import Key
+
+    await tab.keyboard.hotkey(Key.CONTROL, Key.A)   # 全选
+    await tab.keyboard.hotkey(Key.CONTROL, Key.C)   # 复制
+    await tab.keyboard.hotkey(Key.CONTROL, Key.SHIFT, Key.ARROWLEFT)  # 向左选中一个词
+    ```
 
 macOS 用 Command（Meta），而 Windows 和 Linux 用 Control，所以要根据平台挑选修饰键：
 
-```python
-import sys
-from pydoll.constants import Key
+=== "Sync"
 
-mod = Key.META if sys.platform == 'darwin' else Key.CONTROL
-await tab.keyboard.hotkey(mod, Key.C)
-```
+    ```python
+    import sys
+    from pydoll.constants import Key
+
+    mod = Key.META if sys.platform == 'darwin' else Key.CONTROL
+    tab.keyboard.hotkey(mod, Key.C)
+    ```
+
+=== "Async"
+
+    ```python
+    import sys
+    from pydoll.constants import Key
+
+    mod = Key.META if sys.platform == 'darwin' else Key.CONTROL
+    await tab.keyboard.hotkey(mod, Key.C)
+    ```
 
 ## 给单个键施加修饰键
 
 `press()` 和 `down()` 接受一个来自 `KeyModifier` 枚举的 `modifiers` 参数：
 
-```python
-from pydoll.protocol.input.types import KeyModifier
+=== "Sync"
 
-await tab.keyboard.press(Key.S, modifiers=KeyModifier.CTRL)   # Ctrl+S
-```
+    ```python
+    from pydoll.protocol.input.types import KeyModifier
+
+    tab.keyboard.press(Key.S, modifiers=KeyModifier.CTRL)   # Ctrl+S
+    ```
+
+=== "Async"
+
+    ```python
+    from pydoll.protocol.input.types import KeyModifier
+
+    await tab.keyboard.press(Key.S, modifiers=KeyModifier.CTRL)   # Ctrl+S
+    ```
 
 成员有 `KeyModifier.ALT`、`.CTRL`、`.META` 和 `.SHIFT`。`hotkey()` 已经替你施加了修饰键，因此只有当你手动按下或按住单个键时才需要用到 `modifiers`。
 
@@ -102,16 +193,31 @@ await tab.keyboard.press(Key.S, modifiers=KeyModifier.CTRL)   # Ctrl+S
 
 对于修饰键要跨多次按键保持按下的序列，自己驱动 `down()` 和 `up()`。在 `finally` 块中释放，这样序列中途出错也不会留下卡住的键。
 
-```python
-from pydoll.constants import Key
+=== "Sync"
 
-try:
-    await tab.keyboard.down(Key.SHIFT)
-    await tab.keyboard.press(Key.ARROWRIGHT)   # 扩展选区
-    await tab.keyboard.press(Key.ARROWRIGHT)
-finally:
-    await tab.keyboard.up(Key.SHIFT)
-```
+    ```python
+    from pydoll.constants import Key
+
+    try:
+        tab.keyboard.down(Key.SHIFT)
+        tab.keyboard.press(Key.ARROWRIGHT)   # 扩展选区
+        tab.keyboard.press(Key.ARROWRIGHT)
+    finally:
+        tab.keyboard.up(Key.SHIFT)
+    ```
+
+=== "Async"
+
+    ```python
+    from pydoll.constants import Key
+
+    try:
+        await tab.keyboard.down(Key.SHIFT)
+        await tab.keyboard.press(Key.ARROWRIGHT)   # 扩展选区
+        await tab.keyboard.press(Key.ARROWRIGHT)
+    finally:
+        await tab.keyboard.up(Key.SHIFT)
+    ```
 
 ## 浏览器 UI 快捷键不起作用
 

@@ -19,17 +19,33 @@ The network commands module enables request interception, response modification,
 
 Network commands are used for advanced scenarios like request interception and network monitoring:
 
-```python
-from pydoll.commands.network_commands import enable, set_request_interception
-from pydoll.connection.connection_handler import ConnectionHandler
+=== "Sync"
 
-# Enable network monitoring
-connection = ConnectionHandler()
-await enable(connection)
+    ```python
+    from pydoll.commands.network_commands import enable, set_request_interception
+    from pydoll.connection.connection_handler import ConnectionHandler
 
-# Enable request interception
-await set_request_interception(connection, patterns=[{"urlPattern": "*"}])
-```
+    # Enable network monitoring
+    connection = ConnectionHandler()
+    enable(connection)
+
+    # Enable request interception
+    set_request_interception(connection, patterns=[{"urlPattern": "*"}])
+    ```
+
+=== "Async"
+
+    ```python
+    from pydoll.commands.network_commands import enable, set_request_interception
+    from pydoll.connection.connection_handler import ConnectionHandler
+
+    # Enable network monitoring
+    connection = ConnectionHandler()
+    await enable(connection)
+
+    # Enable request interception
+    await set_request_interception(connection, patterns=[{"urlPattern": "*"}])
+    ```
 
 ## Key Functionality
 
@@ -65,36 +81,74 @@ The network commands module provides functions for:
 ## Advanced Use Cases
 
 ### Request Interception
-```python
-# Intercept and modify requests
-await set_request_interception(connection, patterns=[
-    {"urlPattern": "*/api/*", "requestStage": "Request"}
-])
+=== "Sync"
 
-# Handle intercepted request
-async def handle_request(request):
-    if "api/login" in request.url:
-        # Modify request headers
-        headers = request.headers.copy()
-        headers["Authorization"] = "Bearer token"
-        await continue_intercepted_request(
-            connection, 
-            request_id=request.request_id,
-            headers=headers
-        )
-```
+    ```python
+    # Intercept and modify requests
+    set_request_interception(connection, patterns=[
+        {"urlPattern": "*/api/*", "requestStage": "Request"}
+    ])
+
+    # Handle intercepted request
+    def handle_request(request):
+        if "api/login" in request.url:
+            # Modify request headers
+            headers = request.headers.copy()
+            headers["Authorization"] = "Bearer token"
+            continue_intercepted_request(
+                connection, 
+                request_id=request.request_id,
+                headers=headers
+            )
+    ```
+
+=== "Async"
+
+    ```python
+    # Intercept and modify requests
+    await set_request_interception(connection, patterns=[
+        {"urlPattern": "*/api/*", "requestStage": "Request"}
+    ])
+
+    # Handle intercepted request
+    async def handle_request(request):
+        if "api/login" in request.url:
+            # Modify request headers
+            headers = request.headers.copy()
+            headers["Authorization"] = "Bearer token"
+            await continue_intercepted_request(
+                connection, 
+                request_id=request.request_id,
+                headers=headers
+            )
+    ```
 
 ### Response Mocking
-```python
-# Mock API responses
-await fulfill_request(
-    connection,
-    request_id=request_id,
-    response_code=200,
-    response_headers={"Content-Type": "application/json"},
-    body='{"status": "success"}'
-)
-```
+=== "Sync"
+
+    ```python
+    # Mock API responses
+    fulfill_request(
+        connection,
+        request_id=request_id,
+        response_code=200,
+        response_headers={"Content-Type": "application/json"},
+        body='{"status": "success"}'
+    )
+    ```
+
+=== "Async"
+
+    ```python
+    # Mock API responses
+    await fulfill_request(
+        connection,
+        request_id=request_id,
+        response_code=200,
+        response_headers={"Content-Type": "application/json"},
+        body='{"status": "success"}'
+    )
+    ```
 
 !!! warning "Performance Impact"
     Network interception can impact page loading performance. Use selectively and disable when not needed. 
