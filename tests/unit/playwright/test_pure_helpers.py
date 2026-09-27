@@ -153,3 +153,14 @@ class TestSerialization:
         assert math.isnan(parse_remote_value({'unserializableValue': 'NaN'}))
         assert parse_remote_value({'unserializableValue': 'Infinity'}) == math.inf
         assert parse_remote_value({'type': 'string', 'value': 'x'}) == 'x'
+
+
+class TestLocaleLanguages:
+    def test_header_carries_q_values_and_navigator_list_does_not(self):
+        from pydoll.playwright._browser_context import _accept_language, _navigator_languages
+
+        assert _accept_language('pt-BR') == 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7'
+        assert _navigator_languages('pt-BR') == 'pt-BR,pt,en-US,en'
+        assert _accept_language('en-US') == 'en-US,en;q=0.9'
+        assert _accept_language('en') == 'en'
+        assert _navigator_languages('de') == 'de,en-US,en'

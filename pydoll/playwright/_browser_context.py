@@ -133,20 +133,21 @@ class BrowserContext(EventEmitter):
         options = self._options
         if self._viewport:
             await page.set_viewport_size(self._viewport)
-        if options.get('user_agent'):
-            parsed = UserAgentParser.parse(options['user_agent'])
+        user_agent: str = options.get('user_agent') or ''
+        locale = options.get('locale')
+        if user_agent or locale:
+            parsed = UserAgentParser.parse(user_agent) if user_agent else None
             await page._send(
                 EmulationCommands.set_user_agent_override(
-                    user_agent=parsed.reduced_user_agent or options['user_agent'],
-                    platform=parsed.platform,
-                    user_agent_metadata=parsed.user_agent_metadata,
+                    user_agent=(parsed.reduced_user_agent or user_agent) if parsed else '',
+                    accept_language=_navigator_languages(locale) if locale else None,
+                    platform=parsed.platform if parsed else None,
+                    user_agent_metadata=parsed.user_agent_metadata if parsed else None,
                 )
             )
-        if options.get('locale'):
-            await page._send(EmulationCommands.set_locale_override(locale=options['locale']))
-            self._extra_http_headers.setdefault(
-                'Accept-Language', _accept_language(options['locale'])
-            )
+        if locale:
+            await page._send(EmulationCommands.set_locale_override(locale=locale))
+            self._extra_http_headers.setdefault('Accept-Language', _accept_language(locale))
         if options.get('timezone_id'):
             await page._send(
                 EmulationCommands.set_timezone_override(timezone_id=options['timezone_id'])
@@ -476,15 +477,29 @@ class BrowserContext(EventEmitter):
         raise Error('new_cdp_session is not supported; use page.tab.execute_command for raw CDP')
 
 
-def _accept_language(locale: str) -> str:
-    """Chrome-shaped Accept-Language for a locale (primary, language, English fallbacks)."""
+def _languages(locale: str) -> list[str]:
+    """The languages a Chrome set to ``locale`` reports: primary, language, English fallbacks."""
     language = locale.split('-')[0]
-    parts = [locale]
+    languages = [locale]
     if language != locale:
-        parts.append(f'{language};q=0.9')
+        languages.append(language)
     if language != 'en':
-        parts.extend(['en-US;q=0.8', 'en;q=0.7'])
-    return ','.join(parts)
+        languages.extend(['en-US', 'en'])
+    return languages
+
+
+def _accept_language(locale: str) -> str:
+    """Chrome-shaped Accept-Language header for ``locale``, with descending q-values."""
+    languages = _languages(locale)
+    return ','.join(
+        language if index == 0 else f'{language};q={1 - index / 10:.1f}'
+        for index, language in enumerate(languages)
+    )
+
+
+def _navigator_languages(locale: str) -> str:
+    """The accept-language override: Chrome copies it verbatim into ``navigator.languages``."""
+    return ','.join(_languages(locale))
 
 
 def _cookie_param(cookie: dict[str, Any]) -> CookieParam:

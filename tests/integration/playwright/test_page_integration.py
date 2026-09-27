@@ -203,7 +203,10 @@ class TestContent:
     @pytest.mark.asyncio
     async def test_eval_on_selector(self, page):
         await page.goto(page_url('test_core_simple.html'))
-        assert await page.eval_on_selector('#main-heading', '(e, suffix) => e.id + suffix', '!') == 'main-heading!'
+        assert (
+            await page.eval_on_selector('#main-heading', '(e, suffix) => e.id + suffix', '!')
+            == 'main-heading!'
+        )
         assert await page.eval_on_selector_all('#list li', 'items => items.length') == 3
         with pytest.raises(Error, match='Failed to find element'):
             await page.eval_on_selector('#nope', 'e => e')
@@ -250,7 +253,9 @@ class TestMedia:
         assert await page.evaluate('() => [innerWidth, innerHeight]') == [640, 480]
         assert page.viewport_size == {'width': 640, 'height': 480}
         await page.emulate_media(color_scheme='dark')
-        assert await page.evaluate('() => matchMedia("(prefers-color-scheme: dark)").matches') is True
+        assert (
+            await page.evaluate('() => matchMedia("(prefers-color-scheme: dark)").matches') is True
+        )
 
 
 class TestContext:
@@ -263,26 +268,33 @@ class TestContext:
         context = await pw_browser.new_context(
             viewport={'width': 500, 'height': 400},
             user_agent=custom_ua,
-            locale='pt-BR',
+            locale='fr-CA',
             timezone_id='America/Sao_Paulo',
             extra_http_headers={'X-Test': '1'},
         )
         page = await context.new_page()
         await page.goto(page_url('test_core_simple.html'))
         reduced = UserAgentParser.parse(custom_ua).reduced_user_agent or custom_ua
-        assert await page.evaluate('() => [innerWidth, innerHeight, navigator.userAgent, navigator.language]') == [
-            500, 400, reduced, 'pt-BR'
-        ]
-        assert await page.evaluate('() => Intl.DateTimeFormat().resolvedOptions().timeZone') == 'America/Sao_Paulo'
+        assert await page.evaluate(
+            '() => [innerWidth, innerHeight, navigator.userAgent, navigator.language, navigator.languages]'
+        ) == [500, 400, reduced, 'fr-CA', ['fr-CA', 'fr', 'en-US', 'en']]
+        assert (
+            await page.evaluate('() => Intl.DateTimeFormat().resolvedOptions().timeZone')
+            == 'America/Sao_Paulo'
+        )
         brands = await page.evaluate('() => navigator.userAgentData.brands.map(b => b.brand)')
         assert any('Chrom' in brand for brand in brands)
         assert await page.evaluate('() => navigator.userAgentData.platform') == 'Windows'
-        assert await page.evaluate('() => screen.width >= innerWidth && screen.height >= innerHeight')
+        assert await page.evaluate(
+            '() => screen.width >= innerWidth && screen.height >= innerHeight'
+        )
         await context.close()
 
     @pytest.mark.asyncio
     async def test_extra_headers_reach_the_server(self, pw_browser, http_server):
-        context = await pw_browser.new_context(extra_http_headers={'X-Test': 'value-1'}, locale='pt-BR')
+        context = await pw_browser.new_context(
+            extra_http_headers={'X-Test': 'value-1'}, locale='pt-BR'
+        )
         page = await context.new_page()
         await page.goto(f'{http_server}/echo-headers')
         content = await page.content()
