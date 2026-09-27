@@ -1,33 +1,27 @@
-"""Fixtures for the Playwright-compatible layer, all against real headless Chrome."""
+"""Fixtures for the Playwright-compatible layer, all against real headless Chrome.
+
+Playwright's own model applies: one browser per pytest worker, one context per
+test. The ``page`` fixture is what most tests take; ``pw_browser`` and
+``playwright`` exist for the tests that exercise launching and closing.
+"""
 
 from __future__ import annotations
 
 import functools
 import http.server
 import threading
-from pathlib import Path
 
 import pytest
 import pytest_asyncio
 
-from pydoll.browser.chromium import Chrome
 from pydoll.playwright.async_api import async_playwright
 
 from _pages import PAGES, page_url
 
 
 @pytest_asyncio.fixture
-async def chrome(ci_chrome_options):
-    """A started pydoll Chrome, stopped after the test."""
-    async with Chrome(options=ci_chrome_options) as browser:
-        await browser.start()
-        yield browser
-
-
-@pytest_asyncio.fixture
-async def engine_tab(chrome):
-    """The first tab, navigated to the engine fixture page."""
-    tab = (await chrome.get_opened_tabs())[0]
+async def engine_tab(tab):
+    """The shared pydoll tab, navigated to the engine fixture page."""
     await tab.go_to(page_url('playwright_engine.html'))
     return tab
 
@@ -76,15 +70,18 @@ def http_server():
         server.server_close()
 
 
-@pytest_asyncio.fixture
+@pytest_asyncio.fixture(scope='session')
 async def playwright():
     async with async_playwright() as instance:
         yield instance
 
 
-@pytest_asyncio.fixture
-async def browser(playwright):
-    instance = await playwright.chromium.launch(headless=True, args=['--no-sandbox', '--disable-gpu'])
+@pytest_asyncio.fixture(scope='session')
+async def pw_browser(playwright):
+    """One Playwright-API browser per worker; tests isolate themselves with a context."""
+    instance = await playwright.chromium.launch(
+        headless=True, args=['--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage']
+    )
     try:
         yield instance
     finally:
@@ -92,8 +89,8 @@ async def browser(playwright):
 
 
 @pytest_asyncio.fixture
-async def context(browser):
-    instance = await browser.new_context()
+async def context(pw_browser):
+    instance = await pw_browser.new_context()
     try:
         yield instance
     finally:

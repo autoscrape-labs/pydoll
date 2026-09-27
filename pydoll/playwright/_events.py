@@ -6,12 +6,12 @@ import asyncio
 import inspect
 import logging
 import time
-from typing import Any, Awaitable, Callable, Generic, Optional, TypeVar
+from typing import Any, Awaitable, Callable, Generic, Optional, TypeAlias, TypeVar
 
 from pydoll.playwright._errors import TimeoutError
 
 T = TypeVar('T')
-Listener = Callable[..., Any]
+Listener: TypeAlias = Callable[..., Any]
 
 logger = logging.getLogger(__name__)
 

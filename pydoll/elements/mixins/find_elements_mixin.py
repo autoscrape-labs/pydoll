@@ -613,7 +613,7 @@ class FindElementsMixin:
         iframe_context = None
         if getattr(self, 'is_iframe', False):
             element_self = cast('WebElement', self)
-            iframe_context = await element_self.iframe_context
+            iframe_context = await element_self.iframe_context()
 
         if execution_context_id is None and iframe_context:
             if not iframe_context.document_object_id:

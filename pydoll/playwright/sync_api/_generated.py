@@ -8,7 +8,7 @@ Regenerate with ``python scripts/generate_sync_api.py``.
 from __future__ import annotations
 
 from contextlib import AbstractContextManager
-from typing import Any, cast, overload
+from typing import Any, Generic, cast, overload
 
 from pydoll.sync._runtime import SyncBase, mapping, run_sync
 
@@ -56,9 +56,10 @@ from pydoll.protocol.target.events import TargetEvent
 from pydoll.protocol.target.types import TargetInfo
 import inspect
 import time
-from typing import Any, Awaitable, Callable, Generic, Optional, TypeVar
+from typing import Any, Awaitable, Callable, Generic, Optional, TypeAlias, TypeVar
 from pydoll.playwright._errors import TimeoutError
 T = TypeVar('T')
+Listener: TypeAlias = Callable[..., Any]
 from pydoll.playwright._events import Deadline
 from pydoll.playwright._events import EventContextManager
 import json
@@ -106,10 +107,11 @@ from pydoll.playwright._locator import SelectOption
 from typing import TYPE_CHECKING, Any, Optional, Sequence, Union
 from pydoll.commands import RuntimeCommands
 from pydoll.playwright._serialization import parse_remote_value
-from typing import TYPE_CHECKING, Literal, Optional
+from typing import TYPE_CHECKING, Literal, Optional, TypeAlias
 from pydoll.commands import InputCommands
 from pydoll.playwright._keys import MODIFIER_NAMES, KeyDescription, describe_key, modifier_bits, resolve_smart_modifier, split_key_string
 from pydoll.protocol.input.types import KeyEventType, KeyModifier, MouseButton, MouseEventType, TouchEventType
+MouseButtonName: TypeAlias = Literal['left', 'right', 'middle']
 import mimetypes
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Optional, Union, cast
 from pydoll.commands import NetworkCommands
@@ -258,7 +260,7 @@ class Browser(SyncBase):
         return mapping.from_impl(self._impl.listener_count(event=mapping.to_impl(event)))
 
     def emit(self, event: str, *args: Any) -> None:
-        self._impl.emit(event=mapping.to_impl(event), *args)
+        self._impl.emit(mapping.to_impl(event), *args)
 
 class BrowserContext(SyncBase):
     """An isolated browsing session; ``browser.new_context()`` creates one."""
@@ -377,7 +379,7 @@ class BrowserContext(SyncBase):
         return mapping.from_impl(self._impl.listener_count(event=mapping.to_impl(event)))
 
     def emit(self, event: str, *args: Any) -> None:
-        self._impl.emit(event=mapping.to_impl(event), *args)
+        self._impl.emit(mapping.to_impl(event), *args)
 
 class Page(SyncBase):
     """A single tab of a browser context."""
@@ -716,7 +718,7 @@ class Page(SyncBase):
         return mapping.from_impl(self._impl.listener_count(event=mapping.to_impl(event)))
 
     def emit(self, event: str, *args: Any) -> None:
-        self._impl.emit(event=mapping.to_impl(event), *args)
+        self._impl.emit(mapping.to_impl(event), *args)
 
 class Frame(SyncBase):
     """A document inside a page: the main frame or an ``<iframe>``."""
@@ -1692,7 +1694,7 @@ class Download(SyncBase):
     def cancel(self) -> None:
         self._run(self._impl.cancel())
 
-class EventInfo(SyncBase):
+class EventInfo(SyncBase, Generic[T]):
     """Result placeholder returned by ``expect_*`` context managers."""
     _impl: _EventInfoImpl
 

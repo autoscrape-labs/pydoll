@@ -10,6 +10,7 @@ from pydoll.playwright._browser_context import BrowserContext
 from pydoll.playwright._dialog import ConsoleMessage, Dialog, Download, FileChooser
 from pydoll.playwright._element_handle import ElementHandle, JSHandle
 from pydoll.playwright._errors import Error, TargetClosedError, TimeoutError
+from pydoll.playwright._events import EventInfo
 from pydoll.playwright._frame import Frame
 from pydoll.playwright._input import Keyboard, Mouse, Touchscreen
 from pydoll.playwright._locator import FilePayload, FrameLocator, Locator
@@ -33,6 +34,7 @@ __all__ = [
     'Download',
     'ElementHandle',
     'Error',
+    'EventInfo',
     'FileChooser',
     'FilePayload',
     'Frame',

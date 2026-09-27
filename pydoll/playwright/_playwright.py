@@ -96,7 +96,7 @@ class BrowserType:
         )
         chrome = Chrome(options=options)
         try:
-            initial_tab = await chrome.start(headless=bool(options.headless))
+            initial_tab = await chrome.start()
         except PydollException as error:
             raise translate(error) from error
         browser = Browser(self, chrome)
@@ -127,7 +127,7 @@ class BrowserType:
         )
         chrome = Chrome(options=options)
         try:
-            initial_tab = await chrome.start(headless=bool(options.headless))
+            initial_tab = await chrome.start()
         except PydollException as error:
             raise translate(error) from error
         browser = Browser(self, chrome)

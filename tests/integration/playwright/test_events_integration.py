@@ -196,8 +196,8 @@ class TestNetwork:
         assert await page.query_selector('#patched-heading') is not None
 
     @pytest.mark.asyncio
-    async def test_context_route_and_times(self, browser, http_server):
-        context = await browser.new_context()
+    async def test_context_route_and_times(self, pw_browser, http_server):
+        context = await pw_browser.new_context()
         calls = []
 
         async def once(route):
@@ -223,8 +223,8 @@ class TestNetwork:
             await response.json()
 
     @pytest.mark.asyncio
-    async def test_offline_context(self, browser, http_server):
-        context = await browser.new_context(offline=True)
+    async def test_offline_context(self, pw_browser, http_server):
+        context = await pw_browser.new_context(offline=True)
         page = await context.new_page()
         with pytest.raises(Error, match='ERR_INTERNET_DISCONNECTED'):
             await page.goto(f'{http_server}/test_core_simple.html')

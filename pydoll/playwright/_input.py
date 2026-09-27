@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import asyncio
-from typing import TYPE_CHECKING, Literal, Optional
+from typing import TYPE_CHECKING, Literal, Optional, TypeAlias
 
 from pydoll.commands import InputCommands
 from pydoll.playwright._keys import (
@@ -25,7 +25,7 @@ from pydoll.protocol.input.types import (
 if TYPE_CHECKING:
     from pydoll.playwright._page import Page
 
-MouseButtonName = Literal['left', 'right', 'middle']
+MouseButtonName: TypeAlias = Literal['left', 'right', 'middle']
 
 _BUTTONS = {'left': MouseButton.LEFT, 'right': MouseButton.RIGHT, 'middle': MouseButton.MIDDLE}
 

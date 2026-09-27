@@ -29,11 +29,11 @@ class TestLifecycle:
         assert not browser.is_connected()
 
     @pytest.mark.asyncio
-    async def test_browser_new_page_owns_its_context(self, browser):
-        page = await browser.new_page()
-        assert len(browser.contexts) == 1
+    async def test_browser_new_page_owns_its_context(self, pw_browser):
+        page = await pw_browser.new_page()
+        assert len(pw_browser.contexts) == 1
         await page.close()
-        assert browser.contexts == []
+        assert pw_browser.contexts == []
 
     @pytest.mark.asyncio
     async def test_firefox_and_webkit_are_rejected(self, playwright):
@@ -115,8 +115,8 @@ class TestNavigation:
             await page.goto(f'{http_server}/test_core_simple.html', timeout=1)
 
     @pytest.mark.asyncio
-    async def test_base_url_resolves_relative_paths(self, browser, http_server):
-        context = await browser.new_context(base_url=http_server)
+    async def test_base_url_resolves_relative_paths(self, pw_browser, http_server):
+        context = await pw_browser.new_context(base_url=http_server)
         page = await context.new_page()
         await page.goto('/test_core_simple.html')
         assert page.url == f'{http_server}/test_core_simple.html'
@@ -255,12 +255,12 @@ class TestMedia:
 
 class TestContext:
     @pytest.mark.asyncio
-    async def test_context_options_apply_to_pages(self, browser):
+    async def test_context_options_apply_to_pages(self, pw_browser):
         custom_ua = (
             'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
             '(KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36'
         )
-        context = await browser.new_context(
+        context = await pw_browser.new_context(
             viewport={'width': 500, 'height': 400},
             user_agent=custom_ua,
             locale='pt-BR',
@@ -281,8 +281,8 @@ class TestContext:
         await context.close()
 
     @pytest.mark.asyncio
-    async def test_extra_headers_reach_the_server(self, browser, http_server):
-        context = await browser.new_context(extra_http_headers={'X-Test': 'value-1'}, locale='pt-BR')
+    async def test_extra_headers_reach_the_server(self, pw_browser, http_server):
+        context = await pw_browser.new_context(extra_http_headers={'X-Test': 'value-1'}, locale='pt-BR')
         page = await context.new_page()
         await page.goto(f'{http_server}/echo-headers')
         content = await page.content()
@@ -292,8 +292,8 @@ class TestContext:
         await context.close()
 
     @pytest.mark.asyncio
-    async def test_cookies_and_storage_state(self, browser, http_server):
-        context = await browser.new_context()
+    async def test_cookies_and_storage_state(self, pw_browser, http_server):
+        context = await pw_browser.new_context()
         page = await context.new_page()
         await page.goto(f'{http_server}/set-cookie')
         cookies = await context.cookies()
@@ -307,7 +307,7 @@ class TestContext:
         assert await context.cookies() == []
         await context.close()
 
-        restored = await browser.new_context(storage_state=state)
+        restored = await pw_browser.new_context(storage_state=state)
         page = await restored.new_page()
         await page.goto(f'{http_server}/test_core_simple.html')
         assert await page.evaluate('() => localStorage.getItem("k")') == 'v'
@@ -315,9 +315,9 @@ class TestContext:
         await restored.close()
 
     @pytest.mark.asyncio
-    async def test_contexts_are_isolated(self, browser, http_server):
-        first = await browser.new_context()
-        second = await browser.new_context()
+    async def test_contexts_are_isolated(self, pw_browser, http_server):
+        first = await pw_browser.new_context()
+        second = await pw_browser.new_context()
         page = await first.new_page()
         await page.goto(f'{http_server}/set-cookie')
         assert await second.cookies() == []
@@ -325,8 +325,8 @@ class TestContext:
         await second.close()
 
     @pytest.mark.asyncio
-    async def test_context_init_script_and_default_timeout(self, browser):
-        context = await browser.new_context()
+    async def test_context_init_script_and_default_timeout(self, pw_browser):
+        context = await pw_browser.new_context()
         await context.add_init_script('window.__ctx = "yes"')
         context.set_default_timeout(150)
         page = await context.new_page()

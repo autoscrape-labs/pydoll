@@ -263,7 +263,8 @@ def _call_args(node: ast.FunctionDef | ast.AsyncFunctionDef) -> str:
         if index == 0 and argument.arg in {'self', 'cls'}:
             continue
         value = _wrap(argument.arg)
-        parts.append(value if argument in args.posonlyargs else f'{argument.arg}={value}')
+        by_position = argument in args.posonlyargs or args.vararg is not None
+        parts.append(value if by_position else f'{argument.arg}={value}')
     if args.vararg:
         parts.append(f'*{args.vararg.arg}')
     for argument in args.kwonlyargs:
@@ -411,7 +412,9 @@ def _emit_class(module_name: str, class_name: str, target: Target) -> tuple[str,
     facade_name = target.renames.get(class_name, class_name)
     node = _class_node(cls)
     doc = _docstring(node)
-    lines = [f'class {facade_name}(SyncBase):']
+    type_params = _generic_parameters(node)
+    bases = 'SyncBase' if not type_params else f'SyncBase, Generic[{", ".join(type_params)}]'
+    lines = [f'class {facade_name}({bases}):']
     if doc:
         lines.append(f'    {doc}')
     lines.append(f'    _impl: _{facade_name}Impl')
@@ -443,6 +446,24 @@ def _emit_class(module_name: str, class_name: str, target: Target) -> tuple[str,
     body = '\n'.join(lines).rstrip() + '\n'
     import_line = f'from {module_name} import {class_name} as _{facade_name}Impl'
     return import_line, body
+
+
+def _generic_parameters(node: ast.ClassDef) -> list[str]:
+    """Type variable names of a ``Generic[...]`` base, so the facade stays generic too.
+
+    The type variables themselves are copied from the source module by
+    ``_type_checking_imports``, so they exist at module level before the class.
+    """
+    for base in node.bases:
+        if (
+            isinstance(base, ast.Subscript)
+            and isinstance(base.value, ast.Name)
+            and base.value.id == 'Generic'
+        ):
+            inner = base.slice
+            elements = inner.elts if isinstance(inner, ast.Tuple) else [inner]
+            return [ast.unparse(element) for element in elements]
+    return []
 
 
 def _source_modules(target: Target) -> list[str]:
@@ -545,7 +566,7 @@ def render(target: Target) -> str:
         from __future__ import annotations
 
         from contextlib import AbstractContextManager
-        from typing import Any, cast, overload
+        from typing import Any, Generic, cast, overload
 
         from pydoll.sync._runtime import SyncBase, mapping, run_sync
         '''

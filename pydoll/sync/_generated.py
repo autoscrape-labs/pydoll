@@ -8,7 +8,7 @@ Regenerate with ``python scripts/generate_sync_api.py``.
 from __future__ import annotations
 
 from contextlib import AbstractContextManager
-from typing import Any, cast, overload
+from typing import Any, Generic, cast, overload
 
 from pydoll.sync._runtime import SyncBase, mapping, run_sync
 
