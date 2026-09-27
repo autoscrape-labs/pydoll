@@ -290,8 +290,8 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
 
         Args:
             timeout: Maximum seconds to wait for the shadow root to appear.
-                When > 0, repeatedly polls (every 0.5s) until a shadow root
-                is found or the timeout expires.
+                When > 0, repeatedly polls (starting every 20 ms and backing off to
+                250 ms) until a shadow root is found or the timeout expires.
 
         Returns:
             ShadowRoot instance for traversing the shadow DOM.

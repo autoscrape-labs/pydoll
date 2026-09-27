@@ -55,13 +55,21 @@ def test_handle_cleanup_error_swallows_oserror():
     manager.handle_cleanup_error(lambda _p: None, '/x', (OSError, OSError('boom'), None))
 
 
-def test_handle_cleanup_error_reraises_unhandled_permission_error():
+def test_handle_cleanup_error_retries_any_locked_file_and_then_skips_it(monkeypatch, caplog):
+    """A file Chrome still holds must never fail the shutdown, whatever its name."""
     manager = TempDirectoryManager()
-    error = PermissionError('locked')
-    with pytest.raises(PermissionError):
-        manager.handle_cleanup_error(
-            lambda _p: None, '/regular/file.txt', (PermissionError, error, None)
-        )
+    attempts = []
+
+    def retry(func, path, retry_times=10):
+        attempts.append(path)
+        raise PermissionError('still locked')
+
+    monkeypatch.setattr(manager, 'retry_process_file', retry)
+    manager.handle_cleanup_error(
+        lambda _p: None, '/regular/file.txt', (PermissionError, PermissionError('locked'), None)
+    )
+    assert attempts == ['/regular/file.txt']
+    assert 'Ignoring locked Chrome file' in caplog.text
 
 
 def test_handle_cleanup_error_recovers_known_chrome_lock():

@@ -542,10 +542,10 @@ class Tab(FindElementsMixin):
                 objects will automatically route CDP commands through the
                 correct OOPIF session.
             timeout: Maximum seconds to wait for shadow roots to appear.
-                When > 0, repeatedly polls the DOM (every 0.5s) until at least
-                one shadow root is found or the timeout expires. Useful when
-                shadow hosts are injected asynchronously (e.g., Cloudflare
-                Turnstile loading inside an OOPIF).
+                When > 0, repeatedly polls the DOM (starting every 20 ms and backing
+                off to 250 ms) until at least one shadow root is found or the timeout
+                expires. Useful when shadow hosts are injected asynchronously (e.g.,
+                Cloudflare Turnstile loading inside an OOPIF).
 
         Returns:
             List of ShadowRoot instances found in the page.

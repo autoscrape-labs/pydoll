@@ -87,7 +87,7 @@ Se você só precisa que o texto apareça e não se importa com eventos por tecl
 
 ## Pressionar uma tecla
 
-O `press()` executa um pressionamento completo de tecla (baixa, breve espera, sobe). Use para teclas que acionam comportamento em vez de texto: Enter para enviar, Tab para mover entre campos, Escape para dispensar.
+O `press()` executa um pressionamento completo de tecla (baixa e sobe). Use para teclas que acionam comportamento em vez de texto: Enter para enviar, Tab para mover entre campos, Escape para dispensar.
 
 === "Sync"
 
@@ -117,7 +117,7 @@ O `press()` executa um pressionamento completo de tecla (baixa, breve espera, so
     await tab.keyboard.press(Key.END)
     ```
 
-`press(key)` solta a tecla logo depois de pressioná-la; passe `interval=0.1` para mantê-la pressionada por um décimo de segundo, ou mais tempo para simular um pressionamento longo. Ou seja, `interval` mantém a tecla pressionada por esse tempo antes de soltar; aumente para simular um pressionamento mais longo.
+`press(key)` solta a tecla logo depois de pressioná-la; passe `interval=0.1` para mantê-la pressionada por um décimo de segundo, ou mais tempo para simular um pressionamento longo.
 
 ## Executar um atalho de teclado
 

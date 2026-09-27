@@ -87,7 +87,7 @@ If you only need the text to appear and don't care about per-key events, `insert
 
 ## Press a key
 
-`press()` runs a full key press (down, brief hold, up). Use it for keys that trigger behavior rather than text: Enter to submit, Tab to move between fields, Escape to dismiss.
+`press()` runs a full key press (down, then up). Use it for keys that trigger behavior rather than text: Enter to submit, Tab to move between fields, Escape to dismiss.
 
 === "Sync"
 

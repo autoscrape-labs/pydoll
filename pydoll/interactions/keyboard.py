@@ -268,15 +268,13 @@ class Keyboard:
         )
         return down, up
 
-    async def _type_char(self, char: str, hold: Optional[float] = None, refocus: bool = True):
-        """Type a single character.
+    async def _type_char(self, char: str, hold: Optional[float] = None):
+        """Type a single character on the humanized path, re-focusing the element first.
 
-        ``hold`` is the keydown-to-keyup time (a random human dwell when None,
-        none at all when 0). ``refocus`` re-focuses the element first, which the
-        humanized path does per keystroke and the plain path does once.
+        ``hold`` is the keydown-to-keyup time: a random human dwell when None,
+        none at all when 0.
         """
-        if refocus:
-            await self._ensure_focus()
+        await self._ensure_focus()
         key, code, keycode = CHAR_TO_KEY_INFO.get(char, (char, '', 0))
         command_down = InputCommands.dispatch_key_event(
             type=KeyEventType.KEY_DOWN,
