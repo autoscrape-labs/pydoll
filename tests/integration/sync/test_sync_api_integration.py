@@ -9,6 +9,7 @@ from pathlib import Path
 import pytest
 
 from pydoll.browser.options import ChromiumOptions
+from pydoll.playwright.sync_api import Page, TimeoutError, sync_playwright
 from pydoll.protocol.page.events import PageEvent
 from pydoll.sync import Chrome, DownloadHandle, SyncError, Tab, WebElement
 
@@ -109,3 +110,78 @@ class TestPydollSync:
             while not outcome and time.monotonic() < deadline:
                 time.sleep(0.05)
             assert outcome and isinstance(outcome[0], SyncError)
+
+
+class TestPlaywrightSync:
+    def test_end_to_end_script(self):
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True, args=['--no-sandbox'])
+            context = browser.new_context(viewport={'width': 800, 'height': 600})
+            page = context.new_page()
+            assert isinstance(page, Page)
+            response = page.goto(page_url('playwright_engine.html'))
+            assert response is not None and response.ok
+            assert page.title() == 'Engine fixtures'
+            assert page.locator('#list li').count() == 3
+            assert page.get_by_role('button', name='Save').inner_text() == 'Save'
+            page.get_by_label('Full name').fill('Ana')
+            assert page.input_value('#name-input') == 'Ana'
+            assert page.evaluate('([a, b]) => a + b', [1, 2]) == 3
+            assert page.evaluate('() => [innerWidth, innerHeight]') == [800, 600]
+            handle = page.query_selector('#title')
+            assert handle is not None and handle.text_content() == 'Engine fixtures'
+            with pytest.raises(TimeoutError, match='Timeout 200ms'):
+                page.locator('#btn-hidden').click(timeout=200)
+            frame_text = page.frame_locator('#simple-iframe').locator('#iframe-heading')
+            page.goto(page_url('test_iframe_simple.html'))
+            assert frame_text.text_content() == 'Iframe Content'
+            browser.close()
+
+    def test_handlers_run_off_the_loop_and_call_back_in(self):
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True, args=['--no-sandbox'])
+            page = browser.new_page()
+            page.goto(page_url('playwright_events.html'))
+            threads: list[str] = []
+
+            def on_dialog(dialog):
+                threads.append(threading.current_thread().name)
+                dialog.accept()
+
+            page.on('dialog', on_dialog)
+            page.click('#confirm-btn')
+            assert page.text_content('#confirm-result') == 'true'
+            assert threads and 'pydoll-sync-callbacks' in threads[0]
+
+            def handler(route, request):
+                route.fulfill(
+                    json={'from': request.method},
+                    headers={'Access-Control-Allow-Origin': '*'},
+                )
+
+            page.route('**/*.json', handler)
+            assert page.evaluate('() => fetch("http://example.invalid/a.json").then(r => r.json())') == {
+                'from': 'GET'
+            }
+            page.expose_function('twice', lambda n: n * 2)
+            assert page.evaluate('async () => twice(21)') == 42
+            browser.close()
+
+    def test_expect_context_managers(self):
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True, args=['--no-sandbox'])
+            page = browser.new_page()
+            page.goto(page_url('playwright_events.html'))
+            with page.expect_download() as info:
+                page.click('#download-link')
+            assert info.value.suggested_filename == 'hello.txt'
+            with page.expect_popup() as popup_info:
+                page.click('#popup-btn')
+            assert popup_info.value.url == 'about:blank'
+            with page.expect_navigation():
+                page.click('#page-link')
+            assert page.url.endswith('test_core_simple.html')
+            with page.expect_console_message() as message_info:
+                page.evaluate('() => console.log("sync", 1)')
+            assert message_info.value.text == 'sync 1'
+            browser.close()

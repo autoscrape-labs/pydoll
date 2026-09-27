@@ -78,6 +78,46 @@ TARGETS = [
         constructible={'Chrome', 'Edge'},
         renames={},
     ),
+    Target(
+        output=ROOT / 'pydoll' / 'playwright' / 'sync_api' / '_generated.py',
+        module_docstring='Synchronous Playwright-compatible API (generated, do not edit).',
+        classes=[
+            ('pydoll.playwright._playwright', 'Playwright'),
+            ('pydoll.playwright._playwright', 'BrowserType'),
+            ('pydoll.playwright._playwright', 'Selectors'),
+            ('pydoll.playwright._playwright', 'PlaywrightContextManager'),
+            ('pydoll.playwright._browser', 'Browser'),
+            ('pydoll.playwright._browser_context', 'BrowserContext'),
+            ('pydoll.playwright._page', 'Page'),
+            ('pydoll.playwright._frame', 'Frame'),
+            ('pydoll.playwright._locator', 'Locator'),
+            ('pydoll.playwright._locator', 'FrameLocator'),
+            ('pydoll.playwright._element_handle', 'JSHandle'),
+            ('pydoll.playwright._element_handle', 'ElementHandle'),
+            ('pydoll.playwright._input', 'Keyboard'),
+            ('pydoll.playwright._input', 'Mouse'),
+            ('pydoll.playwright._input', 'Touchscreen'),
+            ('pydoll.playwright._network', 'Request'),
+            ('pydoll.playwright._network', 'Response'),
+            ('pydoll.playwright._network', 'Route'),
+            ('pydoll.playwright._network', 'APIResponse'),
+            ('pydoll.playwright._dialog', 'Dialog'),
+            ('pydoll.playwright._dialog', 'ConsoleMessage'),
+            ('pydoll.playwright._dialog', 'FileChooser'),
+            ('pydoll.playwright._dialog', 'Download'),
+            ('pydoll.playwright._events', 'EventInfo'),
+        ],
+        constructible=set(),
+        extra_footer=textwrap.dedent(
+            '''
+            def sync_playwright() -> PlaywrightContextManager:
+                """``with sync_playwright() as p:`` entry point."""
+                from pydoll.playwright._playwright import async_playwright  # noqa: PLC0415
+
+                return PlaywrightContextManager(async_playwright())
+            '''
+        ),
+    ),
 ]
 
 

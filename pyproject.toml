@@ -50,8 +50,9 @@ ignore = ['PLR0913', 'PLR0917', 'PLR0904', 'E701']
 exclude = ['tests', 'tests/*']
 
 [tool.ruff.lint.per-file-ignores]
-# The sync runtime mirrors the async surface: small instance methods and a
-# type-dispatching mapper are part of the design.
+# The Playwright-compatible layer mirrors Playwright's public signatures: many
+# small instance methods and a few option-heavy functions are part of the contract.
+"pydoll/playwright/**" = ['PLR6301', 'PLR0911', 'PLR0912', 'PLR0915']
 "pydoll/sync/**" = ['PLR6301', 'PLR0911', 'PLR0912', 'PLR0915']
 "scripts/**" = ['PLR0912', 'PLR0915']
 

@@ -192,6 +192,16 @@ class Tab(FindElementsMixin):
         )
 
     @property
+    def target_id(self) -> Optional[str]:
+        """CDP target id of this tab, when known."""
+        return self._target_id
+
+    @property
+    def browser_context_id(self) -> Optional[str]:
+        """Browser context this tab belongs to (None for the default context)."""
+        return self._browser_context_id
+
+    @property
     def page_events_enabled(self) -> bool:
         """Whether CDP Page domain events are enabled."""
         return self._page_events_enabled
@@ -510,7 +520,7 @@ class Tab(FindElementsMixin):
         """
         logger.info(f'Closing tab: target_id={self._target_id}')
         result = await self._execute_command(PageCommands.close())
-        self._browser._tabs_opened.pop(self._target_id)
+        self._browser._tabs_opened.pop(self._target_id, None)
         logger.debug('Tab closed and removed from browser registry')
         return result
 

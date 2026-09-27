@@ -22,7 +22,7 @@ def _load_generator():
     return module
 
 
-@pytest.mark.parametrize('index', range(1), ids=['pydoll.sync'])
+@pytest.mark.parametrize('index', [0, 1], ids=['pydoll.sync', 'pydoll.playwright.sync_api'])
 def test_generated_module_is_current(index: int) -> None:
     generator = _load_generator()
     target = generator.TARGETS[index]
@@ -33,11 +33,11 @@ def test_generated_module_is_current(index: int) -> None:
 
 def test_generated_facades_cover_async_methods() -> None:
     from pydoll.browser.tab import Tab
-    from pydoll.elements.web_element import WebElement
+    from pydoll.playwright._page import Page
+    from pydoll.playwright.sync_api import Page as SyncPage
     from pydoll.sync import Tab as SyncTab
-    from pydoll.sync import WebElement as SyncWebElement
 
-    for impl, facade in ((Tab, SyncTab), (WebElement, SyncWebElement)):
+    for impl, facade in ((Tab, SyncTab), (Page, SyncPage)):
         missing = [
             name
             for name in dir(impl)

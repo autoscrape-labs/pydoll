@@ -112,11 +112,12 @@ from pydoll.commands import DomCommands, RuntimeCommands
 from pydoll.connection.connection_handler import ConnectionHandler
 from pydoll.constants import By, Scripts
 from pydoll.elements.utils import SelectorParser
-from pydoll.exceptions import CommandFailed, ElementNotFound, WaitElementTimeout
+from pydoll.exceptions import CommandFailed, ElementNotFound, ScriptException, WaitElementTimeout
 from typing import Literal, Optional, Union
 from pydoll.protocol.dom.methods import DescribeNodeResponse
 from pydoll.protocol.dom.types import Node
 from pydoll.protocol.runtime.methods import CallFunctionOnParams, CallFunctionOnResponse, EvaluateParams, EvaluateResponse, GetPropertiesResponse
+from pydoll.protocol.runtime.types import CallArgument
 from pydoll.elements.mixins.find_elements_mixin import FindElementsMixin
 from pydoll.commands import DomCommands, InputCommands, PageCommands, RuntimeCommands
 from pydoll.constants import PRESSED_POINTER_FORCE, Scripts
@@ -126,7 +127,6 @@ from pydoll.protocol.dom.types import Rect, ShadowRootType
 from pydoll.protocol.input.types import MOUSE_BUTTON_MASK, MouseButton, MouseEventType
 from pydoll.protocol.page.types import ScreenshotFormat, Viewport
 from pydoll.protocol.runtime.methods import CallFunctionOnResponse, EvaluateResponse, GetPropertiesResponse, SerializationOptions
-from pydoll.protocol.runtime.types import CallArgument
 from pydoll.utils import decode_base64_to_bytes, extract_text_from_html, is_script_already_function
 from pydoll.interactions.mouse import Mouse as MouseType
 from pydoll.protocol.dom.methods import DescribeNodeResponse, GetBoxModelResponse, GetOuterHTMLResponse, ResolveNodeResponse
@@ -475,6 +475,27 @@ class Chrome(SyncBase):
         """Fulfill request with response data."""
         return mapping.from_impl(self._run(self._impl.fulfill_request(request_id=mapping.to_impl(request_id), response_code=mapping.to_impl(response_code), response_headers=mapping.to_impl(response_headers), body=mapping.to_impl(body), response_phrase=mapping.to_impl(response_phrase))))
 
+    def execute_command(self, command: Command[T_CommandParams, T_CommandResponse], timeout: int=60) -> T_CommandResponse:
+        """
+        Send a raw CDP command on the browser-level session.
+
+        Use it for browser-wide domains (Target, Browser, Storage, Emulation
+        screens) that pydoll does not wrap. Build commands with the factories in
+        ``pydoll.commands`` or pass a plain ``{'method': ..., 'params': ...}`` dict.
+
+        Args:
+            command: CDP command to send.
+            timeout: Seconds to wait for the browser's answer.
+
+        Returns:
+            The browser's response, with the domain result under ``'result'``.
+
+        Raises:
+            CommandFailed: If the browser answers with an error.
+            CommandExecutionTimeout: If no answer arrives within ``timeout``.
+        """
+        return mapping.from_impl(self._run(self._impl.execute_command(command=mapping.to_impl(command), timeout=mapping.to_impl(timeout))))
+
 class Edge(SyncBase):
     """Edge browser implementation for CDP automation."""
     _impl: _EdgeImpl
@@ -776,6 +797,27 @@ class Edge(SyncBase):
         """Fulfill request with response data."""
         return mapping.from_impl(self._run(self._impl.fulfill_request(request_id=mapping.to_impl(request_id), response_code=mapping.to_impl(response_code), response_headers=mapping.to_impl(response_headers), body=mapping.to_impl(body), response_phrase=mapping.to_impl(response_phrase))))
 
+    def execute_command(self, command: Command[T_CommandParams, T_CommandResponse], timeout: int=60) -> T_CommandResponse:
+        """
+        Send a raw CDP command on the browser-level session.
+
+        Use it for browser-wide domains (Target, Browser, Storage, Emulation
+        screens) that pydoll does not wrap. Build commands with the factories in
+        ``pydoll.commands`` or pass a plain ``{'method': ..., 'params': ...}`` dict.
+
+        Args:
+            command: CDP command to send.
+            timeout: Seconds to wait for the browser's answer.
+
+        Returns:
+            The browser's response, with the domain result under ``'result'``.
+
+        Raises:
+            CommandFailed: If the browser answers with an error.
+            CommandExecutionTimeout: If no answer arrives within ``timeout``.
+        """
+        return mapping.from_impl(self._run(self._impl.execute_command(command=mapping.to_impl(command), timeout=mapping.to_impl(timeout))))
+
 class Tab(SyncBase):
     """
     Controls a browser tab via Chrome DevTools Protocol.
@@ -785,6 +827,16 @@ class Tab(SyncBase):
     like Cloudflare Turnstile handling.
     """
     _impl: _TabImpl
+
+    @property
+    def target_id(self) -> Optional[str]:
+        """CDP target id of this tab, when known."""
+        return mapping.from_impl(self._impl.target_id)
+
+    @property
+    def browser_context_id(self) -> Optional[str]:
+        """Browser context this tab belongs to (None for the default context)."""
+        return mapping.from_impl(self._impl.browser_context_id)
 
     @property
     def page_events_enabled(self) -> bool:
@@ -1451,6 +1503,57 @@ class Tab(SyncBase):
         """
         return mapping.from_impl(self._run(self._impl.find_or_wait_element(by=mapping.to_impl(by), value=mapping.to_impl(value), timeout=mapping.to_impl(timeout), find_all=mapping.to_impl(find_all), raise_exc=mapping.to_impl(raise_exc))))
 
+    def query_script(self, function_declaration: str, arguments: Optional[list[CallArgument]]=None, execution_context_id: Optional[int]=None) -> list[WebElement]:
+        """
+        Run a JavaScript function that returns elements and wrap them as WebElements.
+
+        The function runs with the search root bound to ``this`` (``document`` on a
+        Tab, the frame document on an iframe element, the element itself on a
+        WebElement, the root on a ShadowRoot) in the same execution context and
+        iframe routing that ``query()`` uses. It may return a single Element, a
+        NodeList, an array of Elements, or ``null``.
+
+        Args:
+            function_declaration: JavaScript function source, e.g.
+                ``function(tag) { return this.querySelectorAll(tag); }``.
+            arguments: CDP call arguments passed positionally to the function.
+            execution_context_id: Run in this execution context of the frame (for
+                example an isolated world created with ``Page.createIsolatedWorld``)
+                with ``this`` bound to that context's ``document``. Ignored when the
+                root is a non-iframe element, whose object id already fixes the context.
+
+        Returns:
+            WebElements for every element the function returned, in return order.
+
+        Raises:
+            ScriptException: If the function throws or fails to compile.
+            CommandFailed: If the browser rejects the command itself.
+        """
+        return mapping.from_impl(self._run(self._impl.query_script(function_declaration=mapping.to_impl(function_declaration), arguments=mapping.to_impl(arguments), execution_context_id=mapping.to_impl(execution_context_id))))
+
+    def execute_command(self, command: Command[T_CommandParams, T_CommandResponse], timeout: int=60) -> T_CommandResponse:
+        """
+        Send a raw CDP command through this object's session.
+
+        The command is routed exactly like the object's own operations: a Tab
+        sends it to the page session, a WebElement inside an out-of-process
+        iframe sends it to that frame's session. Build commands with the
+        factories in ``pydoll.commands`` or pass a plain ``{'method': ..., 'params': ...}``
+        dict for methods pydoll does not wrap.
+
+        Args:
+            command: CDP command to send.
+            timeout: Seconds to wait for the browser's answer.
+
+        Returns:
+            The browser's response, with the domain result under ``'result'``.
+
+        Raises:
+            CommandFailed: If the browser answers with an error.
+            CommandExecutionTimeout: If no answer arrives within ``timeout``.
+        """
+        return mapping.from_impl(self._run(self._impl.execute_command(command=mapping.to_impl(command), timeout=mapping.to_impl(timeout))))
+
 class DownloadHandle(SyncBase):
     """Handle returned by expect_download to access the downloaded file."""
     _impl: _DownloadHandleImpl
@@ -1920,6 +2023,57 @@ class WebElement(SyncBase):
         """
         return mapping.from_impl(self._run(self._impl.find_or_wait_element(by=mapping.to_impl(by), value=mapping.to_impl(value), timeout=mapping.to_impl(timeout), find_all=mapping.to_impl(find_all), raise_exc=mapping.to_impl(raise_exc))))
 
+    def query_script(self, function_declaration: str, arguments: Optional[list[CallArgument]]=None, execution_context_id: Optional[int]=None) -> list[WebElement]:
+        """
+        Run a JavaScript function that returns elements and wrap them as WebElements.
+
+        The function runs with the search root bound to ``this`` (``document`` on a
+        Tab, the frame document on an iframe element, the element itself on a
+        WebElement, the root on a ShadowRoot) in the same execution context and
+        iframe routing that ``query()`` uses. It may return a single Element, a
+        NodeList, an array of Elements, or ``null``.
+
+        Args:
+            function_declaration: JavaScript function source, e.g.
+                ``function(tag) { return this.querySelectorAll(tag); }``.
+            arguments: CDP call arguments passed positionally to the function.
+            execution_context_id: Run in this execution context of the frame (for
+                example an isolated world created with ``Page.createIsolatedWorld``)
+                with ``this`` bound to that context's ``document``. Ignored when the
+                root is a non-iframe element, whose object id already fixes the context.
+
+        Returns:
+            WebElements for every element the function returned, in return order.
+
+        Raises:
+            ScriptException: If the function throws or fails to compile.
+            CommandFailed: If the browser rejects the command itself.
+        """
+        return mapping.from_impl(self._run(self._impl.query_script(function_declaration=mapping.to_impl(function_declaration), arguments=mapping.to_impl(arguments), execution_context_id=mapping.to_impl(execution_context_id))))
+
+    def execute_command(self, command: Command[T_CommandParams, T_CommandResponse], timeout: int=60) -> T_CommandResponse:
+        """
+        Send a raw CDP command through this object's session.
+
+        The command is routed exactly like the object's own operations: a Tab
+        sends it to the page session, a WebElement inside an out-of-process
+        iframe sends it to that frame's session. Build commands with the
+        factories in ``pydoll.commands`` or pass a plain ``{'method': ..., 'params': ...}``
+        dict for methods pydoll does not wrap.
+
+        Args:
+            command: CDP command to send.
+            timeout: Seconds to wait for the browser's answer.
+
+        Returns:
+            The browser's response, with the domain result under ``'result'``.
+
+        Raises:
+            CommandFailed: If the browser answers with an error.
+            CommandExecutionTimeout: If no answer arrives within ``timeout``.
+        """
+        return mapping.from_impl(self._run(self._impl.execute_command(command=mapping.to_impl(command), timeout=mapping.to_impl(timeout))))
+
 class ShadowRoot(SyncBase):
     """
     Shadow root wrapper for shadow DOM traversal.
@@ -2045,6 +2199,57 @@ class ShadowRoot(SyncBase):
             WaitElementTimeout: If elements not found within timeout and raise_exc=True.
         """
         return mapping.from_impl(self._run(self._impl.find_or_wait_element(by=mapping.to_impl(by), value=mapping.to_impl(value), timeout=mapping.to_impl(timeout), find_all=mapping.to_impl(find_all), raise_exc=mapping.to_impl(raise_exc))))
+
+    def query_script(self, function_declaration: str, arguments: Optional[list[CallArgument]]=None, execution_context_id: Optional[int]=None) -> list[WebElement]:
+        """
+        Run a JavaScript function that returns elements and wrap them as WebElements.
+
+        The function runs with the search root bound to ``this`` (``document`` on a
+        Tab, the frame document on an iframe element, the element itself on a
+        WebElement, the root on a ShadowRoot) in the same execution context and
+        iframe routing that ``query()`` uses. It may return a single Element, a
+        NodeList, an array of Elements, or ``null``.
+
+        Args:
+            function_declaration: JavaScript function source, e.g.
+                ``function(tag) { return this.querySelectorAll(tag); }``.
+            arguments: CDP call arguments passed positionally to the function.
+            execution_context_id: Run in this execution context of the frame (for
+                example an isolated world created with ``Page.createIsolatedWorld``)
+                with ``this`` bound to that context's ``document``. Ignored when the
+                root is a non-iframe element, whose object id already fixes the context.
+
+        Returns:
+            WebElements for every element the function returned, in return order.
+
+        Raises:
+            ScriptException: If the function throws or fails to compile.
+            CommandFailed: If the browser rejects the command itself.
+        """
+        return mapping.from_impl(self._run(self._impl.query_script(function_declaration=mapping.to_impl(function_declaration), arguments=mapping.to_impl(arguments), execution_context_id=mapping.to_impl(execution_context_id))))
+
+    def execute_command(self, command: Command[T_CommandParams, T_CommandResponse], timeout: int=60) -> T_CommandResponse:
+        """
+        Send a raw CDP command through this object's session.
+
+        The command is routed exactly like the object's own operations: a Tab
+        sends it to the page session, a WebElement inside an out-of-process
+        iframe sends it to that frame's session. Build commands with the
+        factories in ``pydoll.commands`` or pass a plain ``{'method': ..., 'params': ...}``
+        dict for methods pydoll does not wrap.
+
+        Args:
+            command: CDP command to send.
+            timeout: Seconds to wait for the browser's answer.
+
+        Returns:
+            The browser's response, with the domain result under ``'result'``.
+
+        Raises:
+            CommandFailed: If the browser answers with an error.
+            CommandExecutionTimeout: If no answer arrives within ``timeout``.
+        """
+        return mapping.from_impl(self._run(self._impl.execute_command(command=mapping.to_impl(command), timeout=mapping.to_impl(timeout))))
 
 class Keyboard(SyncBase):
     """

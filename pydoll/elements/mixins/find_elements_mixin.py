@@ -11,7 +11,12 @@ from pydoll.commands import (
 from pydoll.connection.connection_handler import ConnectionHandler
 from pydoll.constants import By, Scripts
 from pydoll.elements.utils import SelectorParser
-from pydoll.exceptions import CommandFailed, ElementNotFound, WaitElementTimeout
+from pydoll.exceptions import (
+    CommandFailed,
+    ElementNotFound,
+    ScriptException,
+    WaitElementTimeout,
+)
 
 if TYPE_CHECKING:
     from typing import Literal, Optional, Union
@@ -28,6 +33,7 @@ if TYPE_CHECKING:
         EvaluateResponse,
         GetPropertiesResponse,
     )
+    from pydoll.protocol.runtime.types import CallArgument
 
 
 logger = logging.getLogger(__name__)
@@ -562,22 +568,125 @@ class FindElementsMixin:
 
         object_id = response_for_command['result']['result']['objectId']
         try:
-            query_response: GetPropertiesResponse = await self._execute_command(
-                RuntimeCommands.get_properties(object_id=object_id)
-            )
+            object_ids = await self._collection_object_ids(object_id)
         except CommandFailed as exc:
             self._not_found(raise_exc, f'Element list vanished before it was read: {exc}', exc)
             return []
 
-        response: list[str] = []
+        inherited_context = iframe_context or getattr(self, '_iframe_context', None)
+        elements = await self._wrap_elements(object_ids, by, value, inherited_context)
+        logger.debug(f'_find_elements() returning {len(elements)} elements')
+        return elements
+
+    async def query_script(
+        self,
+        function_declaration: str,
+        arguments: Optional[list[CallArgument]] = None,
+        execution_context_id: Optional[int] = None,
+    ) -> list[WebElement]:
+        """
+        Run a JavaScript function that returns elements and wrap them as WebElements.
+
+        The function runs with the search root bound to ``this`` (``document`` on a
+        Tab, the frame document on an iframe element, the element itself on a
+        WebElement, the root on a ShadowRoot) in the same execution context and
+        iframe routing that ``query()`` uses. It may return a single Element, a
+        NodeList, an array of Elements, or ``null``.
+
+        Args:
+            function_declaration: JavaScript function source, e.g.
+                ``function(tag) { return this.querySelectorAll(tag); }``.
+            arguments: CDP call arguments passed positionally to the function.
+            execution_context_id: Run in this execution context of the frame (for
+                example an isolated world created with ``Page.createIsolatedWorld``)
+                with ``this`` bound to that context's ``document``. Ignored when the
+                root is a non-iframe element, whose object id already fixes the context.
+
+        Returns:
+            WebElements for every element the function returned, in return order.
+
+        Raises:
+            ScriptException: If the function throws or fails to compile.
+            CommandFailed: If the browser rejects the command itself.
+        """
+        logger.debug(f'query_script(): length={len(function_declaration)}')
+        iframe_context = None
+        if getattr(self, 'is_iframe', False):
+            element_self = cast('WebElement', self)
+            iframe_context = await element_self.iframe_context
+
+        if execution_context_id is None and iframe_context:
+            if not iframe_context.document_object_id:
+                execution_context_id = iframe_context.execution_context_id
+        element_root = hasattr(self, '_object_id') and not getattr(self, 'is_iframe', False)
+        if execution_context_id is not None and not element_root:
+            command = RuntimeCommands.call_function_on(
+                function_declaration=(
+                    f'function() {{ return ({function_declaration}).apply(document, arguments); }}'
+                ),
+                arguments=arguments,
+                execution_context_id=execution_context_id,
+                return_by_value=False,
+            )
+        else:
+            if iframe_context:
+                root_object_id = iframe_context.document_object_id or ''
+            elif hasattr(self, '_object_id'):
+                root_object_id = self._object_id
+            else:
+                root_object_id = await self._document_object_id()
+            command = RuntimeCommands.call_function_on(
+                function_declaration=function_declaration,
+                object_id=root_object_id,
+                arguments=arguments,
+                return_by_value=False,
+            )
+        response: CallFunctionOnResponse = await self._execute_command(command)
+        self._raise_script_exception(response)
+        remote_object = response['result']['result']
+        result_object_id = remote_object.get('objectId')
+        if not result_object_id:
+            return []
+
+        if remote_object.get('subtype') == 'node':
+            object_ids = [result_object_id]
+        else:
+            object_ids = await self._collection_object_ids(result_object_id)
+
+        inherited_context = iframe_context or getattr(self, '_iframe_context', None)
+        elements = await self._wrap_elements(object_ids, 'script', None, inherited_context)
+        logger.debug(f'query_script() returning {len(elements)} elements')
+        return elements
+
+    async def _document_object_id(self) -> str:
+        """Resolve the remote object id of ``document`` in the default context."""
+        response: EvaluateResponse = await self._execute_command(
+            RuntimeCommands.evaluate(expression='document', return_by_value=False)
+        )
+        return response['result']['result']['objectId']
+
+    async def _collection_object_ids(self, object_id: str) -> list[str]:
+        """Object ids of the indexed entries of an array-like remote object."""
+        query_response: GetPropertiesResponse = await self._execute_command(
+            RuntimeCommands.get_properties(object_id=object_id)
+        )
+        object_ids: list[str] = []
         for query in query_response.get('result', {}).get('result', []):
             if not (query['name'].isdigit() and 'objectId' in query['value']):
                 continue
-            response.append(query['value']['objectId'])
+            object_ids.append(query['value']['objectId'])
+        return object_ids
 
-        inherited_context = iframe_context or getattr(self, '_iframe_context', None)
+    async def _wrap_elements(
+        self,
+        object_ids: list[str],
+        by: Optional[str],
+        value: Optional[str],
+        inherited_context: IFrameContext | None,
+    ) -> list[WebElement]:
+        """Describe each node and build the WebElements, propagating iframe context."""
         elements = []
-        for object_id in response:
+        for object_id in object_ids:
             try:
                 node_description = await self._describe_node(object_id=object_id)
             except KeyError:
@@ -597,8 +706,17 @@ class FindElementsMixin:
             )
             self._apply_iframe_context_to_element(child, inherited_context)
             elements.append(child)
-        logger.debug(f'_find_elements() returning {len(elements)} elements')
         return elements
+
+    @staticmethod
+    def _raise_script_exception(response: CallFunctionOnResponse) -> None:
+        """Surface a JavaScript exception thrown by a script as CommandFailed."""
+        details = response.get('result', {}).get('exceptionDetails')
+        if not details:
+            return
+        exception = details.get('exception', {})
+        message = exception.get('description') or details.get('text') or 'Script threw an exception'
+        raise ScriptException(message)
 
     async def _get_object_attributes(self, object_id: str) -> list[str]:
         """
@@ -733,6 +851,34 @@ class FindElementsMixin:
         if routing_handler is not None:
             return routing_handler, getattr(self, '_routing_session_id', None)
         return self._connection_handler, None
+
+    async def execute_command(
+        self, command: Command[T_CommandParams, T_CommandResponse], timeout: int = 60
+    ) -> T_CommandResponse:
+        """
+        Send a raw CDP command through this object's session.
+
+        The command is routed exactly like the object's own operations: a Tab
+        sends it to the page session, a WebElement inside an out-of-process
+        iframe sends it to that frame's session. Build commands with the
+        factories in ``pydoll.commands`` or pass a plain ``{'method': ..., 'params': ...}``
+        dict for methods pydoll does not wrap.
+
+        Args:
+            command: CDP command to send.
+            timeout: Seconds to wait for the browser's answer.
+
+        Returns:
+            The browser's response, with the domain result under ``'result'``.
+
+        Raises:
+            CommandFailed: If the browser answers with an error.
+            CommandExecutionTimeout: If no answer arrives within ``timeout``.
+        """
+        handler, session_id = self._resolve_routing()
+        if session_id:
+            command['sessionId'] = session_id
+        return await handler.execute_command(command, timeout=timeout)
 
     async def _execute_command(
         self, command: Command[T_CommandParams, T_CommandResponse]

@@ -988,6 +988,29 @@ class Browser(ABC):  # noqa: PLR0904
                 return False
             await asyncio.sleep(0.05)
 
+    async def execute_command(
+        self, command: Command[T_CommandParams, T_CommandResponse], timeout: int = 60
+    ) -> T_CommandResponse:
+        """
+        Send a raw CDP command on the browser-level session.
+
+        Use it for browser-wide domains (Target, Browser, Storage, Emulation
+        screens) that pydoll does not wrap. Build commands with the factories in
+        ``pydoll.commands`` or pass a plain ``{'method': ..., 'params': ...}`` dict.
+
+        Args:
+            command: CDP command to send.
+            timeout: Seconds to wait for the browser's answer.
+
+        Returns:
+            The browser's response, with the domain result under ``'result'``.
+
+        Raises:
+            CommandFailed: If the browser answers with an error.
+            CommandExecutionTimeout: If no answer arrives within ``timeout``.
+        """
+        return await self._execute_command(command, timeout=timeout)
+
     async def _execute_command(
         self, command: Command[T_CommandParams, T_CommandResponse], timeout: int = 60
     ) -> T_CommandResponse:

@@ -17,7 +17,6 @@ from pydoll.commands import (
 from pydoll.connection import ConnectionHandler
 from pydoll.constants import (
     PRESSED_POINTER_FORCE,
-    Key,
     Scripts,
 )
 from pydoll.elements.mixins import FindElementsMixin
@@ -41,8 +40,6 @@ from pydoll.interactions.keyboard import Keyboard
 from pydoll.protocol.dom.types import Rect, ShadowRootType
 from pydoll.protocol.input.types import (
     MOUSE_BUTTON_MASK,
-    KeyEventType,
-    KeyModifier,
     MouseButton,
     MouseEventType,
 )
