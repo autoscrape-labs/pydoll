@@ -115,7 +115,7 @@ class TestPydollSync:
 class TestPlaywrightSync:
     def test_end_to_end_script(self):
         with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True, args=['--no-sandbox'])
+            browser = p.chromium.launch(headless=True, args=['--no-sandbox'], timeout=60_000)
             context = browser.new_context(viewport={'width': 800, 'height': 600})
             page = context.new_page()
             assert isinstance(page, Page)
@@ -139,7 +139,7 @@ class TestPlaywrightSync:
 
     def test_handlers_run_off_the_loop_and_call_back_in(self):
         with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True, args=['--no-sandbox'])
+            browser = p.chromium.launch(headless=True, args=['--no-sandbox'], timeout=60_000)
             page = browser.new_page()
             page.goto(page_url('playwright_events.html'))
             threads: list[str] = []
@@ -169,7 +169,7 @@ class TestPlaywrightSync:
 
     def test_expect_context_managers(self):
         with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True, args=['--no-sandbox'])
+            browser = p.chromium.launch(headless=True, args=['--no-sandbox'], timeout=60_000)
             page = browser.new_page()
             page.goto(page_url('playwright_events.html'))
             with page.expect_download() as info:

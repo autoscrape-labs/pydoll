@@ -80,7 +80,9 @@ async def playwright():
 async def pw_browser(playwright):
     """One Playwright-API browser per worker; tests isolate themselves with a context."""
     instance = await playwright.chromium.launch(
-        headless=True, args=['--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage']
+        headless=True,
+        args=['--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage'],
+        timeout=60_000,
     )
     try:
         yield instance

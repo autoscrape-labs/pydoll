@@ -39,6 +39,7 @@ from pydoll.playwright._events import EventInfo as _EventInfoImpl
 
 
 
+import asyncio
 from pathlib import Path
 from typing import Any, Sequence
 from urllib.parse import urlsplit
@@ -48,7 +49,6 @@ from pydoll.exceptions import PydollException
 from pydoll.playwright._browser import build_options
 from pydoll.playwright._errors import Error, translate
 from pydoll.playwright._selectors import DEFAULT_TEST_ID_ATTRIBUTE
-import asyncio
 import logging
 from typing import TYPE_CHECKING, Any, Sequence, cast
 from pydoll.browser.options import ChromiumOptions

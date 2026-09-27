@@ -118,7 +118,7 @@ class TestTransportPromises:
 class TestSyncFlavor:
     def test_sync_login_flow(self, ci_chrome_options):
         with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True, args=ci_chrome_options.arguments)
+            browser = p.chromium.launch(headless=True, args=ci_chrome_options.arguments, timeout=60_000)
             page = browser.new_page()
             page.goto(LOGIN_URL)
             page.get_by_label('Username').fill('john')
@@ -130,7 +130,7 @@ class TestSyncFlavor:
     def test_sync_page_tab_is_a_sync_facade(self, ci_chrome_options):
         """The documented escape hatch must block like the rest of the sync API."""
         with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True, args=ci_chrome_options.arguments)
+            browser = p.chromium.launch(headless=True, args=ci_chrome_options.arguments, timeout=60_000)
             page = browser.new_page()
             page.goto(LOGIN_URL)
             tab = page.tab

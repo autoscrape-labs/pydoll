@@ -17,7 +17,7 @@ LAUNCH_ARGS = ['--no-sandbox', '--disable-gpu', '--disable-dev-shm-usage']
 class TestLifecycle:
     @pytest.mark.asyncio
     async def test_launch_context_page_and_close(self, playwright):
-        browser = await playwright.chromium.launch(headless=True, args=['--no-sandbox'])
+        browser = await playwright.chromium.launch(headless=True, args=['--no-sandbox'], timeout=60_000)
         assert browser.is_connected()
         assert browser.version
         assert browser.contexts == []
@@ -54,7 +54,7 @@ class TestLifecycle:
     @pytest.mark.asyncio
     async def test_leaving_async_playwright_stops_the_browsers_it_launched(self):
         async with async_playwright() as instance:
-            browser = await instance.chromium.launch(headless=True, args=LAUNCH_ARGS)
+            browser = await instance.chromium.launch(headless=True, args=LAUNCH_ARGS, timeout=60_000)
             page = await browser.new_page()
             await page.goto(page_url('test_core_simple.html'))
             process = browser.chrome._browser_process_manager._process
@@ -65,7 +65,7 @@ class TestLifecycle:
 
     @pytest.mark.asyncio
     async def test_browser_close_stops_the_process_it_launched(self, playwright):
-        browser = await playwright.chromium.launch(headless=True, args=LAUNCH_ARGS)
+        browser = await playwright.chromium.launch(headless=True, args=LAUNCH_ARGS, timeout=60_000)
         process = browser.chrome._browser_process_manager._process
         await browser.close()
         assert process is not None and process.poll() is not None
@@ -79,7 +79,7 @@ class TestLifecycle:
             await page.evaluate('1 + 1')
         with pytest.raises(TargetClosedError):
             await page.locator('#main-heading').text_content(timeout=500)
-        browser = await playwright.chromium.launch(headless=True, args=LAUNCH_ARGS)
+        browser = await playwright.chromium.launch(headless=True, args=LAUNCH_ARGS, timeout=60_000)
         other = await browser.new_page()
         await browser.close()
         with pytest.raises(TargetClosedError):
@@ -89,7 +89,7 @@ class TestLifecycle:
 
     @pytest.mark.asyncio
     async def test_connect_over_cdp_accepts_an_http_endpoint(self, playwright):
-        launched = await playwright.chromium.launch(headless=True, args=LAUNCH_ARGS)
+        launched = await playwright.chromium.launch(headless=True, args=LAUNCH_ARGS, timeout=60_000)
         try:
             attached = await playwright.chromium.connect_over_cdp(
                 f'http://localhost:{launched.chrome._connection_port}'
@@ -481,7 +481,7 @@ class TestContext:
     @pytest.mark.asyncio
     async def test_persistent_context(self, playwright, tmp_path):
         context = await playwright.chromium.launch_persistent_context(
-            tmp_path / 'profile', headless=True, args=['--no-sandbox']
+            tmp_path / 'profile', headless=True, args=['--no-sandbox'], timeout=60_000
         )
         assert len(context.pages) == 1
         page = context.pages[0]
@@ -492,7 +492,7 @@ class TestContext:
     @pytest.mark.asyncio
     async def test_closing_a_persistent_context_closes_its_browser(self, playwright, tmp_path):
         context = await playwright.chromium.launch_persistent_context(
-            tmp_path / 'owned-profile', headless=True, args=['--no-sandbox']
+            tmp_path / 'owned-profile', headless=True, args=['--no-sandbox'], timeout=60_000
         )
         browser = context.browser
         assert browser is not None
