@@ -125,6 +125,8 @@ TLS 握手和 JavaScript 引擎会报告二进制的真实版本；User-Agent �
 
 `webgl` 和 `webgpu` 部分改变的是浏览器报告的 GPU 信息；GPU 画出来的东西保持真实。声称机器里实际存在的那个 GPU 系列，并从同一类别的真实设备上捕获 limits 和 features，而不是靠猜。`fonts` 部分覆盖的是 JavaScript 的字体探测；布局引擎测量的是真正安装的字体，所以要恰好列出已安装的字体。
 
+WebGL 扩展列表也要取自同一次捕获。`getSupportedExtensions()` 按 Chrome 自身的顺序报告配置文件里的列表：主机 GPU 拥有的扩展直接放行，主机缺少的扩展则依据 Chromium 的接口定义构造出来，带有它的常量、方法、压缩纹理格式以及它解锁的上限。软件光栅化器暴露的列表比任何独立 GPU 都短，正是这一点让这个差异不会透过配置文件泄露。pydoll 不认识的名字只在主机确实暴露它时才保留。
+
 ### 钉住 User-Agent 承载不了的 Client Hints
 
 User-Agent 字符串是冻结的（`Mac OS X 10_15_7`、`Android 10; K`）；真实 Chrome 在 Client Hints 里报告真实的 OS 版本、设备型号和形态。解析器会填入合理的默认值；设置 `client_hints`，把它钉在一台真实设备上读到的值。

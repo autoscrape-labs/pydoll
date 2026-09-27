@@ -125,6 +125,8 @@ O handshake TLS e o motor JavaScript reportam a versão real do binário; o User
 
 As seções `webgl` e `webgpu` mudam o que o navegador reporta sobre a GPU; o que a GPU desenha continua real. Nomeie a família de GPU que está de fato na máquina, e capture os limites e as features de um dispositivo real daquela classe em vez de adivinhar. A seção `fonts` cobre as sondas de fontes em JavaScript; o motor de layout mede as fontes realmente instaladas, então liste exatamente o que está instalado.
 
+Tire as listas de extensões WebGL da mesma captura. `getSupportedExtensions()` reporta a lista do perfil na ordem do próprio Chrome: uma extensão que a GPU do host tem passa direto, e uma que o host não tem é construída a partir da definição de interface do Chromium, com as constantes, os métodos, os formatos de textura comprimida e os limites que ela destrava. Um rasterizador por software expõe uma lista mais curta que qualquer GPU dedicada, e é isso que mantém essa diferença fora do perfil. Um nome que o pydoll não conhece só é mantido quando o host realmente o expõe.
+
 ### Fixe os Client Hints que o User-Agent não consegue carregar
 
 A string do User-Agent é congelada (`Mac OS X 10_15_7`, `Android 10; K`); o Chrome real reporta a versão verdadeira do OS, o modelo do dispositivo e o form factor nos Client Hints. O parser preenche padrões plausíveis; defina `client_hints` para fixar os valores lidos num dispositivo real.

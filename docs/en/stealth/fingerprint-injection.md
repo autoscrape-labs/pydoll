@@ -125,6 +125,8 @@ The TLS handshake and the JavaScript engine report the real binary version; the 
 
 The `webgl` and `webgpu` sections change what the browser reports about the GPU; what the GPU draws stays real. Name the GPU family that is actually in the machine, and capture the limits and features from a real device of that class rather than guessing. The `fonts` section covers the JavaScript font probes; the layout engine measures the fonts really installed, so list exactly what is installed.
 
+Take the WebGL extension lists from the same capture. `getSupportedExtensions()` reports the profile's list in Chrome's own order: an extension the host GPU has is passed through, and one the host lacks is built from Chromium's interface definition, with its constants, methods, compressed texture formats and the limits it unlocks. A software rasterizer exposes a shorter list than any discrete GPU, and this is what keeps that difference out of the profile. A name pydoll does not know is kept only when the host really exposes it.
+
 ### Pin the Client Hints the User-Agent cannot carry
 
 The User-Agent string is frozen (`Mac OS X 10_15_7`, `Android 10; K`); real Chrome reports the true OS version, device model and form factor in the Client Hints. The parser fills plausible defaults; set `client_hints` to pin the values read on a real device.
