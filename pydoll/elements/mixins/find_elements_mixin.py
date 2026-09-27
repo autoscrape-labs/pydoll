@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from typing import TYPE_CHECKING, Optional, Union, cast, overload
+from typing import TYPE_CHECKING, Optional, Sequence, Union, cast, overload
 
 from pydoll.commands import (
     DomCommands,
@@ -911,6 +911,16 @@ class FindElementsMixin:
         if session_id:
             command['sessionId'] = session_id
         return await handler.execute_command(command, timeout=60)
+
+    async def _execute_commands(
+        self, commands: Sequence[Command[T_CommandParams, T_CommandResponse]]
+    ) -> list[T_CommandResponse]:
+        """Send a batch of commands in order through the resolved handler."""
+        handler, session_id = self._resolve_routing()
+        if session_id:
+            for command in commands:
+                command['sessionId'] = session_id
+        return await handler.execute_commands(commands, timeout=60)
 
     def _get_find_element_command(
         self,

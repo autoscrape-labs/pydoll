@@ -47,6 +47,30 @@ async def test_execute_command_returns_matching_response(cdp_server):
 
 
 @pytest.mark.asyncio
+async def test_execute_commands_sends_a_batch_in_order_and_returns_answers_in_order(cdp_server):
+    cdp_server.set_result('Browser.getVersion', {'product': 'FakeChrome/1.0'})
+    handler = ConnectionHandler(ws_address=cdp_server.ws_address)
+    try:
+        results = await handler.execute_commands([
+            {'method': 'Browser.getVersion'},
+            {'method': 'Target.getTargets'},
+            {'method': 'Browser.getVersion'},
+        ])
+    finally:
+        await handler.close()
+
+    assert [result['result'] for result in results] == [
+        {'product': 'FakeChrome/1.0'},
+        {},
+        {'product': 'FakeChrome/1.0'},
+    ]
+    received = [command['method'] for command in cdp_server.received_commands]
+    assert received == ['Browser.getVersion', 'Target.getTargets', 'Browser.getVersion']
+    ids = [command['id'] for command in cdp_server.received_commands]
+    assert ids == sorted(ids)
+
+
+@pytest.mark.asyncio
 async def test_concurrent_commands_get_unique_ids_and_all_resolve(cdp_server):
     handler = ConnectionHandler(ws_address=cdp_server.ws_address)
     try:

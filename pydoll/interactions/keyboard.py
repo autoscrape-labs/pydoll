@@ -4,7 +4,7 @@ import asyncio
 import logging
 import random
 from dataclasses import dataclass
-from typing import Any, Optional, Protocol, cast
+from typing import TYPE_CHECKING, Any, Optional, Protocol, cast
 
 from pydoll.commands import InputCommands
 from pydoll.constants import (
@@ -15,6 +15,9 @@ from pydoll.constants import (
     TypoType,
 )
 from pydoll.protocol.input.types import KeyEventType, KeyModifier
+
+if TYPE_CHECKING:
+    from pydoll.protocol.base import Command
 
 logger = logging.getLogger(__name__)
 
@@ -217,8 +220,13 @@ class Keyboard:
             return
 
         await self._ensure_focus()
-        for current_char in text:
-            await self._type_char(current_char, hold=0, refocus=False)
+        commands = [command for char in text for command in self._key_event_commands(char)]
+        batch = getattr(self._executor, '_execute_commands', None)
+        if batch is not None:
+            await batch(commands)
+            return
+        for command in commands:
+            await self._executor._execute_command(command)
 
     async def _type_text_humanized(self, text: str):
         """Type text with realistic human-like behavior."""
@@ -237,6 +245,28 @@ class Keyboard:
 
     def _key_hold(self) -> float:
         return random.uniform(self._timing.key_hold_min, self._timing.key_hold_max)
+
+    @staticmethod
+    def _key_event_commands(char: str) -> tuple[Command, Command]:
+        """The keydown and keyup commands that type one character."""
+        key, code, keycode = CHAR_TO_KEY_INFO.get(char, (char, '', 0))
+        down = InputCommands.dispatch_key_event(
+            type=KeyEventType.KEY_DOWN,
+            key=key,
+            code=code,
+            text=char,
+            unmodified_text=char,
+            windows_virtual_key_code=keycode,
+            native_virtual_key_code=keycode,
+        )
+        up = InputCommands.dispatch_key_event(
+            type=KeyEventType.KEY_UP,
+            key=key,
+            code=code,
+            windows_virtual_key_code=keycode,
+            native_virtual_key_code=keycode,
+        )
+        return down, up
 
     async def _type_char(self, char: str, hold: Optional[float] = None, refocus: bool = True):
         """Type a single character.

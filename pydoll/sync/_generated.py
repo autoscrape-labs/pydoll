@@ -107,7 +107,7 @@ from pydoll.protocol.page.methods import CaptureScreenshotResponse, GetResourceC
 from pydoll.protocol.runtime.methods import EvaluateResponse
 from pydoll.protocol.target.methods import AttachToTargetResponse, GetTargetsResponse
 T = TypeVar('T', bound='ExtractionModel')
-from typing import TYPE_CHECKING, Optional, Union, cast, overload
+from typing import TYPE_CHECKING, Optional, Sequence, Union, cast, overload
 from pydoll.commands import DomCommands, RuntimeCommands
 from pydoll.connection.connection_handler import ConnectionHandler
 from pydoll.constants import By, Scripts
@@ -140,10 +140,11 @@ from pydoll.protocol.dom.types import ShadowRootType
 from pydoll.protocol.dom.methods import GetOuterHTMLResponse
 import random
 from dataclasses import dataclass
-from typing import Any, Optional, Protocol, cast
+from typing import TYPE_CHECKING, Any, Optional, Protocol, cast
 from pydoll.commands import InputCommands
 from pydoll.constants import CHAR_TO_KEY_INFO, DEFAULT_TYPO_PROBABILITY, QWERTY_NEIGHBORS, Key, TypoType
 from pydoll.protocol.input.types import KeyEventType, KeyModifier
+from pydoll.protocol.base import Command
 from pydoll.interactions.keyboard import CommandExecutor
 from pydoll.interactions.keyboard import TypoResult
 from pydoll.interactions.keyboard import TimingConfig

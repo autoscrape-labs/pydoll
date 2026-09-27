@@ -69,7 +69,10 @@ class TestConsoleAndErrors:
         errors = []
         page.on('pageerror', lambda error: errors.append(error))
         await page.evaluate('() => setTimeout(() => { throw new Error("later") }, 0)')
-        await page.wait_for_timeout(200)
+        for _ in range(100):
+            if errors:
+                break
+            await page.wait_for_timeout(20)
         assert errors and 'later' in errors[0].message
 
 

@@ -75,6 +75,10 @@ class FakeConnection:
             raise self._failures[method]
         return {'id': self._command_id, 'result': self._results.get(method, {})}
 
+    async def execute_commands(self, commands: list[dict], timeout: int = 60) -> list[dict]:
+        """Mirror ConnectionHandler.execute_commands: every command, in order."""
+        return [await self.execute_command(command, timeout) for command in commands]
+
     async def register_callback(
         self,
         event_name: str,

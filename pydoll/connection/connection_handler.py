@@ -5,7 +5,7 @@ import json
 import logging
 from contextlib import suppress
 from enum import Enum
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, Sequence, cast
 
 import websockets
 from websockets.asyncio.client import ClientConnection
@@ -146,6 +146,56 @@ class ConnectionHandler:
             await self._handle_connection_loss()
             logger.warning(f'WebSocket connection closed during command: id={command.get("id")}')
             raise WebSocketConnectionClosed()
+
+    async def execute_commands(
+        self,
+        commands: Sequence[Command[T_CommandParams, T_CommandResponse]],
+        timeout: int = 60,
+    ) -> list[T_CommandResponse]:
+        """Send several commands back to back and wait for all of their answers.
+
+        The browser handles the commands of one session in the order they
+        arrive, so sending a sequence without waiting for each answer keeps
+        the ordering (keydown before keyup, for example) while paying one
+        round trip for the whole batch instead of one per command.
+
+        Args:
+            commands: Commands to send, in order.
+            timeout: Seconds to wait for the last answer.
+
+        Returns:
+            The responses, in the same order as ``commands``.
+
+        Raises:
+            CommandFailed: If the browser rejects any command in the batch.
+            CommandExecutionTimeout: If the answers do not all arrive in time.
+            WebSocketConnectionClosed: If the connection closes meanwhile.
+        """
+        if not commands:
+            return []
+        await self._ensure_active_connection()
+        ws = cast(ClientConnection, self._ws_connection)
+        futures = [self._command_manager.create_command_future(command) for command in commands]
+        try:
+            for command in commands:
+                await ws.send(json.dumps(command))
+            responses: list[str] = await asyncio.wait_for(asyncio.gather(*futures), timeout)
+        except asyncio.TimeoutError:
+            for command in commands:
+                self._command_manager.remove_pending_command(command['id'])
+            logger.error('Batch of %d commands timed out after %ss', len(commands), timeout)
+            raise CommandExecutionTimeout()
+        except websockets.ConnectionClosed:
+            for command in commands:
+                self._command_manager.remove_pending_command(command['id'])
+            await self._handle_connection_loss()
+            raise WebSocketConnectionClosed()
+        results: list[T_CommandResponse] = []
+        for command, raw in zip(commands, responses):
+            response_data = json.loads(raw)
+            self._raise_if_failed(command, response_data)
+            results.append(response_data)
+        return results
 
     @staticmethod
     def _raise_if_failed(command: Command, response: Response) -> None:
