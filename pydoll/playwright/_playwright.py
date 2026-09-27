@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 from pathlib import Path
 from typing import Any, Sequence
 from urllib.parse import urlsplit
@@ -264,7 +265,7 @@ async def _websocket_endpoint(
             async with session.get(version_url) as response:
                 response.raise_for_status()
                 data = await response.json()
-    except (aiohttp.ClientError, TimeoutError) as error:
+    except (aiohttp.ClientError, asyncio.TimeoutError, OSError) as error:
         raise Error(f'Could not reach the DevTools endpoint at {version_url}: {error}') from error
     try:
         return str(data['webSocketDebuggerUrl'])
