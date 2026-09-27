@@ -145,8 +145,8 @@ Um browser context guarda uma identidade. Aplicar um segundo fingerprint, difere
 === "Sync"
 
     ```python
-    ctx_id = browser.create_browser_context()
     tab_us = browser.start()
+    ctx_id = browser.create_browser_context()
     tab_br = browser.new_tab(browser_context_id=ctx_id)
 
     tab_us.apply_fingerprint(FINGERPRINTS['windows11_rtx3060_nyc'])
@@ -156,8 +156,8 @@ Um browser context guarda uma identidade. Aplicar um segundo fingerprint, difere
 === "Async"
 
     ```python
-    ctx_id = await browser.create_browser_context()
     tab_us = await browser.start()
+    ctx_id = await browser.create_browser_context()
     tab_br = await browser.new_tab(browser_context_id=ctx_id)
 
     await tab_us.apply_fingerprint(FINGERPRINTS['windows11_rtx3060_nyc'])
