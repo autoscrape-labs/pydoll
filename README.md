@@ -251,9 +251,25 @@ asyncio.run(solve_turnstile())
 > [!NOTE]
 > Despite the method name, this isn't a magic bypass. Pydoll performs the same click a real user would; whether it passes depends on your environment (browser fingerprint and IP reputation). See the [Turnstile docs](https://pydoll.tech/docs/stealth/captcha-bypass/) for details.
 
+### 4. No `async`? Use `pydoll.sync`
+
+Every class in `pydoll.sync` mirrors its async counterpart method for method, without `await`. The facades are generated from the async code, so they never lag behind it, and callbacks still work: they run on a dispatch thread and can call any sync method.
+
+```python
+from pydoll.sync import Chrome
+
+with Chrome() as browser:
+    tab = browser.start()
+    tab.go_to('https://quotes.toscrape.com/')
+    print(tab.title)
+    print(tab.query('.quote .text').text)
+```
+
+See the [Synchronous API guide](https://pydoll.tech/docs/guides/sync-api/).
+
 ## Features
 
-The section above covers the three flows most people start with. The rest of what Pydoll does is below: click any item to expand a short explanation, a runnable example, and a link to its full guide.
+The section above covers the flows most people start with. The rest of what Pydoll does is below: click any item to expand a short explanation, a runnable example, and a link to its full guide.
 
 <details>
 <summary><b>Structured Data Extraction (Pydantic)</b></summary>

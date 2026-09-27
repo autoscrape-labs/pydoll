@@ -1,0 +1,2583 @@
+"""Synchronous facades over pydoll (generated, do not edit).
+
+Regenerate with ``python scripts/generate_sync_api.py``.
+"""
+
+# ruff: noqa
+# fmt: off
+from __future__ import annotations
+
+from contextlib import AbstractContextManager
+from typing import Any
+
+from pydoll.sync._runtime import SyncBase, mapping, run_sync
+
+from pydoll.browser.chromium.chrome import Chrome as _ChromeImpl
+from pydoll.browser.chromium.edge import Edge as _EdgeImpl
+from pydoll.browser.tab import Tab as _TabImpl
+from pydoll.browser.tab import _DownloadHandle as _DownloadHandleImpl
+from pydoll.elements.web_element import WebElement as _WebElementImpl
+from pydoll.elements.shadow_root import ShadowRoot as _ShadowRootImpl
+from pydoll.interactions.keyboard import Keyboard as _KeyboardImpl
+from pydoll.interactions.mouse import Mouse as _MouseImpl
+from pydoll.interactions.scroll import Scroll as _ScrollImpl
+from pydoll.browser.requests.request import Request as _RequestImpl
+from pydoll.browser.requests.response import Response as _ResponseImpl
+
+
+
+import logging
+import platform
+from typing import TYPE_CHECKING, Optional
+from pydoll.browser.chromium.base import Browser
+from pydoll.browser.managers import ChromiumOptionsManager
+from pydoll.exceptions import UnsupportedOS
+from pydoll.utils import validate_browser_paths
+from pydoll.browser.options import ChromiumOptions
+from pydoll.browser.options import Options
+import asyncio
+import base64 as _b64
+import contextlib
+import io
+import shutil
+import warnings
+import zipfile
+from contextlib import asynccontextmanager
+from functools import partial
+from pathlib import Path
+from tempfile import mkdtemp
+from typing import TYPE_CHECKING, Any, AsyncGenerator, Awaitable, Callable, Optional, TypeAlias, TypeVar, Union, cast, overload
+import aiofiles
+from pydoll.browser.fingerprint_applier import FingerprintApplier
+from pydoll.browser.requests import Request
+from pydoll.commands import DomCommands, FetchCommands, NetworkCommands, PageCommands, RuntimeCommands, StorageCommands, TargetCommands
+from pydoll.connection import ConnectionHandler
+from pydoll.constants import By, PageLoadState
+from pydoll.elements.mixins import FindElementsMixin
+from pydoll.elements.shadow_root import ShadowRoot
+from pydoll.elements.web_element import WebElement
+from pydoll.exceptions import CommandExecutionTimeout, DownloadTimeout, IFrameNotFound, InvalidFileExtension, InvalidIFrame, InvalidScriptWithElement, InvalidTabInitialization, MissingScreenshotPath, NavigationError, NetworkEventsNotEnabled, NoDialogPresent, NotAnIFrame, PageLoadTimeout, TopLevelTargetRequired, WaitElementTimeout, WebSocketConnectionClosed
+from pydoll.extractor.engine import ExtractionEngine
+from pydoll.interactions import KeyboardAPI, MouseAPI, ScrollAPI
+from pydoll.interactions.iframe import IFrameContext
+from pydoll.protocol.browser.types import DownloadBehavior, DownloadProgressState
+from pydoll.protocol.dom.types import Node, ShadowRootType
+from pydoll.protocol.network.types import ResourceType
+from pydoll.protocol.page.events import PageEvent
+from pydoll.protocol.page.types import FrameResourceTree, ScreenshotFormat
+from pydoll.protocol.runtime.methods import CallFunctionOnResponse, EvaluateResponse, SerializationOptions
+from pydoll.protocol.runtime.types import CallArgument
+from pydoll.protocol.target.types import TargetInfo
+from pydoll.utils import decode_base64_to_bytes, has_return_outside_function
+from pydoll.utils.bundle import build_asset_filename, collect_frame_resources, filter_fetchable_resources, inline_all_assets, rewrite_html_urls
+from pydoll.extractor.model import ExtractionModel
+from pydoll.protocol.base import EmptyResponse, Response
+from pydoll.protocol.browser.events import DownloadProgressEvent, DownloadWillBeginEvent
+from pydoll.protocol.dom.methods import DescribeNodeResponse, GetDocumentResponse, ResolveNodeResponse
+from pydoll.protocol.fetch.types import AuthChallengeResponseType, HeaderEntry, RequestStage
+from pydoll.protocol.fingerprint.types import FingerprintConfig
+from pydoll.protocol.network.events import RequestWillBeSentEvent
+from pydoll.protocol.network.methods import GetCookiesResponse as NetworkGetCookiesResponse
+from pydoll.protocol.network.methods import GetResponseBodyResponse
+from pydoll.protocol.network.types import Cookie, CookieParam, ErrorReason, RequestMethod
+from pydoll.protocol.page.events import FileChooserOpenedEvent
+from pydoll.protocol.page.methods import CaptureScreenshotResponse, GetResourceContentResponse, GetResourceTreeResponse, NavigateResponse, PrintToPDFResponse
+from pydoll.protocol.runtime.methods import CallFunctionOnResponse, EvaluateResponse
+from pydoll.protocol.storage.methods import GetCookiesResponse as StorageGetCookiesResponse
+from pydoll.protocol.target.methods import AttachToTargetResponse, GetTargetsResponse
+import json
+from pydoll.commands import DomCommands, InputCommands, PageCommands, RuntimeCommands
+from pydoll.constants import Key, Scripts
+from pydoll.exceptions import CommandExecutionTimeout, ElementNotAFileInput, ElementNotFound, ElementNotInteractable, ElementNotVisible, InvalidFileExtension, InvalidIFrame, MissingScreenshotPath, ShadowRootNotFound, WaitElementTimeout, WebSocketConnectionClosed
+from pydoll.interactions.iframe import IFrameContext, IFrameContextResolver
+from pydoll.interactions.keyboard import Keyboard
+from pydoll.protocol.dom.types import ShadowRootType
+from pydoll.protocol.input.types import KeyEventType, KeyModifier, MouseButton, MouseEventType
+from pydoll.protocol.page.types import ScreenshotFormat, Viewport
+from pydoll.protocol.runtime.methods import CallFunctionOnResponse, EvaluateResponse, GetPropertiesResponse, SerializationOptions
+from pydoll.utils import decode_base64_to_bytes, extract_text_from_html, is_script_already_function
+from pydoll.interactions.mouse import Mouse as MouseType
+from pydoll.protocol.dom.methods import DescribeNodeResponse, GetBoxModelResponse, GetOuterHTMLResponse, ResolveNodeResponse
+from pydoll.protocol.dom.types import Quad
+from pydoll.protocol.page.methods import CaptureScreenshotResponse
+from pydoll.protocol.runtime.methods import GetPropertiesResponse
+from typing import TYPE_CHECKING
+from pydoll.commands import DomCommands
+from pydoll.protocol.dom.methods import GetOuterHTMLResponse
+import random
+from dataclasses import dataclass
+from typing import Any, Optional, Protocol, cast
+from pydoll.commands import InputCommands
+from pydoll.constants import CHAR_TO_KEY_INFO, DEFAULT_TYPO_PROBABILITY, QWERTY_NEIGHBORS, Key, TypoType
+from pydoll.protocol.input.types import KeyEventType, KeyModifier
+import math
+from pydoll.commands import InputCommands, RuntimeCommands
+from pydoll.interactions.utils import bezier_2d, fitts_duration, minimum_jerk, random_control_points
+from pydoll.protocol.input.types import MouseButton, MouseEventType
+from pydoll.browser.tab import Tab
+from pydoll.constants import Scripts, ScrollPosition
+from pydoll.interactions.utils import CubicBezier
+from pydoll.protocol.input.types import MouseEventType
+from pydoll.protocol.runtime.methods import EvaluateResponse
+import json as jsonlib
+from collections.abc import AsyncIterator
+from typing import TYPE_CHECKING, Any, Callable, Optional, Union, cast
+from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
+from pydoll.browser.requests.har_recorder import HarCapture, HarRecorder
+from pydoll.browser.requests.response import Response
+from pydoll.commands.runtime_commands import RuntimeCommands
+from pydoll.constants import Scripts
+from pydoll.exceptions import HTTPError
+from pydoll.protocol.fetch.types import HeaderEntry
+from pydoll.protocol.network.events import NetworkEvent, RequestWillBeSentEvent, RequestWillBeSentExtraInfoEvent, ResponseReceivedEvent, ResponseReceivedExtraInfoEvent, ResponseReceivedExtraInfoEventParams
+from pydoll.protocol.network.types import CookieParam, ResourceType
+from pydoll.protocol.network.events import RequestWillBeSentEventParams, RequestWillBeSentExtraInfoEventParams, ResponseReceivedEventParams
+from typing import TYPE_CHECKING, Any, Optional, Union
+from pydoll.protocol.network.types import CookieParam
+
+
+
+
+
+class Chrome(SyncBase):
+    """Chrome browser implementation for CDP automation."""
+    _impl: _ChromeImpl
+
+    def __init__(self, options: Optional[ChromiumOptions]=None, connection_port: Optional[int]=None) -> None:
+        """
+        Initialize Chrome browser instance.
+
+        Args:
+            options: Chrome configuration options (default if None).
+            connection_port: CDP WebSocket port (random if None).
+        """
+        super().__init__(_ChromeImpl(options=mapping.to_impl(options), connection_port=mapping.to_impl(connection_port)))
+
+    def __enter__(self) -> Chrome:
+        return mapping.from_impl(self._run(self._impl.__aenter__()))
+
+    def __exit__(self, exc_type: Any, exc: Any, tb: Any) -> Any:
+        return self._run(self._impl.__aexit__(exc_type, exc, tb))
+
+    @property
+    def options(self) -> Any:
+        return mapping.from_impl(self._impl.options)
+
+    def connect(self, ws_address: str) -> Tab:
+        """
+        Connect to browser using WebSocket address. When we set
+        the _ws_address attribute, the connection handler will use
+        this address instead of resolving it from the connection port.
+
+        Args:
+            ws_address: WebSocket address of the browser.
+
+        Returns:
+            The first tab in the list of opened tabs.
+
+        Note:
+            You are supposed to use this method only if you want to connect to a browser
+            that is already running.
+        """
+        return mapping.from_impl(self._run(self._impl.connect(ws_address=mapping.to_impl(ws_address))))
+
+    def start(self, headless: bool=False) -> Tab:
+        """
+        Start browser process and establish CDP connection.
+
+        Args:
+            headless: Deprecated. Use `options.headless = True` instead.
+
+        Returns:
+            Initial tab for interaction.
+
+        Raises:
+            FailedToStartBrowser: If the browser fails to start or connect.
+        """
+        return mapping.from_impl(self._run(self._impl.start(headless=mapping.to_impl(headless))))
+
+    def stop(self):
+        """
+        Stop browser process and cleanup resources.
+
+        Sends Browser.close command, terminates process, removes temp directories,
+        and closes WebSocket connections.
+
+        Raises:
+            BrowserNotRunning: If the browser is not currently running.
+        """
+        return mapping.from_impl(self._run(self._impl.stop()))
+
+    def close(self):
+        """
+        Closes the WebSocket connection and releases resources.
+        """
+        return mapping.from_impl(self._run(self._impl.close()))
+
+    def create_browser_context(self, proxy_server: Optional[str]=None, proxy_bypass_list: Optional[str]=None) -> str:
+        """
+        Create isolated browser context (like incognito).
+
+        Browser contexts provide isolated storage and don't share session data.
+        Multiple contexts can exist simultaneously.
+
+        Args:
+            proxy_server: Optional proxy for this context only (scheme://host:port).
+            proxy_bypass_list: Comma-separated hosts that bypass proxy.
+
+        Returns:
+            Browser context ID for use with other methods.
+        """
+        return mapping.from_impl(self._run(self._impl.create_browser_context(proxy_server=mapping.to_impl(proxy_server), proxy_bypass_list=mapping.to_impl(proxy_bypass_list))))
+
+    def delete_browser_context(self, browser_context_id: str):
+        """
+        Delete browser context and all associated tabs/resources.
+
+        Removes all storage (cookies, localStorage, etc.) and closes all tabs.
+        The default browser context cannot be deleted.
+
+        Note:
+            Closes all associated tabs immediately.
+        """
+        return mapping.from_impl(self._run(self._impl.delete_browser_context(browser_context_id=mapping.to_impl(browser_context_id))))
+
+    def get_browser_contexts(self) -> list[str]:
+        """Get all browser context IDs including the default context."""
+        return mapping.from_impl(self._run(self._impl.get_browser_contexts()))
+
+    def new_tab(self, url: str='', browser_context_id: Optional[str]=None) -> Tab:
+        """
+        Create new tab for page interaction.
+
+        Args:
+            url: Initial URL (about:blank if empty).
+            browser_context_id: Context to create tab in (default if None).
+
+        Returns:
+            Tab instance for page navigation and element interaction.
+        """
+        return mapping.from_impl(self._run(self._impl.new_tab(url=mapping.to_impl(url), browser_context_id=mapping.to_impl(browser_context_id))))
+
+    def get_targets(self) -> list[TargetInfo]:
+        """
+        Get all active targets/pages in browser.
+
+        Targets include pages, service workers, shared workers, and browser process.
+        Useful for debugging and managing multiple tabs.
+
+        Returns:
+            List of TargetInfo objects.
+        """
+        return mapping.from_impl(self._run(self._impl.get_targets()))
+
+    def get_opened_tabs(self) -> list[Tab]:
+        """
+        Get all opened tabs that are not extensions and have the type 'page'.
+        Tabs that are already opened will be returned as is. If a new target is opened,
+        a new Tab instance will be created.
+
+        Returns:
+            List of Tab instances. The last tab is the most recent one.
+        """
+        return mapping.from_impl(self._run(self._impl.get_opened_tabs()))
+
+    def get_tab_by_target(self, target: TargetInfo) -> Tab:
+        return mapping.from_impl(self._run(self._impl.get_tab_by_target(target=mapping.to_impl(target))))
+
+    def set_download_path(self, path: str, browser_context_id: Optional[str]=None):
+        """Set download directory path (convenience method for set_download_behavior)."""
+        return mapping.from_impl(self._run(self._impl.set_download_path(path=mapping.to_impl(path), browser_context_id=mapping.to_impl(browser_context_id))))
+
+    def set_download_behavior(self, behavior: DownloadBehavior, download_path: Optional[str]=None, browser_context_id: Optional[str]=None, events_enabled: bool=False):
+        """
+        Configure download handling.
+
+        Args:
+            behavior: ALLOW (save to path), DENY (cancel), or DEFAULT.
+            download_path: Required if behavior is ALLOW.
+            browser_context_id: Context to apply to (default if None).
+            events_enabled: Generate download events for progress tracking.
+        """
+        return mapping.from_impl(self._run(self._impl.set_download_behavior(behavior=mapping.to_impl(behavior), download_path=mapping.to_impl(download_path), browser_context_id=mapping.to_impl(browser_context_id), events_enabled=mapping.to_impl(events_enabled))))
+
+    def delete_all_cookies(self, browser_context_id: Optional[str]=None):
+        """Delete all cookies (session, persistent, third-party) from browser or context."""
+        return mapping.from_impl(self._run(self._impl.delete_all_cookies(browser_context_id=mapping.to_impl(browser_context_id))))
+
+    def set_cookies(self, cookies: list[CookieParam], browser_context_id: Optional[str]=None):
+        """Set multiple cookies in browser or context."""
+        return mapping.from_impl(self._run(self._impl.set_cookies(cookies=mapping.to_impl(cookies), browser_context_id=mapping.to_impl(browser_context_id))))
+
+    def get_cookies(self, browser_context_id: Optional[str]=None) -> list[Cookie]:
+        """Get all cookies from browser or context.
+
+        Note:
+            This method does not work with native incognito mode (--incognito flag).
+            For incognito mode, use ``tab.get_cookies()`` instead.
+        """
+        return mapping.from_impl(self._run(self._impl.get_cookies(browser_context_id=mapping.to_impl(browser_context_id))))
+
+    def get_version(self) -> GetVersionResult:
+        """Get browser version and CDP protocol information."""
+        return mapping.from_impl(self._run(self._impl.get_version()))
+
+    def get_window_id_for_target(self, target_id: str) -> int:
+        """Get window ID for target (used for window manipulation via CDP)."""
+        return mapping.from_impl(self._run(self._impl.get_window_id_for_target(target_id=mapping.to_impl(target_id))))
+
+    def get_window_id_for_tab(self, tab: Tab) -> int:
+        """Get window ID for tab (convenience method)."""
+        return mapping.from_impl(self._run(self._impl.get_window_id_for_tab(tab=mapping.to_impl(tab))))
+
+    def get_window_id(self) -> int:
+        """
+        Get window ID for any valid tab.
+
+        Raises:
+            NoValidTabFound: If no valid attached tab can be found.
+        """
+        return mapping.from_impl(self._run(self._impl.get_window_id()))
+
+    def set_window_maximized(self):
+        """Maximize browser window (affects all tabs in window)."""
+        return mapping.from_impl(self._run(self._impl.set_window_maximized()))
+
+    def set_window_minimized(self):
+        """Minimize browser window to taskbar/dock."""
+        return mapping.from_impl(self._run(self._impl.set_window_minimized()))
+
+    def set_window_bounds(self, bounds: Bounds):
+        """
+        Set window position and/or size.
+
+        Args:
+            bounds: Properties to modify (left, top, width, height, windowState).
+                Only specified properties are changed.
+        """
+        return mapping.from_impl(self._run(self._impl.set_window_bounds(bounds=mapping.to_impl(bounds))))
+
+    def grant_permissions(self, permissions: list[PermissionType], origin: Optional[str]=None, browser_context_id: Optional[str]=None):
+        """
+        Grant browser permissions (geolocation, notifications, camera, etc.).
+
+        Bypasses normal permission prompts for automated testing.
+
+        Args:
+            permissions: Permissions to grant.
+            origin: Origin to grant to (all origins if None).
+            browser_context_id: Context to apply to (default if None).
+        """
+        return mapping.from_impl(self._run(self._impl.grant_permissions(permissions=mapping.to_impl(permissions), origin=mapping.to_impl(origin), browser_context_id=mapping.to_impl(browser_context_id))))
+
+    def reset_permissions(self, browser_context_id: Optional[str]=None):
+        """Reset all permissions to defaults and restore prompting behavior."""
+        return mapping.from_impl(self._run(self._impl.reset_permissions(browser_context_id=mapping.to_impl(browser_context_id))))
+
+    def on(self, event_name, callback, temporary: bool=False) -> int:
+        """
+        Register CDP event listener at browser level.
+
+        Callback runs in background task to prevent blocking. Affects all pages/targets.
+
+        Args:
+            event_name: CDP event name (e.g., "Network.responseReceived").
+            callback: Function called on event (sync or async).
+            temporary: Remove after first invocation.
+
+        Returns:
+            Callback ID for removal.
+
+        Note:
+            For page-specific events, use Tab.on() instead.
+        """
+        return mapping.from_impl(self._run(self._impl.on(event_name=mapping.to_impl(event_name), callback=mapping.wrap_handler(callback), temporary=mapping.to_impl(temporary))))
+
+    def remove_callback(self, callback_id: int):
+        """Remove callback from browser."""
+        return mapping.from_impl(self._run(self._impl.remove_callback(callback_id=mapping.to_impl(callback_id))))
+
+    def enable_fetch_events(self, handle_auth_requests: bool=False, resource_type: Optional[ResourceType]=None):
+        """
+        Enable network request interception via Fetch domain.
+
+        Allows monitoring, modifying, or blocking requests before they're sent.
+        All matching requests are paused until explicitly continued.
+
+        Args:
+            handle_auth_requests: Intercept authentication challenges.
+            resource_type: Filter by type (XHR, Fetch, Document, etc.). Empty = all.
+
+        Note:
+            Paused requests must be continued or they will timeout.
+        """
+        return mapping.from_impl(self._run(self._impl.enable_fetch_events(handle_auth_requests=mapping.to_impl(handle_auth_requests), resource_type=mapping.to_impl(resource_type))))
+
+    def disable_fetch_events(self):
+        """Disable request interception and release any paused requests."""
+        return mapping.from_impl(self._run(self._impl.disable_fetch_events()))
+
+    def enable_runtime_events(self):
+        """Enable runtime events."""
+        return mapping.from_impl(self._run(self._impl.enable_runtime_events()))
+
+    def disable_runtime_events(self):
+        """Disable runtime events."""
+        return mapping.from_impl(self._run(self._impl.disable_runtime_events()))
+
+    def continue_request(self, request_id: str, url: Optional[str]=None, method: Optional[RequestMethod]=None, post_data: Optional[str]=None, headers: Optional[list[HeaderEntry]]=None, intercept_response: Optional[bool]=None):
+        """
+        Continue paused request without modifications.
+        """
+        return mapping.from_impl(self._run(self._impl.continue_request(request_id=mapping.to_impl(request_id), url=mapping.to_impl(url), method=mapping.to_impl(method), post_data=mapping.to_impl(post_data), headers=mapping.to_impl(headers), intercept_response=mapping.to_impl(intercept_response))))
+
+    def fail_request(self, request_id: str, error_reason: ErrorReason):
+        """Fail request with error code."""
+        return mapping.from_impl(self._run(self._impl.fail_request(request_id=mapping.to_impl(request_id), error_reason=mapping.to_impl(error_reason))))
+
+    def fulfill_request(self, request_id: str, response_code: int, response_headers: Optional[list[HeaderEntry]]=None, body: Optional[str]=None, response_phrase: Optional[str]=None):
+        """Fulfill request with response data."""
+        return mapping.from_impl(self._run(self._impl.fulfill_request(request_id=mapping.to_impl(request_id), response_code=mapping.to_impl(response_code), response_headers=mapping.to_impl(response_headers), body=mapping.to_impl(body), response_phrase=mapping.to_impl(response_phrase))))
+
+class Edge(SyncBase):
+    """Edge browser implementation for CDP automation."""
+    _impl: _EdgeImpl
+
+    def __init__(self, options: Optional[Options]=None, connection_port: Optional[int]=None) -> None:
+        """
+        Initialize Edge browser instance.
+
+        Args:
+            options: Edge configuration options (default if None).
+            connection_port: CDP WebSocket port (random if None).
+        """
+        super().__init__(_EdgeImpl(options=mapping.to_impl(options), connection_port=mapping.to_impl(connection_port)))
+
+    def __enter__(self) -> Edge:
+        return mapping.from_impl(self._run(self._impl.__aenter__()))
+
+    def __exit__(self, exc_type: Any, exc: Any, tb: Any) -> Any:
+        return self._run(self._impl.__aexit__(exc_type, exc, tb))
+
+    @property
+    def options(self) -> Any:
+        return mapping.from_impl(self._impl.options)
+
+    def connect(self, ws_address: str) -> Tab:
+        """
+        Connect to browser using WebSocket address. When we set
+        the _ws_address attribute, the connection handler will use
+        this address instead of resolving it from the connection port.
+
+        Args:
+            ws_address: WebSocket address of the browser.
+
+        Returns:
+            The first tab in the list of opened tabs.
+
+        Note:
+            You are supposed to use this method only if you want to connect to a browser
+            that is already running.
+        """
+        return mapping.from_impl(self._run(self._impl.connect(ws_address=mapping.to_impl(ws_address))))
+
+    def start(self, headless: bool=False) -> Tab:
+        """
+        Start browser process and establish CDP connection.
+
+        Args:
+            headless: Deprecated. Use `options.headless = True` instead.
+
+        Returns:
+            Initial tab for interaction.
+
+        Raises:
+            FailedToStartBrowser: If the browser fails to start or connect.
+        """
+        return mapping.from_impl(self._run(self._impl.start(headless=mapping.to_impl(headless))))
+
+    def stop(self):
+        """
+        Stop browser process and cleanup resources.
+
+        Sends Browser.close command, terminates process, removes temp directories,
+        and closes WebSocket connections.
+
+        Raises:
+            BrowserNotRunning: If the browser is not currently running.
+        """
+        return mapping.from_impl(self._run(self._impl.stop()))
+
+    def close(self):
+        """
+        Closes the WebSocket connection and releases resources.
+        """
+        return mapping.from_impl(self._run(self._impl.close()))
+
+    def create_browser_context(self, proxy_server: Optional[str]=None, proxy_bypass_list: Optional[str]=None) -> str:
+        """
+        Create isolated browser context (like incognito).
+
+        Browser contexts provide isolated storage and don't share session data.
+        Multiple contexts can exist simultaneously.
+
+        Args:
+            proxy_server: Optional proxy for this context only (scheme://host:port).
+            proxy_bypass_list: Comma-separated hosts that bypass proxy.
+
+        Returns:
+            Browser context ID for use with other methods.
+        """
+        return mapping.from_impl(self._run(self._impl.create_browser_context(proxy_server=mapping.to_impl(proxy_server), proxy_bypass_list=mapping.to_impl(proxy_bypass_list))))
+
+    def delete_browser_context(self, browser_context_id: str):
+        """
+        Delete browser context and all associated tabs/resources.
+
+        Removes all storage (cookies, localStorage, etc.) and closes all tabs.
+        The default browser context cannot be deleted.
+
+        Note:
+            Closes all associated tabs immediately.
+        """
+        return mapping.from_impl(self._run(self._impl.delete_browser_context(browser_context_id=mapping.to_impl(browser_context_id))))
+
+    def get_browser_contexts(self) -> list[str]:
+        """Get all browser context IDs including the default context."""
+        return mapping.from_impl(self._run(self._impl.get_browser_contexts()))
+
+    def new_tab(self, url: str='', browser_context_id: Optional[str]=None) -> Tab:
+        """
+        Create new tab for page interaction.
+
+        Args:
+            url: Initial URL (about:blank if empty).
+            browser_context_id: Context to create tab in (default if None).
+
+        Returns:
+            Tab instance for page navigation and element interaction.
+        """
+        return mapping.from_impl(self._run(self._impl.new_tab(url=mapping.to_impl(url), browser_context_id=mapping.to_impl(browser_context_id))))
+
+    def get_targets(self) -> list[TargetInfo]:
+        """
+        Get all active targets/pages in browser.
+
+        Targets include pages, service workers, shared workers, and browser process.
+        Useful for debugging and managing multiple tabs.
+
+        Returns:
+            List of TargetInfo objects.
+        """
+        return mapping.from_impl(self._run(self._impl.get_targets()))
+
+    def get_opened_tabs(self) -> list[Tab]:
+        """
+        Get all opened tabs that are not extensions and have the type 'page'.
+        Tabs that are already opened will be returned as is. If a new target is opened,
+        a new Tab instance will be created.
+
+        Returns:
+            List of Tab instances. The last tab is the most recent one.
+        """
+        return mapping.from_impl(self._run(self._impl.get_opened_tabs()))
+
+    def get_tab_by_target(self, target: TargetInfo) -> Tab:
+        return mapping.from_impl(self._run(self._impl.get_tab_by_target(target=mapping.to_impl(target))))
+
+    def set_download_path(self, path: str, browser_context_id: Optional[str]=None):
+        """Set download directory path (convenience method for set_download_behavior)."""
+        return mapping.from_impl(self._run(self._impl.set_download_path(path=mapping.to_impl(path), browser_context_id=mapping.to_impl(browser_context_id))))
+
+    def set_download_behavior(self, behavior: DownloadBehavior, download_path: Optional[str]=None, browser_context_id: Optional[str]=None, events_enabled: bool=False):
+        """
+        Configure download handling.
+
+        Args:
+            behavior: ALLOW (save to path), DENY (cancel), or DEFAULT.
+            download_path: Required if behavior is ALLOW.
+            browser_context_id: Context to apply to (default if None).
+            events_enabled: Generate download events for progress tracking.
+        """
+        return mapping.from_impl(self._run(self._impl.set_download_behavior(behavior=mapping.to_impl(behavior), download_path=mapping.to_impl(download_path), browser_context_id=mapping.to_impl(browser_context_id), events_enabled=mapping.to_impl(events_enabled))))
+
+    def delete_all_cookies(self, browser_context_id: Optional[str]=None):
+        """Delete all cookies (session, persistent, third-party) from browser or context."""
+        return mapping.from_impl(self._run(self._impl.delete_all_cookies(browser_context_id=mapping.to_impl(browser_context_id))))
+
+    def set_cookies(self, cookies: list[CookieParam], browser_context_id: Optional[str]=None):
+        """Set multiple cookies in browser or context."""
+        return mapping.from_impl(self._run(self._impl.set_cookies(cookies=mapping.to_impl(cookies), browser_context_id=mapping.to_impl(browser_context_id))))
+
+    def get_cookies(self, browser_context_id: Optional[str]=None) -> list[Cookie]:
+        """Get all cookies from browser or context.
+
+        Note:
+            This method does not work with native incognito mode (--incognito flag).
+            For incognito mode, use ``tab.get_cookies()`` instead.
+        """
+        return mapping.from_impl(self._run(self._impl.get_cookies(browser_context_id=mapping.to_impl(browser_context_id))))
+
+    def get_version(self) -> GetVersionResult:
+        """Get browser version and CDP protocol information."""
+        return mapping.from_impl(self._run(self._impl.get_version()))
+
+    def get_window_id_for_target(self, target_id: str) -> int:
+        """Get window ID for target (used for window manipulation via CDP)."""
+        return mapping.from_impl(self._run(self._impl.get_window_id_for_target(target_id=mapping.to_impl(target_id))))
+
+    def get_window_id_for_tab(self, tab: Tab) -> int:
+        """Get window ID for tab (convenience method)."""
+        return mapping.from_impl(self._run(self._impl.get_window_id_for_tab(tab=mapping.to_impl(tab))))
+
+    def get_window_id(self) -> int:
+        """
+        Get window ID for any valid tab.
+
+        Raises:
+            NoValidTabFound: If no valid attached tab can be found.
+        """
+        return mapping.from_impl(self._run(self._impl.get_window_id()))
+
+    def set_window_maximized(self):
+        """Maximize browser window (affects all tabs in window)."""
+        return mapping.from_impl(self._run(self._impl.set_window_maximized()))
+
+    def set_window_minimized(self):
+        """Minimize browser window to taskbar/dock."""
+        return mapping.from_impl(self._run(self._impl.set_window_minimized()))
+
+    def set_window_bounds(self, bounds: Bounds):
+        """
+        Set window position and/or size.
+
+        Args:
+            bounds: Properties to modify (left, top, width, height, windowState).
+                Only specified properties are changed.
+        """
+        return mapping.from_impl(self._run(self._impl.set_window_bounds(bounds=mapping.to_impl(bounds))))
+
+    def grant_permissions(self, permissions: list[PermissionType], origin: Optional[str]=None, browser_context_id: Optional[str]=None):
+        """
+        Grant browser permissions (geolocation, notifications, camera, etc.).
+
+        Bypasses normal permission prompts for automated testing.
+
+        Args:
+            permissions: Permissions to grant.
+            origin: Origin to grant to (all origins if None).
+            browser_context_id: Context to apply to (default if None).
+        """
+        return mapping.from_impl(self._run(self._impl.grant_permissions(permissions=mapping.to_impl(permissions), origin=mapping.to_impl(origin), browser_context_id=mapping.to_impl(browser_context_id))))
+
+    def reset_permissions(self, browser_context_id: Optional[str]=None):
+        """Reset all permissions to defaults and restore prompting behavior."""
+        return mapping.from_impl(self._run(self._impl.reset_permissions(browser_context_id=mapping.to_impl(browser_context_id))))
+
+    def on(self, event_name, callback, temporary: bool=False) -> int:
+        """
+        Register CDP event listener at browser level.
+
+        Callback runs in background task to prevent blocking. Affects all pages/targets.
+
+        Args:
+            event_name: CDP event name (e.g., "Network.responseReceived").
+            callback: Function called on event (sync or async).
+            temporary: Remove after first invocation.
+
+        Returns:
+            Callback ID for removal.
+
+        Note:
+            For page-specific events, use Tab.on() instead.
+        """
+        return mapping.from_impl(self._run(self._impl.on(event_name=mapping.to_impl(event_name), callback=mapping.wrap_handler(callback), temporary=mapping.to_impl(temporary))))
+
+    def remove_callback(self, callback_id: int):
+        """Remove callback from browser."""
+        return mapping.from_impl(self._run(self._impl.remove_callback(callback_id=mapping.to_impl(callback_id))))
+
+    def enable_fetch_events(self, handle_auth_requests: bool=False, resource_type: Optional[ResourceType]=None):
+        """
+        Enable network request interception via Fetch domain.
+
+        Allows monitoring, modifying, or blocking requests before they're sent.
+        All matching requests are paused until explicitly continued.
+
+        Args:
+            handle_auth_requests: Intercept authentication challenges.
+            resource_type: Filter by type (XHR, Fetch, Document, etc.). Empty = all.
+
+        Note:
+            Paused requests must be continued or they will timeout.
+        """
+        return mapping.from_impl(self._run(self._impl.enable_fetch_events(handle_auth_requests=mapping.to_impl(handle_auth_requests), resource_type=mapping.to_impl(resource_type))))
+
+    def disable_fetch_events(self):
+        """Disable request interception and release any paused requests."""
+        return mapping.from_impl(self._run(self._impl.disable_fetch_events()))
+
+    def enable_runtime_events(self):
+        """Enable runtime events."""
+        return mapping.from_impl(self._run(self._impl.enable_runtime_events()))
+
+    def disable_runtime_events(self):
+        """Disable runtime events."""
+        return mapping.from_impl(self._run(self._impl.disable_runtime_events()))
+
+    def continue_request(self, request_id: str, url: Optional[str]=None, method: Optional[RequestMethod]=None, post_data: Optional[str]=None, headers: Optional[list[HeaderEntry]]=None, intercept_response: Optional[bool]=None):
+        """
+        Continue paused request without modifications.
+        """
+        return mapping.from_impl(self._run(self._impl.continue_request(request_id=mapping.to_impl(request_id), url=mapping.to_impl(url), method=mapping.to_impl(method), post_data=mapping.to_impl(post_data), headers=mapping.to_impl(headers), intercept_response=mapping.to_impl(intercept_response))))
+
+    def fail_request(self, request_id: str, error_reason: ErrorReason):
+        """Fail request with error code."""
+        return mapping.from_impl(self._run(self._impl.fail_request(request_id=mapping.to_impl(request_id), error_reason=mapping.to_impl(error_reason))))
+
+    def fulfill_request(self, request_id: str, response_code: int, response_headers: Optional[list[HeaderEntry]]=None, body: Optional[str]=None, response_phrase: Optional[str]=None):
+        """Fulfill request with response data."""
+        return mapping.from_impl(self._run(self._impl.fulfill_request(request_id=mapping.to_impl(request_id), response_code=mapping.to_impl(response_code), response_headers=mapping.to_impl(response_headers), body=mapping.to_impl(body), response_phrase=mapping.to_impl(response_phrase))))
+
+class Tab(SyncBase):
+    """
+    Controls a browser tab via Chrome DevTools Protocol.
+
+    Primary interface for web page automation including navigation, DOM manipulation,
+    JavaScript execution, event handling, network monitoring, and specialized tasks
+    like Cloudflare bypass.
+    """
+    _impl: _TabImpl
+
+    @property
+    def page_events_enabled(self) -> bool:
+        """Whether CDP Page domain events are enabled."""
+        return mapping.from_impl(self._impl.page_events_enabled)
+
+    @property
+    def network_events_enabled(self) -> bool:
+        """Whether CDP Network domain events are enabled."""
+        return mapping.from_impl(self._impl.network_events_enabled)
+
+    @property
+    def fetch_events_enabled(self) -> bool:
+        """Whether CDP Fetch domain events (request interception) are enabled."""
+        return mapping.from_impl(self._impl.fetch_events_enabled)
+
+    @property
+    def dom_events_enabled(self) -> bool:
+        """Whether CDP DOM domain events are enabled."""
+        return mapping.from_impl(self._impl.dom_events_enabled)
+
+    @property
+    def runtime_events_enabled(self) -> bool:
+        """Whether CDP Runtime domain events are enabled."""
+        return mapping.from_impl(self._impl.runtime_events_enabled)
+
+    @property
+    def request(self) -> Request:
+        """
+        Get the request object for making HTTP requests using the browser's fetch API.
+
+        Returns:
+            Request: An instance of the Request class for making HTTP requests.
+        """
+        return mapping.from_impl(self._impl.request)
+
+    @property
+    def scroll(self) -> ScrollAPI:
+        """
+        Get the scroll API for controlling page scroll behavior.
+
+        Returns:
+            ScrollAPI: An instance of the ScrollAPI class for scroll operations.
+        """
+        return mapping.from_impl(self._impl.scroll)
+
+    @property
+    def keyboard(self) -> KeyboardAPI:
+        """
+        Get the keyboard API for controlling keyboard input at page level.
+
+        Returns:
+            KeyboardAPI: An instance of the KeyboardAPI class for keyboard operations.
+        """
+        return mapping.from_impl(self._impl.keyboard)
+
+    @property
+    def mouse(self) -> MouseAPI:
+        """
+        Get the mouse API for controlling mouse input.
+
+        Returns:
+            MouseAPI: An instance of the MouseAPI class for mouse operations.
+        """
+        return mapping.from_impl(self._impl.mouse)
+
+    def extract(self, model: type[T], *, scope: Optional[str]=None, timeout: int=0) -> T:
+        """Extract structured data from the page into a typed model.
+
+        Args:
+            model: ExtractionModel subclass defining the extraction schema.
+            scope: Optional CSS/XPath selector to limit extraction region.
+            timeout: Seconds to wait for elements (0 = no wait).
+
+        Returns:
+            Populated model instance with extracted data.
+
+        Raises:
+            FieldExtractionFailed: If a required field cannot be extracted.
+            InvalidExtractionModel: If model definition is invalid.
+        """
+        return mapping.from_impl(self._run(self._impl.extract(model=mapping.to_impl(model), scope=mapping.to_impl(scope), timeout=mapping.to_impl(timeout))))
+
+    def extract_all(self, model: type[T], *, scope: str, timeout: int=0, limit: Optional[int]=None) -> list[T]:
+        """Extract multiple items from repeated containers on the page.
+
+        Each element matching the scope selector generates one model instance.
+        Fields are resolved relative to each scope container.
+
+        Args:
+            model: ExtractionModel subclass defining the extraction schema.
+            scope: CSS/XPath selector for the repeated container (required).
+            timeout: Seconds to wait for elements (0 = no wait).
+            limit: Maximum number of items to extract (None = all).
+
+        Returns:
+            List of populated model instances.
+        """
+        return mapping.from_impl(self._run(self._impl.extract_all(model=mapping.to_impl(model), scope=mapping.to_impl(scope), timeout=mapping.to_impl(timeout), limit=mapping.to_impl(limit))))
+
+    @property
+    def intercept_file_chooser_dialog_enabled(self) -> bool:
+        """Whether file chooser dialog interception is active."""
+        return mapping.from_impl(self._impl.intercept_file_chooser_dialog_enabled)
+
+    @property
+    def current_url(self) -> str:
+        """Get current page URL (reflects redirects and client-side navigation)."""
+        return mapping.from_impl(self._run(self._impl.current_url))
+
+    @property
+    def page_source(self) -> str:
+        """Get complete HTML source of current page (live DOM state)."""
+        return mapping.from_impl(self._run(self._impl.page_source))
+
+    @property
+    def title(self) -> str:
+        """Get current page title."""
+        return mapping.from_impl(self._run(self._impl.title))
+
+    def enable_page_events(self):
+        """Enable CDP Page domain events (load, navigation, dialogs, etc.)."""
+        return mapping.from_impl(self._run(self._impl.enable_page_events()))
+
+    def enable_network_events(self):
+        """Enable CDP Network domain events (requests, responses, etc.)."""
+        return mapping.from_impl(self._run(self._impl.enable_network_events()))
+
+    def enable_fetch_events(self, handle_auth: bool=False, resource_type: Optional[ResourceType]=None, request_stage: Optional[RequestStage]=None):
+        """
+        Enable CDP Fetch domain for request interception.
+
+        Args:
+            handle_auth: Intercept authentication challenges.
+            resource_type: Filter by resource type (all if None).
+            request_stage: When to intercept (Request/Response).
+
+        Note:
+            Intercepted requests must be explicitly continued or timeout.
+        """
+        return mapping.from_impl(self._run(self._impl.enable_fetch_events(handle_auth=mapping.to_impl(handle_auth), resource_type=mapping.to_impl(resource_type), request_stage=mapping.to_impl(request_stage))))
+
+    def enable_dom_events(self):
+        """Enable CDP DOM domain events (document structure changes)."""
+        return mapping.from_impl(self._run(self._impl.enable_dom_events()))
+
+    def enable_runtime_events(self):
+        """Enable CDP Runtime domain events."""
+        return mapping.from_impl(self._run(self._impl.enable_runtime_events()))
+
+    def enable_intercept_file_chooser_dialog(self):
+        """
+        Enable file chooser dialog interception for automated uploads.
+
+        Note:
+            Use expect_file_chooser context manager for convenience.
+        """
+        return mapping.from_impl(self._run(self._impl.enable_intercept_file_chooser_dialog()))
+
+    def enable_auto_solve_cloudflare_captcha(self, custom_selector: Optional[tuple[By, str]]=None, time_before_click: Optional[float]=None, time_to_wait_captcha: float=5):
+        """
+        Enable automatic Cloudflare Turnstile captcha bypass.
+
+        Args:
+            custom_selector: Deprecated — ignored. Cloudflare Turnstile is now
+                detected automatically via shadow root inspection.
+            time_before_click: Deprecated — ignored. The checkbox is now
+                located via shadow root polling and clicked immediately.
+            time_to_wait_captcha: Timeout for captcha detection (default 5s).
+        """
+        return mapping.from_impl(self._run(self._impl.enable_auto_solve_cloudflare_captcha(custom_selector=mapping.to_impl(custom_selector), time_before_click=mapping.to_impl(time_before_click), time_to_wait_captcha=mapping.to_impl(time_to_wait_captcha))))
+
+    def disable_fetch_events(self):
+        """Disable CDP Fetch domain and release paused requests."""
+        return mapping.from_impl(self._run(self._impl.disable_fetch_events()))
+
+    def disable_page_events(self):
+        """Disable CDP Page domain events."""
+        return mapping.from_impl(self._run(self._impl.disable_page_events()))
+
+    def disable_network_events(self):
+        """Disable CDP Network domain events."""
+        return mapping.from_impl(self._run(self._impl.disable_network_events()))
+
+    def disable_dom_events(self):
+        """Disable CDP DOM domain events."""
+        return mapping.from_impl(self._run(self._impl.disable_dom_events()))
+
+    def disable_runtime_events(self):
+        """Disable CDP Runtime domain events."""
+        return mapping.from_impl(self._run(self._impl.disable_runtime_events()))
+
+    def disable_intercept_file_chooser_dialog(self):
+        """Disable file chooser dialog interception."""
+        return mapping.from_impl(self._run(self._impl.disable_intercept_file_chooser_dialog()))
+
+    def disable_auto_solve_cloudflare_captcha(self):
+        """Disable automatic Cloudflare Turnstile captcha bypass."""
+        return mapping.from_impl(self._run(self._impl.disable_auto_solve_cloudflare_captcha()))
+
+    def close(self):
+        """
+        Close this browser tab.
+
+        Note:
+            Tab instance becomes invalid after calling this method.
+        """
+        return mapping.from_impl(self._run(self._impl.close()))
+
+    def get_frame(self, frame: 'WebElement') -> IFrame:
+        """
+        .. deprecated:: ?.?.?
+            Use iframe `WebElement` instances directly; this method will be removed in
+            a future version.
+
+        Get Tab object for interacting with iframe content.
+
+        Args:
+            frame: Tab representing the iframe tag.
+
+        Returns:
+            Tab instance configured for iframe interaction.
+
+        Raises:
+            NotAnIFrame: If element is not an iframe.
+            InvalidIFrame: If iframe lacks valid src attribute.
+            IFrameNotFound: If iframe target not found in browser.
+        """
+        return mapping.from_impl(self._run(self._impl.get_frame(frame=mapping.to_impl(frame))))
+
+    def find_shadow_roots(self, deep: bool=False, timeout: float=0) -> list[ShadowRoot]:
+        """
+        Find all shadow roots in the page.
+
+        Traverses the entire DOM tree (including iframes and nested shadow DOMs)
+        to collect all shadow roots found. This is especially useful when the
+        shadow host element selector is unknown or dynamic (e.g., Cloudflare
+        challenge pages).
+
+        Args:
+            deep: If True, also traverses cross-origin iframes (OOPIFs) to
+                discover shadow roots inside them. The returned ShadowRoot
+                objects will automatically route CDP commands through the
+                correct OOPIF session.
+            timeout: Maximum seconds to wait for shadow roots to appear.
+                When > 0, repeatedly polls the DOM (every 0.5s) until at least
+                one shadow root is found or the timeout expires. Useful when
+                shadow hosts are injected asynchronously (e.g., Cloudflare
+                Turnstile loading inside an OOPIF).
+
+        Returns:
+            List of ShadowRoot instances found in the page.
+
+        Raises:
+            WaitElementTimeout: If timeout > 0 and no shadow roots are found
+                within the specified duration.
+        """
+        return mapping.from_impl(self._run(self._impl.find_shadow_roots(deep=mapping.to_impl(deep), timeout=mapping.to_impl(timeout))))
+
+    def bring_to_front(self):
+        """Brings the page to front."""
+        return mapping.from_impl(self._run(self._impl.bring_to_front()))
+
+    def get_cookies(self) -> list[Cookie]:
+        """Get all cookies accessible from current page."""
+        return mapping.from_impl(self._run(self._impl.get_cookies()))
+
+    def get_network_response_body(self, request_id: str) -> str:
+        """
+        Get the response body for a given request ID.
+
+        Args:
+            request_id: Request ID to get the response body for.
+
+        Returns:
+            The response body for the given request ID.
+
+        Raises:
+            NetworkEventsNotEnabled: If network events are not enabled.
+        """
+        return mapping.from_impl(self._run(self._impl.get_network_response_body(request_id=mapping.to_impl(request_id))))
+
+    def get_network_logs(self, filter: Optional[str]=None) -> list[RequestWillBeSentEvent]:
+        """
+        Get network logs.
+
+        Args:
+            filter: Filter to apply to the network logs.
+
+        Returns:
+            The network logs.
+
+        Raises:
+            NetworkEventsNotEnabled: If network events are not enabled.
+        """
+        return mapping.from_impl(self._run(self._impl.get_network_logs(filter=mapping.to_impl(filter))))
+
+    def set_cookies(self, cookies: list[CookieParam]):
+        """
+        Set multiple cookies for current page.
+
+        Args:
+            cookies: Cookie parameters (name/value required, others optional).
+
+        Note:
+            Defaults to current page's domain if not specified.
+        """
+        return mapping.from_impl(self._run(self._impl.set_cookies(cookies=mapping.to_impl(cookies))))
+
+    def delete_all_cookies(self):
+        """Delete all cookies from current browser context."""
+        return mapping.from_impl(self._run(self._impl.delete_all_cookies()))
+
+    def apply_fingerprint(self, fingerprint: FingerprintConfig, *, cross_origin_iframes: bool=True) -> None:
+        """Apply a browser fingerprint profile to this tab.
+
+        Delegates to a per-tab :class:`FingerprintApplier` (created once and
+        reused), which overrides browser identity signals via CDP commands and
+        JavaScript injection and replays them on Web Worker targets and cross-site
+        iframes. Call before navigating to any page for full effect, since JS
+        overrides register via ``Page.addScriptToEvaluateOnNewDocument``.
+
+        Args:
+            fingerprint: Fingerprint configuration. Only specified fields
+                are overridden; unspecified fields keep real browser values.
+            cross_origin_iframes: When true (default), the identity is also
+                replayed into every cross-site iframe (OOPIF), so a fingerprinting
+                script embedded in a cross-origin challenge or captcha frame reads
+                the same identity as the page. Set false to cover only the top
+                page, same-origin frames, and workers.
+        """
+        return mapping.from_impl(self._run(self._impl.apply_fingerprint(fingerprint=mapping.to_impl(fingerprint), cross_origin_iframes=mapping.to_impl(cross_origin_iframes))))
+
+    def go_to(self, url: str, timeout: int=300):
+        """
+        Navigate to URL and wait for loading to complete.
+
+        Args:
+            url: Target URL to navigate to.
+            timeout: Maximum seconds to wait for page load (default 300).
+
+        Raises:
+            NavigationError: If the navigation fails (e.g., DNS error).
+            PageLoadTimeout: If page doesn't finish loading within timeout.
+        """
+        return mapping.from_impl(self._run(self._impl.go_to(url=mapping.to_impl(url), timeout=mapping.to_impl(timeout))))
+
+    def refresh(self, ignore_cache: bool=False, script_to_evaluate_on_load: Optional[str]=None):
+        """
+        Reload current page and wait for completion.
+
+        Args:
+            ignore_cache: Bypass browser cache if True.
+            script_to_evaluate_on_load: JavaScript to execute after load.
+
+        Raises:
+            PageLoadTimeout: If page doesn't finish loading within timeout.
+        """
+        return mapping.from_impl(self._run(self._impl.refresh(ignore_cache=mapping.to_impl(ignore_cache), script_to_evaluate_on_load=mapping.to_impl(script_to_evaluate_on_load))))
+
+    def take_screenshot(self, path: Optional[str | Path]=None, quality: int=100, beyond_viewport: bool=False, as_base64: bool=False) -> Optional[str]:
+        """
+        Capture screenshot of current page.
+
+        Args:
+            path: File path for screenshot (extension determines format).
+            quality: Image quality 0-100 (default 100).
+            beyond_viewport: The page will be scrolled to the bottom and the screenshot will
+                include the entire page
+            as_base64: Return as base64 string instead of saving file.
+
+        Returns:
+            Base64 screenshot data if as_base64=True, None otherwise.
+
+        Raises:
+            InvalidFileExtension: If file extension not supported.
+            MissingScreenshotPath: If path is None and as_base64 is False.
+        """
+        return mapping.from_impl(self._run(self._impl.take_screenshot(path=mapping.to_impl(path), quality=mapping.to_impl(quality), beyond_viewport=mapping.to_impl(beyond_viewport), as_base64=mapping.to_impl(as_base64))))
+
+    def print_to_pdf(self, path: Optional[str | Path]=None, landscape: bool=False, display_header_footer: bool=False, print_background: bool=True, scale: float=1.0, as_base64: bool=False) -> Optional[str]:
+        """
+        Generate PDF of current page.
+
+        Args:
+            path: File path for PDF output. Required if as_base64=False.
+            landscape: Use landscape orientation.
+            display_header_footer: Include header/footer.
+            print_background: Include background graphics.
+            scale: Scale factor (0.1-2.0).
+            as_base64: Return as base64 string instead of saving.
+
+        Returns:
+            Base64 PDF data if as_base64=True, None otherwise.
+
+        Raises:
+            ValueError: If path is not provided when as_base64=False.
+        """
+        return mapping.from_impl(self._run(self._impl.print_to_pdf(path=mapping.to_impl(path), landscape=mapping.to_impl(landscape), display_header_footer=mapping.to_impl(display_header_footer), print_background=mapping.to_impl(print_background), scale=mapping.to_impl(scale), as_base64=mapping.to_impl(as_base64))))
+
+    def save_bundle(self, path: str | Path, inline_assets: bool=False) -> None:
+        """
+        Save current page and its assets as a .zip bundle for offline viewing.
+
+        Captures the page HTML along with CSS, JS, images, fonts, and media
+        into a single zip archive. The archive contains an ``index.html`` with
+        URLs rewritten to reference local asset files.
+
+        Args:
+            path: Destination path for the ``.zip`` file.
+            inline_assets: When True, embed all assets directly into
+                ``index.html`` using data URIs, ``<style>``, and ``<script>``
+                tags instead of saving them as separate files.
+
+        Raises:
+            InvalidFileExtension: If path does not end with ``.zip``.
+        """
+        return mapping.from_impl(self._run(self._impl.save_bundle(path=mapping.to_impl(path), inline_assets=mapping.to_impl(inline_assets))))
+
+    def has_dialog(self) -> bool:
+        """
+        Check if JavaScript dialog is currently displayed.
+
+        Note:
+            Page events must be enabled to detect dialogs.
+        """
+        return mapping.from_impl(self._run(self._impl.has_dialog()))
+
+    def get_dialog_message(self) -> str:
+        """
+        Get message text from current JavaScript dialog.
+
+        Raises:
+            NoDialogPresent: If no dialog is currently displayed.
+        """
+        return mapping.from_impl(self._run(self._impl.get_dialog_message()))
+
+    def handle_dialog(self, accept: bool, prompt_text: Optional[str]=None):
+        """
+        Respond to JavaScript dialog.
+
+        Args:
+            accept: Accept/confirm dialog if True, dismiss/cancel if False.
+            prompt_text: Text for prompt dialogs (ignored for alert/confirm).
+
+        Raises:
+            NoDialogPresent: If no dialog is currently displayed.
+
+        Note:
+            Page events must be enabled to handle dialogs.
+        """
+        return mapping.from_impl(self._run(self._impl.handle_dialog(accept=mapping.to_impl(accept), prompt_text=mapping.to_impl(prompt_text))))
+
+    def execute_script(self, script: str, element: Optional[WebElement]=None, *, arguments: Optional[list[CallArgument]]=None, object_group: Optional[str]=None, include_command_line_api: Optional[bool]=None, silent: Optional[bool]=None, context_id: Optional[int]=None, return_by_value: Optional[bool]=None, generate_preview: Optional[bool]=None, user_gesture: Optional[bool]=None, await_promise: Optional[bool]=None, execution_context_id: Optional[int]=None, throw_on_side_effect: Optional[bool]=None, timeout: Optional[float]=None, disable_breaks: Optional[bool]=None, repl_mode: Optional[bool]=None, allow_unsafe_eval_blocked_by_csp: Optional[bool]=None, unique_context_id: Optional[str]=None, serialization_options: Optional[SerializationOptions]=None) -> Union[EvaluateResponse, CallFunctionOnResponse]:
+        """
+        Execute JavaScript in page context.
+
+        Args:
+            script (str): JavaScript code to execute.
+            element (Optional[WebElement]): Optional WebElement to execute script on.
+            arguments (Optional[list[CallArgument]]): Arguments to pass to the function.
+            object_group (Optional[str]): Symbolic group name for the result (Runtime.evaluate).
+            include_command_line_api (Optional[bool]): Whether to include command line API
+                (Runtime.evaluate).
+            silent (Optional[bool]): Whether to silence exceptions (Runtime.evaluate).
+            context_id (Optional[int]): ID of the execution context to evaluate in
+                (Runtime.evaluate).
+            return_by_value (Optional[bool]): Whether to return the result by value instead of
+                reference (Runtime.evaluate).
+            generate_preview (Optional[bool]): Whether to generate a preview for the result
+                (Runtime.evaluate).
+            user_gesture (Optional[bool]): Whether to treat evaluation as initiated by user
+                gesture (Runtime.evaluate).
+            await_promise (Optional[bool]): Whether to await promise result (Runtime.evaluate).
+            execution_context_id (Optional[int]): ID of the execution context to call the
+                function in.
+            throw_on_side_effect (Optional[bool]): Whether to throw if side effect cannot be
+                ruled out (Runtime.evaluate).
+            timeout (Optional[float]): Timeout in milliseconds (Runtime.evaluate).
+            disable_breaks (Optional[bool]): Whether to disable breakpoints during evaluation
+                (Runtime.evaluate).
+            repl_mode (Optional[bool]): Whether to execute in REPL mode (Runtime.evaluate).
+            allow_unsafe_eval_blocked_by_csp (Optional[bool]): Allow unsafe evaluation
+                (Runtime.evaluate).
+            unique_context_id (Optional[str]): Unique context ID for evaluation
+                (Runtime.evaluate).
+            serialization_options (Optional[SerializationOptions]): Serialization options for
+                the result (Runtime.evaluate).
+
+        Returns:
+            Union[EvaluateResponse, CallFunctionOnResponse]: The result of the script execution.
+
+        Raises:
+            InvalidScriptWithElement: If script uses 'argument' keyword but no element is provided.
+
+        Examples:
+            # Execute a simple script to log a message
+            await page.execute_script('console.log("Hello World")')
+
+            # Execute a script that returns the page title
+            await page.execute_script('return document.title')
+
+            # Execute a script on an element to click it
+            await page.execute_script('argument.click()', element)
+
+            # Execute a script on an element to set its value
+            await page.execute_script('argument.value = "Hello"', element)
+        """
+        return mapping.from_impl(self._run(self._impl.execute_script(script=mapping.to_impl(script), element=mapping.to_impl(element), arguments=mapping.to_impl(arguments), object_group=mapping.to_impl(object_group), include_command_line_api=mapping.to_impl(include_command_line_api), silent=mapping.to_impl(silent), context_id=mapping.to_impl(context_id), return_by_value=mapping.to_impl(return_by_value), generate_preview=mapping.to_impl(generate_preview), user_gesture=mapping.to_impl(user_gesture), await_promise=mapping.to_impl(await_promise), execution_context_id=mapping.to_impl(execution_context_id), throw_on_side_effect=mapping.to_impl(throw_on_side_effect), timeout=mapping.to_impl(timeout), disable_breaks=mapping.to_impl(disable_breaks), repl_mode=mapping.to_impl(repl_mode), allow_unsafe_eval_blocked_by_csp=mapping.to_impl(allow_unsafe_eval_blocked_by_csp), unique_context_id=mapping.to_impl(unique_context_id), serialization_options=mapping.to_impl(serialization_options))))
+
+    def continue_request(self, request_id: str, url: Optional[str]=None, method: Optional[RequestMethod]=None, post_data: Optional[str]=None, headers: Optional[list[HeaderEntry]]=None, intercept_response: Optional[bool]=None):
+        """
+        Continue paused request without modifications.
+        """
+        return mapping.from_impl(self._run(self._impl.continue_request(request_id=mapping.to_impl(request_id), url=mapping.to_impl(url), method=mapping.to_impl(method), post_data=mapping.to_impl(post_data), headers=mapping.to_impl(headers), intercept_response=mapping.to_impl(intercept_response))))
+
+    def fail_request(self, request_id: str, error_reason: ErrorReason):
+        """Fail request with error code."""
+        return mapping.from_impl(self._run(self._impl.fail_request(request_id=mapping.to_impl(request_id), error_reason=mapping.to_impl(error_reason))))
+
+    def fulfill_request(self, request_id: str, response_code: int, response_headers: Optional[list[HeaderEntry]]=None, body: Optional[str]=None, response_phrase: Optional[str]=None):
+        """Fulfill request with response data."""
+        return mapping.from_impl(self._run(self._impl.fulfill_request(request_id=mapping.to_impl(request_id), response_code=mapping.to_impl(response_code), response_headers=mapping.to_impl(response_headers), body=mapping.to_impl(body), response_phrase=mapping.to_impl(response_phrase))))
+
+    def continue_with_auth(self, request_id: str, auth_challenge_response: AuthChallengeResponseType, proxy_username: Optional[str]=None, proxy_password: Optional[str]=None):
+        """Continue a paused request replying to an authentication challenge.
+
+        Useful for proxy auth (407) or server auth (401) when Fetch is enabled
+        with handle_auth=True.
+        """
+        return mapping.from_impl(self._run(self._impl.continue_with_auth(request_id=mapping.to_impl(request_id), auth_challenge_response=mapping.to_impl(auth_challenge_response), proxy_username=mapping.to_impl(proxy_username), proxy_password=mapping.to_impl(proxy_password))))
+
+    def expect_file_chooser(self, files: str | Path | list[str | Path]) -> AbstractContextManager[None]:
+        """
+        Context manager for automatic file upload handling.
+
+        Args:
+            files: File path(s) for upload.
+        """
+        return mapping.from_impl(self._impl.expect_file_chooser(files=mapping.to_impl(files)))
+
+    def expect_and_bypass_cloudflare_captcha(self, custom_selector: Optional[tuple[By, str]]=None, time_before_click: Optional[float]=None, time_to_wait_captcha: float=5) -> AbstractContextManager[None]:
+        """
+        Context manager for automatic Cloudflare captcha bypass.
+
+        Args:
+            custom_selector: Deprecated — ignored. Cloudflare Turnstile is now
+                detected automatically via shadow root inspection.
+            time_before_click: Deprecated — ignored. The checkbox is now
+                located via shadow root polling and clicked immediately.
+            time_to_wait_captcha: Timeout for captcha detection (default 5s).
+        """
+        return mapping.from_impl(self._impl.expect_and_bypass_cloudflare_captcha(custom_selector=mapping.to_impl(custom_selector), time_before_click=mapping.to_impl(time_before_click), time_to_wait_captcha=mapping.to_impl(time_to_wait_captcha)))
+
+    def expect_download(self, keep_file_at: Optional[Union[str, Path]]=None, timeout: Optional[float]=None) -> AbstractContextManager[_DownloadHandle]:
+        """
+        Context manager for handling a file download triggered inside the block.
+
+        Behavior:
+        - If keep_file_at is provided, configure browser to save into that directory and keep file.
+        - Otherwise, a temporary directory is used and cleaned up after the context.
+
+        Args:
+            keep_file_at: Directory to persist the file. If None, uses a temporary
+                directory and cleans it up afterwards.
+            timeout: Max seconds to wait for download completion. Defaults to 60.
+
+        Yields:
+            _DownloadHandle: Handle to read the downloaded file (bytes/base64) and check its path.
+        """
+        return mapping.from_impl(self._impl.expect_download(keep_file_at=mapping.to_impl(keep_file_at), timeout=mapping.to_impl(timeout)))
+
+    def on(self, event_name, callback, temporary=False) -> int:
+        """
+        Register CDP event listener.
+
+        Callback runs in background task to prevent blocking.
+
+        Args:
+            event_name: CDP event name (e.g., 'Page.loadEventFired').
+            callback: Function called on event (sync or async).
+            temporary: Remove after first invocation.
+
+        Returns:
+            Callback ID for removal.
+
+        Note:
+            Corresponding domain must be enabled before events fire.
+        """
+        return mapping.from_impl(self._run(self._impl.on(event_name=mapping.to_impl(event_name), callback=mapping.wrap_handler(callback), temporary=mapping.to_impl(temporary))))
+
+    def remove_callback(self, callback_id: int):
+        """Remove callback from tab."""
+        return mapping.from_impl(self._run(self._impl.remove_callback(callback_id=mapping.to_impl(callback_id))))
+
+    def clear_callbacks(self):
+        """Clear all registered event callbacks."""
+        return mapping.from_impl(self._run(self._impl.clear_callbacks()))
+
+    def find(self, id: Optional[str]=None, class_name: Optional[str]=None, name: Optional[str]=None, tag_name: Optional[str]=None, text: Optional[str]=None, timeout: int=0, find_all: bool=False, raise_exc: bool=True, **attributes: dict[str, str]) -> Union[WebElement, list[WebElement], None]:
+        """
+        Find element(s) using combination of common HTML attributes.
+
+        Flexible element location using standard attributes. Multiple attributes
+        can be combined for specific selectors (builds XPath when multiple specified).
+
+        Args:
+            id: Element ID attribute value.
+            class_name: CSS class name to match.
+            name: Element name attribute value.
+            tag_name: HTML tag name (e.g., "div", "input").
+            text: Text content to match within element.
+            timeout: Maximum seconds to wait for elements to appear.
+            find_all: If True, returns all matches; if False, first match only.
+            raise_exc: Whether to raise exception if no elements found.
+            **attributes: Additional HTML attributes to match.
+
+        Returns:
+            WebElement, list[WebElement], or None based on find_all and raise_exc.
+
+        Raises:
+            ValueError: If no search criteria provided.
+            ElementNotFound: If no elements found and raise_exc=True.
+            WaitElementTimeout: If timeout specified and no elements appear in time.
+            NotImplementedError: If called on a ShadowRoot (use query() with CSS instead).
+        """
+        return mapping.from_impl(self._run(self._impl.find(id=mapping.to_impl(id), class_name=mapping.to_impl(class_name), name=mapping.to_impl(name), tag_name=mapping.to_impl(tag_name), text=mapping.to_impl(text), timeout=mapping.to_impl(timeout), find_all=mapping.to_impl(find_all), raise_exc=mapping.to_impl(raise_exc), **attributes)))
+
+    def query(self, expression: str, timeout: int=0, find_all: bool=False, raise_exc: bool=True) -> Union[WebElement, list[WebElement], None]:
+        """
+        Find element(s) using raw CSS selector or XPath expression.
+
+        Direct access using CSS or XPath syntax. Selector type automatically
+        determined based on expression pattern.
+
+        Args:
+            expression: Selector expression (CSS, XPath, ID with #, class with .).
+            timeout: Maximum seconds to wait for elements to appear.
+            find_all: If True, returns all matches; if False, first match only.
+            raise_exc: Whether to raise exception if no elements found.
+
+        Returns:
+            WebElement, list[WebElement], or None based on find_all and raise_exc.
+
+        Raises:
+            ElementNotFound: If no elements found and raise_exc=True.
+            WaitElementTimeout: If timeout specified and no elements appear in time.
+            NotImplementedError: If called with XPath on a ShadowRoot.
+        """
+        return mapping.from_impl(self._run(self._impl.query(expression=mapping.to_impl(expression), timeout=mapping.to_impl(timeout), find_all=mapping.to_impl(find_all), raise_exc=mapping.to_impl(raise_exc))))
+
+    def find_or_wait_element(self, by: By, value: str, timeout: int=0, find_all: bool=False, raise_exc: bool=True) -> Union[WebElement, list[WebElement], None]:
+        """
+        Core element finding method with optional waiting capability.
+
+        Searches for elements with flexible waiting. If timeout specified,
+        repeatedly attempts to find elements with 0.5s delays until success or timeout.
+        Used by higher-level find() and query() methods.
+
+        Args:
+            by: Selector strategy (CSS_SELECTOR, XPATH, ID, etc.).
+            value: Selector value to locate element(s).
+            timeout: Maximum seconds to wait (0 = no waiting).
+            find_all: If True, returns all matches; if False, first match only.
+            raise_exc: Whether to raise exception if no elements found.
+
+        Returns:
+            WebElement, list[WebElement], or None based on find_all and raise_exc.
+
+        Raises:
+            ElementNotFound: If no elements found with timeout=0 and raise_exc=True.
+            WaitElementTimeout: If elements not found within timeout and raise_exc=True.
+        """
+        return mapping.from_impl(self._run(self._impl.find_or_wait_element(by=mapping.to_impl(by), value=mapping.to_impl(value), timeout=mapping.to_impl(timeout), find_all=mapping.to_impl(find_all), raise_exc=mapping.to_impl(raise_exc))))
+
+class DownloadHandle(SyncBase):
+    """Handle returned by expect_download to access the downloaded file."""
+    _impl: _DownloadHandleImpl
+
+    @property
+    def file_path(self) -> Optional[str]:
+        return mapping.from_impl(self._impl.file_path)
+
+    def wait_started(self, timeout: Optional[float]=None) -> None:
+        return mapping.from_impl(self._run(self._impl.wait_started(timeout=mapping.to_impl(timeout))))
+
+    def wait_finished(self, timeout: Optional[float]=None) -> None:
+        return mapping.from_impl(self._run(self._impl.wait_finished(timeout=mapping.to_impl(timeout))))
+
+    def read_bytes(self) -> bytes:
+        return mapping.from_impl(self._run(self._impl.read_bytes()))
+
+    def read_base64(self) -> str:
+        return mapping.from_impl(self._run(self._impl.read_base64()))
+
+class WebElement(SyncBase):
+    """
+    DOM element wrapper for browser automation.
+
+    Provides comprehensive functionality for element interaction, inspection,
+    and manipulation using Chrome DevTools Protocol commands.
+    """
+    _impl: _WebElementImpl
+
+    @property
+    def attributes(self) -> dict[str, str]:
+        """Read-only copy of the element's cached attributes."""
+        return mapping.from_impl(self._impl.attributes)
+
+    @property
+    def value(self) -> Optional[str]:
+        """Element's value attribute (for form elements)."""
+        return mapping.from_impl(self._impl.value)
+
+    @property
+    def class_name(self) -> Optional[str]:
+        """Element's CSS class name(s)."""
+        return mapping.from_impl(self._impl.class_name)
+
+    @property
+    def id(self) -> Optional[str]:
+        """Element's ID attribute."""
+        return mapping.from_impl(self._impl.id)
+
+    @property
+    def tag_name(self) -> Optional[str]:
+        """Element's HTML tag name."""
+        return mapping.from_impl(self._impl.tag_name)
+
+    @property
+    def is_iframe(self) -> bool:
+        """Whether the element represents an iframe."""
+        return mapping.from_impl(self._impl.is_iframe)
+
+    @property
+    def is_enabled(self) -> bool:
+        """Whether element is enabled (not disabled)."""
+        return mapping.from_impl(self._impl.is_enabled)
+
+    @property
+    def text(self) -> str:
+        """Visible text content of the element."""
+        return mapping.from_impl(self._run(self._impl.text))
+
+    @property
+    def bounds(self) -> Quad:
+        """
+        Element's bounding box coordinates.
+
+        Returns coordinates in CSS pixels relative to document origin.
+        """
+        return mapping.from_impl(self._run(self._impl.bounds))
+
+    @property
+    def inner_html(self) -> str:
+        return mapping.from_impl(self._run(self._impl.inner_html))
+
+    @property
+    def iframe_context(self) -> Optional[IFrameContext]:
+        """
+        Return the resolved iframe context for this element when it is an ``<iframe>``.
+
+        The context includes: frame_id, document_url, execution_context_id,
+        document_object_id and, for OOPIF targets, the session_id and
+        session_handler used for routing commands. The context is always freshly
+        resolved to avoid stale execution contexts after iframe navigations or
+        reloads. Non-iframe elements return None.
+
+        Returns:
+            IFrameContext | None: Resolved iframe context or None for non-iframes.
+        """
+        return mapping.from_impl(self._run(self._impl.iframe_context))
+
+    def get_attribute(self, name: str) -> Optional[str]:
+        """
+        Get element attribute value.
+
+        Note:
+            Only provides attributes available when element was located.
+            For dynamic attributes, consider using JavaScript execution.
+        """
+        return mapping.from_impl(self._impl.get_attribute(name=mapping.to_impl(name)))
+
+    def get_bounds_using_js(self) -> dict[str, int]:
+        """
+        Get element bounds using JavaScript getBoundingClientRect().
+
+        Returns coordinates relative to viewport (alternative to bounds property).
+        """
+        return mapping.from_impl(self._run(self._impl.get_bounds_using_js()))
+
+    def get_parent_element(self) -> WebElement:
+        """Element's parent element."""
+        return mapping.from_impl(self._run(self._impl.get_parent_element()))
+
+    def get_shadow_root(self, timeout: float=0) -> ShadowRoot:
+        """
+        Get the shadow root attached to this element.
+
+        Args:
+            timeout: Maximum seconds to wait for the shadow root to appear.
+                When > 0, repeatedly polls (every 0.5s) until a shadow root
+                is found or the timeout expires.
+
+        Returns:
+            ShadowRoot instance for traversing the shadow DOM.
+
+        Raises:
+            ShadowRootNotFound: If no shadow root is attached (when timeout=0).
+            WaitElementTimeout: If timeout > 0 and no shadow root appears
+                within the specified duration.
+        """
+        return mapping.from_impl(self._run(self._impl.get_shadow_root(timeout=mapping.to_impl(timeout))))
+
+    def get_children_elements(self, max_depth: int=1, tag_filter: list[str]=[], raise_exc: bool=False) -> list[WebElement]:
+        """
+        Retrieve all direct and nested child elements of this element.
+
+        Args:
+            max_depth (int, optional): Maximum depth to traverse when finding children.
+                Defaults to 1 for direct children only.
+            tag_filter (list[str], optional): List of HTML tag names to filter results.
+                If empty, returns all child elements regardless of tag. Defaults to [].
+
+        Returns:
+            list[WebElement]: List of child WebElement objects found within the specified
+                depth and matching the tag filter criteria.
+
+        Raises:
+            ElementNotFound: If no child elements are found for this element and raise_exc is True.
+        """
+        return mapping.from_impl(self._run(self._impl.get_children_elements(max_depth=mapping.to_impl(max_depth), tag_filter=mapping.to_impl(tag_filter), raise_exc=mapping.to_impl(raise_exc))))
+
+    def get_siblings_elements(self, tag_filter: list[str]=[], raise_exc: bool=False) -> list[WebElement]:
+        """
+        Retrieve all sibling elements of this element (elements at the same DOM level).
+
+        Args:
+            tag_filter (list[str], optional): List of HTML tag names to filter results.
+                If empty, returns all sibling elements regardless of tag. Defaults to [].
+
+        Returns:
+            list[WebElement]: List of sibling WebElement objects that share the same
+                parent as this element and match the tag filter criteria.
+
+        Raises:
+            ElementNotFound: If no sibling elements are found for this element
+            and raise_exc is True.
+        """
+        return mapping.from_impl(self._run(self._impl.get_siblings_elements(tag_filter=mapping.to_impl(tag_filter), raise_exc=mapping.to_impl(raise_exc))))
+
+    def take_screenshot(self, path: Optional[str | Path]=None, quality: int=100, as_base64: bool=False) -> Optional[str]:
+        """
+        Capture screenshot of this element only.
+
+        Automatically scrolls element into view before capturing.
+
+        Args:
+            path: File path for screenshot (extension determines format).
+            quality: Image quality 0-100 (default 100).
+            as_base64: Return as base64 string instead of saving file.
+
+        Returns:
+            Base64 screenshot data if as_base64=True, None otherwise.
+
+        Raises:
+            InvalidFileExtension: If file extension not supported.
+            MissingScreenshotPath: If path is None and as_base64 is False.
+        """
+        return mapping.from_impl(self._run(self._impl.take_screenshot(path=mapping.to_impl(path), quality=mapping.to_impl(quality), as_base64=mapping.to_impl(as_base64))))
+
+    def scroll_into_view(self):
+        """Scroll element into visible viewport."""
+        return mapping.from_impl(self._run(self._impl.scroll_into_view()))
+
+    def wait_until(self, *, is_visible: bool=False, is_interactable: bool=False, timeout: int=0):
+        """Wait for element to meet specified conditions.
+
+        Raises:
+            ValueError: If neither ``is_visible`` nor ``is_interactable`` is True.
+            WaitElementTimeout: If the condition is not met within ``timeout``.
+        """
+        return mapping.from_impl(self._run(self._impl.wait_until(is_visible=mapping.to_impl(is_visible), is_interactable=mapping.to_impl(is_interactable), timeout=mapping.to_impl(timeout))))
+
+    def click_using_js(self):
+        """
+        Click element using JavaScript click() method.
+
+        Raises:
+            ElementNotVisible: If element is not visible.
+            ElementNotInteractable: If element couldn't be clicked.
+
+        Note:
+            For <option> elements, uses specialized selection approach.
+            Element is automatically scrolled into view.
+        """
+        return mapping.from_impl(self._run(self._impl.click_using_js()))
+
+    def click(self, x_offset: int=0, y_offset: int=0, hold_time: float=0.1, humanize: bool=False):
+        """
+        Click element using simulated mouse events.
+
+        Args:
+            x_offset: Horizontal offset from element center.
+            y_offset: Vertical offset from element center.
+            hold_time: Duration to hold mouse button down (used when humanize=False).
+            humanize: When True and a Mouse instance is available, uses humanized
+                Bezier curve movement from the current tracked position to the
+                element center before clicking. When False, dispatches raw CDP
+                mousePressed/mouseReleased events directly.
+
+        Raises:
+            ElementNotVisible: If element is not visible.
+
+        Note:
+            For <option> elements, delegates to specialized JavaScript approach.
+            Element is automatically scrolled into view.
+        """
+        return mapping.from_impl(self._run(self._impl.click(x_offset=mapping.to_impl(x_offset), y_offset=mapping.to_impl(y_offset), hold_time=mapping.to_impl(hold_time), humanize=mapping.to_impl(humanize))))
+
+    def focus(self):
+        """Focus this element via CDP DOM.focus command."""
+        return mapping.from_impl(self._run(self._impl.focus()))
+
+    def clear(self):
+        """
+        Clear the current value of the element.
+
+        Supports standard inputs, textareas, and contenteditable elements.
+        Dispatches ``input`` and ``change`` events so frameworks detect the update.
+
+        Raises:
+            ElementNotInteractable: If the element does not accept text input.
+        """
+        return mapping.from_impl(self._run(self._impl.clear()))
+
+    def insert_text(self, text: str):
+        """
+        Insert text into element using JavaScript.
+
+        Supports standard inputs, textareas, contenteditable elements, and rich text editors.
+        Inserts text at cursor position or replaces selected text.
+
+        Args:
+            text: Text to insert.
+
+        Raises:
+            ElementNotInteractable: If element does not accept text input.
+
+        Note:
+            Uses JavaScript for maximum compatibility with all input types.
+            Automatically handles input/textarea and contenteditable elements.
+        """
+        return mapping.from_impl(self._run(self._impl.insert_text(text=mapping.to_impl(text))))
+
+    def set_input_files(self, files: str | Path | list[str | Path]):
+        """
+        Set file paths for file input element.
+
+        Args:
+            files: list of absolute file paths to existing files.
+
+        Raises:
+            ElementNotAFileInput: If element is not a file input.
+        """
+        return mapping.from_impl(self._run(self._impl.set_input_files(files=mapping.to_impl(files))))
+
+    def type_text(self, text: str, humanize: bool=False, interval: Optional[float]=None):
+        """
+        Type text character by character.
+
+        Args:
+            text: Text to type into the element.
+            humanize: When True, simulates human-like typing.
+            interval: Deprecated. Use humanize=True instead.
+        """
+        return mapping.from_impl(self._run(self._impl.type_text(text=mapping.to_impl(text), humanize=mapping.to_impl(humanize), interval=mapping.to_impl(interval))))
+
+    def key_down(self, key: Key, modifiers: Optional[KeyModifier]=None):
+        """
+        Send key down event.
+
+        .. deprecated::
+            This method is deprecated. Use ``tab.keyboard.down()`` instead.
+
+        Note:
+            Only sends key down without release. Pair with key_up() for complete keypress.
+        """
+        return mapping.from_impl(self._run(self._impl.key_down(key=mapping.to_impl(key), modifiers=mapping.to_impl(modifiers))))
+
+    def key_up(self, key: Key):
+        """
+        Send key up event (should follow corresponding key_down()).
+
+        .. deprecated::
+            This method is deprecated. Use ``tab.keyboard.up()`` instead.
+        """
+        return mapping.from_impl(self._run(self._impl.key_up(key=mapping.to_impl(key))))
+
+    def press_keyboard_key(self, key: Key, modifiers: Optional[KeyModifier]=None, interval: float=0.1):
+        """
+        Press and release keyboard key with configurable timing.
+
+        .. deprecated::
+            This method is deprecated. Use ``tab.keyboard.press()`` instead.
+
+        Better for special keys (Enter, Tab, etc.) than type_text().
+        """
+        return mapping.from_impl(self._run(self._impl.press_keyboard_key(key=mapping.to_impl(key), modifiers=mapping.to_impl(modifiers), interval=mapping.to_impl(interval))))
+
+    def is_editable(self) -> bool:
+        """
+        Check if element can accept text input.
+
+        Returns:
+            True if element is editable (input, textarea, or contenteditable).
+        """
+        return mapping.from_impl(self._run(self._impl.is_editable()))
+
+    def is_visible(self):
+        """Check if element is visible using comprehensive JavaScript visibility test."""
+        return mapping.from_impl(self._run(self._impl.is_visible()))
+
+    def is_on_top(self):
+        """Check if element is topmost at its center point (not covered by overlays)."""
+        return mapping.from_impl(self._run(self._impl.is_on_top()))
+
+    def is_interactable(self):
+        """Check if element is interactable based on visibility and position."""
+        return mapping.from_impl(self._run(self._impl.is_interactable()))
+
+    def execute_script(self, script: str, *, arguments: Optional[list[CallArgument]]=None, silent: Optional[bool]=None, return_by_value: Optional[bool]=None, generate_preview: Optional[bool]=None, user_gesture: Optional[bool]=None, await_promise: Optional[bool]=None, execution_context_id: Optional[int]=None, object_group: Optional[str]=None, throw_on_side_effect: Optional[bool]=None, unique_context_id: Optional[str]=None, serialization_options: Optional[SerializationOptions]=None) -> CallFunctionOnResponse:
+        """
+        Execute JavaScript in element context.
+
+        Args:
+            script (str): JavaScript code to execute. Use 'this' to reference this element.
+            arguments (Optional[list[CallArgument]]): Arguments to pass to the function
+                (Runtime.callFunctionOn).
+            silent (Optional[bool]): Whether to silence exceptions (Runtime.callFunctionOn).
+            return_by_value (Optional[bool]): Whether to return the result by value instead of
+                reference (Runtime.callFunctionOn).
+            generate_preview (Optional[bool]): Whether to generate a preview for the result
+                (Runtime.callFunctionOn).
+            user_gesture (Optional[bool]): Whether to treat the call as initiated by user
+                gesture (Runtime.callFunctionOn).
+            await_promise (Optional[bool]): Whether to await promise result
+                (Runtime.callFunctionOn).
+            execution_context_id (Optional[int]): ID of the execution context to call the
+                function in (Runtime.callFunctionOn).
+            object_group (Optional[str]): Symbolic group name for the result
+                (Runtime.callFunctionOn).
+            throw_on_side_effect (Optional[bool]): Whether to throw if side effect cannot be
+                ruled out (Runtime.callFunctionOn).
+            unique_context_id (Optional[str]): Unique context ID for the function call
+                (Runtime.callFunctionOn).
+            serialization_options (Optional[SerializationOptions]): Serialization options for
+                the result (Runtime.callFunctionOn).
+
+        Returns:
+            CallFunctionOnResponse: The result of the script execution.
+
+        Examples:
+            # Click the element
+            await element.execute_script('this.click()')
+
+            # Modify element style
+            await element.execute_script('this.style.border = "2px solid red"')
+
+            # Get element text
+            result = await element.execute_script('return this.textContent', return_by_value=True)
+
+            # Set element content
+            await element.execute_script('this.textContent = "Hello World"')
+        """
+        return mapping.from_impl(self._run(self._impl.execute_script(script=mapping.to_impl(script), arguments=mapping.to_impl(arguments), silent=mapping.to_impl(silent), return_by_value=mapping.to_impl(return_by_value), generate_preview=mapping.to_impl(generate_preview), user_gesture=mapping.to_impl(user_gesture), await_promise=mapping.to_impl(await_promise), execution_context_id=mapping.to_impl(execution_context_id), object_group=mapping.to_impl(object_group), throw_on_side_effect=mapping.to_impl(throw_on_side_effect), unique_context_id=mapping.to_impl(unique_context_id), serialization_options=mapping.to_impl(serialization_options))))
+
+    def find(self, id: Optional[str]=None, class_name: Optional[str]=None, name: Optional[str]=None, tag_name: Optional[str]=None, text: Optional[str]=None, timeout: int=0, find_all: bool=False, raise_exc: bool=True, **attributes: dict[str, str]) -> Union[WebElement, list[WebElement], None]:
+        """
+        Find element(s) using combination of common HTML attributes.
+
+        Flexible element location using standard attributes. Multiple attributes
+        can be combined for specific selectors (builds XPath when multiple specified).
+
+        Args:
+            id: Element ID attribute value.
+            class_name: CSS class name to match.
+            name: Element name attribute value.
+            tag_name: HTML tag name (e.g., "div", "input").
+            text: Text content to match within element.
+            timeout: Maximum seconds to wait for elements to appear.
+            find_all: If True, returns all matches; if False, first match only.
+            raise_exc: Whether to raise exception if no elements found.
+            **attributes: Additional HTML attributes to match.
+
+        Returns:
+            WebElement, list[WebElement], or None based on find_all and raise_exc.
+
+        Raises:
+            ValueError: If no search criteria provided.
+            ElementNotFound: If no elements found and raise_exc=True.
+            WaitElementTimeout: If timeout specified and no elements appear in time.
+            NotImplementedError: If called on a ShadowRoot (use query() with CSS instead).
+        """
+        return mapping.from_impl(self._run(self._impl.find(id=mapping.to_impl(id), class_name=mapping.to_impl(class_name), name=mapping.to_impl(name), tag_name=mapping.to_impl(tag_name), text=mapping.to_impl(text), timeout=mapping.to_impl(timeout), find_all=mapping.to_impl(find_all), raise_exc=mapping.to_impl(raise_exc), **attributes)))
+
+    def query(self, expression: str, timeout: int=0, find_all: bool=False, raise_exc: bool=True) -> Union[WebElement, list[WebElement], None]:
+        """
+        Find element(s) using raw CSS selector or XPath expression.
+
+        Direct access using CSS or XPath syntax. Selector type automatically
+        determined based on expression pattern.
+
+        Args:
+            expression: Selector expression (CSS, XPath, ID with #, class with .).
+            timeout: Maximum seconds to wait for elements to appear.
+            find_all: If True, returns all matches; if False, first match only.
+            raise_exc: Whether to raise exception if no elements found.
+
+        Returns:
+            WebElement, list[WebElement], or None based on find_all and raise_exc.
+
+        Raises:
+            ElementNotFound: If no elements found and raise_exc=True.
+            WaitElementTimeout: If timeout specified and no elements appear in time.
+            NotImplementedError: If called with XPath on a ShadowRoot.
+        """
+        return mapping.from_impl(self._run(self._impl.query(expression=mapping.to_impl(expression), timeout=mapping.to_impl(timeout), find_all=mapping.to_impl(find_all), raise_exc=mapping.to_impl(raise_exc))))
+
+    def find_or_wait_element(self, by: By, value: str, timeout: int=0, find_all: bool=False, raise_exc: bool=True) -> Union[WebElement, list[WebElement], None]:
+        """
+        Core element finding method with optional waiting capability.
+
+        Searches for elements with flexible waiting. If timeout specified,
+        repeatedly attempts to find elements with 0.5s delays until success or timeout.
+        Used by higher-level find() and query() methods.
+
+        Args:
+            by: Selector strategy (CSS_SELECTOR, XPATH, ID, etc.).
+            value: Selector value to locate element(s).
+            timeout: Maximum seconds to wait (0 = no waiting).
+            find_all: If True, returns all matches; if False, first match only.
+            raise_exc: Whether to raise exception if no elements found.
+
+        Returns:
+            WebElement, list[WebElement], or None based on find_all and raise_exc.
+
+        Raises:
+            ElementNotFound: If no elements found with timeout=0 and raise_exc=True.
+            WaitElementTimeout: If elements not found within timeout and raise_exc=True.
+        """
+        return mapping.from_impl(self._run(self._impl.find_or_wait_element(by=mapping.to_impl(by), value=mapping.to_impl(value), timeout=mapping.to_impl(timeout), find_all=mapping.to_impl(find_all), raise_exc=mapping.to_impl(raise_exc))))
+
+class ShadowRoot(SyncBase):
+    """
+    Shadow root wrapper for shadow DOM traversal.
+
+    Provides element finding capabilities within shadow DOM boundaries
+    using query() with CSS selectors. Use query() instead of find() —
+    find() and XPath are not supported inside shadow roots.
+
+    Usage:
+        shadow_host = await tab.find(id='my-component')
+        shadow_root = await shadow_host.get_shadow_root()
+        button = await shadow_root.query('#internal-button')
+        await button.click()
+    """
+    _impl: _ShadowRootImpl
+
+    @property
+    def mode(self) -> ShadowRootType:
+        """Shadow root mode (open, closed, or user-agent)."""
+        return mapping.from_impl(self._impl.mode)
+
+    @property
+    def host_element(self) -> WebElement | None:
+        """Reference to the shadow host element, if available."""
+        return mapping.from_impl(self._impl.host_element)
+
+    @property
+    def inner_html(self) -> str:
+        """HTML content of the shadow root."""
+        return mapping.from_impl(self._run(self._impl.inner_html))
+
+    def find(self, id: Optional[str]=None, class_name: Optional[str]=None, name: Optional[str]=None, tag_name: Optional[str]=None, text: Optional[str]=None, timeout: int=0, find_all: bool=False, raise_exc: bool=True, **attributes: dict[str, str]) -> Union[WebElement, list[WebElement], None]:
+        """
+        Find element(s) using combination of common HTML attributes.
+
+        Flexible element location using standard attributes. Multiple attributes
+        can be combined for specific selectors (builds XPath when multiple specified).
+
+        Args:
+            id: Element ID attribute value.
+            class_name: CSS class name to match.
+            name: Element name attribute value.
+            tag_name: HTML tag name (e.g., "div", "input").
+            text: Text content to match within element.
+            timeout: Maximum seconds to wait for elements to appear.
+            find_all: If True, returns all matches; if False, first match only.
+            raise_exc: Whether to raise exception if no elements found.
+            **attributes: Additional HTML attributes to match.
+
+        Returns:
+            WebElement, list[WebElement], or None based on find_all and raise_exc.
+
+        Raises:
+            ValueError: If no search criteria provided.
+            ElementNotFound: If no elements found and raise_exc=True.
+            WaitElementTimeout: If timeout specified and no elements appear in time.
+            NotImplementedError: If called on a ShadowRoot (use query() with CSS instead).
+        """
+        return mapping.from_impl(self._run(self._impl.find(id=mapping.to_impl(id), class_name=mapping.to_impl(class_name), name=mapping.to_impl(name), tag_name=mapping.to_impl(tag_name), text=mapping.to_impl(text), timeout=mapping.to_impl(timeout), find_all=mapping.to_impl(find_all), raise_exc=mapping.to_impl(raise_exc), **attributes)))
+
+    def query(self, expression: str, timeout: int=0, find_all: bool=False, raise_exc: bool=True) -> Union[WebElement, list[WebElement], None]:
+        """
+        Find element(s) using raw CSS selector or XPath expression.
+
+        Direct access using CSS or XPath syntax. Selector type automatically
+        determined based on expression pattern.
+
+        Args:
+            expression: Selector expression (CSS, XPath, ID with #, class with .).
+            timeout: Maximum seconds to wait for elements to appear.
+            find_all: If True, returns all matches; if False, first match only.
+            raise_exc: Whether to raise exception if no elements found.
+
+        Returns:
+            WebElement, list[WebElement], or None based on find_all and raise_exc.
+
+        Raises:
+            ElementNotFound: If no elements found and raise_exc=True.
+            WaitElementTimeout: If timeout specified and no elements appear in time.
+            NotImplementedError: If called with XPath on a ShadowRoot.
+        """
+        return mapping.from_impl(self._run(self._impl.query(expression=mapping.to_impl(expression), timeout=mapping.to_impl(timeout), find_all=mapping.to_impl(find_all), raise_exc=mapping.to_impl(raise_exc))))
+
+    def find_or_wait_element(self, by: By, value: str, timeout: int=0, find_all: bool=False, raise_exc: bool=True) -> Union[WebElement, list[WebElement], None]:
+        """
+        Core element finding method with optional waiting capability.
+
+        Searches for elements with flexible waiting. If timeout specified,
+        repeatedly attempts to find elements with 0.5s delays until success or timeout.
+        Used by higher-level find() and query() methods.
+
+        Args:
+            by: Selector strategy (CSS_SELECTOR, XPATH, ID, etc.).
+            value: Selector value to locate element(s).
+            timeout: Maximum seconds to wait (0 = no waiting).
+            find_all: If True, returns all matches; if False, first match only.
+            raise_exc: Whether to raise exception if no elements found.
+
+        Returns:
+            WebElement, list[WebElement], or None based on find_all and raise_exc.
+
+        Raises:
+            ElementNotFound: If no elements found with timeout=0 and raise_exc=True.
+            WaitElementTimeout: If elements not found within timeout and raise_exc=True.
+        """
+        return mapping.from_impl(self._run(self._impl.find_or_wait_element(by=mapping.to_impl(by), value=mapping.to_impl(value), timeout=mapping.to_impl(timeout), find_all=mapping.to_impl(find_all), raise_exc=mapping.to_impl(raise_exc))))
+
+class Keyboard(SyncBase):
+    """
+    Keyboard input controller for Tab and WebElement.
+
+    Provides methods for:
+    - Tab: Public keyboard simulation (press, down, up, hotkey)
+    - WebElement: Private text typing with optional humanization
+    """
+    _impl: _KeyboardImpl
+
+    def press(self, key: Key, modifiers: Optional[KeyModifier]=None, interval: float=0.1):
+        """
+        Press and release a key (down + wait + up).
+
+        Args:
+            key: Key to press (from Key enum).
+            modifiers: Optional key modifiers (Alt=1, Ctrl=2, Meta=4, Shift=8).
+            interval: Time to hold the key down in seconds.
+
+        Example:
+            await tab.keyboard.press(Key.ENTER)
+            await tab.keyboard.press(Key.A, modifiers=KeyModifier.CTRL)
+        """
+        return mapping.from_impl(self._run(self._impl.press(key=mapping.to_impl(key), modifiers=mapping.to_impl(modifiers), interval=mapping.to_impl(interval))))
+
+    def down(self, key: Key, modifiers: Optional[KeyModifier]=None):
+        """
+        Press a key down (without releasing).
+
+        Args:
+            key: Key to press down (from Key enum).
+            modifiers: Optional key modifiers.
+        """
+        return mapping.from_impl(self._run(self._impl.down(key=mapping.to_impl(key), modifiers=mapping.to_impl(modifiers))))
+
+    def up(self, key: Key):
+        """
+        Release a key (key up event).
+
+        Args:
+            key: Key to release (from Key enum).
+        """
+        return mapping.from_impl(self._run(self._impl.up(key=mapping.to_impl(key))))
+
+    def hotkey(self, key1: Key, key2: Key, key3: Optional[Key]=None):
+        """
+        Execute a key combination (hotkey) with up to 3 keys.
+
+        Args:
+            key1: First key (usually a modifier like Ctrl, Shift, Alt).
+            key2: Second key.
+            key3: Optional third key.
+
+        Example:
+            await tab.keyboard.hotkey(Key.CONTROL, Key.C)  # Ctrl+C
+        """
+        return mapping.from_impl(self._run(self._impl.hotkey(key1=mapping.to_impl(key1), key2=mapping.to_impl(key2), key3=mapping.to_impl(key3))))
+
+    def type_text(self, text: str, humanize: bool=False, interval: Optional[float]=None):
+        """
+        Type text character by character.
+
+        Args:
+            text: Text to type.
+            humanize: When True, simulates human-like typing with
+                variable delays and occasional typos (~2%).
+            interval: Deprecated. Use humanize=True instead.
+
+        Example:
+            await tab.keyboard.type_text("Hello World", humanize=True)
+            await tab.keyboard.type_text("Hello World")
+        """
+        return mapping.from_impl(self._run(self._impl.type_text(text=mapping.to_impl(text), humanize=mapping.to_impl(humanize), interval=mapping.to_impl(interval))))
+
+class Mouse(SyncBase):
+    """
+    Mouse input controller with realistic humanized simulation.
+
+    Provides methods for mouse movement, clicking, double-clicking,
+    and dragging with optional humanized simulation using Bezier curves,
+    Fitts's Law timing, minimum-jerk velocity profiles, physiological
+    tremor, and overshoot correction.
+    """
+    _impl: _MouseImpl
+
+    @property
+    def timing(self) -> MouseTimingConfig:
+        """Current timing configuration for humanized movement."""
+        return mapping.from_impl(self._impl.timing)
+
+    @property
+    def debug(self) -> bool:
+        """Whether to draw debug dots on the page."""
+        return mapping.from_impl(self._impl.debug)
+
+    def move(self, x: float, y: float, *, humanize: bool=False) -> None:
+        """
+        Move mouse cursor to the specified position.
+
+        Args:
+            x: Target X coordinate (CSS pixels).
+            y: Target Y coordinate (CSS pixels).
+            humanize: Simulate human-like curved movement with natural timing.
+        """
+        return mapping.from_impl(self._run(self._impl.move(x=mapping.to_impl(x), y=mapping.to_impl(y), humanize=mapping.to_impl(humanize))))
+
+    def click(self, x: float, y: float, *, button: MouseButton=MouseButton.LEFT, click_count: int=1, humanize: bool=False) -> None:
+        """
+        Click at the specified position.
+
+        Args:
+            x: Target X coordinate (CSS pixels).
+            y: Target Y coordinate (CSS pixels).
+            button: Mouse button to click.
+            click_count: Number of clicks (2 for double-click).
+            humanize: Simulate human-like movement and click timing.
+        """
+        return mapping.from_impl(self._run(self._impl.click(x=mapping.to_impl(x), y=mapping.to_impl(y), button=mapping.to_impl(button), click_count=mapping.to_impl(click_count), humanize=mapping.to_impl(humanize))))
+
+    def double_click(self, x: float, y: float, *, button: MouseButton=MouseButton.LEFT, humanize: bool=False) -> None:
+        """
+        Double-click at the specified position.
+
+        Args:
+            x: Target X coordinate (CSS pixels).
+            y: Target Y coordinate (CSS pixels).
+            button: Mouse button to click.
+            humanize: Simulate human-like movement and click timing.
+        """
+        return mapping.from_impl(self._run(self._impl.double_click(x=mapping.to_impl(x), y=mapping.to_impl(y), button=mapping.to_impl(button), humanize=mapping.to_impl(humanize))))
+
+    def down(self, button: MouseButton=MouseButton.LEFT) -> None:
+        """
+        Press mouse button down at the current position.
+
+        Args:
+            button: Mouse button to press.
+        """
+        return mapping.from_impl(self._run(self._impl.down(button=mapping.to_impl(button))))
+
+    def up(self, button: MouseButton=MouseButton.LEFT) -> None:
+        """
+        Release mouse button at the current position.
+
+        Args:
+            button: Mouse button to release.
+        """
+        return mapping.from_impl(self._run(self._impl.up(button=mapping.to_impl(button))))
+
+    def drag(self, start_x: float, start_y: float, end_x: float, end_y: float, *, humanize: bool=False) -> None:
+        """
+        Drag from one position to another.
+
+        Args:
+            start_x: Start X coordinate.
+            start_y: Start Y coordinate.
+            end_x: End X coordinate.
+            end_y: End Y coordinate.
+            humanize: Simulate human-like drag movement.
+        """
+        return mapping.from_impl(self._run(self._impl.drag(start_x=mapping.to_impl(start_x), start_y=mapping.to_impl(start_y), end_x=mapping.to_impl(end_x), end_y=mapping.to_impl(end_y), humanize=mapping.to_impl(humanize))))
+
+    @timing.setter
+    def timing(self, config: Any) -> None:
+        self._impl.timing = mapping.to_impl(config)
+
+    @debug.setter
+    def debug(self, value: Any) -> None:
+        self._impl.debug = mapping.to_impl(value)
+
+class Scroll(SyncBase):
+    """
+    API for controlling page scroll behavior.
+
+    Provides methods for scrolling the page in different directions,
+    to specific positions, or by relative distances. Supports humanized
+    scrolling with realistic physics simulation.
+    """
+    _impl: _ScrollImpl
+
+    def by(self, position: ScrollPosition, distance: int | float, smooth: bool=True, humanize: bool=False):
+        """
+        Scroll the page by a relative distance in the specified direction.
+
+        Args:
+            position: Direction to scroll (UP, DOWN, LEFT, RIGHT).
+            distance: Number of pixels to scroll.
+            smooth: Use smooth scrolling animation if True, instant if False.
+            humanize: Simulate human-like scrolling with momentum and inertia.
+        """
+        return mapping.from_impl(self._run(self._impl.by(position=mapping.to_impl(position), distance=mapping.to_impl(distance), smooth=mapping.to_impl(smooth), humanize=mapping.to_impl(humanize))))
+
+    def to_top(self, smooth: bool=True, humanize: bool=False):
+        """
+        Scroll to the top of the page (Y=0).
+
+        Args:
+            smooth: Use smooth scrolling animation if True, instant if False.
+            humanize: Simulate human-like scrolling with momentum and inertia.
+        """
+        return mapping.from_impl(self._run(self._impl.to_top(smooth=mapping.to_impl(smooth), humanize=mapping.to_impl(humanize))))
+
+    def to_bottom(self, smooth: bool=True, humanize: bool=False):
+        """
+        Scroll to the bottom of the page (Y=document.body.scrollHeight).
+
+        Args:
+            smooth: Use smooth scrolling animation if True, instant if False.
+            humanize: Simulate human-like scrolling with momentum and inertia.
+        """
+        return mapping.from_impl(self._run(self._impl.to_bottom(smooth=mapping.to_impl(smooth), humanize=mapping.to_impl(humanize))))
+
+class Request(SyncBase):
+    """High-level interface for making HTTP requests using the browser's fetch API.
+
+    This class provides a requests-like interface that executes HTTP requests in the
+    browser's JavaScript context. All requests inherit the browser's current session
+    state including cookies, authentication headers, and other automatic browser
+    behaviors. This allows for seamless interaction with websites that require
+    authentication or have complex cookie management.
+
+    Key Features:
+    - Executes requests in the browser's JavaScript context using fetch API
+    - Automatically includes browser cookies and session state
+    - Preserves browser's security context and CORS policies
+    - Captures both request and response headers for analysis
+    - Supports all standard HTTP methods (GET, POST, PUT, DELETE, etc.)
+
+    Note:
+    - Headers passed to methods are additional headers, not replacements
+    - Browser's automatic headers (User-Agent, Accept, etc.) are preserved
+    - Cookies are managed automatically by the browser
+    """
+    _impl: _RequestImpl
+
+    @property
+    def tab(self) -> Any:
+        return mapping.from_impl(self._impl.tab)
+
+    def request(self, method: str, url: str, params: Optional[dict[str, str]]=None, data: Optional[Union[dict, list, tuple, str, bytes]]=None, json: Optional[dict[str, Any]]=None, headers: Optional[list[HeaderEntry]]=None, **kwargs) -> Response:
+        """Execute an HTTP request in the browser's JavaScript context.
+
+        This method uses the browser's fetch API to make requests, inheriting all
+        browser session state including cookies, authentication, and security context.
+        The request is executed as if made by the browser itself.
+
+        Args:
+            method: HTTP method (GET, POST, PUT, DELETE, etc.). Case insensitive.
+            url: Target URL for the request. Can be relative or absolute.
+            params: Query parameters to append to the URL. These are URL-encoded
+                and merged with any existing query string in the URL.
+            data: Request body data. Behavior depends on type:
+                - dict/list/tuple: URL-encoded as form data (application/x-www-form-urlencoded)
+                - str/bytes: Sent as-is with no Content-Type modification
+                Mutually exclusive with 'json' parameter.
+            json: Data to be JSON-serialized as request body. Automatically sets
+                Content-Type to application/json. Mutually exclusive with 'data'.
+            headers: Additional headers to include. These are ADDED to browser's
+                automatic headers, not replacements.
+                Format: [{'name': 'X-Custom', 'value': 'value'}]
+            **kwargs: Additional fetch API options (e.g., credentials, mode, cache).
+
+        Returns:
+            Response object containing status, headers, content, and cookies from
+            both the request and response phases.
+
+        Raises:
+            HTTPError: If the request execution fails or network error occurs.
+
+        Note:
+            - Browser cookies are automatically included
+            - CORS policies are enforced by the browser
+            - Authentication headers are preserved from browser session
+        """
+        return mapping.from_impl(self._run(self._impl.request(method=mapping.to_impl(method), url=mapping.to_impl(url), params=mapping.to_impl(params), data=mapping.to_impl(data), json=mapping.to_impl(json), headers=mapping.to_impl(headers), **kwargs)))
+
+    def get(self, url: str, params: Optional[dict[str, str]]=None, **kwargs) -> Response:
+        """Execute a GET request for retrieving data.
+
+        Args:
+            url: Target URL to retrieve data from.
+            params: Query parameters to append to URL.
+            **kwargs: Additional fetch options.
+
+        Returns:
+            Response object with retrieved data.
+        """
+        return mapping.from_impl(self._run(self._impl.get(url=mapping.to_impl(url), params=mapping.to_impl(params), **kwargs)))
+
+    def post(self, url: str, data: Optional[Union[dict, list, tuple, str, bytes]]=None, json: Optional[dict[str, Any]]=None, **kwargs) -> Response:
+        """Execute a POST request for creating or submitting data.
+
+        Args:
+            url: Target URL for data submission.
+            data: Form data to submit (URL-encoded).
+            json: JSON data to submit.
+            **kwargs: Additional fetch options.
+
+        Returns:
+            Response object with server's response to the submission.
+        """
+        return mapping.from_impl(self._run(self._impl.post(url=mapping.to_impl(url), data=mapping.to_impl(data), json=mapping.to_impl(json), **kwargs)))
+
+    def put(self, url: str, data: Optional[Union[dict, list, tuple, str, bytes]]=None, json: Optional[dict[str, Any]]=None, **kwargs) -> Response:
+        """Execute a PUT request for updating/replacing resources.
+
+        Args:
+            url: Target URL of resource to update.
+            data: Form data for the update.
+            json: JSON data for the update.
+            **kwargs: Additional fetch options.
+
+        Returns:
+            Response object confirming the update operation.
+        """
+        return mapping.from_impl(self._run(self._impl.put(url=mapping.to_impl(url), data=mapping.to_impl(data), json=mapping.to_impl(json), **kwargs)))
+
+    def patch(self, url: str, data: Optional[Union[dict, list, tuple, str, bytes]]=None, json: Optional[dict[str, Any]]=None, **kwargs) -> Response:
+        """Execute a PATCH request for partial resource updates.
+
+        Args:
+            url: Target URL of resource to partially update.
+            data: Form data with changes to apply.
+            json: JSON data with changes to apply.
+            **kwargs: Additional fetch options.
+
+        Returns:
+            Response object confirming the partial update.
+        """
+        return mapping.from_impl(self._run(self._impl.patch(url=mapping.to_impl(url), data=mapping.to_impl(data), json=mapping.to_impl(json), **kwargs)))
+
+    def delete(self, url: str, **kwargs) -> Response:
+        """Execute a DELETE request for removing resources.
+
+        Args:
+            url: Target URL of resource to delete.
+            **kwargs: Additional fetch options.
+
+        Returns:
+            Response object confirming the deletion.
+        """
+        return mapping.from_impl(self._run(self._impl.delete(url=mapping.to_impl(url), **kwargs)))
+
+    def head(self, url: str, **kwargs) -> Response:
+        """Execute a HEAD request to retrieve only response headers.
+
+        Useful for checking resource existence, size, or modification date
+        without downloading the full content.
+
+        Args:
+            url: Target URL to check headers for.
+            **kwargs: Additional fetch options.
+
+        Returns:
+            Response object with headers but no body content.
+        """
+        return mapping.from_impl(self._run(self._impl.head(url=mapping.to_impl(url), **kwargs)))
+
+    def options(self, url: str, **kwargs) -> Response:
+        """Execute an OPTIONS request to check allowed methods and capabilities.
+
+        Used for CORS preflight checks and discovering server capabilities.
+
+        Args:
+            url: Target URL to check options for.
+            **kwargs: Additional fetch options.
+
+        Returns:
+            Response object with allowed methods and CORS headers.
+        """
+        return mapping.from_impl(self._run(self._impl.options(url=mapping.to_impl(url), **kwargs)))
+
+    def record(self, resource_types: list[ResourceType] | None=None) -> AbstractContextManager[HarCapture]:
+        """Record network traffic as HAR.
+
+        Context manager that captures all network activity on the tab
+        and produces a HarCapture object for export.
+
+        Args:
+            resource_types: Optional list of resource types to capture.
+                When provided, only requests matching these types are
+                recorded. When None (default), all resource types are
+                captured.
+
+        Usage::
+
+            async with tab.request.record() as capture:
+                await tab.go_to('https://example.com')
+            capture.save('flow.har')
+
+            # Record only fetch and XHR requests
+            async with tab.request.record(
+                resource_types=[ResourceType.FETCH, ResourceType.XHR]
+            ) as capture:
+                await tab.go_to('https://example.com')
+            capture.save('api_calls.har')
+
+        Yields:
+            HarCapture: Object with .save(), .to_dict(), and .entries.
+        """
+        return mapping.from_impl(self._impl.record(resource_types=mapping.to_impl(resource_types)))
+
+class Response(SyncBase):
+    """HTTP response object for browser-based fetch requests.
+
+    This class provides a standardized interface for handling HTTP responses
+    obtained through the browser's fetch API. It mimics the requests.Response
+    interface while preserving all browser-specific metadata including cookies,
+    headers, and network timing information.
+
+    Key Features:
+    - Compatible with requests.Response API for easy migration
+    - Preserves both request and response headers for analysis
+    - Automatic cookie extraction from Set-Cookie headers
+    - Lazy JSON parsing with caching
+    - Browser-context aware (respects CORS, security policies)
+    - Content available in multiple formats (text, bytes, JSON)
+
+    The response contains all data captured during the browser's fetch execution,
+    including redirects, authentication flows, and any browser-applied transformations.
+    """
+    _impl: _ResponseImpl
+
+    @property
+    def ok(self) -> bool:
+        """Check if the request was successful (2xx status codes).
+
+        Returns:
+            True if status code is in the 200-399 range, False otherwise.
+
+        Note:
+            This follows HTTP conventions where 2xx codes indicate success
+            and 3xx codes indicate redirection (still considered "ok").
+        """
+        return mapping.from_impl(self._impl.ok)
+
+    @property
+    def cookies(self) -> list[CookieParam]:
+        """Get cookies that were set by the server during this response.
+
+        Returns:
+            List of cookies extracted from Set-Cookie headers. Each cookie
+            contains name and value, with cookie attributes (Path, Domain, etc.)
+            automatically handled by the browser.
+
+        Note:
+            These are only NEW/UPDATED cookies from this response. Existing
+            browser cookies are managed automatically by the browser context.
+        """
+        return mapping.from_impl(self._impl.cookies)
+
+    @property
+    def request_headers(self) -> list[HeaderEntry]:
+        """Get headers that were actually sent in the HTTP request.
+
+        Returns:
+            List of headers sent to the server, including both custom headers
+            provided by the user and automatic headers added by the browser
+            (User-Agent, Accept, Authorization, etc.).
+
+        Note:
+            This shows the ACTUAL headers sent, which may differ from what
+            was originally specified due to browser modifications.
+        """
+        return mapping.from_impl(self._impl.request_headers)
+
+    @property
+    def headers(self) -> list[HeaderEntry]:
+        """Get headers received from the server in the HTTP response.
+
+        Returns:
+            List of response headers sent by the server, including standard
+            headers (Content-Type, Content-Length, etc.) and any custom headers.
+
+        Note:
+            Some security-sensitive headers may be filtered by the browser
+            and not appear in this list due to CORS policies.
+        """
+        return mapping.from_impl(self._impl.headers)
+
+    @property
+    def status_code(self) -> int:
+        """Get the HTTP status code returned by the server.
+
+        Returns:
+            Integer status code (e.g., 200 for OK, 404 for Not Found, 500 for Server Error).
+        """
+        return mapping.from_impl(self._impl.status_code)
+
+    @property
+    def text(self) -> str:
+        """Get the response content as a decoded string.
+
+        Returns:
+            Response body decoded as UTF-8 string. If no text was provided
+            during initialization, it will be decoded from the raw content.
+
+        Note:
+            Decoding uses 'replace' error handling to avoid crashes on
+            invalid UTF-8 sequences.
+        """
+        return mapping.from_impl(self._impl.text)
+
+    @property
+    def content(self) -> bytes:
+        """Get the raw response content as bytes.
+
+        Returns:
+            Unmodified response body as bytes. Useful for binary data
+            (images, files, etc.) or when you need to handle encoding manually.
+        """
+        return mapping.from_impl(self._impl.content)
+
+    @property
+    def url(self) -> str:
+        """Get the final URL of the response after any redirects.
+
+        Returns:
+            The final URL that was accessed, which may differ from the
+            original request URL if redirects occurred.
+        """
+        return mapping.from_impl(self._impl.url)
+
+    def json(self) -> Union[dict[str, Any], list]:
+        """Parse and return the response content as JSON data.
+
+        Attempts to parse the response text as JSON. Uses caching to avoid
+        re-parsing the same content multiple times.
+
+        Returns:
+            Parsed JSON data as dictionary, list, or other JSON-compatible type.
+
+        Raises:
+            ValueError: If the response content is not valid JSON or if parsing fails.
+
+        Note:
+            - Uses lazy parsing: JSON is only parsed when first accessed
+            - Subsequent calls return cached result for better performance
+            - If JSON was pre-parsed during initialization, that result is returned
+        """
+        return mapping.from_impl(self._impl.json())
+
+    def raise_for_status(self) -> None:
+        """Raise an HTTPError if the response indicates an HTTP error status.
+
+        Checks the status code and raises an exception for client errors (4xx)
+        and server errors (5xx). Successful responses (2xx) and redirects (3xx)
+        do not raise an exception.
+
+        Raises:
+            HTTPError: If status code is 400 or higher, indicating an error.
+
+        Note:
+            This method is compatible with requests.Response.raise_for_status()
+            for easy migration from the requests library.
+        """
+        return mapping.from_impl(self._impl.raise_for_status())
+
+mapping.register(_ChromeImpl, Chrome)
+mapping.register(_EdgeImpl, Edge)
+mapping.register(_TabImpl, Tab)
+mapping.register(_DownloadHandleImpl, DownloadHandle)
+mapping.register(_WebElementImpl, WebElement)
+mapping.register(_ShadowRootImpl, ShadowRoot)
+mapping.register(_KeyboardImpl, Keyboard)
+mapping.register(_MouseImpl, Mouse)
+mapping.register(_ScrollImpl, Scroll)
+mapping.register(_RequestImpl, Request)
+mapping.register(_ResponseImpl, Response)
+
+
+
+__all__ = ['Chrome', 'Edge', 'Tab', 'DownloadHandle', 'WebElement', 'ShadowRoot', 'Keyboard', 'Mouse', 'Scroll', 'Request', 'Response']

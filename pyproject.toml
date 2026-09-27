@@ -47,6 +47,12 @@ select = ['I', 'F', 'E', 'W', 'PL', 'PT']
 ignore = ['PLR0913', 'PLR0917', 'PLR0904', 'E701']
 exclude = ['tests', 'tests/*']
 
+[tool.ruff.lint.per-file-ignores]
+# The sync runtime mirrors the async surface: small instance methods and a
+# type-dispatching mapper are part of the design.
+"pydoll/sync/**" = ['PLR6301', 'PLR0911', 'PLR0912', 'PLR0915']
+"scripts/**" = ['PLR0912', 'PLR0915']
+
 [tool.ruff.format]
 preview = true
 quote-style = 'single'
@@ -78,6 +84,8 @@ exclude_also = [
 
 [tool.taskipy.tasks]
 lint = 'ruff check .; ruff check . --diff'
+generate-sync = 'python scripts/generate_sync_api.py'
+check-sync = 'python scripts/generate_sync_api.py --check'
 format = 'ruff check . --fix; ruff format .'
 test = 'pytest -s -x --cov=pydoll -vv'
 post_test = 'coverage html'
@@ -85,4 +93,5 @@ post_test = 'coverage html'
 [tool.mypy]
 exclude = [
     "tests/",
+    "_generated\\.py$",
 ]
