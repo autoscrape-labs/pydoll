@@ -1,25 +1,3 @@
-## 3.0.0 (unreleased)
-
-### BREAKING CHANGE
-
-- async properties are now methods: `tab.title()`, `tab.current_url()`, `tab.page_source()`, `element.text()`, `element.inner_html()`, `element.bounds()`, `element.iframe_context()`, `shadow_root.inner_html()`
-- removed deprecated APIs: `Tab.get_frame()`, the `element` argument of `Tab.execute_script()`, `WebElement.key_down()/key_up()/press_keyboard_key()`, the `interval` argument of `type_text()`, the `headless` argument of `Browser.start()`, `custom_selector`/`time_before_click` on the Cloudflare helpers, and the `NotAnIFrame`/`IFrameNotFound` exceptions
-- `_DownloadHandle` is now the public `DownloadHandle`
-- Cloudflare helpers renamed to say what they do: `expect_cloudflare_turnstile()`, `enable_cloudflare_turnstile_handling()`, `disable_cloudflare_turnstile_handling()` (were `expect_and_bypass_cloudflare_captcha`, `enable_auto_solve_cloudflare_captcha`, `disable_auto_solve_cloudflare_captcha`)
-
-### Feat
-
-- **sync**: synchronous API generated from the async one, exported from `pydoll.sync`
-- top-level `pydoll` exports the async API (`Chrome`, `Tab`, `ChromiumOptions`, `Key`, events, extraction models); `pydoll.sync` exports the same names
-- `@retry` works on plain functions as well as coroutines
-
-### Fix
-
-- a browser no longer hangs after opening and closing about fifty tabs: Chrome's stderr was piped and never read, so the pipe filled and Chrome blocked on the write; stderr is now drained into the debug log
-- `browser.start()` no longer waits a full second between readiness checks; the browser is used as soon as it answers (about 0.35 s instead of 1 s)
-- `get_cookies()`, `set_cookies()` and `delete_all_cookies()` work on tabs opened inside a browser context; they used to send `browserContextId` over the page session, which Chrome rejects
-- the remote debugging port is a free port assigned by the OS instead of a random number between 9223 and 9322, so browsers started side by side no longer collide and silently talk to the wrong Chrome
-
 ## 2.27.0 (2026-09-16)
 
 ### Feat
@@ -829,7 +807,7 @@
 ### Feat
 
 - add connect method to handle existing port scenarios
-- create enable_cloudflare_turnstile_handling method
+- create enable_auto_solve_cloudflare_captcha method
 - add context manager to bypass Cloudflare Turnstile captcha
 
 ## 1.5.1 (2025-03-31)
