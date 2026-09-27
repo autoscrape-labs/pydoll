@@ -17,14 +17,16 @@ import asyncio
 import atexit
 import concurrent.futures
 import contextlib
-import functools
 import inspect
+import logging
 import os
 import threading
 import weakref
-from typing import Any, Callable, Coroutine, Generic, Iterator, TypeVar
+from typing import Any, Callable, Coroutine, Generic, TypeVar
 
 T = TypeVar('T')
+
+logger = logging.getLogger(__name__)
 
 
 class SyncError(RuntimeError):
@@ -112,25 +114,58 @@ class EventLoopThread:
         function: Callable[..., Any],
         *args: Any,
     ) -> asyncio.Future[Any]:
-        """Run a user callback on its executor; returns a loop future for its result."""
-        return asyncio.wrap_future(executor.submit(function, *args), loop=self._loop)
+        """Run a user callback on its executor; returns a loop future for its result.
+
+        A failure inside the callback is logged with the callback's name, so it
+        does not surface only as an unretrieved future when the implementation
+        fires the callback without awaiting its result.
+        """
+        future = asyncio.wrap_future(executor.submit(function, *args), loop=self._loop)
+        name = getattr(function, '__qualname__', repr(function))
+        future.add_done_callback(lambda done: _log_callback_failure(done, name))
+        return future
 
     def shutdown(self) -> None:
-        """Stop the loop and the callback threads; the next use starts a new instance."""
+        """Cancel pending work, close the loop and stop the callback threads.
+
+        The next use of the sync API starts a new instance.
+        """
         if self._closed:
             return
         self._closed = True
         if type(self)._instance is self:
             self._forget()
         if not self._loop.is_closed():
-            self._loop.call_soon_threadsafe(self._loop.stop)
-            self._thread.join(5)
+            if self._thread.is_alive():
+                asyncio.run_coroutine_threadsafe(self._drain(), self._loop)
+                self._thread.join(5)
+            if not self._thread.is_alive():
+                self._loop.close()
         for executor in list(self._executors):
             executor.shutdown(wait=False)
+
+    async def _drain(self) -> None:
+        """Cancel every other task, let them finish, then stop the loop."""
+        current = asyncio.current_task()
+        pending = [task for task in asyncio.all_tasks() if task is not current]
+        for task in pending:
+            task.cancel()
+        if pending:
+            await asyncio.gather(*pending, return_exceptions=True)
+        await self._loop.shutdown_asyncgens()
+        self._loop.stop()
 
 
 if hasattr(os, 'register_at_fork'):
     os.register_at_fork(after_in_child=EventLoopThread._forget)
+
+
+def _log_callback_failure(future: asyncio.Future[object], name: str) -> None:
+    if future.cancelled():
+        return
+    error = future.exception()
+    if error is not None:
+        logger.error('Sync callback %s raised', name, exc_info=error)
 
 
 async def _await(awaitable: Any) -> Any:
@@ -148,7 +183,9 @@ class Mapping:
     def __init__(self) -> None:
         self._facades: dict[type, type[SyncBase]] = {}
         self._cache: weakref.WeakValueDictionary[int, SyncBase] = weakref.WeakValueDictionary()
-        self._handlers: weakref.WeakKeyDictionary[Any, Any] = weakref.WeakKeyDictionary()
+        self._handlers: weakref.WeakValueDictionary[Any, Callable[..., Any]] = (
+            weakref.WeakValueDictionary()
+        )
 
     def register(self, impl_type: type, facade_type: type[SyncBase]) -> None:
         self._facades[impl_type] = facade_type
@@ -178,8 +215,10 @@ class Mapping:
             return [self.from_impl(item) for item in value]
         if isinstance(value, tuple):
             return tuple(self.from_impl(item) for item in value)
+        if isinstance(value, (set, frozenset)):
+            return type(value)(self.from_impl(item) for item in value)
         if isinstance(value, dict):
-            return {key: self.from_impl(item) for key, item in value.items()}
+            return {self.from_impl(key): self.from_impl(item) for key, item in value.items()}
         if hasattr(value, '__aenter__') and hasattr(value, '__aexit__'):
             return SyncContextManager(value, self)
         return value
@@ -192,8 +231,10 @@ class Mapping:
             return [self.to_impl(item) for item in value]
         if isinstance(value, tuple):
             return tuple(self.to_impl(item) for item in value)
+        if isinstance(value, (set, frozenset)):
+            return type(value)(self.to_impl(item) for item in value)
         if isinstance(value, dict):
-            return {key: self.to_impl(item) for key, item in value.items()}
+            return {self.to_impl(key): self.to_impl(item) for key, item in value.items()}
         return value
 
     def wrap_handler(self, handler: Any) -> Any:
@@ -202,28 +243,56 @@ class Mapping:
         The wrapper returns a loop future, so implementation code that awaits
         the callback's result (route handlers, exposed functions) waits for it,
         while fire-and-forget listeners are not blocked by it.
+
+        The same handler maps to the same wrapper for as long as that wrapper
+        is alive (the implementation holds it while the callback is
+        registered), so ``remove_listener``/``unroute`` find the entry they
+        registered. Once the implementation drops the wrapper, the cache entry,
+        the handler reference and the wrapper's dispatch thread go with it.
+
+        The wrapper carries the handler's name, docstring and signature (route
+        dispatch reads the signature to decide whether to pass the request),
+        but not a ``__wrapped__`` link.
         """
         if not callable(handler):
             return handler
+        if inspect.iscoroutinefunction(handler):
+            raise SyncError(
+                'The sync API takes plain functions as callbacks, not async ones: '
+                f'{getattr(handler, "__qualname__", handler)!r} is a coroutine function. '
+                'Use the async API (pydoll) to register coroutine callbacks.'
+            )
         runtime = EventLoopThread.instance()
         try:
-            wrapped = self._handlers.get(handler)
+            cached = self._handlers.get(handler)
         except TypeError:
-            wrapped = None
-        if wrapped is not None:
-            return wrapped
+            cached = None
+        if cached is not None:
+            return cached
 
         executor = runtime.new_dispatcher()
 
         def call(*args: Any) -> Any:
             return self.to_impl(handler(*[self.from_impl(arg) for arg in args]))
 
-        @functools.wraps(handler)
         def wrapper(*args: Any) -> asyncio.Future[Any]:
             return EventLoopThread.instance().dispatch(executor, call, *args)
 
-        with contextlib.suppress(TypeError):
+        metadata: dict[str, object] = {
+            attribute: getattr(handler, attribute, None)
+            for attribute in ('__module__', '__name__', '__qualname__', '__doc__')
+        }
+        with contextlib.suppress(TypeError, ValueError):
+            metadata['__signature__'] = inspect.signature(handler)
+        for attribute, copied in metadata.items():
+            if copied is not None:
+                setattr(wrapper, attribute, copied)
+                setattr(call, attribute, copied)
+        weakref.finalize(wrapper, executor.shutdown, wait=False)
+        try:
             self._handlers[handler] = wrapper
+        except TypeError:
+            pass
         return wrapper
 
     def wrap_predicate(self, predicate: Any) -> Any:
@@ -245,6 +314,7 @@ class SyncBase:
 
     def __init__(self, impl: Any) -> None:
         self._impl = impl
+        mapping._cache[id(impl)] = self
 
     @classmethod
     def _wrap(cls, impl: Any) -> SyncBase:
@@ -290,13 +360,3 @@ class SyncContextManager(Generic[T]):
 
     def __exit__(self, exc_type: Any, exc: Any, tb: Any) -> Any:
         return run_sync(self._manager.__aexit__(exc_type, exc, tb))
-
-
-def sync_iterator(async_iterable: Any) -> Iterator[Any]:
-    """Iterate an async iterable from synchronous code."""
-    iterator = aiter(async_iterable)
-    while True:
-        try:
-            yield mapping.from_impl(run_sync(anext(iterator)))
-        except StopAsyncIteration:
-            return

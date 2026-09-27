@@ -54,11 +54,11 @@ from pydoll.protocol.fetch.events import FetchEvent
 from pydoll.protocol.fetch.types import AuthChallengeResponseType
 from pydoll.protocol.target.events import TargetEvent
 from pydoll.protocol.target.types import FilterEntry
-from pydoll.utils import find_free_port
+from pydoll.utils import PollInterval, find_free_port
 from pydoll.utils.fingerprint_builder import build_fingerprint_worker_js
 from pydoll.utils.user_agent_parser import ParsedUserAgent, UserAgentParser
 from tempfile import TemporaryDirectory
-from pydoll.browser.interfaces import BrowserOptionsManager
+from pydoll.browser.interfaces import BrowserOptionsManager, Options
 from pydoll.protocol.base import Command, T_CommandParams, T_CommandResponse
 from pydoll.protocol.browser.methods import GetVersionResponse, GetVersionResult, GetWindowForTargetResponse
 from pydoll.protocol.browser.types import Bounds, PermissionType
@@ -83,9 +83,8 @@ from pydoll.browser.fingerprint_applier import FingerprintApplier
 from pydoll.commands import DomCommands, FetchCommands, NetworkCommands, PageCommands, RuntimeCommands, StorageCommands, TargetCommands
 from pydoll.constants import PageLoadState
 from pydoll.elements.mixins import FindElementsMixin
-from pydoll.exceptions import CommandExecutionTimeout, CommandFailed, DownloadTimeout, InvalidFileExtension, InvalidScriptWithElement, InvalidTabInitialization, MissingScreenshotPath, NavigationError, NetworkEventsNotEnabled, NoDialogPresent, PageLoadTimeout, TopLevelTargetRequired, WaitElementTimeout, WaitTimeout, WebSocketConnectionClosed
+from pydoll.exceptions import CommandExecutionTimeout, CommandFailed, DownloadTimeout, InvalidFileExtension, InvalidScriptWithElement, InvalidTabInitialization, MissingScreenshotPath, NavigationError, NetworkEventsNotEnabled, NoDialogPresent, PageLoadTimeout, ScriptEvaluationError, TopLevelTargetRequired, WaitElementTimeout, WaitTimeout, WebSocketConnectionClosed
 from pydoll.extractor.engine import ExtractionEngine
-from pydoll.interactions import KeyboardAPI, MouseAPI, ScrollAPI
 from pydoll.interactions.iframe import IFrameContext
 from pydoll.protocol.browser.types import DownloadBehavior, DownloadProgressState
 from pydoll.protocol.dom.types import Node, ShadowRootType
@@ -94,6 +93,7 @@ from pydoll.protocol.network.types import ResourceType
 from pydoll.protocol.page.events import PageEvent
 from pydoll.protocol.page.types import FrameResourceTree, ScreenshotFormat
 from pydoll.protocol.runtime.methods import EvaluateResponse, SerializationOptions
+from pydoll.protocol.runtime.types import ExceptionDetails, RemoteObject
 from pydoll.utils import PollInterval, UrlPattern, decode_base64_to_bytes, has_return_outside_function, url_matcher
 from pydoll.utils.bundle import build_asset_filename, collect_frame_resources, filter_fetchable_resources, inline_all_assets, rewrite_html_urls
 from pydoll.extractor.model import ExtractionModel
@@ -199,8 +199,12 @@ class Chrome(SyncBase):
         return self._run(self._impl.__aexit__(exc_type, exc, tb))
 
     @property
-    def options(self) -> Any:
+    def options(self) -> Options:
         return mapping.from_impl(self._impl.options)
+
+    @options.setter
+    def options(self, value: Options) -> None:
+        self._impl.options = mapping.to_impl(value)
 
     def connect(self, ws_address: str) -> Tab:
         """
@@ -410,11 +414,7 @@ class Chrome(SyncBase):
         """Reset all permissions to defaults and restore prompting behavior."""
         return mapping.from_impl(self._run(self._impl.reset_permissions(browser_context_id=mapping.to_impl(browser_context_id))))
 
-    @overload
-    def on(self, event_name: str, callback: Callable[[Any], Any], temporary: bool=False) -> int: ...
-    @overload
-    def on(self, event_name: str, callback: Callable[[Any], Awaitable[Any]], temporary: bool=False) -> int: ...
-    def on(self, event_name, callback, temporary: bool=False) -> int:
+    def on(self, event_name: str, callback: Callable[[Any], Any], temporary: bool=False) -> int:
         """
         Register CDP event listener at browser level.
 
@@ -521,8 +521,12 @@ class Edge(SyncBase):
         return self._run(self._impl.__aexit__(exc_type, exc, tb))
 
     @property
-    def options(self) -> Any:
+    def options(self) -> Options:
         return mapping.from_impl(self._impl.options)
+
+    @options.setter
+    def options(self, value: Options) -> None:
+        self._impl.options = mapping.to_impl(value)
 
     def connect(self, ws_address: str) -> Tab:
         """
@@ -732,11 +736,7 @@ class Edge(SyncBase):
         """Reset all permissions to defaults and restore prompting behavior."""
         return mapping.from_impl(self._run(self._impl.reset_permissions(browser_context_id=mapping.to_impl(browser_context_id))))
 
-    @overload
-    def on(self, event_name: str, callback: Callable[[Any], Any], temporary: bool=False) -> int: ...
-    @overload
-    def on(self, event_name: str, callback: Callable[[Any], Awaitable[Any]], temporary: bool=False) -> int: ...
-    def on(self, event_name, callback, temporary: bool=False) -> int:
+    def on(self, event_name: str, callback: Callable[[Any], Any], temporary: bool=False) -> int:
         """
         Register CDP event listener at browser level.
 
@@ -878,7 +878,7 @@ class Tab(SyncBase):
         return mapping.from_impl(self._impl.request)
 
     @property
-    def scroll(self) -> ScrollAPI:
+    def scroll(self) -> Scroll:
         """
         Get the scroll API for controlling page scroll behavior.
 
@@ -888,7 +888,7 @@ class Tab(SyncBase):
         return mapping.from_impl(self._impl.scroll)
 
     @property
-    def keyboard(self) -> KeyboardAPI:
+    def keyboard(self) -> Keyboard:
         """
         Get the keyboard API for controlling keyboard input at page level.
 
@@ -898,7 +898,7 @@ class Tab(SyncBase):
         return mapping.from_impl(self._impl.keyboard)
 
     @property
-    def mouse(self) -> MouseAPI:
+    def mouse(self) -> Mouse:
         """
         Get the mouse API for controlling mouse input.
 
@@ -1192,16 +1192,25 @@ class Tab(SyncBase):
         """
         Wait until a JavaScript expression evaluates to a truthy value and return it.
 
+        Truthiness is JavaScript's, judged on the page side: a DOM node, a
+        function, an object (even ``{}`` or ``[]``) and a non-empty string or
+        non-zero number are truthy; ``undefined``, ``null``, ``false``, ``0``,
+        ``NaN``, ``-0``, ``0n`` and ``''`` are falsy. A promise is awaited and
+        its settled value is judged.
+
         Args:
             script: An expression such as ``'window.app && window.app.ready'``,
                 or a script with a ``return``.
             timeout: Maximum seconds to wait.
 
         Returns:
-            The first truthy value the script produced.
+            The value itself when it is a primitive (string, number, ``True``),
+            ``True`` for any object, node or function.
 
         Raises:
             WaitTimeout: If the script stays falsy for ``timeout`` seconds.
+            ScriptEvaluationError: As soon as the script throws or its promise
+                rejects, with the JavaScript error text.
         """
         return mapping.from_impl(self._run(self._impl.wait_for_script(script=mapping.to_impl(script), timeout=mapping.to_impl(timeout))))
 
@@ -1219,7 +1228,7 @@ class Tab(SyncBase):
         Raises:
             WaitTimeout: If a matching element is still present after ``timeout``.
         """
-        self._run(self._impl.wait_for_absence(id=mapping.to_impl(id), class_name=mapping.to_impl(class_name), name=mapping.to_impl(name), tag_name=mapping.to_impl(tag_name), text=mapping.to_impl(text), timeout=mapping.to_impl(timeout), **attributes))
+        self._run(self._impl.wait_for_absence(id=mapping.to_impl(id), class_name=mapping.to_impl(class_name), name=mapping.to_impl(name), tag_name=mapping.to_impl(tag_name), text=mapping.to_impl(text), timeout=mapping.to_impl(timeout), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in attributes.items()}))
 
     def wait_for_network_idle(self, idle_time: float=0.5, timeout: float=30) -> None:
         """
@@ -1282,6 +1291,8 @@ class Tab(SyncBase):
         The block exits once the response has arrived and its body has been
         read, so ``response.json()`` is ready right after the block: the usual
         way to read the API call a click triggers instead of scraping the DOM.
+        A 204, 205 or 304 response has no body by definition (Chrome reports
+        its load as aborted), so it completes with an empty body.
 
         Args:
             url: A glob, a compiled regular expression, or a callable on the URL.
@@ -1419,7 +1430,7 @@ class Tab(SyncBase):
                 (Runtime.evaluate).
             user_gesture (bool | None): Whether to treat evaluation as initiated by user
                 gesture (Runtime.evaluate).
-            await_promise (bool | None): Whether to await promise result (Runtime.evaluate).
+            await_promise (bool | None): Whether to promise result (Runtime.evaluate).
             throw_on_side_effect (bool | None): Whether to throw if side effect cannot be
                 ruled out (Runtime.evaluate).
             timeout (float | None): Timeout in milliseconds (Runtime.evaluate).
@@ -1442,10 +1453,10 @@ class Tab(SyncBase):
 
         Examples:
             # Execute a simple script to log a message
-            await tab.execute_script('console.log("Hello World")')
+            tab.execute_script('console.log("Hello World")')
 
             # Execute a script that returns the page title
-            await tab.execute_script('return document.title')
+            tab.execute_script('return document.title')
         """
         return mapping.from_impl(self._run(self._impl.execute_script(script=mapping.to_impl(script), object_group=mapping.to_impl(object_group), include_command_line_api=mapping.to_impl(include_command_line_api), silent=mapping.to_impl(silent), context_id=mapping.to_impl(context_id), return_by_value=mapping.to_impl(return_by_value), generate_preview=mapping.to_impl(generate_preview), user_gesture=mapping.to_impl(user_gesture), await_promise=mapping.to_impl(await_promise), throw_on_side_effect=mapping.to_impl(throw_on_side_effect), timeout=mapping.to_impl(timeout), disable_breaks=mapping.to_impl(disable_breaks), repl_mode=mapping.to_impl(repl_mode), allow_unsafe_eval_blocked_by_csp=mapping.to_impl(allow_unsafe_eval_blocked_by_csp), unique_context_id=mapping.to_impl(unique_context_id), serialization_options=mapping.to_impl(serialization_options))))
 
@@ -1507,11 +1518,7 @@ class Tab(SyncBase):
         """
         return mapping.from_impl(self._impl.expect_download(keep_file_at=mapping.to_impl(keep_file_at), timeout=mapping.to_impl(timeout)))
 
-    @overload
-    def on(self, event_name: str, callback: Callable[[dict], Any], temporary: bool=False) -> int: ...
-    @overload
-    def on(self, event_name: str, callback: Callable[[dict], Awaitable[Any]], temporary: bool=False) -> int: ...
-    def on(self, event_name, callback, temporary=False) -> int:
+    def on(self, event_name: str, callback: Callable[[dict], Any], temporary: bool=False) -> int:
         """
         Register CDP event listener.
 
@@ -1575,7 +1582,7 @@ class Tab(SyncBase):
             WaitElementTimeout: If timeout specified and no elements appear in time.
             NotImplementedError: If called on a ShadowRoot (use query() with CSS instead).
         """
-        return mapping.from_impl(self._run(cast('Any', self._impl).find(id=mapping.to_impl(id), class_name=mapping.to_impl(class_name), name=mapping.to_impl(name), tag_name=mapping.to_impl(tag_name), text=mapping.to_impl(text), timeout=mapping.to_impl(timeout), find_all=mapping.to_impl(find_all), raise_exc=mapping.to_impl(raise_exc), **attributes)))
+        return mapping.from_impl(self._run(cast('Any', self._impl).find(id=mapping.to_impl(id), class_name=mapping.to_impl(class_name), name=mapping.to_impl(name), tag_name=mapping.to_impl(tag_name), text=mapping.to_impl(text), timeout=mapping.to_impl(timeout), find_all=mapping.to_impl(find_all), raise_exc=mapping.to_impl(raise_exc), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in attributes.items()})))
 
     @overload
     def query(self, expression: str, timeout: int=..., find_all: Literal[False]=False, raise_exc: Literal[True]=True) -> WebElement: ...
@@ -1766,7 +1773,10 @@ class ResponseHandle(SyncBase):
         return mapping.from_impl(self._impl.mime_type)
 
     def body(self) -> bytes:
-        """The raw body. Raises when loading failed, so there was no body to read."""
+        """The raw body, empty for a 204, 205 or 304.
+
+        Raises when loading failed, so there was no body to read.
+        """
         return mapping.from_impl(self._impl.body())
 
     def text(self, encoding: str='utf-8') -> str:
@@ -1959,13 +1969,14 @@ class WebElement(SyncBase):
         """
         return mapping.from_impl(self._run(self._impl.scroll_into_view()))
 
-    def wait_until(self, *, is_visible: bool=False, is_interactable: bool=False, is_hidden: bool=False, is_detached: bool=False, is_enabled: bool=False, timeout: int=0):
+    def wait_until(self, *, is_visible: bool=False, is_interactable: bool=False, is_hidden: bool=False, is_detached: bool=False, is_enabled: bool=False, timeout: float=0):
         """Wait for the element to meet every condition you set to True.
 
         ``is_visible`` and ``is_interactable`` wait for the element to show up
         and accept input; ``is_hidden`` waits for it to leave the screen (a
         spinner finishing), ``is_detached`` for it to leave the DOM, and
-        ``is_enabled`` for its ``disabled`` attribute to be cleared.
+        ``is_enabled`` for its ``disabled`` attribute to be cleared. With the
+        default ``timeout`` of 0 the conditions are checked once.
 
         Raises:
             ValueError: If no condition is set to True.
@@ -2145,7 +2156,7 @@ class WebElement(SyncBase):
                 (Runtime.callFunctionOn).
             user_gesture (bool | None): Whether to treat the call as initiated by user
                 gesture (Runtime.callFunctionOn).
-            await_promise (bool | None): Whether to await promise result
+            await_promise (bool | None): Whether to promise result
                 (Runtime.callFunctionOn).
             execution_context_id (int | None): ID of the execution context to call the
                 function in (Runtime.callFunctionOn).
@@ -2163,16 +2174,16 @@ class WebElement(SyncBase):
 
         Examples:
             # Click the element
-            await element.execute_script('this.click()')
+            element.execute_script('this.click()')
 
             # Modify element style
-            await element.execute_script('this.style.border = "2px solid red"')
+            element.execute_script('this.style.border = "2px solid red"')
 
             # Get element text
-            result = await element.execute_script('return this.textContent', return_by_value=True)
+            result = element.execute_script('return this.textContent', return_by_value=True)
 
             # Set element content
-            await element.execute_script('this.textContent = "Hello World"')
+            element.execute_script('this.textContent = "Hello World"')
         """
         return mapping.from_impl(self._run(self._impl.execute_script(script=mapping.to_impl(script), arguments=mapping.to_impl(arguments), silent=mapping.to_impl(silent), return_by_value=mapping.to_impl(return_by_value), generate_preview=mapping.to_impl(generate_preview), user_gesture=mapping.to_impl(user_gesture), await_promise=mapping.to_impl(await_promise), execution_context_id=mapping.to_impl(execution_context_id), object_group=mapping.to_impl(object_group), throw_on_side_effect=mapping.to_impl(throw_on_side_effect), unique_context_id=mapping.to_impl(unique_context_id), serialization_options=mapping.to_impl(serialization_options))))
 
@@ -2213,7 +2224,7 @@ class WebElement(SyncBase):
             WaitElementTimeout: If timeout specified and no elements appear in time.
             NotImplementedError: If called on a ShadowRoot (use query() with CSS instead).
         """
-        return mapping.from_impl(self._run(cast('Any', self._impl).find(id=mapping.to_impl(id), class_name=mapping.to_impl(class_name), name=mapping.to_impl(name), tag_name=mapping.to_impl(tag_name), text=mapping.to_impl(text), timeout=mapping.to_impl(timeout), find_all=mapping.to_impl(find_all), raise_exc=mapping.to_impl(raise_exc), **attributes)))
+        return mapping.from_impl(self._run(cast('Any', self._impl).find(id=mapping.to_impl(id), class_name=mapping.to_impl(class_name), name=mapping.to_impl(name), tag_name=mapping.to_impl(tag_name), text=mapping.to_impl(text), timeout=mapping.to_impl(timeout), find_all=mapping.to_impl(find_all), raise_exc=mapping.to_impl(raise_exc), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in attributes.items()})))
 
     @overload
     def query(self, expression: str, timeout: int=..., find_all: Literal[False]=False, raise_exc: Literal[True]=True) -> WebElement: ...
@@ -2332,10 +2343,10 @@ class ShadowRoot(SyncBase):
     find() and XPath are not supported inside shadow roots.
 
     Usage:
-        shadow_host = await tab.find(id='my-component')
-        shadow_root = await shadow_host.get_shadow_root()
-        button = await shadow_root.query('#internal-button')
-        await button.click()
+        shadow_host = tab.find(id='my-component')
+        shadow_root = shadow_host.get_shadow_root()
+        button = shadow_root.query('#internal-button')
+        button.click()
     """
     _impl: _ShadowRootImpl
 
@@ -2390,7 +2401,7 @@ class ShadowRoot(SyncBase):
             WaitElementTimeout: If timeout specified and no elements appear in time.
             NotImplementedError: If called on a ShadowRoot (use query() with CSS instead).
         """
-        return mapping.from_impl(self._run(cast('Any', self._impl).find(id=mapping.to_impl(id), class_name=mapping.to_impl(class_name), name=mapping.to_impl(name), tag_name=mapping.to_impl(tag_name), text=mapping.to_impl(text), timeout=mapping.to_impl(timeout), find_all=mapping.to_impl(find_all), raise_exc=mapping.to_impl(raise_exc), **attributes)))
+        return mapping.from_impl(self._run(cast('Any', self._impl).find(id=mapping.to_impl(id), class_name=mapping.to_impl(class_name), name=mapping.to_impl(name), tag_name=mapping.to_impl(tag_name), text=mapping.to_impl(text), timeout=mapping.to_impl(timeout), find_all=mapping.to_impl(find_all), raise_exc=mapping.to_impl(raise_exc), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in attributes.items()})))
 
     @overload
     def query(self, expression: str, timeout: int=..., find_all: Literal[False]=False, raise_exc: Literal[True]=True) -> WebElement: ...
@@ -2509,6 +2520,7 @@ class Keyboard(SyncBase):
     - WebElement: Private text typing with optional humanization
     """
     _impl: _KeyboardImpl
+    PAUSE_CHARS = _KeyboardImpl.PAUSE_CHARS
 
     def press(self, key: Key, modifiers: KeyModifier | None=None, interval: float=0):
         """
@@ -2521,8 +2533,8 @@ class Keyboard(SyncBase):
                 release follows the press immediately.
 
         Example:
-            await tab.keyboard.press(Key.ENTER)
-            await tab.keyboard.press(Key.A, modifiers=KeyModifier.CTRL)
+            tab.keyboard.press(Key.ENTER)
+            tab.keyboard.press(Key.A, modifiers=KeyModifier.CTRL)
         """
         return mapping.from_impl(self._run(self._impl.press(key=mapping.to_impl(key), modifiers=mapping.to_impl(modifiers), interval=mapping.to_impl(interval))))
 
@@ -2555,7 +2567,7 @@ class Keyboard(SyncBase):
             key3: Optional third key.
 
         Example:
-            await tab.keyboard.hotkey(Key.CONTROL, Key.C)  # Ctrl+C
+            tab.keyboard.hotkey(Key.CONTROL, Key.C)  # Ctrl+C
         """
         return mapping.from_impl(self._run(self._impl.hotkey(key1=mapping.to_impl(key1), key2=mapping.to_impl(key2), key3=mapping.to_impl(key3))))
 
@@ -2563,14 +2575,19 @@ class Keyboard(SyncBase):
         """
         Type text character by character.
 
+        The plain path focuses the element once and sends every key event in
+        one batch, so a page that moves focus mid-typing receives the rest of
+        the text wherever focus went; the humanized path re-focuses before
+        each character.
+
         Args:
             text: Text to type.
             humanize: When True, simulates human-like typing with
                 variable delays and occasional typos (~2%).
 
         Example:
-            await tab.keyboard.type_text("Hello World", humanize=True)
-            await tab.keyboard.type_text("Hello World")
+            tab.keyboard.type_text("Hello World", humanize=True)
+            tab.keyboard.type_text("Hello World")
         """
         return mapping.from_impl(self._run(self._impl.type_text(text=mapping.to_impl(text), humanize=mapping.to_impl(humanize))))
 
@@ -2737,6 +2754,10 @@ class Request(SyncBase):
     def tab(self) -> Any:
         return mapping.from_impl(self._impl.tab)
 
+    @tab.setter
+    def tab(self, value: Any) -> None:
+        self._impl.tab = mapping.to_impl(value)
+
     def request(self, method: str, url: str, params: dict[str, str] | None=None, data: dict | list | tuple | str | bytes | None=None, json: dict[str, Any] | None=None, headers: list[HeaderEntry] | None=None, **kwargs) -> Response:
         """Execute an HTTP request in the browser's JavaScript context.
 
@@ -2772,7 +2793,7 @@ class Request(SyncBase):
             - CORS policies are enforced by the browser
             - Authentication headers are preserved from browser session
         """
-        return mapping.from_impl(self._run(self._impl.request(method=mapping.to_impl(method), url=mapping.to_impl(url), params=mapping.to_impl(params), data=mapping.to_impl(data), json=mapping.to_impl(json), headers=mapping.to_impl(headers), **kwargs)))
+        return mapping.from_impl(self._run(self._impl.request(method=mapping.to_impl(method), url=mapping.to_impl(url), params=mapping.to_impl(params), data=mapping.to_impl(data), json=mapping.to_impl(json), headers=mapping.to_impl(headers), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()})))
 
     def get(self, url: str, params: dict[str, str] | None=None, **kwargs) -> Response:
         """Execute a GET request for retrieving data.
@@ -2785,7 +2806,7 @@ class Request(SyncBase):
         Returns:
             Response object with retrieved data.
         """
-        return mapping.from_impl(self._run(self._impl.get(url=mapping.to_impl(url), params=mapping.to_impl(params), **kwargs)))
+        return mapping.from_impl(self._run(self._impl.get(url=mapping.to_impl(url), params=mapping.to_impl(params), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()})))
 
     def post(self, url: str, data: dict | list | tuple | str | bytes | None=None, json: dict[str, Any] | None=None, **kwargs) -> Response:
         """Execute a POST request for creating or submitting data.
@@ -2799,7 +2820,7 @@ class Request(SyncBase):
         Returns:
             Response object with server's response to the submission.
         """
-        return mapping.from_impl(self._run(self._impl.post(url=mapping.to_impl(url), data=mapping.to_impl(data), json=mapping.to_impl(json), **kwargs)))
+        return mapping.from_impl(self._run(self._impl.post(url=mapping.to_impl(url), data=mapping.to_impl(data), json=mapping.to_impl(json), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()})))
 
     def put(self, url: str, data: dict | list | tuple | str | bytes | None=None, json: dict[str, Any] | None=None, **kwargs) -> Response:
         """Execute a PUT request for updating/replacing resources.
@@ -2813,7 +2834,7 @@ class Request(SyncBase):
         Returns:
             Response object confirming the update operation.
         """
-        return mapping.from_impl(self._run(self._impl.put(url=mapping.to_impl(url), data=mapping.to_impl(data), json=mapping.to_impl(json), **kwargs)))
+        return mapping.from_impl(self._run(self._impl.put(url=mapping.to_impl(url), data=mapping.to_impl(data), json=mapping.to_impl(json), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()})))
 
     def patch(self, url: str, data: dict | list | tuple | str | bytes | None=None, json: dict[str, Any] | None=None, **kwargs) -> Response:
         """Execute a PATCH request for partial resource updates.
@@ -2827,7 +2848,7 @@ class Request(SyncBase):
         Returns:
             Response object confirming the partial update.
         """
-        return mapping.from_impl(self._run(self._impl.patch(url=mapping.to_impl(url), data=mapping.to_impl(data), json=mapping.to_impl(json), **kwargs)))
+        return mapping.from_impl(self._run(self._impl.patch(url=mapping.to_impl(url), data=mapping.to_impl(data), json=mapping.to_impl(json), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()})))
 
     def delete(self, url: str, **kwargs) -> Response:
         """Execute a DELETE request for removing resources.
@@ -2839,7 +2860,7 @@ class Request(SyncBase):
         Returns:
             Response object confirming the deletion.
         """
-        return mapping.from_impl(self._run(self._impl.delete(url=mapping.to_impl(url), **kwargs)))
+        return mapping.from_impl(self._run(self._impl.delete(url=mapping.to_impl(url), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()})))
 
     def head(self, url: str, **kwargs) -> Response:
         """Execute a HEAD request to retrieve only response headers.
@@ -2854,7 +2875,7 @@ class Request(SyncBase):
         Returns:
             Response object with headers but no body content.
         """
-        return mapping.from_impl(self._run(self._impl.head(url=mapping.to_impl(url), **kwargs)))
+        return mapping.from_impl(self._run(self._impl.head(url=mapping.to_impl(url), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()})))
 
     def options(self, url: str, **kwargs) -> Response:
         """Execute an OPTIONS request to check allowed methods and capabilities.
@@ -2868,7 +2889,7 @@ class Request(SyncBase):
         Returns:
             Response object with allowed methods and CORS headers.
         """
-        return mapping.from_impl(self._run(self._impl.options(url=mapping.to_impl(url), **kwargs)))
+        return mapping.from_impl(self._run(self._impl.options(url=mapping.to_impl(url), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()})))
 
     def record(self, resource_types: list[ResourceType] | None=None) -> AbstractContextManager[HarCapture]:
         """Record network traffic as HAR.
@@ -2884,15 +2905,15 @@ class Request(SyncBase):
 
         Usage::
 
-            async with tab.request.record() as capture:
-                await tab.go_to('https://example.com')
+            with tab.request.record() as capture:
+                tab.go_to('https://example.com')
             capture.save('flow.har')
 
             # Record only fetch and XHR requests
-            async with tab.request.record(
+            with tab.request.record(
                 resource_types=[ResourceType.FETCH, ResourceType.XHR]
             ) as capture:
-                await tab.go_to('https://example.com')
+                tab.go_to('https://example.com')
             capture.save('api_calls.har')
 
         Yields:

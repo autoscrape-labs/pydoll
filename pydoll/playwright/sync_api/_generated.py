@@ -41,6 +41,8 @@ from pydoll.playwright._events import EventInfo as _EventInfoImpl
 
 from pathlib import Path
 from typing import Any, Sequence
+from urllib.parse import urlsplit
+import aiohttp
 from pydoll.browser.chromium import Chrome
 from pydoll.exceptions import PydollException
 from pydoll.playwright._browser import build_options
@@ -51,6 +53,7 @@ import logging
 from typing import TYPE_CHECKING, Any, Sequence, cast
 from pydoll.browser.options import ChromiumOptions
 from pydoll.commands import TargetCommands
+from pydoll.playwright._errors import TRANSPORT_ERRORS, Error, TargetClosedError, translate
 from pydoll.playwright._events import EventEmitter
 from pydoll.protocol.target.events import TargetEvent
 from pydoll.protocol.target.types import TargetInfo
@@ -79,11 +82,10 @@ import base64
 import re
 import secrets
 import weakref
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Sequence
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Sequence, TypeVar
 from urllib.parse import urljoin
 from pydoll.commands import DomCommands, EmulationCommands, PageCommands, RuntimeCommands
 from pydoll.elements.web_element import WebElement
-from pydoll.playwright._errors import Error, TargetClosedError, translate
 from pydoll.playwright._events import Deadline, EventContextManager, EventEmitter, create_future, schedule
 from pydoll.playwright._glob import URLMatch, URLMatcher
 from pydoll.playwright._navigation import NavigationTracker
@@ -100,6 +102,7 @@ from typing import TYPE_CHECKING, Any, Awaitable, Callable, Sequence, TypeVar, c
 from pydoll.commands import DomCommands, PageCommands, RuntimeCommands
 from pydoll.playwright._actions import Actions, Resolver
 from pydoll.playwright._element_handle import PrimitiveHandle
+from pydoll.playwright._errors import Error
 from pydoll.playwright._injected import engine_call, engine_source
 from pydoll.playwright._locator import FilePayload
 from pydoll.playwright._remote_values import parse_remote_value
@@ -108,7 +111,6 @@ from pydoll.playwright._serialization import call_arguments, evaluate_source
 from pydoll.protocol.runtime.types import CallArgument
 from typing import TYPE_CHECKING, Any, Pattern, Sequence, TypedDict
 from pydoll.playwright._actions import Resolver
-from pydoll.playwright._errors import Error
 from pydoll.playwright._selectors import ENTER_FRAME, TextMatch, get_by_alt_text_selector, get_by_label_selector, get_by_placeholder_selector, get_by_role_selector, get_by_test_id_selector, get_by_text_selector, get_by_title_selector, with_has, with_has_not, with_has_not_text, with_has_text, with_visible
 from pydoll.playwright._locator import SelectOption
 from typing import TYPE_CHECKING, Any, Sequence
@@ -129,6 +131,7 @@ from pydoll.playwright._network import NetworkManager
 from pydoll.playwright._network import RouteEntry
 from pydoll.playwright._network import Router
 from pydoll.commands import PageCommands
+from pydoll.playwright._errors import TRANSPORT_ERRORS, Error, translate
 from pydoll.playwright._dialog import _PrimitiveHandle
 
 
@@ -136,34 +139,55 @@ from pydoll.playwright._dialog import _PrimitiveHandle
 
 
 class Playwright(SyncBase):
-    """The object yielded by ``async_playwright()``."""
+    """The object yielded by ``sync_playwright()``."""
     _impl: _PlaywrightImpl
 
     @property
     def selectors(self) -> Selectors:
         return mapping.from_impl(self._impl.selectors)
 
+    @selectors.setter
+    def selectors(self, value: Selectors) -> None:
+        self._impl.selectors = mapping.to_impl(value)
+
     @property
     def chromium(self) -> BrowserType:
         return mapping.from_impl(self._impl.chromium)
+
+    @chromium.setter
+    def chromium(self, value: BrowserType) -> None:
+        self._impl.chromium = mapping.to_impl(value)
 
     @property
     def firefox(self) -> BrowserType:
         return mapping.from_impl(self._impl.firefox)
 
+    @firefox.setter
+    def firefox(self, value: BrowserType) -> None:
+        self._impl.firefox = mapping.to_impl(value)
+
     @property
     def webkit(self) -> BrowserType:
         return mapping.from_impl(self._impl.webkit)
 
+    @webkit.setter
+    def webkit(self, value: BrowserType) -> None:
+        self._impl.webkit = mapping.to_impl(value)
+
     @property
     def devices(self) -> dict[str, dict[str, Any]]:
         return mapping.from_impl(self._impl.devices)
+
+    @devices.setter
+    def devices(self, value: dict[str, dict[str, Any]]) -> None:
+        self._impl.devices = mapping.to_impl(value)
 
     @property
     def request(self) -> Any:
         return mapping.from_impl(self._impl.request)
 
     def stop(self) -> None:
+        """Close every browser this Playwright launched or attached to."""
         self._run(self._impl.stop())
 
 class BrowserType(SyncBase):
@@ -182,13 +206,18 @@ class BrowserType(SyncBase):
         return mapping.from_impl(self._run(self._impl.launch(executable_path=mapping.to_impl(executable_path), channel=mapping.to_impl(channel), args=mapping.to_impl(args), ignore_default_args=mapping.to_impl(ignore_default_args), handle_sigint=mapping.to_impl(handle_sigint), handle_sigterm=mapping.to_impl(handle_sigterm), handle_sighup=mapping.to_impl(handle_sighup), timeout=mapping.to_impl(timeout), env=mapping.to_impl(env), headless=mapping.to_impl(headless), devtools=mapping.to_impl(devtools), proxy=mapping.to_impl(proxy), downloads_path=mapping.to_impl(downloads_path), slow_mo=mapping.to_impl(slow_mo), traces_dir=mapping.to_impl(traces_dir), chromium_sandbox=mapping.to_impl(chromium_sandbox), firefox_user_prefs=mapping.to_impl(firefox_user_prefs))))
 
     def launch_persistent_context(self, user_data_dir: str | Path, **kwargs: Any) -> BrowserContext:
-        return mapping.from_impl(self._run(self._impl.launch_persistent_context(user_data_dir=mapping.to_impl(user_data_dir), **kwargs)))
+        return mapping.from_impl(self._run(self._impl.launch_persistent_context(user_data_dir=mapping.to_impl(user_data_dir), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()})))
 
     def connect_over_cdp(self, endpoint_url: str, timeout: float | None=None, slow_mo: float | None=None, headers: dict[str, str] | None=None) -> Browser:
+        """Attach to a running Chromium by its DevTools ``ws://`` or ``http://`` endpoint.
+
+        An HTTP endpoint is resolved through ``/json/version`` the way Playwright
+        does, so ``http://localhost:9222`` works as well as the browser socket URL.
+        """
         return mapping.from_impl(self._run(self._impl.connect_over_cdp(endpoint_url=mapping.to_impl(endpoint_url), timeout=mapping.to_impl(timeout), slow_mo=mapping.to_impl(slow_mo), headers=mapping.to_impl(headers))))
 
     def connect(self, ws_endpoint: str, **kwargs: Any) -> Browser:
-        return mapping.from_impl(self._run(self._impl.connect(ws_endpoint=mapping.to_impl(ws_endpoint), **kwargs)))
+        return mapping.from_impl(self._run(self._impl.connect(ws_endpoint=mapping.to_impl(ws_endpoint), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()})))
 
 class Selectors(SyncBase):
     """``playwright.selectors``: only the test id attribute is configurable."""
@@ -201,10 +230,10 @@ class Selectors(SyncBase):
         self._impl.set_test_id_attribute(attribute_name=mapping.to_impl(attribute_name))
 
 class PlaywrightContextManager(SyncBase):
-    """``async with async_playwright() as p:`` and ``await async_playwright().start()``."""
+    """``with sync_playwright() as p:`` and ``sync_playwright().start()``."""
     _impl: _PlaywrightContextManagerImpl
 
-    def __enter__(self) -> PlaywrightContextManager:
+    def __enter__(self) -> Playwright:
         return mapping.from_impl(self._run(self._impl.__aenter__()))
 
     def __exit__(self, exc_type: Any, exc: Any, tb: Any) -> Any:
@@ -238,19 +267,21 @@ class Browser(SyncBase):
         return mapping.from_impl(self._impl.is_connected())
 
     def new_context(self, **options: Any) -> BrowserContext:
-        return mapping.from_impl(self._run(self._impl.new_context(**options)))
+        """Create an isolated context, ignoring ``default_browser_type`` from device descriptors."""
+        return mapping.from_impl(self._run(self._impl.new_context(**{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in options.items()})))
 
     def new_page(self, **options: Any) -> Page:
-        return mapping.from_impl(self._run(self._impl.new_page(**options)))
+        return mapping.from_impl(self._run(self._impl.new_page(**{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in options.items()})))
 
     def close(self, reason: str | None=None) -> None:
+        """Close every context, then stop the Chrome this Playwright launched or disconnect."""
         self._run(self._impl.close(reason=mapping.to_impl(reason)))
 
     def new_browser_cdp_session(self) -> Any:
         return mapping.from_impl(self._run(self._impl.new_browser_cdp_session()))
 
     def start_tracing(self, **kwargs: Any) -> None:
-        self._run(self._impl.start_tracing(**kwargs))
+        self._run(self._impl.start_tracing(**{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()}))
 
     def stop_tracing(self) -> bytes:
         return mapping.from_impl(self._run(self._impl.stop_tracing()))
@@ -268,7 +299,7 @@ class Browser(SyncBase):
         return mapping.from_impl(self._impl.listener_count(event=mapping.to_impl(event)))
 
     def emit(self, event: str, *args: Any) -> None:
-        self._impl.emit(mapping.to_impl(event), *args)
+        self._impl.emit(mapping.to_impl(event), *[mapping.to_impl(positional) for positional in args])
 
 class BrowserContext(SyncBase):
     """An isolated browsing session; ``browser.new_context()`` creates one."""
@@ -318,9 +349,15 @@ class BrowserContext(SyncBase):
         self._run(self._impl.add_cookies(cookies=mapping.to_impl(cookies)))
 
     def clear_cookies(self, **kwargs: Any) -> None:
-        self._run(self._impl.clear_cookies(**kwargs))
+        self._run(self._impl.clear_cookies(**{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()}))
 
     def storage_state(self, path: str | Path | None=None, indexed_db: bool | None=None) -> dict[str, Any]:
+        """Cookies plus the localStorage of every origin this context visited.
+
+        Origins that still have an open page are read there; the others are read
+        through a scratch page that lands on the origin with a fulfilled blank
+        document, so no request leaves the browser, and is closed afterwards.
+        """
         return mapping.from_impl(self._run(self._impl.storage_state(path=mapping.to_impl(path), indexed_db=mapping.to_impl(indexed_db))))
 
     def grant_permissions(self, permissions: Sequence[str], origin: str | None=None) -> None:
@@ -387,7 +424,7 @@ class BrowserContext(SyncBase):
         return mapping.from_impl(self._impl.listener_count(event=mapping.to_impl(event)))
 
     def emit(self, event: str, *args: Any) -> None:
-        self._impl.emit(mapping.to_impl(event), *args)
+        self._impl.emit(mapping.to_impl(event), *[mapping.to_impl(positional) for positional in args])
 
 class Page(SyncBase):
     """A single tab of a browser context."""
@@ -558,10 +595,10 @@ class Page(SyncBase):
         return mapping.from_impl(self._run(self._impl.eval_on_selector_all(selector=mapping.to_impl(selector), expression=mapping.to_impl(expression), arg=mapping.to_impl(arg))))
 
     def add_script_tag(self, **kwargs: Any) -> ElementHandle:
-        return mapping.from_impl(self._run(self._impl.add_script_tag(**kwargs)))
+        return mapping.from_impl(self._run(self._impl.add_script_tag(**{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()})))
 
     def add_style_tag(self, **kwargs: Any) -> ElementHandle:
-        return mapping.from_impl(self._run(self._impl.add_style_tag(**kwargs)))
+        return mapping.from_impl(self._run(self._impl.add_style_tag(**{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()})))
 
     def add_init_script(self, script: str | None=None, path: str | Path | None=None) -> None:
         self._run(self._impl.add_init_script(script=mapping.to_impl(script), path=mapping.to_impl(path)))
@@ -615,7 +652,7 @@ class Page(SyncBase):
         self._run(self._impl.close(run_before_unload=mapping.to_impl(run_before_unload), reason=mapping.to_impl(reason)))
 
     def locator(self, selector: str, **kwargs: Any) -> Locator:
-        return mapping.from_impl(self._impl.locator(selector=mapping.to_impl(selector), **kwargs))
+        return mapping.from_impl(self._impl.locator(selector=mapping.to_impl(selector), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()}))
 
     def get_by_alt_text(self, text: TextMatch, exact: bool | None=None) -> Locator:
         return mapping.from_impl(self._impl.get_by_alt_text(text=mapping.to_impl(text), exact=mapping.to_impl(exact)))
@@ -627,7 +664,7 @@ class Page(SyncBase):
         return mapping.from_impl(self._impl.get_by_placeholder(text=mapping.to_impl(text), exact=mapping.to_impl(exact)))
 
     def get_by_role(self, role: str, **kwargs: Any) -> Locator:
-        return mapping.from_impl(self._impl.get_by_role(role=mapping.to_impl(role), **kwargs))
+        return mapping.from_impl(self._impl.get_by_role(role=mapping.to_impl(role), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()}))
 
     def get_by_test_id(self, test_id: TextMatch) -> Locator:
         return mapping.from_impl(self._impl.get_by_test_id(test_id=mapping.to_impl(test_id)))
@@ -642,82 +679,82 @@ class Page(SyncBase):
         return mapping.from_impl(self._impl.frame_locator(selector=mapping.to_impl(selector)))
 
     def click(self, selector: str, **kwargs: Any) -> None:
-        self._run(self._impl.click(selector=mapping.to_impl(selector), **kwargs))
+        self._run(self._impl.click(selector=mapping.to_impl(selector), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()}))
 
     def dblclick(self, selector: str, **kwargs: Any) -> None:
-        self._run(self._impl.dblclick(selector=mapping.to_impl(selector), **kwargs))
+        self._run(self._impl.dblclick(selector=mapping.to_impl(selector), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()}))
 
     def tap(self, selector: str, **kwargs: Any) -> None:
-        self._run(self._impl.tap(selector=mapping.to_impl(selector), **kwargs))
+        self._run(self._impl.tap(selector=mapping.to_impl(selector), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()}))
 
     def hover(self, selector: str, **kwargs: Any) -> None:
-        self._run(self._impl.hover(selector=mapping.to_impl(selector), **kwargs))
+        self._run(self._impl.hover(selector=mapping.to_impl(selector), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()}))
 
     def fill(self, selector: str, value: str, **kwargs: Any) -> None:
-        self._run(self._impl.fill(selector=mapping.to_impl(selector), value=mapping.to_impl(value), **kwargs))
+        self._run(self._impl.fill(selector=mapping.to_impl(selector), value=mapping.to_impl(value), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()}))
 
     def focus(self, selector: str, **kwargs: Any) -> None:
-        self._run(self._impl.focus(selector=mapping.to_impl(selector), **kwargs))
+        self._run(self._impl.focus(selector=mapping.to_impl(selector), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()}))
 
     def type(self, selector: str, text: str, **kwargs: Any) -> None:
-        self._run(self._impl.type(selector=mapping.to_impl(selector), text=mapping.to_impl(text), **kwargs))
+        self._run(self._impl.type(selector=mapping.to_impl(selector), text=mapping.to_impl(text), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()}))
 
     def press(self, selector: str, key: str, **kwargs: Any) -> None:
-        self._run(self._impl.press(selector=mapping.to_impl(selector), key=mapping.to_impl(key), **kwargs))
+        self._run(self._impl.press(selector=mapping.to_impl(selector), key=mapping.to_impl(key), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()}))
 
     def check(self, selector: str, **kwargs: Any) -> None:
-        self._run(self._impl.check(selector=mapping.to_impl(selector), **kwargs))
+        self._run(self._impl.check(selector=mapping.to_impl(selector), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()}))
 
     def uncheck(self, selector: str, **kwargs: Any) -> None:
-        self._run(self._impl.uncheck(selector=mapping.to_impl(selector), **kwargs))
+        self._run(self._impl.uncheck(selector=mapping.to_impl(selector), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()}))
 
     def set_checked(self, selector: str, checked: bool, **kwargs: Any) -> None:
-        self._run(self._impl.set_checked(selector=mapping.to_impl(selector), checked=mapping.to_impl(checked), **kwargs))
+        self._run(self._impl.set_checked(selector=mapping.to_impl(selector), checked=mapping.to_impl(checked), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()}))
 
     def select_option(self, selector: str, value: Any=None, **kwargs: Any) -> list[str]:
-        return mapping.from_impl(self._run(self._impl.select_option(selector=mapping.to_impl(selector), value=mapping.to_impl(value), **kwargs)))
+        return mapping.from_impl(self._run(self._impl.select_option(selector=mapping.to_impl(selector), value=mapping.to_impl(value), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()})))
 
     def set_input_files(self, selector: str, files: Any, **kwargs: Any) -> None:
-        self._run(self._impl.set_input_files(selector=mapping.to_impl(selector), files=mapping.to_impl(files), **kwargs))
+        self._run(self._impl.set_input_files(selector=mapping.to_impl(selector), files=mapping.to_impl(files), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()}))
 
     def dispatch_event(self, selector: str, type: str, event_init: dict[str, Any] | None=None, **kwargs: Any) -> None:
-        self._run(self._impl.dispatch_event(selector=mapping.to_impl(selector), type=mapping.to_impl(type), event_init=mapping.to_impl(event_init), **kwargs))
+        self._run(self._impl.dispatch_event(selector=mapping.to_impl(selector), type=mapping.to_impl(type), event_init=mapping.to_impl(event_init), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()}))
 
     def drag_and_drop(self, source: str, target: str, **kwargs: Any) -> None:
-        self._run(self._impl.drag_and_drop(source=mapping.to_impl(source), target=mapping.to_impl(target), **kwargs))
+        self._run(self._impl.drag_and_drop(source=mapping.to_impl(source), target=mapping.to_impl(target), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()}))
 
     def get_attribute(self, selector: str, name: str, **kwargs: Any) -> str | None:
-        return mapping.from_impl(self._run(self._impl.get_attribute(selector=mapping.to_impl(selector), name=mapping.to_impl(name), **kwargs)))
+        return mapping.from_impl(self._run(self._impl.get_attribute(selector=mapping.to_impl(selector), name=mapping.to_impl(name), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()})))
 
     def text_content(self, selector: str, **kwargs: Any) -> str | None:
-        return mapping.from_impl(self._run(self._impl.text_content(selector=mapping.to_impl(selector), **kwargs)))
+        return mapping.from_impl(self._run(self._impl.text_content(selector=mapping.to_impl(selector), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()})))
 
     def inner_text(self, selector: str, **kwargs: Any) -> str:
-        return mapping.from_impl(self._run(self._impl.inner_text(selector=mapping.to_impl(selector), **kwargs)))
+        return mapping.from_impl(self._run(self._impl.inner_text(selector=mapping.to_impl(selector), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()})))
 
     def inner_html(self, selector: str, **kwargs: Any) -> str:
-        return mapping.from_impl(self._run(self._impl.inner_html(selector=mapping.to_impl(selector), **kwargs)))
+        return mapping.from_impl(self._run(self._impl.inner_html(selector=mapping.to_impl(selector), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()})))
 
     def input_value(self, selector: str, **kwargs: Any) -> str:
-        return mapping.from_impl(self._run(self._impl.input_value(selector=mapping.to_impl(selector), **kwargs)))
+        return mapping.from_impl(self._run(self._impl.input_value(selector=mapping.to_impl(selector), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()})))
 
     def is_checked(self, selector: str, **kwargs: Any) -> bool:
-        return mapping.from_impl(self._run(self._impl.is_checked(selector=mapping.to_impl(selector), **kwargs)))
+        return mapping.from_impl(self._run(self._impl.is_checked(selector=mapping.to_impl(selector), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()})))
 
     def is_disabled(self, selector: str, **kwargs: Any) -> bool:
-        return mapping.from_impl(self._run(self._impl.is_disabled(selector=mapping.to_impl(selector), **kwargs)))
+        return mapping.from_impl(self._run(self._impl.is_disabled(selector=mapping.to_impl(selector), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()})))
 
     def is_editable(self, selector: str, **kwargs: Any) -> bool:
-        return mapping.from_impl(self._run(self._impl.is_editable(selector=mapping.to_impl(selector), **kwargs)))
+        return mapping.from_impl(self._run(self._impl.is_editable(selector=mapping.to_impl(selector), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()})))
 
     def is_enabled(self, selector: str, **kwargs: Any) -> bool:
-        return mapping.from_impl(self._run(self._impl.is_enabled(selector=mapping.to_impl(selector), **kwargs)))
+        return mapping.from_impl(self._run(self._impl.is_enabled(selector=mapping.to_impl(selector), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()})))
 
     def is_hidden(self, selector: str, **kwargs: Any) -> bool:
-        return mapping.from_impl(self._run(self._impl.is_hidden(selector=mapping.to_impl(selector), **kwargs)))
+        return mapping.from_impl(self._run(self._impl.is_hidden(selector=mapping.to_impl(selector), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()})))
 
     def is_visible(self, selector: str, **kwargs: Any) -> bool:
-        return mapping.from_impl(self._run(self._impl.is_visible(selector=mapping.to_impl(selector), **kwargs)))
+        return mapping.from_impl(self._run(self._impl.is_visible(selector=mapping.to_impl(selector), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()})))
 
     def remove_listener(self, event: str, listener: Listener) -> None:
         self._impl.remove_listener(event=mapping.to_impl(event), listener=mapping.wrap_handler(listener))
@@ -726,7 +763,7 @@ class Page(SyncBase):
         return mapping.from_impl(self._impl.listener_count(event=mapping.to_impl(event)))
 
     def emit(self, event: str, *args: Any) -> None:
-        self._impl.emit(mapping.to_impl(event), *args)
+        self._impl.emit(mapping.to_impl(event), *[mapping.to_impl(positional) for positional in args])
 
 class Frame(SyncBase):
     """A document inside a page: the main frame or an ``<iframe>``."""
@@ -825,7 +862,7 @@ class Frame(SyncBase):
         return mapping.from_impl(self._impl.get_by_placeholder(text=mapping.to_impl(text), exact=mapping.to_impl(exact)))
 
     def get_by_role(self, role: str, **kwargs: Any) -> Locator:
-        return mapping.from_impl(self._impl.get_by_role(role=mapping.to_impl(role), **kwargs))
+        return mapping.from_impl(self._impl.get_by_role(role=mapping.to_impl(role), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()}))
 
     def get_by_test_id(self, test_id: TextMatch) -> Locator:
         return mapping.from_impl(self._impl.get_by_test_id(test_id=mapping.to_impl(test_id)))
@@ -840,49 +877,49 @@ class Frame(SyncBase):
         return mapping.from_impl(self._impl.frame_locator(selector=mapping.to_impl(selector)))
 
     def click(self, selector: str, strict: bool | None=None, **kwargs: Any) -> None:
-        self._run(self._impl.click(selector=mapping.to_impl(selector), strict=mapping.to_impl(strict), **kwargs))
+        self._run(self._impl.click(selector=mapping.to_impl(selector), strict=mapping.to_impl(strict), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()}))
 
     def dblclick(self, selector: str, strict: bool | None=None, **kwargs: Any) -> None:
-        self._run(self._impl.dblclick(selector=mapping.to_impl(selector), strict=mapping.to_impl(strict), **kwargs))
+        self._run(self._impl.dblclick(selector=mapping.to_impl(selector), strict=mapping.to_impl(strict), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()}))
 
     def tap(self, selector: str, strict: bool | None=None, **kwargs: Any) -> None:
-        self._run(self._impl.tap(selector=mapping.to_impl(selector), strict=mapping.to_impl(strict), **kwargs))
+        self._run(self._impl.tap(selector=mapping.to_impl(selector), strict=mapping.to_impl(strict), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()}))
 
     def hover(self, selector: str, strict: bool | None=None, **kwargs: Any) -> None:
-        self._run(self._impl.hover(selector=mapping.to_impl(selector), strict=mapping.to_impl(strict), **kwargs))
+        self._run(self._impl.hover(selector=mapping.to_impl(selector), strict=mapping.to_impl(strict), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()}))
 
     def fill(self, selector: str, value: str, strict: bool | None=None, **kwargs: Any) -> None:
-        self._run(self._impl.fill(selector=mapping.to_impl(selector), value=mapping.to_impl(value), strict=mapping.to_impl(strict), **kwargs))
+        self._run(self._impl.fill(selector=mapping.to_impl(selector), value=mapping.to_impl(value), strict=mapping.to_impl(strict), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()}))
 
     def focus(self, selector: str, strict: bool | None=None, timeout: float | None=None) -> None:
         self._run(self._impl.focus(selector=mapping.to_impl(selector), strict=mapping.to_impl(strict), timeout=mapping.to_impl(timeout)))
 
     def type(self, selector: str, text: str, strict: bool | None=None, **kwargs: Any) -> None:
-        self._run(self._impl.type(selector=mapping.to_impl(selector), text=mapping.to_impl(text), strict=mapping.to_impl(strict), **kwargs))
+        self._run(self._impl.type(selector=mapping.to_impl(selector), text=mapping.to_impl(text), strict=mapping.to_impl(strict), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()}))
 
     def press(self, selector: str, key: str, strict: bool | None=None, **kwargs: Any) -> None:
-        self._run(self._impl.press(selector=mapping.to_impl(selector), key=mapping.to_impl(key), strict=mapping.to_impl(strict), **kwargs))
+        self._run(self._impl.press(selector=mapping.to_impl(selector), key=mapping.to_impl(key), strict=mapping.to_impl(strict), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()}))
 
     def check(self, selector: str, strict: bool | None=None, **kwargs: Any) -> None:
-        self._run(self._impl.check(selector=mapping.to_impl(selector), strict=mapping.to_impl(strict), **kwargs))
+        self._run(self._impl.check(selector=mapping.to_impl(selector), strict=mapping.to_impl(strict), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()}))
 
     def uncheck(self, selector: str, strict: bool | None=None, **kwargs: Any) -> None:
-        self._run(self._impl.uncheck(selector=mapping.to_impl(selector), strict=mapping.to_impl(strict), **kwargs))
+        self._run(self._impl.uncheck(selector=mapping.to_impl(selector), strict=mapping.to_impl(strict), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()}))
 
     def set_checked(self, selector: str, checked: bool, strict: bool | None=None, **kwargs: Any) -> None:
-        self._run(self._impl.set_checked(selector=mapping.to_impl(selector), checked=mapping.to_impl(checked), strict=mapping.to_impl(strict), **kwargs))
+        self._run(self._impl.set_checked(selector=mapping.to_impl(selector), checked=mapping.to_impl(checked), strict=mapping.to_impl(strict), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()}))
 
     def select_option(self, selector: str, value: Any=None, strict: bool | None=None, **kwargs: Any) -> list[str]:
-        return mapping.from_impl(self._run(self._impl.select_option(selector=mapping.to_impl(selector), value=mapping.to_impl(value), strict=mapping.to_impl(strict), **kwargs)))
+        return mapping.from_impl(self._run(self._impl.select_option(selector=mapping.to_impl(selector), value=mapping.to_impl(value), strict=mapping.to_impl(strict), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()})))
 
     def set_input_files(self, selector: str, files: str | Path | FilePayload | Sequence[Any], strict: bool | None=None, **kwargs: Any) -> None:
-        self._run(self._impl.set_input_files(selector=mapping.to_impl(selector), files=mapping.to_impl(files), strict=mapping.to_impl(strict), **kwargs))
+        self._run(self._impl.set_input_files(selector=mapping.to_impl(selector), files=mapping.to_impl(files), strict=mapping.to_impl(strict), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()}))
 
     def dispatch_event(self, selector: str, type: str, event_init: dict[str, Any] | None=None, strict: bool | None=None, **kwargs: Any) -> None:
-        self._run(self._impl.dispatch_event(selector=mapping.to_impl(selector), type=mapping.to_impl(type), event_init=mapping.to_impl(event_init), strict=mapping.to_impl(strict), **kwargs))
+        self._run(self._impl.dispatch_event(selector=mapping.to_impl(selector), type=mapping.to_impl(type), event_init=mapping.to_impl(event_init), strict=mapping.to_impl(strict), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()}))
 
     def drag_and_drop(self, source: str, target: str, strict: bool | None=None, **kwargs: Any) -> None:
-        self._run(self._impl.drag_and_drop(source=mapping.to_impl(source), target=mapping.to_impl(target), strict=mapping.to_impl(strict), **kwargs))
+        self._run(self._impl.drag_and_drop(source=mapping.to_impl(source), target=mapping.to_impl(target), strict=mapping.to_impl(strict), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()}))
 
     def get_attribute(self, selector: str, name: str, strict: bool | None=None, timeout: float | None=None) -> str | None:
         return mapping.from_impl(self._run(self._impl.get_attribute(selector=mapping.to_impl(selector), name=mapping.to_impl(name), strict=mapping.to_impl(strict), timeout=mapping.to_impl(timeout))))
@@ -943,7 +980,7 @@ class Locator(SyncBase):
         return mapping.from_impl(self._impl.get_by_placeholder(text=mapping.to_impl(text), exact=mapping.to_impl(exact)))
 
     def get_by_role(self, role: str, **kwargs: Any) -> Locator:
-        return mapping.from_impl(self._impl.get_by_role(role=mapping.to_impl(role), **kwargs))
+        return mapping.from_impl(self._impl.get_by_role(role=mapping.to_impl(role), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()}))
 
     def get_by_test_id(self, test_id: TextMatch) -> Locator:
         return mapping.from_impl(self._impl.get_by_test_id(test_id=mapping.to_impl(test_id)))
@@ -1022,16 +1059,16 @@ class Locator(SyncBase):
         return mapping.from_impl(self._run(self._impl.evaluate_all(expression=mapping.to_impl(expression), arg=mapping.to_impl(arg))))
 
     def click(self, **kwargs: Any) -> None:
-        self._run(self._impl.click(**kwargs))
+        self._run(self._impl.click(**{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()}))
 
     def dblclick(self, **kwargs: Any) -> None:
-        self._run(self._impl.dblclick(**kwargs))
+        self._run(self._impl.dblclick(**{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()}))
 
     def hover(self, **kwargs: Any) -> None:
-        self._run(self._impl.hover(**kwargs))
+        self._run(self._impl.hover(**{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()}))
 
     def tap(self, **kwargs: Any) -> None:
-        self._run(self._impl.tap(**kwargs))
+        self._run(self._impl.tap(**{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()}))
 
     def fill(self, value: str, timeout: float | None=None, force: bool | None=None, no_wait_after: bool | None=None) -> None:
         self._run(self._impl.fill(value=mapping.to_impl(value), timeout=mapping.to_impl(timeout), force=mapping.to_impl(force), no_wait_after=mapping.to_impl(no_wait_after)))
@@ -1055,13 +1092,13 @@ class Locator(SyncBase):
         self._run(self._impl.blur(timeout=mapping.to_impl(timeout)))
 
     def check(self, **kwargs: Any) -> None:
-        self._run(self._impl.check(**kwargs))
+        self._run(self._impl.check(**{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()}))
 
     def uncheck(self, **kwargs: Any) -> None:
-        self._run(self._impl.uncheck(**kwargs))
+        self._run(self._impl.uncheck(**{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()}))
 
     def set_checked(self, checked: bool, **kwargs: Any) -> None:
-        self._run(self._impl.set_checked(checked=mapping.to_impl(checked), **kwargs))
+        self._run(self._impl.set_checked(checked=mapping.to_impl(checked), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()}))
 
     def select_option(self, value: str | Sequence[str] | None=None, *, index: int | Sequence[int] | None=None, label: str | Sequence[str] | None=None, element: ElementHandle | Sequence[ElementHandle] | None=None, timeout: float | None=None, force: bool | None=None, no_wait_after: bool | None=None) -> list[str]:
         return mapping.from_impl(self._run(self._impl.select_option(value=mapping.to_impl(value), index=mapping.to_impl(index), label=mapping.to_impl(label), element=mapping.to_impl(element), timeout=mapping.to_impl(timeout), force=mapping.to_impl(force), no_wait_after=mapping.to_impl(no_wait_after))))
@@ -1079,7 +1116,7 @@ class Locator(SyncBase):
         self._run(self._impl.scroll_into_view_if_needed(timeout=mapping.to_impl(timeout)))
 
     def drag_to(self, target: Locator, **kwargs: Any) -> None:
-        self._run(self._impl.drag_to(target=mapping.to_impl(target), **kwargs))
+        self._run(self._impl.drag_to(target=mapping.to_impl(target), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()}))
 
     def highlight(self) -> None:
         self._run(self._impl.highlight())
@@ -1124,7 +1161,7 @@ class Locator(SyncBase):
         return mapping.from_impl(self._run(self._impl.bounding_box(timeout=mapping.to_impl(timeout))))
 
     def screenshot(self, **kwargs: Any) -> bytes:
-        return mapping.from_impl(self._run(self._impl.screenshot(**kwargs)))
+        return mapping.from_impl(self._run(self._impl.screenshot(**{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()})))
 
 class FrameLocator(SyncBase):
     """Entry point to a child frame found by a selector, with the same lazy semantics."""
@@ -1143,7 +1180,7 @@ class FrameLocator(SyncBase):
         return mapping.from_impl(self._impl.get_by_placeholder(text=mapping.to_impl(text), exact=mapping.to_impl(exact)))
 
     def get_by_role(self, role: str, **kwargs: Any) -> Locator:
-        return mapping.from_impl(self._impl.get_by_role(role=mapping.to_impl(role), **kwargs))
+        return mapping.from_impl(self._impl.get_by_role(role=mapping.to_impl(role), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()}))
 
     def get_by_test_id(self, test_id: TextMatch) -> Locator:
         return mapping.from_impl(self._impl.get_by_test_id(test_id=mapping.to_impl(test_id)))
@@ -1279,16 +1316,16 @@ class ElementHandle(SyncBase):
         self._run(self._impl.scroll_into_view_if_needed(timeout=mapping.to_impl(timeout)))
 
     def hover(self, **kwargs: Any) -> None:
-        self._run(self._impl.hover(**kwargs))
+        self._run(self._impl.hover(**{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()}))
 
     def click(self, **kwargs: Any) -> None:
-        self._run(self._impl.click(**kwargs))
+        self._run(self._impl.click(**{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()}))
 
     def dblclick(self, **kwargs: Any) -> None:
-        self._run(self._impl.dblclick(**kwargs))
+        self._run(self._impl.dblclick(**{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()}))
 
     def tap(self, **kwargs: Any) -> None:
-        self._run(self._impl.tap(**kwargs))
+        self._run(self._impl.tap(**{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()}))
 
     def select_option(self, value: str | Sequence[str] | None=None, *, index: int | Sequence[int] | None=None, label: str | Sequence[str] | None=None, element: ElementHandle | Sequence[ElementHandle] | None=None, timeout: float | None=None, force: bool | None=None) -> list[str]:
         return mapping.from_impl(self._run(self._impl.select_option(value=mapping.to_impl(value), index=mapping.to_impl(index), label=mapping.to_impl(label), element=mapping.to_impl(element), timeout=mapping.to_impl(timeout), force=mapping.to_impl(force))))
@@ -1312,19 +1349,19 @@ class ElementHandle(SyncBase):
         self._run(self._impl.press(key=mapping.to_impl(key), delay=mapping.to_impl(delay), timeout=mapping.to_impl(timeout)))
 
     def set_checked(self, checked: bool, **kwargs: Any) -> None:
-        self._run(self._impl.set_checked(checked=mapping.to_impl(checked), **kwargs))
+        self._run(self._impl.set_checked(checked=mapping.to_impl(checked), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()}))
 
     def check(self, **kwargs: Any) -> None:
-        self._run(self._impl.check(**kwargs))
+        self._run(self._impl.check(**{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()}))
 
     def uncheck(self, **kwargs: Any) -> None:
-        self._run(self._impl.uncheck(**kwargs))
+        self._run(self._impl.uncheck(**{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()}))
 
     def bounding_box(self) -> dict[str, float] | None:
         return mapping.from_impl(self._run(self._impl.bounding_box()))
 
     def screenshot(self, **kwargs: Any) -> bytes:
-        return mapping.from_impl(self._run(self._impl.screenshot(**kwargs)))
+        return mapping.from_impl(self._run(self._impl.screenshot(**{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()})))
 
     def query_selector(self, selector: str) -> ElementHandle | None:
         return mapping.from_impl(self._run(self._impl.query_selector(selector=mapping.to_impl(selector))))
@@ -1342,7 +1379,7 @@ class ElementHandle(SyncBase):
         self._run(self._impl.wait_for_element_state(state=mapping.to_impl(state), timeout=mapping.to_impl(timeout)))
 
     def wait_for_selector(self, selector: str, **kwargs: Any) -> ElementHandle | None:
-        return mapping.from_impl(self._run(self._impl.wait_for_selector(selector=mapping.to_impl(selector), **kwargs)))
+        return mapping.from_impl(self._run(self._impl.wait_for_selector(selector=mapping.to_impl(selector), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()})))
 
     def get_property(self, property_name: str) -> JSHandle:
         return mapping.from_impl(self._run(self._impl.get_property(property_name=mapping.to_impl(property_name))))

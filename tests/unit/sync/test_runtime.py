@@ -4,13 +4,17 @@ from __future__ import annotations
 
 import asyncio
 import gc
+import inspect
+import logging
 import threading
 import time
 import weakref
 
 import pytest
 
-from pydoll.sync._runtime import EventLoopThread, Mapping, SyncBase, SyncError, run_sync
+from pydoll.browser.options import ChromiumOptions
+from pydoll.sync import Chrome, Tab
+from pydoll.sync._runtime import EventLoopThread, Mapping, SyncBase, SyncError, mapping, run_sync
 
 
 class Impl:
@@ -145,3 +149,121 @@ def test_run_accepts_futures_from_the_loop() -> None:
         return future
 
     assert run_sync(run_sync(make_future())) == 'done'
+
+
+def _callback_threads() -> int:
+    return sum(
+        1 for thread in threading.enumerate() if thread.name.startswith('pydoll-sync-callbacks')
+    )
+
+
+def test_removed_callbacks_release_their_wrapper_and_dispatch_thread(fake_tab, fake_conn) -> None:
+    tab = mapping.from_impl(fake_tab)
+    assert isinstance(tab, Tab)
+    gc.collect()
+    threads_before = _callback_threads()
+    handlers_before = len(mapping._handlers)
+
+    callback_ids = [tab.on('Page.loadEventFired', lambda event: None) for _ in range(30)]
+    wrappers = fake_conn.callbacks_for('Page.loadEventFired')
+    assert len(wrappers) == 30
+    assert len(mapping._handlers) == handlers_before + 30
+    for wrapper in wrappers:
+        run_sync(run_sync(_schedule(wrapper, {'method': 'Page.loadEventFired'})))
+    assert _callback_threads() >= 30
+
+    for callback_id in callback_ids:
+        tab.remove_callback(callback_id)
+    del wrapper, wrappers
+    gc.collect()
+    deadline = time.monotonic() + 5
+    while _callback_threads() > threads_before and time.monotonic() < deadline:
+        time.sleep(0.01)
+    assert _callback_threads() <= threads_before
+    assert len(mapping._handlers) == handlers_before
+
+
+def test_wrapper_keeps_the_handler_name_without_pinning_it(local_mapping: Mapping) -> None:
+    def named_handler(event: dict) -> None:
+        """Handles events."""
+
+    wrapper = local_mapping.wrap_handler(named_handler)
+    assert wrapper.__name__ == 'named_handler'
+    assert wrapper.__doc__ == 'Handles events.'
+    assert list(inspect.signature(wrapper).parameters) == ['event']
+    assert not hasattr(wrapper, '__wrapped__')
+    ref = weakref.ref(wrapper)
+    del wrapper
+    gc.collect()
+    assert ref() is None
+    assert len(local_mapping._handlers) == 0
+
+
+def test_async_handlers_are_rejected_instead_of_silently_ignored(local_mapping: Mapping) -> None:
+    async def handler(event: dict) -> None:
+        pass
+
+    with pytest.raises(SyncError, match='coroutine function'):
+        local_mapping.wrap_handler(handler)
+
+
+def test_callback_failures_are_logged_with_the_handler_name(
+    local_mapping: Mapping, caplog: pytest.LogCaptureFixture
+) -> None:
+    def explode(event: dict) -> None:
+        raise ValueError('boom')
+
+    wrapper = local_mapping.wrap_handler(explode)
+    with caplog.at_level(logging.ERROR, logger='pydoll.sync._runtime'):
+        future = run_sync(_schedule(wrapper, {}))
+        with pytest.raises(ValueError, match='boom'):
+            run_sync(future)
+        deadline = time.monotonic() + 2
+        while not caplog.records and time.monotonic() < deadline:
+            time.sleep(0.01)
+    assert len(caplog.records) == 1
+    record = caplog.records[0]
+    assert 'explode' in record.getMessage()
+    assert record.exc_info is not None and record.exc_info[0] is ValueError
+
+
+def test_constructed_facade_is_the_one_its_context_manager_yields() -> None:
+    browser = Chrome()
+    assert mapping.from_impl(browser.impl) is browser
+    assert browser.__enter__() is browser
+
+
+def test_instance_attributes_are_assignable_through_the_facade() -> None:
+    browser = Chrome()
+    options = ChromiumOptions()
+    browser.options = options
+    assert browser.impl.options is options
+    assert browser.options is options
+
+
+def test_sets_and_dict_keys_are_converted_both_ways(local_mapping: Mapping) -> None:
+    impl = Impl('a')
+    facade = local_mapping.from_impl(impl)
+    converted = local_mapping.from_impl({impl: frozenset({impl}), 'plain': {impl}})
+    assert converted == {facade: frozenset({facade}), 'plain': {facade}}
+    assert isinstance(converted[facade], frozenset)
+    restored = local_mapping.to_impl(converted)
+    assert restored == {impl: frozenset({impl}), 'plain': {impl}}
+    assert next(iter(restored)) is impl
+
+
+def test_shutdown_cancels_pending_tasks_and_closes_the_loop() -> None:
+    runtime = EventLoopThread.instance()
+    started = threading.Event()
+
+    async def hang() -> None:
+        started.set()
+        await asyncio.sleep(60)
+
+    pending = asyncio.run_coroutine_threadsafe(hang(), runtime.loop)
+    assert started.wait(2)
+    runtime.shutdown()
+    assert pending.cancelled()
+    assert runtime.loop.is_closed()
+    assert not runtime._thread.is_alive()
+    assert run_sync(_value(6)) == 6
