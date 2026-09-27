@@ -8,7 +8,7 @@ Regenerate with ``python scripts/generate_sync_api.py``.
 from __future__ import annotations
 
 from contextlib import AbstractContextManager
-from typing import Any
+from typing import Any, overload
 
 from pydoll.sync._runtime import SyncBase, mapping, run_sync
 
@@ -34,28 +34,54 @@ from pydoll.browser.managers import ChromiumOptionsManager
 from pydoll.exceptions import UnsupportedOS
 from pydoll.utils import validate_browser_paths
 from pydoll.browser.options import ChromiumOptions
-from pydoll.browser.options import Options
 import asyncio
+import json
+import os
+import shutil
+import warnings
+from abc import ABC, abstractmethod
+from contextlib import suppress
+from functools import partial
+from random import randint
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Optional, overload
+from urllib.parse import urlsplit, urlunsplit
+from pydoll.browser.managers import BrowserProcessManager, ProxyManager, TempDirectoryManager
+from pydoll.commands import BrowserCommands, EmulationCommands, FetchCommands, RuntimeCommands, StorageCommands, TargetCommands
+from pydoll.connection import ConnectionHandler
+from pydoll.exceptions import BrowserNotRunning, FailedToStartBrowser, InvalidConnectionPort, InvalidWebSocketAddress, MissingTargetOrWebSocket, NoValidTabFound
+from pydoll.protocol.browser.types import DownloadBehavior
+from pydoll.protocol.fetch.events import FetchEvent
+from pydoll.protocol.fetch.types import AuthChallengeResponseType
+from pydoll.protocol.target.events import TargetEvent
+from pydoll.protocol.target.types import FilterEntry
+from pydoll.utils.fingerprint_builder import build_fingerprint_worker_js
+from pydoll.utils.user_agent_parser import ParsedUserAgent, UserAgentParser
+from tempfile import TemporaryDirectory
+from pydoll.browser.interfaces import BrowserOptionsManager
+from pydoll.protocol.base import Command, T_CommandParams, T_CommandResponse
+from pydoll.protocol.browser.methods import GetVersionResponse, GetVersionResult, GetWindowForTargetResponse
+from pydoll.protocol.browser.types import Bounds, PermissionType
+from pydoll.protocol.fetch.events import RequestPausedEvent
+from pydoll.protocol.fetch.types import HeaderEntry
+from pydoll.protocol.fingerprint.types import FingerprintConfig
+from pydoll.protocol.network.types import Cookie, CookieParam, ErrorReason, RequestMethod, ResourceType
+from pydoll.protocol.storage.methods import GetCookiesResponse
+from pydoll.protocol.target.methods import CreateBrowserContextResponse, CreateTargetResponse, GetBrowserContextsResponse, GetTargetsResponse
+from pydoll.protocol.target.types import TargetInfo
+from pydoll.browser.options import Options
 import base64 as _b64
 import contextlib
 import io
-import shutil
-import warnings
 import zipfile
 from contextlib import asynccontextmanager
-from functools import partial
 from pathlib import Path
 from tempfile import mkdtemp
 from typing import TYPE_CHECKING, Any, AsyncGenerator, Awaitable, Callable, Optional, TypeAlias, TypeVar, Union, cast, overload
 import aiofiles
 from pydoll.browser.fingerprint_applier import FingerprintApplier
-from pydoll.browser.requests import Request
 from pydoll.commands import DomCommands, FetchCommands, NetworkCommands, PageCommands, RuntimeCommands, StorageCommands, TargetCommands
-from pydoll.connection import ConnectionHandler
 from pydoll.constants import By, PageLoadState
 from pydoll.elements.mixins import FindElementsMixin
-from pydoll.elements.shadow_root import ShadowRoot
-from pydoll.elements.web_element import WebElement
 from pydoll.exceptions import CommandExecutionTimeout, DownloadTimeout, IFrameNotFound, InvalidFileExtension, InvalidIFrame, InvalidScriptWithElement, InvalidTabInitialization, MissingScreenshotPath, NavigationError, NetworkEventsNotEnabled, NoDialogPresent, NotAnIFrame, PageLoadTimeout, TopLevelTargetRequired, WaitElementTimeout, WebSocketConnectionClosed
 from pydoll.extractor.engine import ExtractionEngine
 from pydoll.interactions import KeyboardAPI, MouseAPI, ScrollAPI
@@ -67,15 +93,13 @@ from pydoll.protocol.page.events import PageEvent
 from pydoll.protocol.page.types import FrameResourceTree, ScreenshotFormat
 from pydoll.protocol.runtime.methods import CallFunctionOnResponse, EvaluateResponse, SerializationOptions
 from pydoll.protocol.runtime.types import CallArgument
-from pydoll.protocol.target.types import TargetInfo
 from pydoll.utils import decode_base64_to_bytes, has_return_outside_function
 from pydoll.utils.bundle import build_asset_filename, collect_frame_resources, filter_fetchable_resources, inline_all_assets, rewrite_html_urls
 from pydoll.extractor.model import ExtractionModel
-from pydoll.protocol.base import EmptyResponse, Response
+from pydoll.protocol.base import EmptyResponse
 from pydoll.protocol.browser.events import DownloadProgressEvent, DownloadWillBeginEvent
 from pydoll.protocol.dom.methods import DescribeNodeResponse, GetDocumentResponse, ResolveNodeResponse
 from pydoll.protocol.fetch.types import AuthChallengeResponseType, HeaderEntry, RequestStage
-from pydoll.protocol.fingerprint.types import FingerprintConfig
 from pydoll.protocol.network.events import RequestWillBeSentEvent
 from pydoll.protocol.network.methods import GetCookiesResponse as NetworkGetCookiesResponse
 from pydoll.protocol.network.methods import GetResponseBodyResponse
@@ -85,12 +109,23 @@ from pydoll.protocol.page.methods import CaptureScreenshotResponse, GetResourceC
 from pydoll.protocol.runtime.methods import CallFunctionOnResponse, EvaluateResponse
 from pydoll.protocol.storage.methods import GetCookiesResponse as StorageGetCookiesResponse
 from pydoll.protocol.target.methods import AttachToTargetResponse, GetTargetsResponse
-import json
+IFrame: TypeAlias = 'Tab'
+T = TypeVar('T', bound='ExtractionModel')
+from typing import TYPE_CHECKING, Optional, Union, cast, overload
+from pydoll.commands import DomCommands, RuntimeCommands
+from pydoll.connection.connection_handler import ConnectionHandler
+from pydoll.constants import By, Scripts
+from pydoll.elements.utils import SelectorParser
+from pydoll.exceptions import ElementNotFound, WaitElementTimeout
+from typing import Literal, Optional, Union
+from pydoll.protocol.dom.methods import DescribeNodeResponse
+from pydoll.protocol.dom.types import Node
+from pydoll.protocol.runtime.methods import CallFunctionOnParams, CallFunctionOnResponse, EvaluateParams, EvaluateResponse, GetPropertiesResponse
+from pydoll.elements.mixins.find_elements_mixin import FindElementsMixin
 from pydoll.commands import DomCommands, InputCommands, PageCommands, RuntimeCommands
 from pydoll.constants import Key, Scripts
 from pydoll.exceptions import CommandExecutionTimeout, ElementNotAFileInput, ElementNotFound, ElementNotInteractable, ElementNotVisible, InvalidFileExtension, InvalidIFrame, MissingScreenshotPath, ShadowRootNotFound, WaitElementTimeout, WebSocketConnectionClosed
 from pydoll.interactions.iframe import IFrameContext, IFrameContextResolver
-from pydoll.interactions.keyboard import Keyboard
 from pydoll.protocol.dom.types import ShadowRootType
 from pydoll.protocol.input.types import KeyEventType, KeyModifier, MouseButton, MouseEventType
 from pydoll.protocol.page.types import ScreenshotFormat, Viewport
@@ -110,25 +145,28 @@ from typing import Any, Optional, Protocol, cast
 from pydoll.commands import InputCommands
 from pydoll.constants import CHAR_TO_KEY_INFO, DEFAULT_TYPO_PROBABILITY, QWERTY_NEIGHBORS, Key, TypoType
 from pydoll.protocol.input.types import KeyEventType, KeyModifier
+from pydoll.interactions.keyboard import CommandExecutor
+from pydoll.interactions.keyboard import TypoResult
+from pydoll.interactions.keyboard import TimingConfig
+from pydoll.interactions.keyboard import TypoConfig
 import math
 from pydoll.commands import InputCommands, RuntimeCommands
 from pydoll.interactions.utils import bezier_2d, fitts_duration, minimum_jerk, random_control_points
 from pydoll.protocol.input.types import MouseButton, MouseEventType
-from pydoll.browser.tab import Tab
+from pydoll.interactions.mouse import MouseTimingConfig
 from pydoll.constants import Scripts, ScrollPosition
 from pydoll.interactions.utils import CubicBezier
 from pydoll.protocol.input.types import MouseEventType
 from pydoll.protocol.runtime.methods import EvaluateResponse
+from pydoll.interactions.scroll import ScrollTimingConfig
 import json as jsonlib
 from collections.abc import AsyncIterator
 from typing import TYPE_CHECKING, Any, Callable, Optional, Union, cast
 from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 from pydoll.browser.requests.har_recorder import HarCapture, HarRecorder
-from pydoll.browser.requests.response import Response
 from pydoll.commands.runtime_commands import RuntimeCommands
 from pydoll.constants import Scripts
 from pydoll.exceptions import HTTPError
-from pydoll.protocol.fetch.types import HeaderEntry
 from pydoll.protocol.network.events import NetworkEvent, RequestWillBeSentEvent, RequestWillBeSentExtraInfoEvent, ResponseReceivedEvent, ResponseReceivedExtraInfoEvent, ResponseReceivedExtraInfoEventParams
 from pydoll.protocol.network.types import CookieParam, ResourceType
 from pydoll.protocol.network.events import RequestWillBeSentEventParams, RequestWillBeSentExtraInfoEventParams, ResponseReceivedEventParams
@@ -374,6 +412,10 @@ class Chrome(SyncBase):
         """Reset all permissions to defaults and restore prompting behavior."""
         return mapping.from_impl(self._run(self._impl.reset_permissions(browser_context_id=mapping.to_impl(browser_context_id))))
 
+    @overload
+    def on(self, event_name: str, callback: Callable[[Any], Any], temporary: bool=False) -> int: ...
+    @overload
+    def on(self, event_name: str, callback: Callable[[Any], Awaitable[Any]], temporary: bool=False) -> int: ...
     def on(self, event_name, callback, temporary: bool=False) -> int:
         """
         Register CDP event listener at browser level.
@@ -674,6 +716,10 @@ class Edge(SyncBase):
         """Reset all permissions to defaults and restore prompting behavior."""
         return mapping.from_impl(self._run(self._impl.reset_permissions(browser_context_id=mapping.to_impl(browser_context_id))))
 
+    @overload
+    def on(self, event_name: str, callback: Callable[[Any], Any], temporary: bool=False) -> int: ...
+    @overload
+    def on(self, event_name: str, callback: Callable[[Any], Awaitable[Any]], temporary: bool=False) -> int: ...
     def on(self, event_name, callback, temporary: bool=False) -> int:
         """
         Register CDP event listener at browser level.
@@ -1079,7 +1125,7 @@ class Tab(SyncBase):
                 the same identity as the page. Set false to cover only the top
                 page, same-origin frames, and workers.
         """
-        return mapping.from_impl(self._run(self._impl.apply_fingerprint(fingerprint=mapping.to_impl(fingerprint), cross_origin_iframes=mapping.to_impl(cross_origin_iframes))))
+        self._run(self._impl.apply_fingerprint(fingerprint=mapping.to_impl(fingerprint), cross_origin_iframes=mapping.to_impl(cross_origin_iframes)))
 
     def go_to(self, url: str, timeout: int=300):
         """
@@ -1165,7 +1211,7 @@ class Tab(SyncBase):
         Raises:
             InvalidFileExtension: If path does not end with ``.zip``.
         """
-        return mapping.from_impl(self._run(self._impl.save_bundle(path=mapping.to_impl(path), inline_assets=mapping.to_impl(inline_assets))))
+        self._run(self._impl.save_bundle(path=mapping.to_impl(path), inline_assets=mapping.to_impl(inline_assets)))
 
     def has_dialog(self) -> bool:
         """
@@ -1201,6 +1247,10 @@ class Tab(SyncBase):
         """
         return mapping.from_impl(self._run(self._impl.handle_dialog(accept=mapping.to_impl(accept), prompt_text=mapping.to_impl(prompt_text))))
 
+    @overload
+    def execute_script(self, script: str, *, object_group: Optional[str]=None, include_command_line_api: Optional[bool]=None, silent: Optional[bool]=None, context_id: Optional[int]=None, return_by_value: Optional[bool]=None, generate_preview: Optional[bool]=None, user_gesture: Optional[bool]=None, await_promise: Optional[bool]=None, throw_on_side_effect: Optional[bool]=None, timeout: Optional[float]=None, disable_breaks: Optional[bool]=None, repl_mode: Optional[bool]=None, allow_unsafe_eval_blocked_by_csp: Optional[bool]=None, unique_context_id: Optional[str]=None, serialization_options: Optional[SerializationOptions]=None) -> EvaluateResponse: ...
+    @overload
+    def execute_script(self, script: str, element: WebElement, *, arguments: Optional[list[CallArgument]]=None, silent: Optional[bool]=None, return_by_value: Optional[bool]=None, generate_preview: Optional[bool]=None, user_gesture: Optional[bool]=None, await_promise: Optional[bool]=None, execution_context_id: Optional[int]=None, object_group: Optional[str]=None, throw_on_side_effect: Optional[bool]=None, unique_context_id: Optional[str]=None, serialization_options: Optional[SerializationOptions]=None) -> CallFunctionOnResponse: ...
     def execute_script(self, script: str, element: Optional[WebElement]=None, *, arguments: Optional[list[CallArgument]]=None, object_group: Optional[str]=None, include_command_line_api: Optional[bool]=None, silent: Optional[bool]=None, context_id: Optional[int]=None, return_by_value: Optional[bool]=None, generate_preview: Optional[bool]=None, user_gesture: Optional[bool]=None, await_promise: Optional[bool]=None, execution_context_id: Optional[int]=None, throw_on_side_effect: Optional[bool]=None, timeout: Optional[float]=None, disable_breaks: Optional[bool]=None, repl_mode: Optional[bool]=None, allow_unsafe_eval_blocked_by_csp: Optional[bool]=None, unique_context_id: Optional[str]=None, serialization_options: Optional[SerializationOptions]=None) -> Union[EvaluateResponse, CallFunctionOnResponse]:
         """
         Execute JavaScript in page context.
@@ -1302,7 +1352,7 @@ class Tab(SyncBase):
         """
         return mapping.from_impl(self._impl.expect_and_bypass_cloudflare_captcha(custom_selector=mapping.to_impl(custom_selector), time_before_click=mapping.to_impl(time_before_click), time_to_wait_captcha=mapping.to_impl(time_to_wait_captcha)))
 
-    def expect_download(self, keep_file_at: Optional[Union[str, Path]]=None, timeout: Optional[float]=None) -> AbstractContextManager[_DownloadHandle]:
+    def expect_download(self, keep_file_at: Optional[Union[str, Path]]=None, timeout: Optional[float]=None) -> AbstractContextManager[DownloadHandle]:
         """
         Context manager for handling a file download triggered inside the block.
 
@@ -1320,6 +1370,10 @@ class Tab(SyncBase):
         """
         return mapping.from_impl(self._impl.expect_download(keep_file_at=mapping.to_impl(keep_file_at), timeout=mapping.to_impl(timeout)))
 
+    @overload
+    def on(self, event_name: str, callback: Callable[[dict], Any], temporary: bool=False) -> int: ...
+    @overload
+    def on(self, event_name: str, callback: Callable[[dict], Awaitable[Any]], temporary: bool=False) -> int: ...
     def on(self, event_name, callback, temporary=False) -> int:
         """
         Register CDP event listener.
@@ -1347,6 +1401,16 @@ class Tab(SyncBase):
         """Clear all registered event callbacks."""
         return mapping.from_impl(self._run(self._impl.clear_callbacks()))
 
+    @overload
+    def find(self, id: Optional[str]=..., class_name: Optional[str]=..., name: Optional[str]=..., tag_name: Optional[str]=..., text: Optional[str]=..., timeout: int=..., find_all: Literal[False]=False, raise_exc: Literal[True]=True, **attributes) -> WebElement: ...
+    @overload
+    def find(self, id: Optional[str]=..., class_name: Optional[str]=..., name: Optional[str]=..., tag_name: Optional[str]=..., text: Optional[str]=..., timeout: int=..., find_all: Literal[False]=False, raise_exc: Literal[False]=False, **attributes) -> Optional[WebElement]: ...
+    @overload
+    def find(self, id: Optional[str]=..., class_name: Optional[str]=..., name: Optional[str]=..., tag_name: Optional[str]=..., text: Optional[str]=..., timeout: int=..., find_all: Literal[True]=True, raise_exc: Literal[True]=True, **attributes) -> list[WebElement]: ...
+    @overload
+    def find(self, id: Optional[str]=..., class_name: Optional[str]=..., name: Optional[str]=..., tag_name: Optional[str]=..., text: Optional[str]=..., timeout: int=..., find_all: Literal[True]=True, raise_exc: Literal[False]=False, **attributes) -> Optional[list[WebElement]]: ...
+    @overload
+    def find(self, id: Optional[str]=..., class_name: Optional[str]=..., name: Optional[str]=..., tag_name: Optional[str]=..., text: Optional[str]=..., timeout: int=..., find_all: bool=..., raise_exc: bool=..., **attributes) -> Union[WebElement, list[WebElement], None]: ...
     def find(self, id: Optional[str]=None, class_name: Optional[str]=None, name: Optional[str]=None, tag_name: Optional[str]=None, text: Optional[str]=None, timeout: int=0, find_all: bool=False, raise_exc: bool=True, **attributes: dict[str, str]) -> Union[WebElement, list[WebElement], None]:
         """
         Find element(s) using combination of common HTML attributes.
@@ -1376,6 +1440,16 @@ class Tab(SyncBase):
         """
         return mapping.from_impl(self._run(self._impl.find(id=mapping.to_impl(id), class_name=mapping.to_impl(class_name), name=mapping.to_impl(name), tag_name=mapping.to_impl(tag_name), text=mapping.to_impl(text), timeout=mapping.to_impl(timeout), find_all=mapping.to_impl(find_all), raise_exc=mapping.to_impl(raise_exc), **attributes)))
 
+    @overload
+    def query(self, expression: str, timeout: int=..., find_all: Literal[False]=False, raise_exc: Literal[True]=True) -> WebElement: ...
+    @overload
+    def query(self, expression: str, timeout: int=..., find_all: Literal[False]=False, raise_exc: Literal[False]=False) -> Optional[WebElement]: ...
+    @overload
+    def query(self, expression: str, timeout: int=..., find_all: Literal[True]=True, raise_exc: Literal[True]=True) -> list[WebElement]: ...
+    @overload
+    def query(self, expression: str, timeout: int=..., find_all: Literal[True]=True, raise_exc: Literal[False]=False) -> Optional[list[WebElement]]: ...
+    @overload
+    def query(self, expression: str, timeout: int=..., find_all: bool=..., raise_exc: bool=...) -> Union[WebElement, list[WebElement], None]: ...
     def query(self, expression: str, timeout: int=0, find_all: bool=False, raise_exc: bool=True) -> Union[WebElement, list[WebElement], None]:
         """
         Find element(s) using raw CSS selector or XPath expression.
@@ -1432,10 +1506,10 @@ class DownloadHandle(SyncBase):
         return mapping.from_impl(self._impl.file_path)
 
     def wait_started(self, timeout: Optional[float]=None) -> None:
-        return mapping.from_impl(self._run(self._impl.wait_started(timeout=mapping.to_impl(timeout))))
+        self._run(self._impl.wait_started(timeout=mapping.to_impl(timeout)))
 
     def wait_finished(self, timeout: Optional[float]=None) -> None:
-        return mapping.from_impl(self._run(self._impl.wait_finished(timeout=mapping.to_impl(timeout))))
+        self._run(self._impl.wait_finished(timeout=mapping.to_impl(timeout)))
 
     def read_bytes(self) -> bytes:
         return mapping.from_impl(self._run(self._impl.read_bytes()))
@@ -1825,6 +1899,16 @@ class WebElement(SyncBase):
         """
         return mapping.from_impl(self._run(self._impl.execute_script(script=mapping.to_impl(script), arguments=mapping.to_impl(arguments), silent=mapping.to_impl(silent), return_by_value=mapping.to_impl(return_by_value), generate_preview=mapping.to_impl(generate_preview), user_gesture=mapping.to_impl(user_gesture), await_promise=mapping.to_impl(await_promise), execution_context_id=mapping.to_impl(execution_context_id), object_group=mapping.to_impl(object_group), throw_on_side_effect=mapping.to_impl(throw_on_side_effect), unique_context_id=mapping.to_impl(unique_context_id), serialization_options=mapping.to_impl(serialization_options))))
 
+    @overload
+    def find(self, id: Optional[str]=..., class_name: Optional[str]=..., name: Optional[str]=..., tag_name: Optional[str]=..., text: Optional[str]=..., timeout: int=..., find_all: Literal[False]=False, raise_exc: Literal[True]=True, **attributes) -> WebElement: ...
+    @overload
+    def find(self, id: Optional[str]=..., class_name: Optional[str]=..., name: Optional[str]=..., tag_name: Optional[str]=..., text: Optional[str]=..., timeout: int=..., find_all: Literal[False]=False, raise_exc: Literal[False]=False, **attributes) -> Optional[WebElement]: ...
+    @overload
+    def find(self, id: Optional[str]=..., class_name: Optional[str]=..., name: Optional[str]=..., tag_name: Optional[str]=..., text: Optional[str]=..., timeout: int=..., find_all: Literal[True]=True, raise_exc: Literal[True]=True, **attributes) -> list[WebElement]: ...
+    @overload
+    def find(self, id: Optional[str]=..., class_name: Optional[str]=..., name: Optional[str]=..., tag_name: Optional[str]=..., text: Optional[str]=..., timeout: int=..., find_all: Literal[True]=True, raise_exc: Literal[False]=False, **attributes) -> Optional[list[WebElement]]: ...
+    @overload
+    def find(self, id: Optional[str]=..., class_name: Optional[str]=..., name: Optional[str]=..., tag_name: Optional[str]=..., text: Optional[str]=..., timeout: int=..., find_all: bool=..., raise_exc: bool=..., **attributes) -> Union[WebElement, list[WebElement], None]: ...
     def find(self, id: Optional[str]=None, class_name: Optional[str]=None, name: Optional[str]=None, tag_name: Optional[str]=None, text: Optional[str]=None, timeout: int=0, find_all: bool=False, raise_exc: bool=True, **attributes: dict[str, str]) -> Union[WebElement, list[WebElement], None]:
         """
         Find element(s) using combination of common HTML attributes.
@@ -1854,6 +1938,16 @@ class WebElement(SyncBase):
         """
         return mapping.from_impl(self._run(self._impl.find(id=mapping.to_impl(id), class_name=mapping.to_impl(class_name), name=mapping.to_impl(name), tag_name=mapping.to_impl(tag_name), text=mapping.to_impl(text), timeout=mapping.to_impl(timeout), find_all=mapping.to_impl(find_all), raise_exc=mapping.to_impl(raise_exc), **attributes)))
 
+    @overload
+    def query(self, expression: str, timeout: int=..., find_all: Literal[False]=False, raise_exc: Literal[True]=True) -> WebElement: ...
+    @overload
+    def query(self, expression: str, timeout: int=..., find_all: Literal[False]=False, raise_exc: Literal[False]=False) -> Optional[WebElement]: ...
+    @overload
+    def query(self, expression: str, timeout: int=..., find_all: Literal[True]=True, raise_exc: Literal[True]=True) -> list[WebElement]: ...
+    @overload
+    def query(self, expression: str, timeout: int=..., find_all: Literal[True]=True, raise_exc: Literal[False]=False) -> Optional[list[WebElement]]: ...
+    @overload
+    def query(self, expression: str, timeout: int=..., find_all: bool=..., raise_exc: bool=...) -> Union[WebElement, list[WebElement], None]: ...
     def query(self, expression: str, timeout: int=0, find_all: bool=False, raise_exc: bool=True) -> Union[WebElement, list[WebElement], None]:
         """
         Find element(s) using raw CSS selector or XPath expression.
@@ -1932,6 +2026,16 @@ class ShadowRoot(SyncBase):
         """HTML content of the shadow root."""
         return mapping.from_impl(self._run(self._impl.inner_html))
 
+    @overload
+    def find(self, id: Optional[str]=..., class_name: Optional[str]=..., name: Optional[str]=..., tag_name: Optional[str]=..., text: Optional[str]=..., timeout: int=..., find_all: Literal[False]=False, raise_exc: Literal[True]=True, **attributes) -> WebElement: ...
+    @overload
+    def find(self, id: Optional[str]=..., class_name: Optional[str]=..., name: Optional[str]=..., tag_name: Optional[str]=..., text: Optional[str]=..., timeout: int=..., find_all: Literal[False]=False, raise_exc: Literal[False]=False, **attributes) -> Optional[WebElement]: ...
+    @overload
+    def find(self, id: Optional[str]=..., class_name: Optional[str]=..., name: Optional[str]=..., tag_name: Optional[str]=..., text: Optional[str]=..., timeout: int=..., find_all: Literal[True]=True, raise_exc: Literal[True]=True, **attributes) -> list[WebElement]: ...
+    @overload
+    def find(self, id: Optional[str]=..., class_name: Optional[str]=..., name: Optional[str]=..., tag_name: Optional[str]=..., text: Optional[str]=..., timeout: int=..., find_all: Literal[True]=True, raise_exc: Literal[False]=False, **attributes) -> Optional[list[WebElement]]: ...
+    @overload
+    def find(self, id: Optional[str]=..., class_name: Optional[str]=..., name: Optional[str]=..., tag_name: Optional[str]=..., text: Optional[str]=..., timeout: int=..., find_all: bool=..., raise_exc: bool=..., **attributes) -> Union[WebElement, list[WebElement], None]: ...
     def find(self, id: Optional[str]=None, class_name: Optional[str]=None, name: Optional[str]=None, tag_name: Optional[str]=None, text: Optional[str]=None, timeout: int=0, find_all: bool=False, raise_exc: bool=True, **attributes: dict[str, str]) -> Union[WebElement, list[WebElement], None]:
         """
         Find element(s) using combination of common HTML attributes.
@@ -1961,6 +2065,16 @@ class ShadowRoot(SyncBase):
         """
         return mapping.from_impl(self._run(self._impl.find(id=mapping.to_impl(id), class_name=mapping.to_impl(class_name), name=mapping.to_impl(name), tag_name=mapping.to_impl(tag_name), text=mapping.to_impl(text), timeout=mapping.to_impl(timeout), find_all=mapping.to_impl(find_all), raise_exc=mapping.to_impl(raise_exc), **attributes)))
 
+    @overload
+    def query(self, expression: str, timeout: int=..., find_all: Literal[False]=False, raise_exc: Literal[True]=True) -> WebElement: ...
+    @overload
+    def query(self, expression: str, timeout: int=..., find_all: Literal[False]=False, raise_exc: Literal[False]=False) -> Optional[WebElement]: ...
+    @overload
+    def query(self, expression: str, timeout: int=..., find_all: Literal[True]=True, raise_exc: Literal[True]=True) -> list[WebElement]: ...
+    @overload
+    def query(self, expression: str, timeout: int=..., find_all: Literal[True]=True, raise_exc: Literal[False]=False) -> Optional[list[WebElement]]: ...
+    @overload
+    def query(self, expression: str, timeout: int=..., find_all: bool=..., raise_exc: bool=...) -> Union[WebElement, list[WebElement], None]: ...
     def query(self, expression: str, timeout: int=0, find_all: bool=False, raise_exc: bool=True) -> Union[WebElement, list[WebElement], None]:
         """
         Find element(s) using raw CSS selector or XPath expression.
@@ -2097,11 +2211,17 @@ class Mouse(SyncBase):
     def timing(self) -> MouseTimingConfig:
         """Current timing configuration for humanized movement."""
         return mapping.from_impl(self._impl.timing)
+    @timing.setter
+    def timing(self, config: MouseTimingConfig) -> None:
+        self._impl.timing = mapping.to_impl(config)
 
     @property
     def debug(self) -> bool:
         """Whether to draw debug dots on the page."""
         return mapping.from_impl(self._impl.debug)
+    @debug.setter
+    def debug(self, value: bool) -> None:
+        self._impl.debug = mapping.to_impl(value)
 
     def move(self, x: float, y: float, *, humanize: bool=False) -> None:
         """
@@ -2112,7 +2232,7 @@ class Mouse(SyncBase):
             y: Target Y coordinate (CSS pixels).
             humanize: Simulate human-like curved movement with natural timing.
         """
-        return mapping.from_impl(self._run(self._impl.move(x=mapping.to_impl(x), y=mapping.to_impl(y), humanize=mapping.to_impl(humanize))))
+        self._run(self._impl.move(x=mapping.to_impl(x), y=mapping.to_impl(y), humanize=mapping.to_impl(humanize)))
 
     def click(self, x: float, y: float, *, button: MouseButton=MouseButton.LEFT, click_count: int=1, humanize: bool=False) -> None:
         """
@@ -2125,7 +2245,7 @@ class Mouse(SyncBase):
             click_count: Number of clicks (2 for double-click).
             humanize: Simulate human-like movement and click timing.
         """
-        return mapping.from_impl(self._run(self._impl.click(x=mapping.to_impl(x), y=mapping.to_impl(y), button=mapping.to_impl(button), click_count=mapping.to_impl(click_count), humanize=mapping.to_impl(humanize))))
+        self._run(self._impl.click(x=mapping.to_impl(x), y=mapping.to_impl(y), button=mapping.to_impl(button), click_count=mapping.to_impl(click_count), humanize=mapping.to_impl(humanize)))
 
     def double_click(self, x: float, y: float, *, button: MouseButton=MouseButton.LEFT, humanize: bool=False) -> None:
         """
@@ -2137,7 +2257,7 @@ class Mouse(SyncBase):
             button: Mouse button to click.
             humanize: Simulate human-like movement and click timing.
         """
-        return mapping.from_impl(self._run(self._impl.double_click(x=mapping.to_impl(x), y=mapping.to_impl(y), button=mapping.to_impl(button), humanize=mapping.to_impl(humanize))))
+        self._run(self._impl.double_click(x=mapping.to_impl(x), y=mapping.to_impl(y), button=mapping.to_impl(button), humanize=mapping.to_impl(humanize)))
 
     def down(self, button: MouseButton=MouseButton.LEFT) -> None:
         """
@@ -2146,7 +2266,7 @@ class Mouse(SyncBase):
         Args:
             button: Mouse button to press.
         """
-        return mapping.from_impl(self._run(self._impl.down(button=mapping.to_impl(button))))
+        self._run(self._impl.down(button=mapping.to_impl(button)))
 
     def up(self, button: MouseButton=MouseButton.LEFT) -> None:
         """
@@ -2155,7 +2275,7 @@ class Mouse(SyncBase):
         Args:
             button: Mouse button to release.
         """
-        return mapping.from_impl(self._run(self._impl.up(button=mapping.to_impl(button))))
+        self._run(self._impl.up(button=mapping.to_impl(button)))
 
     def drag(self, start_x: float, start_y: float, end_x: float, end_y: float, *, humanize: bool=False) -> None:
         """
@@ -2168,15 +2288,7 @@ class Mouse(SyncBase):
             end_y: End Y coordinate.
             humanize: Simulate human-like drag movement.
         """
-        return mapping.from_impl(self._run(self._impl.drag(start_x=mapping.to_impl(start_x), start_y=mapping.to_impl(start_y), end_x=mapping.to_impl(end_x), end_y=mapping.to_impl(end_y), humanize=mapping.to_impl(humanize))))
-
-    @timing.setter
-    def timing(self, config: Any) -> None:
-        self._impl.timing = mapping.to_impl(config)
-
-    @debug.setter
-    def debug(self, value: Any) -> None:
-        self._impl.debug = mapping.to_impl(value)
+        self._run(self._impl.drag(start_x=mapping.to_impl(start_x), start_y=mapping.to_impl(start_y), end_x=mapping.to_impl(end_x), end_y=mapping.to_impl(end_y), humanize=mapping.to_impl(humanize)))
 
 class Scroll(SyncBase):
     """
@@ -2564,7 +2676,7 @@ class Response(SyncBase):
             This method is compatible with requests.Response.raise_for_status()
             for easy migration from the requests library.
         """
-        return mapping.from_impl(self._impl.raise_for_status())
+        self._impl.raise_for_status()
 
 mapping.register(_ChromeImpl, Chrome)
 mapping.register(_EdgeImpl, Edge)

@@ -20,6 +20,7 @@ import argparse
 import ast
 import importlib
 import inspect
+import re
 import sys
 import textwrap
 from dataclasses import dataclass, field
@@ -27,6 +28,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
+
+_ACTIVE_RENAMES: dict[str, str] = {}
 
 HANDLER_PARAMS = {'callback', 'handler', 'listener', 'f'}
 PREDICATE_PARAMS = {'predicate', 'url_or_predicate'}
@@ -85,6 +88,8 @@ class Method:
     is_async: bool
     kind: str
     owner: str
+    overloads: list[ast.FunctionDef | ast.AsyncFunctionDef] = field(default_factory=list)
+    setter: ast.FunctionDef | None = None
 
 
 def _decorator_names(node: ast.FunctionDef | ast.AsyncFunctionDef) -> list[str]:
@@ -122,6 +127,12 @@ def _collect_methods(cls: type) -> list[Method]:
     for base in cls.__mro__:
         if base is object or not base.__module__.startswith('pydoll'):
             continue
+        overloads: dict[str, list[ast.FunctionDef | ast.AsyncFunctionDef]] = {}
+        for node in _class_node(base).body:
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and (
+                'overload' in _decorator_names(node)
+            ):
+                overloads.setdefault(node.name, []).append(node)
         for node in _class_node(base).body:
             if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
                 continue
@@ -146,13 +157,18 @@ def _collect_methods(cls: type) -> list[Method]:
             else:
                 kind = 'method'
             methods[name] = Method(
-                name, node, isinstance(node, ast.AsyncFunctionDef), kind, base.__name__
+                name,
+                node,
+                isinstance(node, ast.AsyncFunctionDef),
+                kind,
+                base.__name__,
+                overloads.get(name, []) if kind == 'method' else [],
             )
         for node in _class_node(base).body:
             if isinstance(node, ast.FunctionDef) and 'setter' in _decorator_names(node):
-                key = f'{node.name}.setter'
-                if key not in methods:
-                    methods[key] = Method(node.name, node, False, 'setter', base.__name__)
+                getter = methods.get(node.name)
+                if getter is not None and getter.kind == 'property' and getter.setter is None:
+                    getter.setter = node
     return list(methods.values())
 
 
@@ -229,6 +245,8 @@ def _returns(node: ast.FunctionDef | ast.AsyncFunctionDef, method: Method) -> st
     if node.returns is None:
         return ''
     text = ast.unparse(node.returns)
+    for old_name, new_name in _ACTIVE_RENAMES.items():
+        text = re.sub(rf'\b{old_name}\b', new_name, text)
     if method.kind == 'asynccontextmanager':
         inner = text
         if text.startswith('AsyncGenerator[') or text.startswith('AsyncIterator['):
@@ -262,11 +280,18 @@ def _emit_method(method: Method, facade_name: str) -> str:
         if method.is_async:
             expression = f'self._run({expression})'
         lines.append(f'        return mapping.from_impl({expression})')
-    elif method.kind == 'setter':
-        value = node.args.args[1].arg if len(node.args.args) > 1 else 'value'
-        lines.append(f'    @{method.name}.setter')
-        lines.append(f'    def {method.name}(self, {value}: Any) -> None:')
-        lines.append(f'        self._impl.{method.name} = mapping.to_impl({value})')
+        if method.setter is not None:
+            setter_args = method.setter.args.args
+            value = setter_args[1].arg if len(setter_args) > 1 else 'value'
+            annotation = (
+                ast.unparse(setter_args[1].annotation)
+                if len(setter_args) > 1 and setter_args[1].annotation is not None
+                else 'Any'
+            )
+            lines.append('')
+            lines.append(f'    @{method.name}.setter')
+            lines.append(f'    def {method.name}(self, {value}: {annotation}) -> None:')
+            lines.append(f'        self._impl.{method.name} = mapping.to_impl({value})')
     elif method.kind == 'asynccontextmanager':
         lines.append(f'    def {method.name}({signature}){returns}:')
         lines.append(body_doc.rstrip('\n') if doc else '')
@@ -284,10 +309,19 @@ def _emit_method(method: Method, facade_name: str) -> str:
         impl_call = f'_{facade_name}Impl.{method.name}({_call_args(node)})'
         lines.append(_return_line(f'run_sync({impl_call})' if method.is_async else impl_call))
     else:
+        for overload_node in method.overloads:
+            lines.append('    @overload')
+            lines.append(
+                f'    def {method.name}({_signature_text(overload_node)})'
+                f'{_returns(overload_node, method)}: ...'
+            )
         lines.append(f'    def {method.name}({signature}){returns}:')
         lines.append(body_doc.rstrip('\n') if doc else '')
         expression = f'self._run({call})' if method.is_async else call
-        lines.append(f'        return mapping.from_impl({expression})')
+        if returns == ' -> None':
+            lines.append(f'        {expression}')
+        else:
+            lines.append(f'        return mapping.from_impl({expression})')
     return '\n'.join(line for line in lines if line) + '\n'
 
 
@@ -370,13 +404,32 @@ def _emit_class(module_name: str, class_name: str, target: Target) -> tuple[str,
     return import_line, body
 
 
+def _source_modules(target: Target) -> list[str]:
+    """Modules of every generated class and of their pydoll base classes."""
+    names: list[str] = []
+    for module_name, class_name in target.classes:
+        cls = getattr(importlib.import_module(module_name), class_name)
+        for base in cls.__mro__:
+            if base is object or not base.__module__.startswith('pydoll'):
+                continue
+            if base.__module__ not in names:
+                names.append(base.__module__)
+    return names
+
+
 def _type_checking_imports(target: Target) -> list[str]:
-    """Copy the import statements of every source module (defaults and annotations need them)."""
+    """Import statements and module-level type definitions the annotations rely on.
+
+    Every source module (including base-class modules) contributes its imports,
+    top-level and ``TYPE_CHECKING``-only alike, because defaults and annotations
+    are copied verbatim. Names that a generated facade defines are dropped from
+    the imports so the facade wins.
+    """
+    facade_names = {target.renames.get(name, name) for _, name in target.classes}
     seen: list[str] = []
-    for module_name, _ in target.classes:
+    for module_name in _source_modules(target):
         module = importlib.import_module(module_name)
-        source = inspect.getsource(module)
-        tree = ast.parse(source)
+        tree = ast.parse(inspect.getsource(module))
         nodes: list[ast.stmt] = []
         for node in tree.body:
             if isinstance(node, (ast.Import, ast.ImportFrom)):
@@ -385,12 +438,40 @@ def _type_checking_imports(target: Target) -> list[str]:
                 nodes.extend(
                     child for child in node.body if isinstance(child, (ast.Import, ast.ImportFrom))
                 )
+            elif _is_type_definition(node):
+                nodes.append(node)
+            elif isinstance(node, ast.ClassDef) and node.name not in facade_names:
+                if (module_name, node.name) not in target.classes:
+                    nodes.append(
+                        ast.ImportFrom(
+                            module=module_name, names=[ast.alias(name=node.name)], level=0
+                        )
+                    )
         for node in nodes:
+            if isinstance(node, ast.ImportFrom):
+                node.names = [
+                    alias
+                    for alias in node.names
+                    if (alias.asname or alias.name) not in facade_names
+                ]
+                if not node.names:
+                    continue
             text = ast.unparse(node)
             if 'from __future__' in text or text in seen:
                 continue
             seen.append(text)
     return seen
+
+
+def _is_type_definition(node: ast.stmt) -> bool:
+    """``T = TypeVar(...)`` and ``Name: TypeAlias = ...`` statements."""
+    if isinstance(node, ast.AnnAssign) and isinstance(node.annotation, ast.Name):
+        return node.annotation.id == 'TypeAlias'
+    if isinstance(node, ast.Assign) and isinstance(node.value, ast.Call):
+        func = node.value.func
+        name = func.id if isinstance(func, ast.Name) else getattr(func, 'attr', '')
+        return name == 'TypeVar'
+    return False
 
 
 def _is_type_checking(test: ast.expr) -> bool:
@@ -400,6 +481,8 @@ def _is_type_checking(test: ast.expr) -> bool:
 
 
 def render(target: Target) -> str:
+    _ACTIVE_RENAMES.clear()
+    _ACTIVE_RENAMES.update(target.renames)
     imports: list[str] = []
     bodies: list[str] = []
     registrations: list[str] = []
@@ -421,7 +504,7 @@ def render(target: Target) -> str:
         from __future__ import annotations
 
         from contextlib import AbstractContextManager
-        from typing import Any
+        from typing import Any, overload
 
         from pydoll.sync._runtime import SyncBase, mapping, run_sync
         '''
