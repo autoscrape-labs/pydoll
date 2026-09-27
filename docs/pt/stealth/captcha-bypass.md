@@ -17,7 +17,7 @@ O context manager espera o widget do Turnstile aparecer durante o bloqueio, clic
         with Chrome() as browser:
             tab = browser.start()
 
-            with tab.expect_and_bypass_cloudflare_captcha():
+            with tab.expect_cloudflare_turnstile():
                 tab.go_to('https://a-site-behind-turnstile.com')
 
             content = tab.find(id='protected-content', timeout=10, raise_exc=False)
@@ -38,7 +38,7 @@ O context manager espera o widget do Turnstile aparecer durante o bloqueio, clic
         async with Chrome() as browser:
             tab = await browser.start()
 
-            async with tab.expect_and_bypass_cloudflare_captcha():
+            async with tab.expect_cloudflare_turnstile():
                 await tab.go_to('https://a-site-behind-turnstile.com')
 
             content = await tab.find(id='protected-content', timeout=10, raise_exc=False)
@@ -63,11 +63,11 @@ Quando você não quer envolver uma navegação específica, ative o tratamento 
         with Chrome() as browser:
             tab = browser.start()
 
-            tab.enable_auto_solve_cloudflare_captcha()
+            tab.enable_cloudflare_turnstile_handling()
             tab.go_to('https://a-site-behind-turnstile.com')
             time.sleep(5)   # dá tempo para o widget aparecer e ser clicado
 
-            tab.disable_auto_solve_cloudflare_captcha()
+            tab.disable_cloudflare_turnstile_handling()
 
     main()
     ```
@@ -84,11 +84,11 @@ Quando você não quer envolver uma navegação específica, ative o tratamento 
         async with Chrome() as browser:
             tab = await browser.start()
 
-            await tab.enable_auto_solve_cloudflare_captcha()
+            await tab.enable_cloudflare_turnstile_handling()
             await tab.go_to('https://a-site-behind-turnstile.com')
             await asyncio.sleep(5)   # dá tempo para o widget aparecer e ser clicado
 
-            await tab.disable_auto_solve_cloudflare_captcha()
+            await tab.disable_cloudflare_turnstile_handling()
 
     asyncio.run(main())
     ```
@@ -104,14 +104,14 @@ Alguns sites renderizam o Turnstile depois do carregamento inicial. `time_to_wai
 === "Sync"
 
     ```python
-    with tab.expect_and_bypass_cloudflare_captcha(time_to_wait_captcha=15):
+    with tab.expect_cloudflare_turnstile(time_to_wait_captcha=15):
         tab.go_to('https://a-site-behind-turnstile.com')
     ```
 
 === "Async"
 
     ```python
-    async with tab.expect_and_bypass_cloudflare_captcha(time_to_wait_captcha=15):
+    async with tab.expect_cloudflare_turnstile(time_to_wait_captcha=15):
         await tab.go_to('https://a-site-behind-turnstile.com')
     ```
 

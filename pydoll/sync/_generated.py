@@ -780,7 +780,7 @@ class Tab(SyncBase):
 
     Primary interface for web page automation including navigation, DOM manipulation,
     JavaScript execution, event handling, network monitoring, and specialized tasks
-    like Cloudflare bypass.
+    like Cloudflare Turnstile handling.
     """
     _impl: _TabImpl
 
@@ -939,14 +939,16 @@ class Tab(SyncBase):
         """
         return mapping.from_impl(self._run(self._impl.enable_intercept_file_chooser_dialog()))
 
-    def enable_auto_solve_cloudflare_captcha(self, time_to_wait_captcha: float=5):
+    def enable_cloudflare_turnstile_handling(self, time_to_wait_captcha: float=5):
         """
-        Enable automatic Cloudflare Turnstile captcha bypass.
+        Handle the Cloudflare Turnstile widget automatically.
+
+        When a page finishes loading with the widget present, its checkbox is clicked.
 
         Args:
             time_to_wait_captcha: Timeout for captcha detection (default 5s).
         """
-        return mapping.from_impl(self._run(self._impl.enable_auto_solve_cloudflare_captcha(time_to_wait_captcha=mapping.to_impl(time_to_wait_captcha))))
+        return mapping.from_impl(self._run(self._impl.enable_cloudflare_turnstile_handling(time_to_wait_captcha=mapping.to_impl(time_to_wait_captcha))))
 
     def disable_fetch_events(self):
         """Disable CDP Fetch domain and release paused requests."""
@@ -972,9 +974,9 @@ class Tab(SyncBase):
         """Disable file chooser dialog interception."""
         return mapping.from_impl(self._run(self._impl.disable_intercept_file_chooser_dialog()))
 
-    def disable_auto_solve_cloudflare_captcha(self):
-        """Disable automatic Cloudflare Turnstile captcha bypass."""
-        return mapping.from_impl(self._run(self._impl.disable_auto_solve_cloudflare_captcha()))
+    def disable_cloudflare_turnstile_handling(self):
+        """Stop handling the Cloudflare Turnstile widget on page load."""
+        return mapping.from_impl(self._run(self._impl.disable_cloudflare_turnstile_handling()))
 
     def close(self):
         """
@@ -1287,14 +1289,14 @@ class Tab(SyncBase):
         """
         return mapping.from_impl(self._impl.expect_file_chooser(files=mapping.to_impl(files)))
 
-    def expect_and_bypass_cloudflare_captcha(self, time_to_wait_captcha: float=5) -> AbstractContextManager[None]:
+    def expect_cloudflare_turnstile(self, time_to_wait_captcha: float=5) -> AbstractContextManager[None]:
         """
-        Context manager for automatic Cloudflare captcha bypass.
+        Handle the Cloudflare Turnstile widget if it appears while the block runs.
 
         Args:
             time_to_wait_captcha: Timeout for captcha detection (default 5s).
         """
-        return mapping.from_impl(self._impl.expect_and_bypass_cloudflare_captcha(time_to_wait_captcha=mapping.to_impl(time_to_wait_captcha)))
+        return mapping.from_impl(self._impl.expect_cloudflare_turnstile(time_to_wait_captcha=mapping.to_impl(time_to_wait_captcha)))
 
     def expect_download(self, keep_file_at: Optional[Union[str, Path]]=None, timeout: Optional[float]=None) -> AbstractContextManager[DownloadHandle]:
         """

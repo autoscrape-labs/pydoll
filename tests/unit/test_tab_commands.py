@@ -214,9 +214,9 @@ async def test_lazy_api_properties_are_typed_and_cached(fake_tab):
 
 
 @pytest.mark.asyncio
-async def test_enable_auto_solve_cloudflare_registers_callback_and_enables_page_events(
+async def test_enable_cloudflare_turnstile_handling_registers_callback_and_enables_page_events(
     fake_conn, fake_tab
 ):
-    await fake_tab.enable_auto_solve_cloudflare_captcha()
+    await fake_tab.enable_cloudflare_turnstile_handling()
     assert fake_tab.page_events_enabled is True
     assert fake_conn.callbacks_for('Page.loadEventFired')

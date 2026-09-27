@@ -49,7 +49,7 @@ When a protected page shows the Turnstile checkbox, Pydoll can detect and click 
 === "Sync"
 
     ```python
-    with tab.expect_and_bypass_cloudflare_captcha():
+    with tab.expect_cloudflare_turnstile():
         tab.go_to('https://site-protected-by-cloudflare.com')
 
     print('Challenge handled, page loaded.')
@@ -58,7 +58,7 @@ When a protected page shows the Turnstile checkbox, Pydoll can detect and click 
 === "Async"
 
     ```python
-    async with tab.expect_and_bypass_cloudflare_captcha():
+    async with tab.expect_cloudflare_turnstile():
         await tab.go_to('https://site-protected-by-cloudflare.com')
 
     print('Challenge handled, page loaded.')

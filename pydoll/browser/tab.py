@@ -137,7 +137,7 @@ class Tab(FindElementsMixin):
 
     Primary interface for web page automation including navigation, DOM manipulation,
     JavaScript execution, event handling, network monitoring, and specialized tasks
-    like Cloudflare bypass.
+    like Cloudflare Turnstile handling.
     """
 
     def __init__(
@@ -419,12 +419,14 @@ class Tab(FindElementsMixin):
         logger.debug('File chooser interception enabled')
         return response
 
-    async def enable_auto_solve_cloudflare_captcha(
+    async def enable_cloudflare_turnstile_handling(
         self,
         time_to_wait_captcha: float = 5,
     ):
         """
-        Enable automatic Cloudflare Turnstile captcha bypass.
+        Handle the Cloudflare Turnstile widget automatically.
+
+        When a page finishes loading with the widget present, its checkbox is clicked.
 
         Args:
             time_to_wait_captcha: Timeout for captcha detection (default 5s).
@@ -434,7 +436,7 @@ class Tab(FindElementsMixin):
             await self.enable_page_events()
 
         callback = partial(
-            self._bypass_cloudflare,
+            self._handle_cloudflare_turnstile,
             time_to_wait_captcha=time_to_wait_captcha,
         )
 
@@ -493,8 +495,8 @@ class Tab(FindElementsMixin):
         logger.debug('File chooser interception disabled')
         return response
 
-    async def disable_auto_solve_cloudflare_captcha(self):
-        """Disable automatic Cloudflare Turnstile captcha bypass."""
+    async def disable_cloudflare_turnstile_handling(self):
+        """Stop handling the Cloudflare Turnstile widget on page load."""
         logger.info('Disabling Cloudflare captcha auto-solve')
         await self._connection_handler.remove_callback(self._cloudflare_captcha_callback_id)
         self._cloudflare_captcha_callback_id = None
@@ -1452,21 +1454,21 @@ class Tab(FindElementsMixin):
             await self.disable_page_events()
 
     @asynccontextmanager
-    async def expect_and_bypass_cloudflare_captcha(
+    async def expect_cloudflare_turnstile(
         self,
         time_to_wait_captcha: float = 5,
     ) -> AsyncGenerator[None, None]:
         """
-        Context manager for automatic Cloudflare captcha bypass.
+        Handle the Cloudflare Turnstile widget if it appears while the block runs.
 
         Args:
             time_to_wait_captcha: Timeout for captcha detection (default 5s).
         """
         captcha_processed = asyncio.Event()
 
-        async def bypass_cloudflare(_: dict):
+        async def handle_turnstile(_: dict):
             try:
-                await self._bypass_cloudflare(
+                await self._handle_cloudflare_turnstile(
                     _,
                     time_to_wait_captcha=time_to_wait_captcha,
                 )
@@ -1478,8 +1480,8 @@ class Tab(FindElementsMixin):
         if not _before_page_events_enabled:
             await self.enable_page_events()
 
-        logger.info('Expecting and bypassing Cloudflare captcha if present')
-        callback_id = await self.on(PageEvent.LOAD_EVENT_FIRED, bypass_cloudflare)
+        logger.info('Handling Cloudflare Turnstile if present')
+        callback_id = await self.on(PageEvent.LOAD_EVENT_FIRED, handle_turnstile)
 
         try:
             yield
@@ -1839,7 +1841,7 @@ class Tab(FindElementsMixin):
         fast (``timeout=0``): any node captured here can go stale while
         Cloudflare re-renders the iframe, and polling locally on a stale node
         both wastes time and can let four sequential waits overrun the caller's
-        deadline. Failing fast lets ``_bypass_cloudflare`` restart the whole
+        deadline. Failing fast lets ``_handle_cloudflare_turnstile`` restart the whole
         traversal from the top on its next poll.
         """
         iframe = await shadow_root.query(_CLOUDFLARE_IFRAME_SELECTOR, timeout=0)
@@ -1848,12 +1850,12 @@ class Tab(FindElementsMixin):
         checkbox = await inner_shadow.query(_CLOUDFLARE_CHECKBOX_SELECTOR, timeout=0)
         await checkbox.click()
 
-    async def _bypass_cloudflare(
+    async def _handle_cloudflare_turnstile(
         self,
         event: dict,
         time_to_wait_captcha: float = 5,
     ) -> None:
-        """Attempt to bypass Cloudflare Turnstile captcha via shadow root traversal.
+        """Locate the Cloudflare Turnstile checkbox through its shadow root and click it.
 
         Polls for the challenge widget and clicks its checkbox, retrying the
         whole traversal until *time_to_wait_captcha* elapses. Retrying is
@@ -1872,14 +1874,14 @@ class Tab(FindElementsMixin):
                     return
             except Exception as exc:
                 last_error = exc
-                logger.debug(f'Cloudflare bypass attempt failed, retrying: {exc}')
+                logger.debug(f'Cloudflare Turnstile handling attempt failed, retrying: {exc}')
 
             if loop.time() >= deadline:
                 break
             await asyncio.sleep(0.5)
 
         if last_error is not None:
-            logger.error(f'Error in cloudflare bypass: {last_error}')
+            logger.error(f'Error handling Cloudflare Turnstile: {last_error}')
 
 
 class DownloadHandle:

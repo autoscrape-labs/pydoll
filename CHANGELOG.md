@@ -5,6 +5,7 @@
 - async properties are now methods: `tab.title()`, `tab.current_url()`, `tab.page_source()`, `element.text()`, `element.inner_html()`, `element.bounds()`, `element.iframe_context()`, `shadow_root.inner_html()`
 - removed deprecated APIs: `Tab.get_frame()`, the `element` argument of `Tab.execute_script()`, `WebElement.key_down()/key_up()/press_keyboard_key()`, the `interval` argument of `type_text()`, the `headless` argument of `Browser.start()`, `custom_selector`/`time_before_click` on the Cloudflare helpers, and the `NotAnIFrame`/`IFrameNotFound` exceptions
 - `_DownloadHandle` is now the public `DownloadHandle`
+- Cloudflare helpers renamed to say what they do: `expect_cloudflare_turnstile()`, `enable_cloudflare_turnstile_handling()`, `disable_cloudflare_turnstile_handling()` (were `expect_and_bypass_cloudflare_captcha`, `enable_auto_solve_cloudflare_captcha`, `disable_auto_solve_cloudflare_captcha`)
 
 ### Feat
 
@@ -780,7 +781,7 @@
 ### Feat
 
 - add connect method to handle existing port scenarios
-- create enable_auto_solve_cloudflare_captcha method
+- create enable_cloudflare_turnstile_handling method
 - add context manager to bypass Cloudflare Turnstile captcha
 
 ## 1.5.1 (2025-03-31)

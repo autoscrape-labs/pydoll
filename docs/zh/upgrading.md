@@ -84,7 +84,9 @@ Pydoll 2 中所有会发出 `DeprecationWarning` 的接口都已移除。每一�
 | `element.key_down()`、`element.key_up()`、`element.press_keyboard_key()` | `tab.keyboard.down()`、`tab.keyboard.up()`、`tab.keyboard.press()`。参见 [键盘](guides/keyboard.md)。 |
 | `type_text(text, interval=...)` | `type_text(text, humanize=True)` |
 | `browser.start(headless=True)` | 在创建浏览器之前设置 `options.headless = True` |
-| Cloudflare 方法上的 `custom_selector` 和 `time_before_click` | 删掉它们；Turnstile 组件会被自动定位 |
+| `expect_and_bypass_cloudflare_captcha()` | `expect_cloudflare_turnstile()` |
+| `enable_auto_solve_cloudflare_captcha()`、`disable_auto_solve_cloudflare_captcha()` | `enable_cloudflare_turnstile_handling()`、`disable_cloudflare_turnstile_handling()` |
+| 这些方法上的 `custom_selector` 和 `time_before_click` | 删掉它们；Turnstile 组件会被自动定位 |
 | `NotAnIFrame`、`IFrameNotFound` 异常 | 不再有任何地方抛出它们 |
 
 `tab.expect_download()` 返回的下载句柄现在是公开的 `DownloadHandle` 类，可以从 `pydoll` 和 `pydoll.sync` 导入。

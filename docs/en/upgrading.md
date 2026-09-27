@@ -84,7 +84,9 @@ Everything that raised a `DeprecationWarning` in Pydoll 2 is removed. Each row l
 | `element.key_down()`, `element.key_up()`, `element.press_keyboard_key()` | `tab.keyboard.down()`, `tab.keyboard.up()`, `tab.keyboard.press()`. See [Keyboard](guides/keyboard.md). |
 | `type_text(text, interval=...)` | `type_text(text, humanize=True)` |
 | `browser.start(headless=True)` | `options.headless = True` before creating the browser |
-| `custom_selector` and `time_before_click` on the Cloudflare methods | Drop them; the Turnstile widget is located automatically |
+| `expect_and_bypass_cloudflare_captcha()` | `expect_cloudflare_turnstile()` |
+| `enable_auto_solve_cloudflare_captcha()`, `disable_auto_solve_cloudflare_captcha()` | `enable_cloudflare_turnstile_handling()`, `disable_cloudflare_turnstile_handling()` |
+| `custom_selector` and `time_before_click` on those methods | Drop them; the Turnstile widget is located automatically |
 | `NotAnIFrame`, `IFrameNotFound` exceptions | No longer raised by anything |
 
 The download handle returned by `tab.expect_download()` is now the public `DownloadHandle` class, importable from `pydoll` and `pydoll.sync`.

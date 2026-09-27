@@ -17,7 +17,7 @@ Pydoll 可以帮你点击 Cloudflare Turnstile 的复选框，就和真人在这
         with Chrome() as browser:
             tab = browser.start()
 
-            with tab.expect_and_bypass_cloudflare_captcha():
+            with tab.expect_cloudflare_turnstile():
                 tab.go_to('https://a-site-behind-turnstile.com')
 
             content = tab.find(id='protected-content', timeout=10, raise_exc=False)
@@ -38,7 +38,7 @@ Pydoll 可以帮你点击 Cloudflare Turnstile 的复选框，就和真人在这
         async with Chrome() as browser:
             tab = await browser.start()
 
-            async with tab.expect_and_bypass_cloudflare_captcha():
+            async with tab.expect_cloudflare_turnstile():
                 await tab.go_to('https://a-site-behind-turnstile.com')
 
             content = await tab.find(id='protected-content', timeout=10, raise_exc=False)
@@ -63,11 +63,11 @@ Pydoll 可以帮你点击 Cloudflare Turnstile 的复选框，就和真人在这
         with Chrome() as browser:
             tab = browser.start()
 
-            tab.enable_auto_solve_cloudflare_captcha()
+            tab.enable_cloudflare_turnstile_handling()
             tab.go_to('https://a-site-behind-turnstile.com')
             time.sleep(5)   # 给控件出现并被点击的时间
 
-            tab.disable_auto_solve_cloudflare_captcha()
+            tab.disable_cloudflare_turnstile_handling()
 
     main()
     ```
@@ -84,11 +84,11 @@ Pydoll 可以帮你点击 Cloudflare Turnstile 的复选框，就和真人在这
         async with Chrome() as browser:
             tab = await browser.start()
 
-            await tab.enable_auto_solve_cloudflare_captcha()
+            await tab.enable_cloudflare_turnstile_handling()
             await tab.go_to('https://a-site-behind-turnstile.com')
             await asyncio.sleep(5)   # 给控件出现并被点击的时间
 
-            await tab.disable_auto_solve_cloudflare_captcha()
+            await tab.disable_cloudflare_turnstile_handling()
 
     asyncio.run(main())
     ```
@@ -104,14 +104,14 @@ Pydoll 通过轮询页面的 shadow DOM 来检测 Cloudflare 控件：它会查�
 === "Sync"
 
     ```python
-    with tab.expect_and_bypass_cloudflare_captcha(time_to_wait_captcha=15):
+    with tab.expect_cloudflare_turnstile(time_to_wait_captcha=15):
         tab.go_to('https://a-site-behind-turnstile.com')
     ```
 
 === "Async"
 
     ```python
-    async with tab.expect_and_bypass_cloudflare_captcha(time_to_wait_captcha=15):
+    async with tab.expect_cloudflare_turnstile(time_to_wait_captcha=15):
         await tab.go_to('https://a-site-behind-turnstile.com')
     ```
 

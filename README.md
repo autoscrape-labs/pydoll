@@ -234,7 +234,7 @@ async def solve_turnstile():
 
         # Waits for the Turnstile widget, performs a realistic click,
         # and continues once it settles.
-        async with tab.expect_and_bypass_cloudflare_captcha():
+        async with tab.expect_cloudflare_turnstile():
             await tab.go_to('https://site-with-turnstile.com')
 
         print('Turnstile handled, continuing...')
