@@ -79,7 +79,7 @@ A interceptação adiciona um ida e volta pelo seu handler para cada requisiçã
     ```python
     from pydoll.protocol.network.types import ResourceType
 
-    # pausa apenas chamadas XHR/fetch, não documentos, imagens ou estilos
+    # pausa apenas chamadas XMLHttpRequest (ResourceType.FETCH cobre fetch()), não documentos, imagens ou estilos
     tab.enable_fetch_events(resource_type=ResourceType.XHR)
     ```
 
@@ -88,7 +88,7 @@ A interceptação adiciona um ida e volta pelo seu handler para cada requisiçã
     ```python
     from pydoll.protocol.network.types import ResourceType
 
-    # pausa apenas chamadas XHR/fetch, não documentos, imagens ou estilos
+    # pausa apenas chamadas XMLHttpRequest (ResourceType.FETCH cobre fetch()), não documentos, imagens ou estilos
     await tab.enable_fetch_events(resource_type=ResourceType.XHR)
     ```
 

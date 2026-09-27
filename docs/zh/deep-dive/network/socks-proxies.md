@@ -173,60 +173,33 @@ Chrome 不支持 SOCKS5 的用户名/密码认证，这是一个长期存在的�
 
 Pydoll 在 `pydoll.utils` 中提供了 `SOCKS5Forwarder`。它是一个纯 Python、零依赖的异步实现，会处理与远程 proxy 的完整握手，包括用户名/密码认证，以及 IPv4、IPv6 和域名地址类型。
 
-=== "Sync"
+```python
+import asyncio
 
-    ```python
-    from pydoll.sync import Chrome, ChromiumOptions
-    from pydoll.utils import SOCKS5Forwarder
-
-    def main():
-        forwarder = SOCKS5Forwarder(
-            remote_host='proxy.example.com',
-            remote_port=1080,
-            username='myuser',
-            password='mypass',
-            local_port=1081,   # 0 让操作系统挑选一个空闲端口
-        )
-        with forwarder:
-            options = ChromiumOptions()
-            options.add_argument(f'--proxy-server=socks5://127.0.0.1:{forwarder.local_port}')
-
-            with Chrome(options=options) as browser:
-                tab = browser.start()
-                tab.go_to('https://httpbin.org/ip')
-
-    main()
-    ```
-
-=== "Async"
-
-    ```python
-    import asyncio
-
-    from pydoll import Chrome, ChromiumOptions
-    from pydoll.utils import SOCKS5Forwarder
+from pydoll import Chrome, ChromiumOptions
+from pydoll.utils import SOCKS5Forwarder
 
 
-    async def main():
-        forwarder = SOCKS5Forwarder(
-            remote_host='proxy.example.com',
-            remote_port=1080,
-            username='myuser',
-            password='mypass',
-            local_port=1081,   # 0 让操作系统挑选一个空闲端口
-        )
-        async with forwarder:
-            options = ChromiumOptions()
-            options.add_argument(f'--proxy-server=socks5://127.0.0.1:{forwarder.local_port}')
+async def main():
+    forwarder = SOCKS5Forwarder(
+        remote_host='proxy.example.com',
+        remote_port=1080,
+        username='myuser',
+        password='mypass',
+        local_port=1081,   # 0 让操作系统挑选一个空闲端口
+    )
+    async with forwarder:
+        options = ChromiumOptions()
+        options.add_argument(f'--proxy-server=socks5://127.0.0.1:{forwarder.local_port}')
 
-            async with Chrome(options=options) as browser:
-                tab = await browser.start()
-                await tab.go_to('https://httpbin.org/ip')
+        async with Chrome(options=options) as browser:
+            tab = await browser.start()
+            await tab.go_to('https://httpbin.org/ip')
 
-    asyncio.run(main())
-    ```
+asyncio.run(main())
+```
 
-这个转发器绑定到 `127.0.0.1`，所以只有从你的机器才能访问到它。不要把它绑定到 `0.0.0.0`，那会把一个无认证的 SOCKS5 proxy 暴露给网络。因为一切都跑在回环接口上，它增加的延迟不到一毫秒。
+这个转发器绑定到 `127.0.0.1`，所以只有从你的机器才能访问到它。不要把它绑定到 `0.0.0.0`，那会把一个无认证的 SOCKS5 proxy 暴露给网络。因为一切都跑在回环接口上，它增加的延迟不到一毫秒。 `SOCKS5Forwarder` 是一个 asyncio 服务器，在 `pydoll.sync` 里没有对应的门面，所以这个配方只有异步版本。
 
 !!! tip "受限环境"
     某些环境（容器、serverless、加固过的 VM）会限制绑定本地端口。用 `local_port=0` 让操作系统分配一个。如果本地绑定被完全禁止，就改用一个 HTTP CONNECT proxy，Chrome 原生支持它，并为你处理好认证（见 [Proxy](../../guides/proxies.md)）。

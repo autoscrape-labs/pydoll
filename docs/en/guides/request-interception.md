@@ -79,7 +79,7 @@ Interception adds a round-trip through your handler for every matching request, 
     ```python
     from pydoll.protocol.network.types import ResourceType
 
-    # pause only XHR/fetch calls, not documents, images, or styles
+    # pause only XMLHttpRequest calls (ResourceType.FETCH covers fetch()), not documents, images, or styles
     tab.enable_fetch_events(resource_type=ResourceType.XHR)
     ```
 
@@ -88,7 +88,7 @@ Interception adds a round-trip through your handler for every matching request, 
     ```python
     from pydoll.protocol.network.types import ResourceType
 
-    # pause only XHR/fetch calls, not documents, images, or styles
+    # pause only XMLHttpRequest calls (ResourceType.FETCH covers fetch()), not documents, images, or styles
     await tab.enable_fetch_events(resource_type=ResourceType.XHR)
     ```
 

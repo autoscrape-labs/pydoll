@@ -358,27 +358,42 @@ selector 是你交给 `tab.query()`（以及提取模型中 `selector=`）的字
 
 ## 用变量构建 selector
 
-当你要匹配的值来自你的程序时，用 f-string 来构建这个字符串。把值中的任何引号转义掉，以免它们破坏表达式：
+当你要匹配的值来自你的程序时，用 f-string 来构建这个字符串。XPath 的字符串字面量里没有转义字符，所以用值里不包含的那种引号把它包起来，两种引号都有时改用 `concat()`：
 
 === "Sync"
 
     ```python
-    def row_for(tab, product_name):
-        safe = product_name.replace("'", "\\'")
-        return tab.query(f"//tr[td[text()='{safe}']]")
+    def xpath_literal(value):
+        if "'" not in value:
+            return f"'{value}'"
+        if '"' not in value:
+            return f'"{value}"'
+        parts = value.split("'")
+        return 'concat(' + ", \"'\", ".join(f"'{part}'" for part in parts) + ')'
 
-    laptop_row = row_for(tab, 'Laptop')
+    def row_for(tab, product_name):
+        return tab.query(f'//tr[td[text()={xpath_literal(product_name)}]]')
+
+    laptop_row = row_for(tab, "Kid's Laptop")
     ```
 
 === "Async"
 
     ```python
+    def xpath_literal(value):
+        if "'" not in value:
+            return f"'{value}'"
+        if '"' not in value:
+            return f'"{value}"'
+        parts = value.split("'")
+        return 'concat(' + ", \"'\", ".join(f"'{part}'" for part in parts) + ')'
+
+
     async def row_for(tab, product_name):
-        safe = product_name.replace("'", "\\'")
-        return await tab.query(f"//tr[td[text()='{safe}']]")
+        return await tab.query(f'//tr[td[text()={xpath_literal(product_name)}]]')
 
 
-    laptop_row = await row_for(tab, 'Laptop')
+    laptop_row = await row_for(tab, "Kid's Laptop")
     ```
 
 ## 让 selector 保持稳定

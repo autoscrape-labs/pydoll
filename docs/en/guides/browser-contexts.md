@@ -56,6 +56,11 @@ Storage set in one context is invisible to another. Here two tabs write the same
 === "Sync"
 
     ```python
+    context_a = browser.create_browser_context()
+    context_b = browser.create_browser_context()
+    tab_a = browser.new_tab(browser_context_id=context_a)
+    tab_b = browser.new_tab(browser_context_id=context_b)
+
     tab_a.go_to('https://the-internet.herokuapp.com')
     tab_b.go_to('https://the-internet.herokuapp.com')
 
@@ -71,6 +76,11 @@ Storage set in one context is invisible to another. Here two tabs write the same
 === "Async"
 
     ```python
+    context_a = await browser.create_browser_context()
+    context_b = await browser.create_browser_context()
+    tab_a = await browser.new_tab(browser_context_id=context_a)
+    tab_b = await browser.new_tab(browser_context_id=context_b)
+
     await tab_a.go_to('https://the-internet.herokuapp.com')
     await tab_b.go_to('https://the-internet.herokuapp.com')
 

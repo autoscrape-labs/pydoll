@@ -1,6 +1,6 @@
 # Async Python in practice
 
-Every call in Pydoll's async API has `await` in front of it. If that keyword is new to you, this page is the one to read first. If you use the sync API from `pydoll.sync`, nothing here is required, but the concurrency section shows what you would gain by switching. You don't need to master asyncio; you need only enough to be comfortable, and to see why Pydoll is built on it. Each example here runs on its own, so paste them into a file and watch what happens.
+Everything that talks to the browser in Pydoll's async API has `await` in front of it; only plain attribute reads on objects you already hold, like `get_attribute()`, do not. If that keyword is new to you, this page is the one to read first. If you use the sync API from `pydoll.sync`, nothing here is required, but the concurrency section shows what you would gain by switching. You don't need to master asyncio; you need only enough to be comfortable, and to see why Pydoll is built on it. Each example here runs on its own, so paste them into a file and watch what happens.
 
 ## Why the async API awaits every call
 

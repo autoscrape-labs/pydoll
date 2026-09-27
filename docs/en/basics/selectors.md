@@ -358,27 +358,42 @@ In a table, you often have a button and want the row it lives in. Query from the
 
 ## Build selectors from variables
 
-When the value you match on comes from your program, build the string with an f-string. Escape any quotes in the value so they do not break the expression:
+When the value you match on comes from your program, build the string with an f-string. XPath has no escape character inside a string literal, so wrap the value in whichever quote it does not contain, and fall back to `concat()` when it contains both:
 
 === "Sync"
 
     ```python
-    def row_for(tab, product_name):
-        safe = product_name.replace("'", "\\'")
-        return tab.query(f"//tr[td[text()='{safe}']]")
+    def xpath_literal(value):
+        if "'" not in value:
+            return f"'{value}'"
+        if '"' not in value:
+            return f'"{value}"'
+        parts = value.split("'")
+        return 'concat(' + ", \"'\", ".join(f"'{part}'" for part in parts) + ')'
 
-    laptop_row = row_for(tab, 'Laptop')
+    def row_for(tab, product_name):
+        return tab.query(f'//tr[td[text()={xpath_literal(product_name)}]]')
+
+    laptop_row = row_for(tab, "Kid's Laptop")
     ```
 
 === "Async"
 
     ```python
+    def xpath_literal(value):
+        if "'" not in value:
+            return f"'{value}'"
+        if '"' not in value:
+            return f'"{value}"'
+        parts = value.split("'")
+        return 'concat(' + ", \"'\", ".join(f"'{part}'" for part in parts) + ')'
+
+
     async def row_for(tab, product_name):
-        safe = product_name.replace("'", "\\'")
-        return await tab.query(f"//tr[td[text()='{safe}']]")
+        return await tab.query(f'//tr[td[text()={xpath_literal(product_name)}]]')
 
 
-    laptop_row = await row_for(tab, 'Laptop')
+    laptop_row = await row_for(tab, "Kid's Laptop")
     ```
 
 ## Keep selectors stable

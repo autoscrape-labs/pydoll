@@ -1,6 +1,6 @@
 # Async Python na prática
 
-Toda chamada da API assíncrona do Pydoll tem um `await` na frente. Se essa palavra-chave é novidade para você, esta é a página para ler primeiro. Se você usa a API síncrona de `pydoll.sync`, nada aqui é obrigatório, mas a seção sobre concorrência mostra o que você ganharia ao trocar. Você não precisa dominar o asyncio; precisa só do suficiente para ficar confortável, e para entender por que o Pydoll é construído em cima dele. Cada exemplo aqui roda por conta própria, então cole eles em um arquivo e veja o que acontece.
+Tudo que fala com o navegador na API assíncrona do Pydoll tem um `await` na frente; só leituras de atributo em objetos que você já tem, como `get_attribute()`, não têm. Se essa palavra-chave é novidade para você, esta é a página para ler primeiro. Se você usa a API síncrona de `pydoll.sync`, nada aqui é obrigatório, mas a seção sobre concorrência mostra o que você ganharia ao trocar. Você não precisa dominar o asyncio; precisa só do suficiente para ficar confortável, e para entender por que o Pydoll é construído em cima dele. Cada exemplo aqui roda por conta própria, então cole eles em um arquivo e veja o que acontece.
 
 ## Por que a API assíncrona aguarda toda chamada com await
 

@@ -170,7 +170,7 @@ graph TB
     button = tab.query('//iframe/body/button[@id="submit"]')
 
     # 对 iframe 加谓词
-    heading = tab.query('//iframe[@src*="cloudflare"]//h1')
+    heading = tab.query('//iframe[contains(@src, "cloudflare")]//h1')
 
     # 嵌套的 iframe
     element = tab.query('//iframe[@id="outer"]//iframe[@id="inner"]//div')
@@ -183,7 +183,7 @@ graph TB
     button = await tab.query('//iframe/body/button[@id="submit"]')
 
     # 对 iframe 加谓词
-    heading = await tab.query('//iframe[@src*="cloudflare"]//h1')
+    heading = await tab.query('//iframe[contains(@src, "cloudflare")]//h1')
 
     # 嵌套的 iframe
     element = await tab.query('//iframe[@id="outer"]//iframe[@id="inner"]//div')

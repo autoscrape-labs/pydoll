@@ -173,60 +173,33 @@ The standard fix is a local forwarder: a small SOCKS5 server on localhost that a
 
 Pydoll ships `SOCKS5Forwarder` in `pydoll.utils`. It is a pure-Python, zero-dependency async implementation that handles the full handshake with the remote proxy, including username/password authentication and IPv4, IPv6, and domain address types.
 
-=== "Sync"
+```python
+import asyncio
 
-    ```python
-    from pydoll.sync import Chrome, ChromiumOptions
-    from pydoll.utils import SOCKS5Forwarder
-
-    def main():
-        forwarder = SOCKS5Forwarder(
-            remote_host='proxy.example.com',
-            remote_port=1080,
-            username='myuser',
-            password='mypass',
-            local_port=1081,   # 0 lets the OS pick a free port
-        )
-        with forwarder:
-            options = ChromiumOptions()
-            options.add_argument(f'--proxy-server=socks5://127.0.0.1:{forwarder.local_port}')
-
-            with Chrome(options=options) as browser:
-                tab = browser.start()
-                tab.go_to('https://httpbin.org/ip')
-
-    main()
-    ```
-
-=== "Async"
-
-    ```python
-    import asyncio
-
-    from pydoll import Chrome, ChromiumOptions
-    from pydoll.utils import SOCKS5Forwarder
+from pydoll import Chrome, ChromiumOptions
+from pydoll.utils import SOCKS5Forwarder
 
 
-    async def main():
-        forwarder = SOCKS5Forwarder(
-            remote_host='proxy.example.com',
-            remote_port=1080,
-            username='myuser',
-            password='mypass',
-            local_port=1081,   # 0 lets the OS pick a free port
-        )
-        async with forwarder:
-            options = ChromiumOptions()
-            options.add_argument(f'--proxy-server=socks5://127.0.0.1:{forwarder.local_port}')
+async def main():
+    forwarder = SOCKS5Forwarder(
+        remote_host='proxy.example.com',
+        remote_port=1080,
+        username='myuser',
+        password='mypass',
+        local_port=1081,   # 0 lets the OS pick a free port
+    )
+    async with forwarder:
+        options = ChromiumOptions()
+        options.add_argument(f'--proxy-server=socks5://127.0.0.1:{forwarder.local_port}')
 
-            async with Chrome(options=options) as browser:
-                tab = await browser.start()
-                await tab.go_to('https://httpbin.org/ip')
+        async with Chrome(options=options) as browser:
+            tab = await browser.start()
+            await tab.go_to('https://httpbin.org/ip')
 
-    asyncio.run(main())
-    ```
+asyncio.run(main())
+```
 
-The forwarder binds to `127.0.0.1`, so it is reachable only from your machine. Do not bind it to `0.0.0.0`, which would expose an unauthenticated SOCKS5 proxy to the network. Because everything runs over the loopback interface, it adds sub-millisecond latency.
+The forwarder binds to `127.0.0.1`, so it is reachable only from your machine. Do not bind it to `0.0.0.0`, which would expose an unauthenticated SOCKS5 proxy to the network. Because everything runs over the loopback interface, it adds sub-millisecond latency. `SOCKS5Forwarder` is an asyncio server with no facade in `pydoll.sync`, so this recipe is async only.
 
 !!! tip "Restricted environments"
     Some environments (containers, serverless, hardened VMs) restrict binding to local ports. Use `local_port=0` to let the OS assign one. If local binding is blocked entirely, use an HTTP CONNECT proxy instead, which Chrome supports natively with authentication handled for you (see [Proxies](../../guides/proxies.md)).

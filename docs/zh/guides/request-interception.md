@@ -79,7 +79,7 @@
     ```python
     from pydoll.protocol.network.types import ResourceType
 
-    # 只暂停 XHR/fetch 调用，不暂停文档、图片或样式
+    # 只暂停 XMLHttpRequest 调用（fetch() 由 ResourceType.FETCH 覆盖），不暂停文档、图片或样式
     tab.enable_fetch_events(resource_type=ResourceType.XHR)
     ```
 
@@ -88,7 +88,7 @@
     ```python
     from pydoll.protocol.network.types import ResourceType
 
-    # 只暂停 XHR/fetch 调用，不暂停文档、图片或样式
+    # 只暂停 XMLHttpRequest 调用（fetch() 由 ResourceType.FETCH 覆盖），不暂停文档、图片或样式
     await tab.enable_fetch_events(resource_type=ResourceType.XHR)
     ```
 

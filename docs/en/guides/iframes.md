@@ -170,7 +170,7 @@ Use `/` after an `iframe` step:
     button = tab.query('//iframe/body/button[@id="submit"]')
 
     # predicate on the iframe
-    heading = tab.query('//iframe[@src*="cloudflare"]//h1')
+    heading = tab.query('//iframe[contains(@src, "cloudflare")]//h1')
 
     # nested iframes
     element = tab.query('//iframe[@id="outer"]//iframe[@id="inner"]//div')
@@ -183,7 +183,7 @@ Use `/` after an `iframe` step:
     button = await tab.query('//iframe/body/button[@id="submit"]')
 
     # predicate on the iframe
-    heading = await tab.query('//iframe[@src*="cloudflare"]//h1')
+    heading = await tab.query('//iframe[contains(@src, "cloudflare")]//h1')
 
     # nested iframes
     element = await tab.query('//iframe[@id="outer"]//iframe[@id="inner"]//div')
