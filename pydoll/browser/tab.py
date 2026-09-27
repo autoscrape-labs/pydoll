@@ -185,11 +185,11 @@ class Tab(FindElementsMixin):
         self._mouse: MouseAPI = MouseAPI(self)
         self._extraction_engine: Optional[ExtractionEngine] = None
         logger.debug(
-            (
-                f'Tab initialized: target_id={self._target_id}, '
-                f'ws_address_set={bool(self._ws_address)}, '
-                f'context_id={self._browser_context_id}, port={self._connection_port}'
-            )
+            'Tab initialized: target_id=%s, ws_address_set=%s, context_id=%s, port=%s',
+            self._target_id,
+            bool(self._ws_address),
+            self._browser_context_id,
+            self._connection_port,
         )
 
     @property
@@ -387,8 +387,10 @@ class Tab(FindElementsMixin):
             Intercepted requests must be explicitly continued or timeout.
         """
         logger.debug(
-            f'Enabling Fetch events: handle_auth={handle_auth}, resource_type={resource_type}, '
-            f'stage={request_stage}'
+            'Enabling Fetch events: handle_auth=%s, resource_type=%s, stage=%s',
+            handle_auth,
+            resource_type,
+            request_stage,
         )
         response: Response[EmptyResponse] = await self._execute_command(
             FetchCommands.enable(
@@ -453,7 +455,7 @@ class Tab(FindElementsMixin):
 
         self._cloudflare_captcha_callback_id = await self.on(PageEvent.LOAD_EVENT_FIRED, callback)
         logger.debug(
-            f'Cloudflare auto-solve callback registered: id={self._cloudflare_captcha_callback_id}'
+            'Cloudflare auto-solve callback registered: id=%s', self._cloudflare_captcha_callback_id
         )
 
     async def disable_fetch_events(self):
@@ -519,7 +521,7 @@ class Tab(FindElementsMixin):
         Note:
             Tab instance becomes invalid after calling this method.
         """
-        logger.info(f'Closing tab: target_id={self._target_id}')
+        logger.info('Closing tab: target_id=%s', self._target_id)
         result = await self._execute_command(PageCommands.close())
         self._browser._tabs_opened.pop(self._target_id, None)
         logger.debug('Tab closed and removed from browser registry')
@@ -593,13 +595,13 @@ class Tab(FindElementsMixin):
                 )
                 shadow_object_id = resolve_response['result']['object']['objectId']
             except (CommandExecutionTimeout, CommandFailed, WebSocketConnectionClosed, KeyError):
-                logger.debug(f'Failed to resolve shadow root: backend_node_id={backend_node_id}')
+                logger.debug('Failed to resolve shadow root: backend_node_id=%s', backend_node_id)
                 continue
 
             try:
                 host_element = await self._resolve_shadow_host(host_backend_id)
             except (CommandExecutionTimeout, CommandFailed, WebSocketConnectionClosed, KeyError):
-                logger.debug(f'Failed to resolve shadow host: backend_node_id={host_backend_id}')
+                logger.debug('Failed to resolve shadow host: backend_node_id=%s', host_backend_id)
                 host_element = None
             mode = ShadowRootType(shadow_data.get('shadowRootType', 'open'))
             shadow_roots.append(
@@ -615,7 +617,7 @@ class Tab(FindElementsMixin):
             oopif_roots = await self._collect_oopif_shadow_roots()
             shadow_roots.extend(oopif_roots)
 
-        logger.debug(f'Found {len(shadow_roots)} shadow roots')
+        logger.debug('Found %s shadow roots', len(shadow_roots))
         return shadow_roots
 
     async def _resolve_shadow_host(self, host_backend_id: int | None) -> WebElement | None:
@@ -655,7 +657,7 @@ class Tab(FindElementsMixin):
                 roots = await self._collect_shadow_roots_from_oopif_target(target, browser_handler)
                 shadow_roots.extend(roots)
 
-            logger.debug(f'Found {len(shadow_roots)} shadow roots in OOPIFs')
+            logger.debug('Found %s shadow roots in OOPIFs', len(shadow_roots))
             return shadow_roots
         finally:
             await browser_handler.close()
@@ -675,7 +677,7 @@ class Tab(FindElementsMixin):
             if not session_id:
                 return []
         except (CommandExecutionTimeout, CommandFailed, WebSocketConnectionClosed):
-            logger.debug(f'Failed to attach to OOPIF target: {target_id}')
+            logger.debug('Failed to attach to OOPIF target: %s', target_id)
             return []
 
         try:
@@ -686,7 +688,7 @@ class Tab(FindElementsMixin):
             )
             root_node = doc_response.get('result', {}).get('root', {})
         except (CommandExecutionTimeout, CommandFailed, WebSocketConnectionClosed):
-            logger.debug(f'Failed to get document from OOPIF target: {target_id}')
+            logger.debug('Failed to get document from OOPIF target: %s', target_id)
             return []
 
         entries: list[tuple[Node, int | None]] = []
@@ -728,7 +730,7 @@ class Tab(FindElementsMixin):
             )
             shadow_object_id = resolve_response['result']['object']['objectId']
         except (CommandExecutionTimeout, CommandFailed, WebSocketConnectionClosed, KeyError):
-            logger.debug(f'Failed to resolve OOPIF shadow root: backend_node_id={backend_node_id}')
+            logger.debug('Failed to resolve OOPIF shadow root: backend_node_id=%s', backend_node_id)
             return None
 
         host_element = await self._resolve_oopif_shadow_host(
@@ -786,7 +788,7 @@ class Tab(FindElementsMixin):
                 mouse=self._mouse,
             )
         except (CommandExecutionTimeout, CommandFailed, WebSocketConnectionClosed, KeyError):
-            logger.debug(f'Failed to resolve OOPIF shadow host: backend_node_id={host_backend_id}')
+            logger.debug('Failed to resolve OOPIF shadow host: backend_node_id=%s', host_backend_id)
             return None
 
     @staticmethod
@@ -825,7 +827,7 @@ class Tab(FindElementsMixin):
             NetworkCommands.get_cookies()
         )
         cookies = response_network['result']['cookies']
-        logger.debug(f'Fetched {len(cookies)} cookies')
+        logger.debug('Fetched %s cookies', len(cookies))
         return cookies
 
     async def get_network_response_body(self, request_id: str) -> str:
@@ -847,7 +849,7 @@ class Tab(FindElementsMixin):
         response: GetResponseBodyResponse = await self._execute_command(
             NetworkCommands.get_response_body(request_id)
         )
-        logger.debug(f'Retrieved network response body for request_id={request_id}')
+        logger.debug('Retrieved network response body for request_id=%s', request_id)
         return response['result']['body']
 
     async def get_network_logs(self, filter: Optional[str] = None) -> list[RequestWillBeSentEvent]:
@@ -871,7 +873,7 @@ class Tab(FindElementsMixin):
             logs = [
                 log for log in logs if filter in log['params'].get('request', {}).get('url', '')
             ]
-        logger.debug(f'Returning {len(logs)} network logs (filtered={bool(filter)})')
+        logger.debug('Returning %s network logs (filtered=%s)', len(logs), bool(filter))
         return logs
 
     async def set_cookies(self, cookies: list[CookieParam]):
@@ -884,7 +886,7 @@ class Tab(FindElementsMixin):
         Note:
             Defaults to current page's domain if not specified.
         """
-        logger.info(f'Setting {len(cookies)} cookies on current page')
+        logger.info('Setting %s cookies on current page', len(cookies))
         if self._browser_context_id:
             return await self._browser.set_cookies(cookies, self._browser_context_id)
         return await self._execute_command(StorageCommands.set_cookies(cookies))
@@ -934,13 +936,13 @@ class Tab(FindElementsMixin):
             NavigationError: If the navigation fails (e.g., DNS error).
             PageLoadTimeout: If page doesn't finish loading within timeout.
         """
-        logger.info(f'Navigating to URL: {url} (timeout={timeout}s)')
+        logger.info('Navigating to URL: %s (timeout=%ss)', url, timeout)
         async with self._wait_page_load(timeout=timeout):
             response: NavigateResponse = await self._execute_command(PageCommands.navigate(url))
             error_text = response['result'].get('errorText')
             if error_text:
                 raise NavigationError(url, error_text)
-        logger.info(f'Navigation complete: {url}')
+        logger.info('Navigation complete: %s', url)
 
     async def refresh(
         self,
@@ -958,8 +960,9 @@ class Tab(FindElementsMixin):
             PageLoadTimeout: If page doesn't finish loading within timeout.
         """
         logger.info(
-            f'Reloading page (ignore_cache={ignore_cache}, '
-            f'script_on_load={bool(script_to_evaluate_on_load)})'
+            'Reloading page (ignore_cache=%s, script_on_load=%s)',
+            ignore_cache,
+            bool(script_to_evaluate_on_load),
         )
         async with self._wait_page_load():
             await self._execute_command(
@@ -1017,8 +1020,11 @@ class Tab(FindElementsMixin):
         output_format = ScreenshotFormat.get_value(output_extension)
 
         logger.info(
-            f'Taking screenshot: path={path}, quality={quality}, '
-            f'beyond_viewport={beyond_viewport}, as_base64={as_base64}'
+            'Taking screenshot: path=%s, quality=%s, beyond_viewport=%s, as_base64=%s',
+            path,
+            quality,
+            beyond_viewport,
+            as_base64,
         )
         response: CaptureScreenshotResponse = await self._execute_command(
             PageCommands.capture_screenshot(
@@ -1044,7 +1050,7 @@ class Tab(FindElementsMixin):
             screenshot_bytes = decode_base64_to_bytes(screenshot_data)
             async with aiofiles.open(str(path), 'wb') as file:
                 await file.write(screenshot_bytes)
-            logger.info(f'Screenshot saved to: {path}')
+            logger.info('Screenshot saved to: %s', path)
 
         return None
 
@@ -1075,9 +1081,14 @@ class Tab(FindElementsMixin):
             ValueError: If path is not provided when as_base64=False.
         """
         logger.info(
-            f'Generating PDF: path={path}, landscape={landscape}, '
-            f'header_footer={display_header_footer}, print_bg={print_background}, '
-            f'scale={scale}, as_base64={as_base64}'
+            'Generating PDF: path=%s, landscape=%s, header_footer=%s, '
+            'print_bg=%s, scale=%s, as_base64=%s',
+            path,
+            landscape,
+            display_header_footer,
+            print_background,
+            scale,
+            as_base64,
         )
         response: PrintToPDFResponse = await self._execute_command(
             PageCommands.print_to_pdf(
@@ -1098,7 +1109,7 @@ class Tab(FindElementsMixin):
         pdf_bytes = decode_base64_to_bytes(pdf_data)
         async with aiofiles.open(path, 'wb') as file:
             await file.write(pdf_bytes)
-        logger.info(f'PDF saved to: {path}')
+        logger.info('PDF saved to: %s', path)
 
         return None
 
@@ -1123,7 +1134,7 @@ class Tab(FindElementsMixin):
         if path.suffix.lower() != '.zip':
             raise InvalidFileExtension(f'Expected .zip extension, got {path.suffix!r}')
 
-        logger.info(f'Saving page bundle: path={path}, inline={inline_assets}')
+        logger.info('Saving page bundle: path=%s, inline=%s', path, inline_assets)
 
         page_was_enabled = self.page_events_enabled
         if not page_was_enabled:
@@ -1151,7 +1162,7 @@ class Tab(FindElementsMixin):
 
             async with aiofiles.open(path, 'wb') as f:
                 await f.write(buf.getvalue())
-            logger.info(f'Page bundle saved to: {path}')
+            logger.info('Page bundle saved to: %s', path)
         finally:
             if not page_was_enabled:
                 await self.disable_page_events()
@@ -1229,7 +1240,7 @@ class Tab(FindElementsMixin):
         if not await self.has_dialog():
             raise NoDialogPresent()
         message = self._connection_handler.dialog['params']['message']
-        logger.debug(f'Dialog message retrieved: {message}')
+        logger.debug('Dialog message retrieved: %s', message)
         return message
 
     async def handle_dialog(self, accept: bool, prompt_text: Optional[str] = None):
@@ -1248,7 +1259,7 @@ class Tab(FindElementsMixin):
         """
         if not await self.has_dialog():
             raise NoDialogPresent()
-        logger.info(f'Handling dialog: accept={accept}, has_prompt_text={bool(prompt_text)}')
+        logger.info('Handling dialog: accept=%s, has_prompt_text=%s', accept, bool(prompt_text))
         return await self._execute_command(
             PageCommands.handle_javascript_dialog(accept=accept, prompt_text=prompt_text)
         )
@@ -1339,7 +1350,7 @@ class Tab(FindElementsMixin):
             unique_context_id=unique_context_id,
             serialization_options=serialization_options,
         )
-        logger.debug(f'Executing script: length={len(script)}')
+        logger.debug('Executing script: length=%s', len(script))
         result: EvaluateResponse = await self._execute_command(command)
         self._validate_argument_error(result)
         return result
@@ -1357,7 +1368,7 @@ class Tab(FindElementsMixin):
         """
         Continue paused request without modifications.
         """
-        logger.debug(f'Continue request on tab: id={request_id}')
+        logger.debug('Continue request on tab: id=%s', request_id)
         return await self._execute_command(
             FetchCommands.continue_request(
                 request_id=request_id,
@@ -1371,7 +1382,7 @@ class Tab(FindElementsMixin):
 
     async def fail_request(self, request_id: str, error_reason: ErrorReason):
         """Fail request with error code."""
-        logger.debug(f'Fail request on tab: id={request_id}, reason={error_reason}')
+        logger.debug('Fail request on tab: id=%s, reason=%s', request_id, error_reason)
         return await self._execute_command(FetchCommands.fail_request(request_id, error_reason))
 
     async def fulfill_request(
@@ -1384,8 +1395,11 @@ class Tab(FindElementsMixin):
     ):
         """Fulfill request with response data."""
         logger.debug(
-            f'Fulfill request on tab: id={request_id}, code={response_code}, '
-            f'headers_set={bool(response_headers)}, body_set={bool(body)}'
+            'Fulfill request on tab: id=%s, code=%s, headers_set=%s, body_set=%s',
+            request_id,
+            response_code,
+            bool(response_headers),
+            bool(body),
         )
         return await self._execute_command(
             FetchCommands.fulfill_request(
@@ -1410,8 +1424,10 @@ class Tab(FindElementsMixin):
         with handle_auth=True.
         """
         logger.debug(
-            f'Continue with auth on tab: id={request_id}, response={auth_challenge_response}, '
-            f'user_set={bool(proxy_username)}'
+            'Continue with auth on tab: id=%s, response=%s, user_set=%s',
+            request_id,
+            auth_challenge_response,
+            bool(proxy_username),
         )
         return await self._execute_command(
             FetchCommands.continue_request_with_auth(
@@ -1442,7 +1458,7 @@ class Tab(FindElementsMixin):
                     backend_node_id=event['params']['backendNodeId'],
                 )
             )
-            logger.debug(f'Files set on input: {file_list}')
+            logger.debug('Files set on input: %s', file_list)
 
         if self.page_events_enabled is False:
             _before_page_events_enabled = False
@@ -1537,7 +1553,7 @@ class Tab(FindElementsMixin):
             download_dir = str(Path(keep_file_at))
             Path(download_dir).mkdir(parents=True, exist_ok=True)
 
-        logger.info(f'Expecting download (dir={download_dir}, timeout={download_timeout}s)')
+        logger.info('Expecting download (dir=%s, timeout=%ss)', download_dir, download_timeout)
         await self._browser.set_download_behavior(
             behavior=DownloadBehavior.ALLOW,
             download_path=download_dir,
@@ -1568,7 +1584,7 @@ class Tab(FindElementsMixin):
             if not will_begin.done():
                 will_begin.set_result(True)
             logger.info(
-                f'Download will begin: url={state["url"]}, filename={state["suggestedFilename"]}'
+                'Download will begin: url=%s, filename=%s', state['url'], state['suggestedFilename']
             )
 
         async def on_progress(event: DownloadProgressEvent):
@@ -1586,7 +1602,7 @@ class Tab(FindElementsMixin):
             state['filePath'] = file_path
             if not done.done():
                 done.set_result(True)
-            logger.info(f'Download completed: {file_path}')
+            logger.info('Download completed: %s', file_path)
 
         await self.on(
             PageEvent.DOWNLOAD_WILL_BEGIN,
@@ -1685,8 +1701,10 @@ class Tab(FindElementsMixin):
             function_to_register = callback
 
         logger.debug(
-            f'Registering callback on tab: event={event_name}, temporary={temporary}, '
-            f'async={asyncio.iscoroutinefunction(callback)}'
+            'Registering callback on tab: event=%s, temporary=%s, async=%s',
+            event_name,
+            temporary,
+            asyncio.iscoroutinefunction(callback),
         )
         return await self._connection_handler.register_callback(
             event_name, function_to_register, temporary
@@ -1694,7 +1712,7 @@ class Tab(FindElementsMixin):
 
     async def remove_callback(self, callback_id: int):
         """Remove callback from tab."""
-        logger.debug(f'Removing callback from tab: id={callback_id}')
+        logger.debug('Removing callback from tab: id=%s', callback_id)
         return await self._connection_handler.remove_callback(callback_id)
 
     async def clear_callbacks(self):
@@ -1707,8 +1725,9 @@ class Tab(FindElementsMixin):
             logger.debug('Using WebSocket address for connection handler')
             return ConnectionHandler(ws_address=self._ws_address)
         logger.debug(
-            'Using port/target for connection handler: '
-            f'port={self._connection_port}, target_id={self._target_id}'
+            'Using port/target for connection handler: port=%s, target_id=%s',
+            self._connection_port,
+            self._target_id,
         )
         return ConnectionHandler(self._connection_port, self._target_id)
 
@@ -1818,12 +1837,12 @@ class Tab(FindElementsMixin):
             page_loaded.set()
 
         callback_id = await self.on(event_name, on_loaded)
-        logger.debug(f'Waiting for page load via {event_name} (timeout={timeout}s)')
+        logger.debug('Waiting for page load via %s (timeout=%ss)', event_name, timeout)
 
         try:
             yield
             await asyncio.wait_for(page_loaded.wait(), timeout=timeout)
-            logger.debug(f'Page load event received: {event_name}')
+            logger.debug('Page load event received: %s', event_name)
         except asyncio.TimeoutError:
             logger.error(f'Page load timeout after {timeout}s waiting for {event_name}')
             raise PageLoadTimeout()
@@ -1889,7 +1908,7 @@ class Tab(FindElementsMixin):
                     return
             except Exception as exc:
                 last_error = exc
-                logger.debug(f'Cloudflare Turnstile handling attempt failed, retrying: {exc}')
+                logger.debug('Cloudflare Turnstile handling attempt failed, retrying: %s', exc)
 
             if loop.time() >= deadline:
                 break

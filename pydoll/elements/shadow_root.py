@@ -61,7 +61,7 @@ class ShadowRoot(FindElementsMixin):
             self._routing_parent_frame_id = getattr(host_element, '_routing_parent_frame_id', None)
 
         logger.debug(
-            f'ShadowRoot initialized: object_id={self._object_id}, mode={self._mode.value}'
+            'ShadowRoot initialized: object_id=%s, mode=%s', self._object_id, self._mode.value
         )
 
     @property

@@ -114,9 +114,11 @@ class EventsManager:
             'callback': callback,
             'temporary': temporary,
         }
-        logger.info(f"Registered callback '{event_name}' with ID {self._callback_id}")
+        logger.info("Registered callback '%s' with ID %s", event_name, self._callback_id)
         logger.debug(
-            f'Callback details: temporary={temporary}, total_callbacks={len(self._event_callbacks)}'
+            'Callback details: temporary=%s, total_callbacks=%s',
+            temporary,
+            len(self._event_callbacks),
         )
         return self._callback_id
 
@@ -127,8 +129,8 @@ class EventsManager:
             return False
 
         del self._event_callbacks[callback_id]
-        logger.info(f'Removed callback ID {callback_id}')
-        logger.debug(f'Remaining callbacks: {len(self._event_callbacks)}')
+        logger.info('Removed callback ID %s', callback_id)
+        logger.debug('Remaining callbacks: %s', len(self._event_callbacks))
         return True
 
     def clear_callbacks(self):
@@ -148,7 +150,7 @@ class EventsManager:
         if not event_name:
             logger.warning(f'Discarding event without method: {str(event_data)[:200]}')
             return
-        logger.debug(f'Processing event: {event_name}')
+        logger.debug('Processing event: %s', event_name)
 
         if 'Network.requestWillBeSent' in event_name:
             self._update_network_logs(event_data)
@@ -188,5 +190,5 @@ class EventsManager:
         for cb_id in callbacks_to_remove:
             self.remove_callback(cb_id)
         logger.debug(
-            f"Triggered callbacks for '{event_name}'. Removed temporaries: {callbacks_to_remove}"
+            "Triggered callbacks for '%s'. Removed temporaries: %s", event_name, callbacks_to_remove
         )

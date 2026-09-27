@@ -127,7 +127,7 @@ class Keyboard:
             await tab.keyboard.press(Key.ENTER)
             await tab.keyboard.press(Key.A, modifiers=KeyModifier.CTRL)
         """
-        logger.info(f'Pressing key: {key} with modifiers: {modifiers}')
+        logger.info('Pressing key: %s with modifiers: %s', key, modifiers)
         await self.down(key, modifiers)
         if interval > 0:
             await asyncio.sleep(interval)
@@ -142,7 +142,7 @@ class Keyboard:
             modifiers: Optional key modifiers.
         """
         key_name, code = key
-        logger.debug(f'Key down: {key_name}')
+        logger.debug('Key down: %s', key_name)
         command = InputCommands.dispatch_key_event(
             type=KeyEventType.KEY_DOWN,
             key=key_name,
@@ -160,7 +160,7 @@ class Keyboard:
             key: Key to release (from Key enum).
         """
         key_name, code = key
-        logger.debug(f'Key up: {key_name}')
+        logger.debug('Key up: %s', key_name)
         command = InputCommands.dispatch_key_event(
             type=KeyEventType.KEY_UP,
             key=key_name,

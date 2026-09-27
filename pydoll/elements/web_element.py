@@ -128,9 +128,11 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         self._iframe_resolver: Optional[IFrameContextResolver] = None
         self._def_attributes(attributes_list or [])
         logger.debug(
-            f'WebElement initialized: object_id={self._object_id}, '
-            f'method={self._search_method}, selector={self._selector}, '
-            f'attributes={len(self._attributes)}'
+            'WebElement initialized: object_id=%s, method=%s, selector=%s, attributes=%s',
+            self._object_id,
+            self._search_method,
+            self._selector,
+            len(self._attributes),
         )
 
     def _get_keyboard(self) -> Keyboard:
@@ -187,12 +189,12 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
                 'return (this.textContent || "").trim()', return_by_value=True
             )
             text_value = response.get('result', {}).get('result', {}).get('value', '') or ''
-            logger.debug(f'Extracted text length (iframe ctx): {len(text_value)}')
+            logger.debug('Extracted text length (iframe ctx): %s', len(text_value))
             return text_value
 
         outer_html = await self.inner_html()
         text_value = extract_text_from_html(outer_html, strip=True)
-        logger.debug(f'Extracted text length: {len(text_value)}')
+        logger.debug('Extracted text length: %s', len(text_value))
         return text_value
 
     async def bounds(self) -> Quad:
@@ -204,7 +206,7 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         command = DomCommands.get_box_model(object_id=self._object_id)
         response: GetBoxModelResponse = await self._execute_command(command)
         content = response['result']['model']['content']
-        logger.debug(f'Bounds retrieved (points={len(content)})')
+        logger.debug('Bounds retrieved (points=%s)', len(content))
         return content
 
     async def inner_html(self) -> str:
@@ -265,19 +267,19 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         """
         response = await self.execute_script(Scripts.BOUNDS, return_by_value=True)
         bounds = json.loads(response['result']['result']['value'])
-        logger.debug(f'Bounds via JS: {bounds}')
+        logger.debug('Bounds via JS: %s', bounds)
         return bounds
 
     async def get_parent_element(self) -> WebElement:
         """Element's parent element."""
-        logger.debug(f'Getting parent element for object_id={self._object_id}')
+        logger.debug('Getting parent element for object_id=%s', self._object_id)
         result = await self.execute_script(Scripts.GET_PARENT_NODE)
         if not self._has_object_id_key(result):
             raise ElementNotFound(f'Parent element not found for element: {self}')
 
         object_id = result['result']['result']['objectId']
         attributes = await self._get_object_attributes(object_id=object_id)
-        logger.debug(f'Parent element resolved: object_id={object_id}')
+        logger.debug('Parent element resolved: object_id=%s', object_id)
         return WebElement(
             object_id, self._connection_handler, attributes_list=attributes, mouse=self._mouse
         )
@@ -342,7 +344,7 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
 
         mode = ShadowRootType(shadow_root_data.get('shadowRootType', 'open'))
 
-        logger.debug(f'Shadow root resolved: object_id={shadow_object_id}, mode={mode.value}')
+        logger.debug('Shadow root resolved: object_id=%s, mode=%s', shadow_object_id, mode.value)
         return ShadowRoot(
             object_id=shadow_object_id,
             connection_handler=self._connection_handler,
@@ -370,15 +372,17 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
             ElementNotFound: If no child elements are found for this element and raise_exc is True.
         """
         logger.debug(
-            f'Getting children: max_depth={max_depth}, '
-            f'tag_filter={tag_filter}, raise_exc={raise_exc}'
+            'Getting children: max_depth=%s, tag_filter=%s, raise_exc=%s',
+            max_depth,
+            tag_filter,
+            raise_exc,
         )
         children = await self._get_family_elements(
             script=Scripts.GET_CHILDREN_NODE, max_depth=max_depth, tag_filter=tag_filter
         )
         if not children and raise_exc:
             raise ElementNotFound(f'Child element not found for element: {self}')
-        logger.debug(f'Children found: {len(children)}')
+        logger.debug('Children found: %s', len(children))
         return children
 
     async def get_siblings_elements(
@@ -399,13 +403,13 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
             ElementNotFound: If no sibling elements are found for this element
             and raise_exc is True.
         """
-        logger.debug(f'Getting siblings: tag_filter={tag_filter}, raise_exc={raise_exc}')
+        logger.debug('Getting siblings: tag_filter=%s, raise_exc=%s', tag_filter, raise_exc)
         siblings = await self._get_family_elements(
             script=Scripts.GET_SIBLINGS_NODE, tag_filter=tag_filter
         )
         if not siblings and raise_exc:
             raise ElementNotFound(f'Sibling element not found for element: {self}')
-        logger.debug(f'Siblings found: {len(siblings)}')
+        logger.debug('Siblings found: %s', len(siblings))
         return siblings
 
     async def take_screenshot(
@@ -459,8 +463,15 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
             scale=1,
         )
         logger.debug(
-            f'Taking element screenshot: path={path}, quality={quality}, as_base64={as_base64}, '
-            f'clip={{x: {clip["x"]}, y: {clip["y"]}, w: {clip["width"]}, h: {clip["height"]}}}'
+            'Taking element screenshot: path=%s, quality=%s, as_base64=%s, '
+            'clip={x: %s, y: %s, w: %s, h: %s}',
+            path,
+            quality,
+            as_base64,
+            clip['x'],
+            clip['y'],
+            clip['width'],
+            clip['height'],
         )
 
         screenshot: CaptureScreenshotResponse = await self._connection_handler.execute_command(
@@ -477,7 +488,7 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
             image_bytes = decode_base64_to_bytes(screenshot_data)
             async with aiofiles.open(str(path), 'wb') as file:
                 await file.write(image_bytes)
-            logger.info(f'Element screenshot saved: {path}')
+            logger.info('Element screenshot saved: %s', path)
 
         return None
 
@@ -491,7 +502,7 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         margin keeps it clear of the edges. When the box cannot be read the plain
         behaviour is kept.
         """
-        logger.info(f'Scrolling element into view: object_id={self._object_id}')
+        logger.info('Scrolling element into view: object_id=%s', self._object_id)
         command = DomCommands.scroll_into_view_if_needed(
             object_id=self._object_id, rect=await self._scroll_rect_with_margin()
         )
@@ -543,8 +554,10 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         condition_msg = ' and '.join(condition_parts)
 
         logger.info(
-            f'Waiting for element: visible={is_visible}, '
-            f'interactable={is_interactable}, timeout={timeout}s'
+            'Waiting for element: visible=%s, interactable=%s, timeout=%ss',
+            is_visible,
+            is_interactable,
+            timeout,
         )
         loop = asyncio.get_running_loop()
         start_time = loop.time()
@@ -552,7 +565,7 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         while True:
             results = await asyncio.gather(*(check() for check in checks))
             if all(results):
-                logger.info(f'Element condition satisfied: {condition_msg}')
+                logger.info('Element condition satisfied: %s', condition_msg)
                 return
 
             if timeout and loop.time() - start_time > timeout:
@@ -581,7 +594,7 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         if not await self.is_visible():
             raise ElementNotVisible()
 
-        logger.info(f'Clicking element via JS: object_id={self._object_id}')
+        logger.info('Clicking element via JS: object_id=%s', self._object_id)
         result = await self.execute_script(Scripts.CLICK, return_by_value=True)
         clicked = result['result']['result']['value']
         if not clicked:
@@ -640,14 +653,18 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         has_iframe_context = getattr(self, '_iframe_context', None) is not None
         if humanize and self._mouse is not None and not has_iframe_context:
             logger.info(
-                f'Clicking element (humanized): x={position_to_click[0]}, y={position_to_click[1]}'
+                'Clicking element (humanized): x=%s, y=%s',
+                position_to_click[0],
+                position_to_click[1],
             )
             await self._mouse.click(position_to_click[0], position_to_click[1], humanize=True)
             return
 
         logger.info(
-            f'Clicking element: x={position_to_click[0]}, '
-            f'y={position_to_click[1]}, hold={hold_time}s'
+            'Clicking element: x=%s, y=%s, hold=%ss',
+            position_to_click[0],
+            position_to_click[1],
+            hold_time,
         )
         press_command = InputCommands.dispatch_mouse_event(
             type=MouseEventType.MOUSE_PRESSED,
@@ -710,11 +727,11 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
             Uses JavaScript for maximum compatibility with all input types.
             Automatically handles input/textarea and contenteditable elements.
         """
-        logger.info(f'Inserting text (length={len(text)})')
+        logger.info('Inserting text (length=%s)', len(text))
         result = await self.execute_script(
             Scripts.INSERT_TEXT, return_by_value=True, arguments=[CallArgument(value=text)]
         )
-        logger.debug(f'Insert text result: {result}')
+        logger.debug('Insert text result: %s', result)
         success = result['result'].get('result', {}).get('value', False)
 
         if not success:
@@ -757,7 +774,7 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         ):
             raise ElementNotAFileInput()
         files_list = [str(file) for file in files] if isinstance(files, list) else [str(files)]
-        logger.info(f'Setting input files: count={len(files_list)}')
+        logger.info('Setting input files: count=%s', len(files_list))
         await self._execute_command(
             DomCommands.set_file_input_files(files=files_list, object_id=self._object_id)
         )
@@ -770,7 +787,7 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
             text: Text to type into the element.
             humanize: When True, simulates human-like typing.
         """
-        logger.info(f'Typing text (length={len(text)}, humanize={humanize})')
+        logger.info('Typing text (length=%s, humanize=%s)', len(text), humanize)
         await self.click(humanize=humanize)
         keyboard = self._get_keyboard()
         await keyboard.type_text(text, humanize=humanize)
@@ -784,7 +801,7 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         """
         result = await self.execute_script(Scripts.IS_EDITABLE, return_by_value=True)
         is_editable = result['result']['result']['value']
-        logger.debug(f'Element editable check: {is_editable}')
+        logger.debug('Element editable check: %s', is_editable)
         return is_editable
 
     async def is_visible(self):
@@ -874,8 +891,10 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
             script = f'function(){{ {script} }}'
 
         logger.debug(
-            f'Executing script on element: return_by_value={return_by_value}, '
-            f'length={len(script)}, args={len(arguments) if arguments else 0}'
+            'Executing script on element: return_by_value=%s, length=%s, args=%s',
+            return_by_value,
+            len(script),
+            len(arguments) if arguments else 0,
         )
         command = RuntimeCommands.call_function_on(
             function_declaration=script,
@@ -970,7 +989,7 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
                 get_properties_command
             )
         except CommandFailed as exc:
-            logger.debug(f'Family element list became unresolvable before it was read: {exc}')
+            logger.debug('Family element list became unresolvable before it was read: %s', exc)
             return []
 
         family_elements: list[WebElement] = []
@@ -988,7 +1007,7 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
                 )
             )
 
-        logger.debug(f'Family elements found: {len(family_elements)}')
+        logger.debug('Family elements found: %s', len(family_elements))
         return family_elements
 
     def _def_attributes(self, attributes_list: list[str]):
@@ -998,7 +1017,7 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
             key = key if key != 'class' else 'class_name'
             value = attributes_list[i + 1]
             self._attributes[key] = value
-        logger.debug(f'Attributes defined: count={len(self._attributes)}')
+        logger.debug('Attributes defined: count=%s', len(self._attributes))
 
     def _is_option_tag(self):
         """Check if element is an <option> tag."""

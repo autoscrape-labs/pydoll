@@ -69,8 +69,10 @@ class ConnectionHandler:
         self._connection_lock = asyncio.Lock()
         logger.info('ConnectionHandler initialized.')
         logger.debug(
-            f'Init params: port={self._connection_port}, page_id={self._page_id}, '
-            f'ws_address_set={bool(self._ws_address)}'
+            'Init params: port=%s, page_id=%s, ws_address_set=%s',
+            self._connection_port,
+            self._page_id,
+            bool(self._ws_address),
         )
 
     @property
@@ -119,14 +121,16 @@ class ConnectionHandler:
         try:
             ws = cast(ClientConnection, self._ws_connection)
             logger.debug(
-                f'Sending command: id={command.get("id")}, method={command.get("method")}, '
-                f'timeout={timeout}s'
+                'Sending command: id=%s, method=%s, timeout=%ss',
+                command.get('id'),
+                command.get('method'),
+                timeout,
             )
             start = asyncio.get_running_loop().time()
             await ws.send(command_str)
             response: str = await asyncio.wait_for(future, timeout)
             elapsed = asyncio.get_running_loop().time() - start
-            logger.debug(f'Command completed: id={command.get("id")} in {elapsed:.3f}s')
+            logger.debug('Command completed: id=%s in %.3fs', command.get('id'), elapsed)
             response_data = json.loads(response)
             self._raise_if_failed(command, response_data)
             return response_data
@@ -154,7 +158,7 @@ class ConnectionHandler:
         method = raw_method.value if isinstance(raw_method, Enum) else raw_method
         if 'error' in response:
             error = response['error']
-            logger.debug(f'Command rejected: method={method}, error={error}')
+            logger.debug('Command rejected: method=%s, error=%s', method, error)
             raise CommandFailed(
                 method=method,
                 code=error.get('code', 0),
@@ -186,14 +190,14 @@ class ConnectionHandler:
         """
         callback_id = self._events_handler.register_callback(event_name, callback, temporary)
         logger.debug(
-            f'Registered callback: id={callback_id}, event={event_name}, temporary={temporary}'
+            'Registered callback: id=%s, event=%s, temporary=%s', callback_id, event_name, temporary
         )
         return callback_id
 
     async def remove_callback(self, callback_id: int) -> bool:
         """Remove registered event callback by ID."""
         removed = self._events_handler.remove_callback(callback_id)
-        logger.debug(f'Removed callback: id={callback_id}, removed={removed}')
+        logger.debug('Removed callback: id=%s, removed=%s', callback_id, removed)
         return removed
 
     async def clear_callbacks(self):
@@ -243,7 +247,7 @@ class ConnectionHandler:
         """Create fresh WebSocket connection and start event listening."""
         await self._teardown_connection()
         ws_address = await self._resolve_ws_address()
-        logger.info(f'Connecting to {ws_address}')
+        logger.info('Connecting to %s', ws_address)
         self._ws_connection = await self._ws_connector(
             ws_address,
             max_size=None,
@@ -272,10 +276,10 @@ class ConnectionHandler:
             return self._ws_address
         if not self._page_id:
             resolved = await self._ws_address_resolver(self._connection_port)
-            logger.debug(f'Resolved browser-level WebSocket address: {resolved}')
+            logger.debug('Resolved browser-level WebSocket address: %s', resolved)
             return resolved
         address = f'ws://localhost:{self._connection_port}/devtools/page/{self._page_id}'
-        logger.debug(f'Resolved page-level WebSocket address: {address}')
+        logger.debug('Resolved page-level WebSocket address: %s', address)
         return address
 
     async def _handle_connection_loss(self):
@@ -299,7 +303,7 @@ class ConnectionHandler:
                 except Exception:
                     logger.exception('Error processing WebSocket message; skipping')
         except websockets.ConnectionClosed as e:
-            logger.info(f'WebSocket connection closed: {e}')
+            logger.info('WebSocket connection closed: %s', e)
         except Exception:
             logger.exception('Fatal error in WebSocket receive loop')
         finally:
@@ -345,7 +349,7 @@ class ConnectionHandler:
 
     def _handle_command_message(self, message: Response):
         """Resolve the pending future for a command response."""
-        logger.debug(f'Processing command response: {message.get("id")}')
+        logger.debug('Processing command response: %s', message.get('id'))
         self._command_manager.resolve_command(message['id'], json.dumps(message))
 
     def __repr__(self):
