@@ -46,7 +46,7 @@ from urllib.parse import urlsplit, urlunsplit
 from pydoll.browser.managers import BrowserProcessManager, ProxyManager, TempDirectoryManager
 from pydoll.commands import BrowserCommands, EmulationCommands, FetchCommands, RuntimeCommands, StorageCommands, TargetCommands
 from pydoll.connection import ConnectionHandler
-from pydoll.exceptions import BrowserNotRunning, FailedToStartBrowser, InvalidConnectionPort, InvalidWebSocketAddress, MissingTargetOrWebSocket, NoValidTabFound
+from pydoll.exceptions import BrowserNotRunning, CommandFailed, FailedToStartBrowser, InvalidConnectionPort, InvalidWebSocketAddress, MissingTargetOrWebSocket, NoValidTabFound
 from pydoll.protocol.browser.types import DownloadBehavior
 from pydoll.protocol.fetch.events import FetchEvent
 from pydoll.protocol.fetch.types import AuthChallengeResponseType
@@ -81,7 +81,7 @@ from pydoll.browser.fingerprint_applier import FingerprintApplier
 from pydoll.commands import DomCommands, FetchCommands, NetworkCommands, PageCommands, RuntimeCommands, StorageCommands, TargetCommands
 from pydoll.constants import PageLoadState
 from pydoll.elements.mixins import FindElementsMixin
-from pydoll.exceptions import CommandExecutionTimeout, DownloadTimeout, InvalidFileExtension, InvalidScriptWithElement, InvalidTabInitialization, MissingScreenshotPath, NavigationError, NetworkEventsNotEnabled, NoDialogPresent, PageLoadTimeout, TopLevelTargetRequired, WaitElementTimeout, WebSocketConnectionClosed
+from pydoll.exceptions import CommandExecutionTimeout, CommandFailed, DownloadTimeout, InvalidFileExtension, InvalidScriptWithElement, InvalidTabInitialization, MissingScreenshotPath, NavigationError, NetworkEventsNotEnabled, NoDialogPresent, PageLoadTimeout, TopLevelTargetRequired, WaitElementTimeout, WebSocketConnectionClosed
 from pydoll.extractor.engine import ExtractionEngine
 from pydoll.interactions import KeyboardAPI, MouseAPI, ScrollAPI
 from pydoll.interactions.iframe import IFrameContext
@@ -112,18 +112,18 @@ from pydoll.commands import DomCommands, RuntimeCommands
 from pydoll.connection.connection_handler import ConnectionHandler
 from pydoll.constants import By, Scripts
 from pydoll.elements.utils import SelectorParser
-from pydoll.exceptions import ElementNotFound, WaitElementTimeout
+from pydoll.exceptions import CommandFailed, ElementNotFound, WaitElementTimeout
 from typing import Literal, Optional, Union
 from pydoll.protocol.dom.methods import DescribeNodeResponse
 from pydoll.protocol.dom.types import Node
 from pydoll.protocol.runtime.methods import CallFunctionOnParams, CallFunctionOnResponse, EvaluateParams, EvaluateResponse, GetPropertiesResponse
 from pydoll.elements.mixins.find_elements_mixin import FindElementsMixin
 from pydoll.commands import DomCommands, InputCommands, PageCommands, RuntimeCommands
-from pydoll.constants import Scripts
-from pydoll.exceptions import CommandExecutionTimeout, ElementNotAFileInput, ElementNotFound, ElementNotInteractable, ElementNotVisible, InvalidFileExtension, InvalidIFrame, MissingScreenshotPath, ShadowRootNotFound, WaitElementTimeout, WebSocketConnectionClosed
+from pydoll.constants import PRESSED_POINTER_FORCE, Scripts
+from pydoll.exceptions import CommandExecutionTimeout, CommandFailed, ElementNotAFileInput, ElementNotFound, ElementNotInteractable, ElementNotVisible, InvalidFileExtension, InvalidIFrame, MissingScreenshotPath, ShadowRootNotFound, WaitElementTimeout, WebSocketConnectionClosed
 from pydoll.interactions.iframe import IFrameContext, IFrameContextResolver
-from pydoll.protocol.dom.types import ShadowRootType
-from pydoll.protocol.input.types import MouseButton, MouseEventType
+from pydoll.protocol.dom.types import Rect, ShadowRootType
+from pydoll.protocol.input.types import MOUSE_BUTTON_MASK, MouseButton, MouseEventType
 from pydoll.protocol.page.types import ScreenshotFormat, Viewport
 from pydoll.protocol.runtime.methods import CallFunctionOnResponse, EvaluateResponse, GetPropertiesResponse, SerializationOptions
 from pydoll.protocol.runtime.types import CallArgument
@@ -135,6 +135,7 @@ from pydoll.protocol.page.methods import CaptureScreenshotResponse
 from pydoll.protocol.runtime.methods import GetPropertiesResponse
 from typing import TYPE_CHECKING
 from pydoll.commands import DomCommands
+from pydoll.protocol.dom.types import ShadowRootType
 from pydoll.protocol.dom.methods import GetOuterHTMLResponse
 import random
 from dataclasses import dataclass
@@ -148,6 +149,7 @@ from pydoll.interactions.keyboard import TimingConfig
 from pydoll.interactions.keyboard import TypoConfig
 import math
 from pydoll.commands import InputCommands, RuntimeCommands
+from pydoll.constants import PRESSED_POINTER_FORCE
 from pydoll.interactions.utils import bezier_2d, fitts_duration, minimum_jerk, random_control_points
 from pydoll.interactions.mouse import MouseTimingConfig
 from pydoll.constants import Scripts, ScrollPosition
@@ -160,6 +162,7 @@ from typing import TYPE_CHECKING, Any, Callable, Optional, Union, cast
 from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 from pydoll.browser.requests.har_recorder import HarCapture, HarRecorder
 from pydoll.commands.runtime_commands import RuntimeCommands
+from pydoll.constants import Scripts
 from pydoll.exceptions import HTTPError
 from pydoll.protocol.network.events import NetworkEvent, RequestWillBeSentEvent, RequestWillBeSentExtraInfoEvent, ResponseReceivedEvent, ResponseReceivedExtraInfoEvent, ResponseReceivedExtraInfoEventParams
 from pydoll.protocol.network.types import CookieParam, ResourceType
@@ -1641,7 +1644,15 @@ class WebElement(SyncBase):
         return mapping.from_impl(self._run(self._impl.take_screenshot(path=mapping.to_impl(path), quality=mapping.to_impl(quality), as_base64=mapping.to_impl(as_base64))))
 
     def scroll_into_view(self):
-        """Scroll element into visible viewport."""
+        """Scroll element into the viewport, keeping a margin from every edge.
+
+        ``DOM.scrollIntoViewIfNeeded`` aligns a partially visible element with the
+        closest viewport edge. That leaves it under the overlay scrollbar the scroll
+        itself reveals on macOS, so the mouse events that follow land on the
+        scrollbar instead of the element. Asking for the element's box plus a
+        margin keeps it clear of the edges. When the box cannot be read the plain
+        behaviour is kept.
+        """
         return mapping.from_impl(self._run(self._impl.scroll_into_view()))
 
     def wait_until(self, *, is_visible: bool=False, is_interactable: bool=False, timeout: int=0):
