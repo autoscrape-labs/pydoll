@@ -81,7 +81,7 @@ See [Tabs](tabs.md) for managing several tabs at once, and [Browser contexts](br
 
 ## Sync and async {#sync-and-async}
 
-Pydoll ships one API in two forms. Import from `pydoll.sync` and every call blocks until the browser answers, so a script reads top to bottom with no event loop to manage. Import from `pydoll.browser.chromium` and the same classes are coroutines: you `await` each call inside an `async def` and start the program with `asyncio.run()`. The sync form is generated from the async one, so the two never differ in methods, arguments, or defaults, and every example in these docs shows both.
+Pydoll ships one API in two forms. Import from `pydoll.sync` and every call blocks until the browser answers, so a script reads top to bottom with no event loop to manage. Import from `pydoll` and the same classes are coroutines: you `await` each call inside an `async def` and start the program with `asyncio.run()`. The sync form is generated from the async one, so the two never differ in methods, arguments, or defaults, and every example in these docs shows both. There is a third door in for code that already exists: a Playwright script runs on Pydoll by changing one import, see [Bring your Playwright script](../playwright.md).
 
 Where the async form pays off is concurrency. Navigation and element waits spend most of their time idle, so `asyncio.gather` runs them at the same time instead of one after another. The sync form gets the same effect from threads, because its calls are safe to make from several threads at once:
 

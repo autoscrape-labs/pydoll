@@ -81,7 +81,7 @@ Veja [Abas](tabs.md) para gerenciar várias abas ao mesmo tempo, e [Contextos de
 
 ## Síncrono e assíncrono {#sync-and-async}
 
-O Pydoll oferece uma API em duas formas. Importe de `pydoll.sync` e cada chamada bloqueia até o navegador responder, então o script se lê de cima para baixo sem nenhum event loop para gerenciar. Importe de `pydoll.browser.chromium` e as mesmas classes são corrotinas: você usa `await` em cada chamada dentro de uma função `async def` e inicia o programa com `asyncio.run()`. A forma síncrona é gerada a partir da assíncrona, então as duas nunca diferem em métodos, argumentos ou padrões, e todo exemplo desta documentação mostra as duas.
+O Pydoll oferece uma API em duas formas. Importe de `pydoll.sync` e cada chamada bloqueia até o navegador responder, então o script se lê de cima para baixo sem nenhum event loop para gerenciar. Importe de `pydoll` e as mesmas classes são corrotinas: você usa `await` em cada chamada dentro de uma função `async def` e inicia o programa com `asyncio.run()`. A forma síncrona é gerada a partir da assíncrona, então as duas nunca diferem em métodos, argumentos ou padrões, e todo exemplo desta documentação mostra as duas. Há uma terceira porta de entrada para código que já existe: um script Playwright roda no Pydoll trocando um import, veja [Traga seu script Playwright](../playwright.md).
 
 Onde a forma assíncrona compensa é na concorrência. Navegação e esperas por elementos passam a maior parte do tempo ociosas, então `asyncio.gather` as executa ao mesmo tempo em vez de uma após a outra. A forma síncrona obtém o mesmo efeito com threads, porque suas chamadas podem ser feitas de várias threads ao mesmo tempo com segurança:
 

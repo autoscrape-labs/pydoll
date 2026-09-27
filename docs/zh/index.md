@@ -130,11 +130,48 @@ Pydoll 驱动你机器上已安装的 Chrome 或 Edge。你无需下载 webdrive
 
 模型支持 CSS 和 XPath 选择器、HTML 属性定位、自定义转换以及嵌套模型。更多内容见 [结构化提取](guides/structured-extraction.md)。
 
+已经有 Playwright 脚本？留着它。改一行导入就能跑在 Pydoll 上：
+
+=== "Sync"
+
+    ```python
+    from pydoll.playwright.sync_api import sync_playwright
+
+    with sync_playwright() as p:
+        browser = p.chromium.launch()
+        page = browser.new_page()
+        page.goto('https://quotes.toscrape.com')
+        print(page.locator('.quote .text').first.inner_text())
+        browser.close()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+
+    from pydoll.playwright.async_api import async_playwright
+
+
+    async def main():
+        async with async_playwright() as p:
+            browser = await p.chromium.launch()
+            page = await browser.new_page()
+            await page.goto('https://quotes.toscrape.com')
+            print(await page.locator('.quote .text').first.inner_text())
+            await browser.close()
+
+    asyncio.run(main())
+    ```
+
+定位器、`get_by_role`、自动等待、路由、对话框和下载都保留 Playwright 的语义；`expect()` 和测试运行器不在范围内。参见[带上你的 Playwright 脚本](playwright.md)。
+
 ## 为什么选择 Pydoll
 
 - **无需 webdriver**：Pydoll 通过 Chrome DevTools Protocol 直接连接浏览器。没有需要下载的东西，也没有版本不匹配需要排查。
 - **拟人化交互**：点击沿着弯曲的鼠标轨迹移动，打字带有可变的节奏并偶尔出现随即被修正的拼写错误，因此你的自动化表现得像一个真人在键盘前操作。
 - **同步或异步**：同一套 API 既可以从 `pydoll.sync` 逐个调用阻塞执行，也可以运行在 `asyncio` 上，让一个进程并发驱动多个标签页和浏览器。
+- **兼容 Playwright**：保留已有的 Playwright 脚本，改一行导入；它通过 Pydoll 的 CDP 连接运行，没有驱动进程。
 - **Cloudflare Turnstile 处理**：Pydoll 检测 Turnstile 组件并原生点击它。无需付费或集成外部 captcha 服务。
 - **网络控制**：在页面发起请求时监控、拦截并修改它们。
 - **类型化提取**：声明一个 Pydantic 模型，得到经过校验、对 IDE 友好的对象，而不是原始元素。
@@ -143,6 +180,7 @@ Pydoll 驱动你机器上已安装的 Chrome 或 Edge。你无需下载 webdrive
 
 - [快速开始](getting-started.md)：安装 Pydoll 并运行你的第一个脚本。
 - [你的第一个自动化](first-automation.md)：登录站点并提取类型化数据。
+- [带上你的 Playwright 脚本](playwright.md)：改一行导入，你的 Playwright 代码就跑在 Pydoll 上。
 - [从 Selenium 和 Playwright 迁移](migrating.md)：把你已经掌握的操作对应到 Pydoll。
 - [保持不被检测](stealth/index.md)：避开明显机器人信号的最小配置。
 - [指南](guides/index.md)：每种能力一篇指南，从元素查找到请求拦截。

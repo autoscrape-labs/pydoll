@@ -88,7 +88,7 @@ Three things happened there:
 - `tab.find(class_name='text')` waited for the element to appear and returned it. You don't need to add sleeps or write wait loops; `find()` retries until the element shows up or the timeout expires.
 
 !!! note "Sync or async?"
-    The sync form imports from `pydoll.sync` and calls methods like any other Python function. The async form imports from `pydoll.browser.chromium`, `await`s every call inside an `async def`, and starts with `asyncio.run(main())`. That's all the asyncio you need for now; if it is new to you, [Async Python in practice](basics/async-python.md) covers the rest.
+    The sync form imports from `pydoll.sync` and calls methods like any other Python function. The async form imports from `pydoll`, `await`s every call inside an `async def`, and starts with `asyncio.run(main())`. That's all the asyncio you need for now; if it is new to you, [Async Python in practice](basics/async-python.md) covers the rest.
 
 ## Run headless {#run-headless}
 
@@ -143,5 +143,6 @@ The script behaves exactly the same; the window is invisible. `ChromiumOptions` 
 ## What's next
 
 - [Your first automation](first-automation.md): log in to a site, interact like a person, and extract typed data.
+- [Bring your Playwright script](playwright.md): already have Playwright code? One import moves it onto Pydoll.
 - [Staying undetected](stealth/index.md): the minimum setup to avoid the obvious bot signals.
 - [Element finding](guides/element-finding.md): every way to locate elements with `find()` and `query()`.

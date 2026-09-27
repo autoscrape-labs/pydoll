@@ -6,7 +6,7 @@
 
 - **没有 webdriver 或捆绑的浏览器。** Pydoll 通过 DevTools Protocol 驱动你机器上已有的 Chrome 或 Edge。没有需要安装或版本匹配的 `chromedriver`。
 - **没有显式等待。** `find()` 和 `query()` 自己等待元素，所以 `WebDriverWait` 和 `expected_conditions` 那一套繁琐操作就没有了。
-- **同步或异步，由你选择。** 从 `pydoll.sync` 导入即可使用阻塞调用，或从 `pydoll.browser.chromium` 导入同一套 API 并 `await` 它。下面的表格展示的是异步形式；同步形式只需去掉 `await`，并用 `with` 代替 `async with`。第一次接触异步？见 [实践中的异步 Python](basics/async-python.md)。
+- **同步或异步，由你选择。** 从 `pydoll.sync` 导入即可使用阻塞调用，或从 `pydoll` 导入同一套 API 并 `await` 它。下面的表格展示的是异步形式；同步形式只需去掉 `await`，并用 `with` 代替 `async with`。第一次接触异步？见 [实践中的异步 Python](basics/async-python.md)。
 
 ## 从 Selenium 迁移
 
@@ -96,6 +96,11 @@ driver.quit()
 
 ## 从 Playwright 迁移
 
+有两条路可走，第一条今天就能走，第二条随时都行：
+
+- **保留你的代码。** 改一行导入，脚本就跑在 Pydoll 的 CDP 连接上，Playwright 的定位器、自动等待、路由和事件原样保留。参见[带上你的 Playwright 脚本](playwright.md)；[Playwright API](guides/playwright-api.md) 页面列出了哪些完整、部分和缺失。
+- **改写成 Pydoll 自己的 API。** 下表对应了各个操作。只有 Pydoll 才有的功能都在这里：类型化提取、Turnstile 处理、指纹配置、拟人化输入、CDP 事件。
+
 | 任务 | Playwright | Pydoll |
 |------|------------|--------|
 | 启动 | `browser = await p.chromium.launch(); page = await browser.new_page()` | `async with Chrome() as browser: tab = await browser.start()` |
@@ -121,9 +126,9 @@ driver.quit()
 
     ```python
     # Playwright
-    from playwright.async_api import async_playwright
+    from playwright.sync_api import sync_playwright
 
-    with async_playwright() as p:
+    with sync_playwright() as p:
         browser = p.chromium.launch()
         page = browser.new_page()
         page.goto('https://quotes.toscrape.com')

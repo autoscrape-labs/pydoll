@@ -88,7 +88,7 @@ Três coisas aconteceram aí:
 - `tab.find(class_name='text')` esperou o elemento aparecer e o retornou. Você não precisa adicionar sleeps nem escrever loops de espera; `find()` tenta de novo até o elemento aparecer ou o timeout expirar.
 
 !!! note "Síncrono ou assíncrono?"
-    A forma síncrona importa de `pydoll.sync` e chama métodos como qualquer outra função Python. A forma assíncrona importa de `pydoll.browser.chromium`, usa `await` em cada chamada dentro de uma função `async def` e começa com `asyncio.run(main())`. Esse é todo o asyncio que você precisa por enquanto; se for novidade, [Python assíncrono na prática](basics/async-python.md) cobre o resto.
+    A forma síncrona importa de `pydoll.sync` e chama métodos como qualquer outra função Python. A forma assíncrona importa de `pydoll`, usa `await` em cada chamada dentro de uma função `async def` e começa com `asyncio.run(main())`. Esse é todo o asyncio que você precisa por enquanto; se for novidade, [Python assíncrono na prática](basics/async-python.md) cobre o resto.
 
 ## Rodar em headless {#run-headless}
 
@@ -143,5 +143,6 @@ O script se comporta exatamente da mesma forma; a janela é invisível. `Chromiu
 ## Próximos passos
 
 - [Sua primeira automação](first-automation.md): faça login em um site, interaja como uma pessoa e extraia dados tipados.
+- [Traga seu script Playwright](playwright.md): já tem código Playwright? Um import o coloca no Pydoll.
 - [Passando despercebido](stealth/index.md): a configuração mínima para evitar os sinais óbvios de bot.
 - [Encontrando elementos](guides/element-finding.md): todas as formas de localizar elementos com `find()` e `query()`.

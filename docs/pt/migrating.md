@@ -6,7 +6,7 @@ Três coisas mudam, não importa de qual ferramenta você venha:
 
 - **Sem webdriver ou navegador embutido.** O Pydoll controla o Chrome ou o Edge que já está na sua máquina pelo DevTools Protocol. Não há `chromedriver` para instalar ou casar versões.
 - **Sem esperas explícitas.** `find()` e `query()` esperam pelo elemento sozinhos, então a dança de `WebDriverWait` e `expected_conditions` desaparece.
-- **Síncrono ou assíncrono, você escolhe.** Importe de `pydoll.sync` para chamadas bloqueantes, ou use `await` na mesma API a partir de `pydoll.browser.chromium`. As tabelas abaixo mostram a forma assíncrona; para a síncrona, remova o `await` e use `with` em vez de `async with`. Novo em async? Veja [Python assíncrono na prática](basics/async-python.md).
+- **Síncrono ou assíncrono, você escolhe.** Importe de `pydoll.sync` para chamadas bloqueantes, ou use `await` na mesma API a partir de `pydoll`. As tabelas abaixo mostram a forma assíncrona; para a síncrona, remova o `await` e use `with` em vez de `async with`. Novo em async? Veja [Python assíncrono na prática](basics/async-python.md).
 
 ## Do Selenium
 
@@ -96,6 +96,11 @@ driver.quit()
 
 ## Do Playwright
 
+Há dois caminhos, e você pode pegar o primeiro hoje e o segundo quando quiser:
+
+- **Mantenha seu código.** Troque um import e seu script roda pela conexão CDP do Pydoll, com locators, espera automática, rotas e eventos do Playwright intactos. Veja [Traga seu script Playwright](playwright.md); a página [API do Playwright](guides/playwright-api.md) lista o que é completo, parcial e ausente.
+- **Reescreva na API própria do Pydoll.** A tabela abaixo mapeia os movimentos. É aqui que vivem os recursos que só o Pydoll tem: extração tipada, Turnstile, perfis de fingerprint, entrada humanizada, eventos CDP.
+
 | Tarefa | Playwright | Pydoll |
 |------|------------|--------|
 | Iniciar | `browser = await p.chromium.launch(); page = await browser.new_page()` | `async with Chrome() as browser: tab = await browser.start()` |
@@ -121,9 +126,9 @@ Ambos são assíncronos e ambos esperam automaticamente, então migrar é, na ma
 
     ```python
     # Playwright
-    from playwright.async_api import async_playwright
+    from playwright.sync_api import sync_playwright
 
-    with async_playwright() as p:
+    with sync_playwright() as p:
         browser = p.chromium.launch()
         page = browser.new_page()
         page.goto('https://quotes.toscrape.com')

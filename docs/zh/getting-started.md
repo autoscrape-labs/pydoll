@@ -88,7 +88,7 @@ python first_script.py
 - `tab.find(class_name='text')` 等待元素出现并返回它。你无需添加 sleep 或编写等待循环；`find()` 会重试直到元素出现或超时到期。
 
 !!! note "同步还是异步？"
-    同步形式从 `pydoll.sync` 导入，像调用任何普通 Python 函数一样调用方法。异步形式从 `pydoll.browser.chromium` 导入，在 `async def` 函数内部 `await` 每个调用，并由 `asyncio.run(main())` 启动。目前你需要的 asyncio 就这些；如果还不熟悉，[异步 Python 实战](basics/async-python.md) 会讲清其余部分。
+    同步形式从 `pydoll.sync` 导入，像调用任何普通 Python 函数一样调用方法。异步形式从 `pydoll` 导入，在 `async def` 函数内部 `await` 每个调用，并由 `asyncio.run(main())` 启动。目前你需要的 asyncio 就这些；如果还不熟悉，[异步 Python 实战](basics/async-python.md) 会讲清其余部分。
 
 ## 无头运行 {#run-headless}
 
@@ -143,5 +143,6 @@ python first_script.py
 ## 下一步
 
 - [你的第一个自动化](first-automation.md)：登录一个站点，像真人一样交互，并提取类型化数据。
+- [带上你的 Playwright 脚本](playwright.md)：已经有 Playwright 代码？改一行导入就能跑在 Pydoll 上。
 - [保持不被检测](stealth/index.md)：避开明显机器人信号的最小配置。
 - [元素查找](guides/element-finding.md)：用 `find()` 和 `query()` 定位元素的每一种方式。

@@ -11,6 +11,7 @@ nav:
   - Getting Started:
       - Installation: getting-started.md
       - Your first automation: first-automation.md
+      - Bring your Playwright script: playwright.md
       - Migrating from Selenium & Playwright: migrating.md
       - Upgrading to Pydoll 3: upgrading.md
   - Basics:
@@ -45,6 +46,8 @@ nav:
       - Reacting to events:
           - Events: guides/events.md
           - Retrying: guides/retrying.md
+      - Coming from Playwright:
+          - Playwright API: guides/playwright-api.md
   - Stealth:
       - Overview: stealth/index.md
       - Evasion techniques: stealth/evasion-techniques.md
@@ -136,6 +139,9 @@ plugins:
             Getting Started: 快速上手
             Installation: 安装
             Your first automation: 你的第一个自动化
+            Bring your Playwright script: 带上你的 Playwright 脚本
+            Coming from Playwright: 来自 Playwright
+            Playwright API: Playwright API
             Migrating from Selenium & Playwright: 从 Selenium 和 Playwright 迁移
             Upgrading to Pydoll 3: 升级到 Pydoll 3
             Basics: 基础
@@ -204,6 +210,9 @@ plugins:
             Getting Started: Primeiros passos
             Installation: Instalação
             Your first automation: Sua primeira automação
+            Bring your Playwright script: Traga seu script Playwright
+            Coming from Playwright: Vindo do Playwright
+            Playwright API: API do Playwright
             Migrating from Selenium & Playwright: Migrando do Selenium e Playwright
             Upgrading to Pydoll 3: Atualizando para o Pydoll 3
             Basics: Fundamentos

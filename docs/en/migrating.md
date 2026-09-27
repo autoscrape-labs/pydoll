@@ -6,7 +6,7 @@ Three things change no matter which tool you come from:
 
 - **No webdriver or bundled browser.** Pydoll drives the Chrome or Edge already on your machine over the DevTools Protocol. There is no `chromedriver` to install or version-match.
 - **No explicit waits.** `find()` and `query()` wait for the element themselves, so the `WebDriverWait` and `expected_conditions` dance goes away.
-- **Sync or async, your choice.** Import from `pydoll.sync` for blocking calls, or `await` the same API from `pydoll.browser.chromium`. The tables below show the async form; for the sync form drop `await` and use `with` instead of `async with`. New to async? See [Async Python in practice](basics/async-python.md).
+- **Sync or async, your choice.** Import from `pydoll.sync` for blocking calls, or `await` the same API from `pydoll`. The tables below show the async form; for the sync form drop `await` and use `with` instead of `async with`. New to async? See [Async Python in practice](basics/async-python.md).
 
 ## From Selenium
 
@@ -96,6 +96,11 @@ driver.quit()
 
 ## From Playwright
 
+There are two ways in, and you can take the first today and the second whenever you like:
+
+- **Keep your code.** Change one import and your script runs on Pydoll's CDP connection, with Playwright's locators, auto-waiting, routes and events intact. See [Bring your Playwright script](playwright.md); the [Playwright API](guides/playwright-api.md) page lists what is full, partial and missing.
+- **Rewrite to Pydoll's own API.** The table below maps the moves. This is where the Pydoll-only features live: typed extraction, Turnstile handling, fingerprint profiles, humanized input, CDP events.
+
 | Task | Playwright | Pydoll |
 |------|------------|--------|
 | Launch | `browser = await p.chromium.launch(); page = await browser.new_page()` | `async with Chrome() as browser: tab = await browser.start()` |
@@ -121,9 +126,9 @@ Both are async and both auto-wait, so migration is mostly renaming. The main con
 
     ```python
     # Playwright
-    from playwright.async_api import async_playwright
+    from playwright.sync_api import sync_playwright
 
-    with async_playwright() as p:
+    with sync_playwright() as p:
         browser = p.chromium.launch()
         page = browser.new_page()
         page.goto('https://quotes.toscrape.com')
