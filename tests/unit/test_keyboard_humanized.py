@@ -119,7 +119,8 @@ def recording_field():
 
 
 @pytest.mark.asyncio
-async def test_default_typing_holds_each_key_before_releasing(recording_field, monkeypatch):
+async def test_default_typing_releases_each_key_immediately(recording_field, monkeypatch):
+    """The plain path sends keydown and keyup back to back; only humanize=True dwells."""
     sleeps: list[float] = []
 
     async def fake_sleep(delay):
@@ -132,8 +133,8 @@ async def test_default_typing_holds_each_key_before_releasing(recording_field, m
 
     trace = recording_field.trace
     down = trace.index(('keyDown', 'a'))
-    assert trace[down + 1] == ('sleep', Keyboard.DEFAULT_KEY_HOLD)
-    assert trace[down + 2] == ('keyUp', 'a')
+    assert trace[down + 1] == ('keyUp', 'a')
+    assert sleeps == []
     assert recording_field.text == 'ab'
 
 

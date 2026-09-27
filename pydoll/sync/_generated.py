@@ -91,7 +91,7 @@ from pydoll.protocol.network.types import ResourceType
 from pydoll.protocol.page.events import PageEvent
 from pydoll.protocol.page.types import FrameResourceTree, ScreenshotFormat
 from pydoll.protocol.runtime.methods import EvaluateResponse, SerializationOptions
-from pydoll.utils import decode_base64_to_bytes, has_return_outside_function
+from pydoll.utils import PollInterval, decode_base64_to_bytes, has_return_outside_function
 from pydoll.utils.bundle import build_asset_filename, collect_frame_resources, filter_fetchable_resources, inline_all_assets, rewrite_html_urls
 from pydoll.extractor.model import ExtractionModel
 from pydoll.protocol.base import EmptyResponse
@@ -113,6 +113,7 @@ from pydoll.connection.connection_handler import ConnectionHandler
 from pydoll.constants import By, Scripts
 from pydoll.elements.utils import SelectorParser
 from pydoll.exceptions import CommandFailed, ElementNotFound, ScriptException, WaitElementTimeout
+from pydoll.utils import PollInterval
 from typing import Literal, Optional, Union
 from pydoll.protocol.dom.methods import DescribeNodeResponse
 from pydoll.protocol.dom.types import Node
@@ -127,7 +128,7 @@ from pydoll.protocol.dom.types import Rect, ShadowRootType
 from pydoll.protocol.input.types import MOUSE_BUTTON_MASK, MouseButton, MouseEventType
 from pydoll.protocol.page.types import ScreenshotFormat, Viewport
 from pydoll.protocol.runtime.methods import CallFunctionOnResponse, EvaluateResponse, GetPropertiesResponse, SerializationOptions
-from pydoll.utils import decode_base64_to_bytes, extract_text_from_html, is_script_already_function
+from pydoll.utils import PollInterval, decode_base64_to_bytes, extract_text_from_html, is_script_already_function
 from pydoll.interactions.mouse import Mouse as MouseType
 from pydoll.protocol.dom.methods import DescribeNodeResponse, GetBoxModelResponse, GetOuterHTMLResponse, ResolveNodeResponse
 from pydoll.protocol.dom.types import Quad
@@ -1781,14 +1782,16 @@ class WebElement(SyncBase):
         """
         return mapping.from_impl(self._run(self._impl.click_using_js()))
 
-    def click(self, x_offset: int=0, y_offset: int=0, hold_time: float=0.1, humanize: bool=False):
+    def click(self, x_offset: int=0, y_offset: int=0, hold_time: float=0, humanize: bool=False):
         """
         Click element using simulated mouse events.
 
         Args:
             x_offset: Horizontal offset from element center.
             y_offset: Vertical offset from element center.
-            hold_time: Duration to hold mouse button down (used when humanize=False).
+            hold_time: Seconds to keep the button down between press and release
+                (used when humanize=False). Zero by default, so a plain click is
+                two back-to-back events; pass humanize=True for human timing.
             humanize: When True and a Mouse instance is available, uses humanized
                 Bezier curve movement from the current tracked position to the
                 element center before clicking. When False, dispatches raw CDP
@@ -2261,14 +2264,15 @@ class Keyboard(SyncBase):
     """
     _impl: _KeyboardImpl
 
-    def press(self, key: Key, modifiers: Optional[KeyModifier]=None, interval: float=0.1):
+    def press(self, key: Key, modifiers: Optional[KeyModifier]=None, interval: float=0):
         """
-        Press and release a key (down + wait + up).
+        Press and release a key (down + optional hold + up).
 
         Args:
             key: Key to press (from Key enum).
             modifiers: Optional key modifiers (Alt=1, Ctrl=2, Meta=4, Shift=8).
-            interval: Time to hold the key down in seconds.
+            interval: Seconds to keep the key down. Zero by default, so the
+                release follows the press immediately.
 
         Example:
             await tab.keyboard.press(Key.ENTER)

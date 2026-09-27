@@ -52,6 +52,7 @@ from pydoll.protocol.runtime.methods import (
 )
 from pydoll.protocol.runtime.types import CallArgument
 from pydoll.utils import (
+    PollInterval,
     decode_base64_to_bytes,
     extract_text_from_html,
     is_script_already_function,
@@ -302,6 +303,7 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
             return await self._get_shadow_root()
 
         start_time = asyncio.get_running_loop().time()
+        interval = PollInterval()
         while True:
             try:
                 return await self._get_shadow_root()
@@ -313,7 +315,7 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
                     f'Timed out after {timeout}s waiting for shadow root on element'
                 )
 
-            await asyncio.sleep(0.5)
+            await interval.wait()
 
     async def _get_shadow_root(self) -> ShadowRoot:
         """Get the shadow root attached to this element (single attempt)."""
@@ -546,6 +548,7 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         )
         loop = asyncio.get_running_loop()
         start_time = loop.time()
+        interval = PollInterval()
         while True:
             results = await asyncio.gather(*(check() for check in checks))
             if all(results):
@@ -556,7 +559,7 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
                 logger.error(f'Timeout waiting for element to become {condition_msg}')
                 raise WaitElementTimeout(f'Timed out waiting for element to become {condition_msg}')
 
-            await asyncio.sleep(0.5)
+            await interval.wait()
 
     async def click_using_js(self):
         """
@@ -588,7 +591,7 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         self,
         x_offset: int = 0,
         y_offset: int = 0,
-        hold_time: float = 0.1,
+        hold_time: float = 0,
         humanize: bool = False,
     ):
         """
@@ -597,7 +600,9 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         Args:
             x_offset: Horizontal offset from element center.
             y_offset: Vertical offset from element center.
-            hold_time: Duration to hold mouse button down (used when humanize=False).
+            hold_time: Seconds to keep the button down between press and release
+                (used when humanize=False). Zero by default, so a plain click is
+                two back-to-back events; pass humanize=True for human timing.
             humanize: When True and a Mouse instance is available, uses humanized
                 Bezier curve movement from the current tracked position to the
                 element center before clicking. When False, dispatches raw CDP
@@ -661,7 +666,8 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
             click_count=1,
         )
         await self._execute_command(press_command)
-        await asyncio.sleep(hold_time)
+        if hold_time > 0:
+            await asyncio.sleep(hold_time)
         await self._execute_command(release_command)
 
     async def focus(self):

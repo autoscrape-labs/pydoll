@@ -83,7 +83,6 @@ class Keyboard:
     """
 
     PAUSE_CHARS = frozenset(' .,!?;:\n')
-    DEFAULT_KEY_HOLD = 0.08
 
     def __init__(
         self,
@@ -113,15 +112,16 @@ class Keyboard:
         self,
         key: Key,
         modifiers: Optional[KeyModifier] = None,
-        interval: float = 0.1,
+        interval: float = 0,
     ):
         """
-        Press and release a key (down + wait + up).
+        Press and release a key (down + optional hold + up).
 
         Args:
             key: Key to press (from Key enum).
             modifiers: Optional key modifiers (Alt=1, Ctrl=2, Meta=4, Shift=8).
-            interval: Time to hold the key down in seconds.
+            interval: Seconds to keep the key down. Zero by default, so the
+                release follows the press immediately.
 
         Example:
             await tab.keyboard.press(Key.ENTER)
@@ -129,7 +129,8 @@ class Keyboard:
         """
         logger.info(f'Pressing key: {key} with modifiers: {modifiers}')
         await self.down(key, modifiers)
-        await asyncio.sleep(interval)
+        if interval > 0:
+            await asyncio.sleep(interval)
         await self.up(key)
 
     async def down(self, key: Key, modifiers: Optional[KeyModifier] = None):
@@ -215,9 +216,9 @@ class Keyboard:
             await self._type_text_humanized(text)
             return
 
+        await self._ensure_focus()
         for current_char in text:
-            await self._type_char(current_char, self.DEFAULT_KEY_HOLD)
-            await asyncio.sleep(0.05)
+            await self._type_char(current_char, hold=0, refocus=False)
 
     async def _type_text_humanized(self, text: str):
         """Type text with realistic human-like behavior."""
@@ -237,9 +238,15 @@ class Keyboard:
     def _key_hold(self) -> float:
         return random.uniform(self._timing.key_hold_min, self._timing.key_hold_max)
 
-    async def _type_char(self, char: str, hold: Optional[float] = None):
-        """Type a single character, re-focusing the element before each keystroke."""
-        await self._ensure_focus()
+    async def _type_char(self, char: str, hold: Optional[float] = None, refocus: bool = True):
+        """Type a single character.
+
+        ``hold`` is the keydown-to-keyup time (a random human dwell when None,
+        none at all when 0). ``refocus`` re-focuses the element first, which the
+        humanized path does per keystroke and the plain path does once.
+        """
+        if refocus:
+            await self._ensure_focus()
         key, code, keycode = CHAR_TO_KEY_INFO.get(char, (char, '', 0))
         command_down = InputCommands.dispatch_key_event(
             type=KeyEventType.KEY_DOWN,
@@ -251,7 +258,9 @@ class Keyboard:
             native_virtual_key_code=keycode,
         )
         await self._executor._execute_command(command_down)
-        await asyncio.sleep(self._key_hold() if hold is None else hold)
+        dwell = self._key_hold() if hold is None else hold
+        if dwell > 0:
+            await asyncio.sleep(dwell)
 
         command_up = InputCommands.dispatch_key_event(
             type=KeyEventType.KEY_UP,

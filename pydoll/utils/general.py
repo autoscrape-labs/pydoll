@@ -1,3 +1,4 @@
+import asyncio
 import base64
 import logging
 import os
@@ -314,3 +315,23 @@ def find_free_port() -> int:
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as probe:
         probe.bind(('127.0.0.1', 0))
         return probe.getsockname()[1]
+
+
+class PollInterval:
+    """Pause between polling attempts that starts short and backs off.
+
+    A fixed half-second pause makes every wait cost half a second even when the
+    thing appears after ten milliseconds. Starting at ``start`` seconds and
+    multiplying by ``factor`` up to ``cap`` keeps quick outcomes quick while a
+    long wait still settles into a cheap polling rate.
+    """
+
+    def __init__(self, start: float = 0.02, cap: float = 0.25, factor: float = 1.5) -> None:
+        self._current = start
+        self._cap = cap
+        self._factor = factor
+
+    async def wait(self) -> None:
+        """Sleep for the current interval, then lengthen it for the next call."""
+        await asyncio.sleep(self._current)
+        self._current = min(self._current * self._factor, self._cap)

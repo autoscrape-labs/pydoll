@@ -72,6 +72,7 @@ from pydoll.protocol.runtime.methods import (
 )
 from pydoll.protocol.target.types import TargetInfo
 from pydoll.utils import (
+    PollInterval,
     decode_base64_to_bytes,
     has_return_outside_function,
 )
@@ -557,6 +558,7 @@ class Tab(FindElementsMixin):
             return await self._collect_all_shadow_roots(deep)
 
         start_time = asyncio.get_running_loop().time()
+        interval = PollInterval()
         while True:
             shadow_roots = await self._collect_all_shadow_roots(deep)
             if shadow_roots:
@@ -567,7 +569,7 @@ class Tab(FindElementsMixin):
                     f'Timed out after {timeout}s waiting for shadow roots in page'
                 )
 
-            await asyncio.sleep(0.5)
+            await interval.wait()
 
     async def _collect_all_shadow_roots(self, deep: bool) -> list[ShadowRoot]:
         """Collect shadow roots from the main document and optionally OOPIFs."""

@@ -117,7 +117,7 @@
     await tab.keyboard.press(Key.END)
     ```
 
-`press(key, interval=0.1)` 会在释放前把键保持 `interval` 秒；把它调大可模拟更长的按住。
+`press(key)` 按下后立即释放；传入 `interval=0.1` 可让键保持按下十分之一秒，更大的值模拟长按。也就是说，`interval` 会在释放前把键保持这么多秒；把它调大可模拟更长的按住。
 
 ## 运行键盘快捷键
 

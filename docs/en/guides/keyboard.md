@@ -117,7 +117,7 @@ If you only need the text to appear and don't care about per-key events, `insert
     await tab.keyboard.press(Key.END)
     ```
 
-`press(key, interval=0.1)` holds the key for `interval` seconds before releasing; raise it to simulate a longer hold.
+`press(key)` releases the key right after pressing it; pass `interval=0.1` to keep it down for a tenth of a second, or longer to simulate a long hold.
 
 ## Run a keyboard shortcut
 

@@ -151,7 +151,7 @@ As três páginas carregam concorrentemente, então tudo leva mais ou menos o te
 
 ## Interações humanizadas
 
-Por padrão, um clique cai no centro de um elemento e a digitação segue um ritmo fixo. Passe `humanize=True` e o Pydoll move o cursor por um caminho curvo antes de clicar e digita com timing variável, incluindo o eventual erro de digitação corrigido:
+Por padrão, um clique cai no centro de um elemento e a digitação envia as teclas uma atrás da outra, na velocidade em que o navegador as aceita. Passe `humanize=True` e o Pydoll move o cursor por um caminho curvo antes de clicar e digita com timing variável, incluindo o eventual erro de digitação corrigido:
 
 === "Sync"
 

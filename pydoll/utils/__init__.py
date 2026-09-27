@@ -1,4 +1,5 @@
 from pydoll.utils.general import (
+    PollInterval,
     TextExtractor,
     clean_script_for_analysis,
     decode_base64_to_bytes,
@@ -20,6 +21,7 @@ __all__ = [
     'extract_text_from_html',
     'get_browser_ws_address',
     'find_free_port',
+    'PollInterval',
     'has_return_outside_function',
     'is_script_already_function',
     'normalize_synthetic_xpath',

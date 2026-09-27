@@ -17,6 +17,7 @@ from pydoll.exceptions import (
     ScriptException,
     WaitElementTimeout,
 )
+from pydoll.utils import PollInterval
 
 if TYPE_CHECKING:
     from typing import Literal, Optional, Union
@@ -346,6 +347,7 @@ class FindElementsMixin:
             logger.debug('No timeout specified; performing single attempt')
             return await find_method(by, value, raise_exc=raise_exc)
 
+        interval = PollInterval()
         while True:
             element = await find_method(by, value, raise_exc=False)
             if element:
@@ -364,7 +366,7 @@ class FindElementsMixin:
                     )
                 return None
 
-            await asyncio.sleep(0.5)
+            await interval.wait()
 
     async def _find_across_iframes(
         self,
@@ -395,6 +397,7 @@ class FindElementsMixin:
         """
         start_time = asyncio.get_running_loop().time()
         selector_repr = ' -> '.join(seg for _, seg in segments)
+        interval = PollInterval()
 
         while True:
             result = await self._attempt_find_across_iframes(segments, find_all)
@@ -414,7 +417,7 @@ class FindElementsMixin:
                     )
                 return [] if find_all else None
 
-            await asyncio.sleep(0.5)
+            await interval.wait()
 
     async def _attempt_find_across_iframes(
         self,

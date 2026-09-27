@@ -117,7 +117,7 @@ O `press()` executa um pressionamento completo de tecla (baixa, breve espera, so
     await tab.keyboard.press(Key.END)
     ```
 
-`press(key, interval=0.1)` mantém a tecla pressionada por `interval` segundos antes de soltar; aumente para simular um pressionamento mais longo.
+`press(key)` solta a tecla logo depois de pressioná-la; passe `interval=0.1` para mantê-la pressionada por um décimo de segundo, ou mais tempo para simular um pressionamento longo. Ou seja, `interval` mantém a tecla pressionada por esse tempo antes de soltar; aumente para simular um pressionamento mais longo.
 
 ## Executar um atalho de teclado
 

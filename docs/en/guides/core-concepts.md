@@ -151,7 +151,7 @@ The three pages load concurrently, so the whole thing takes about as long as the
 
 ## Humanized interactions
 
-By default a click lands in the center of an element and typing runs at a fixed rhythm. Pass `humanize=True` and Pydoll moves the cursor along a curved path before clicking and types with variable timing, including the occasional corrected typo:
+By default a click lands in the center of an element and typing sends the keystrokes back to back, as fast as the browser takes them. Pass `humanize=True` and Pydoll moves the cursor along a curved path before clicking and types with variable timing, including the occasional corrected typo:
 
 === "Sync"
 
