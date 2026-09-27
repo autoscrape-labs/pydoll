@@ -39,6 +39,7 @@ One guide per capability, each with runnable examples. Start with [Core concepts
 
 ## Reacting to events
 
+- [Waiting](waiting.md): wait for element states, URLs, quiet networks, and the request or response a click triggers.
 - [Events](events.md): run callbacks when page and network events fire.
 - [Retrying](retrying.md): retry flaky steps with the `retry` decorator.
 

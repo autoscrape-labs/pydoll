@@ -251,6 +251,12 @@ class WaitElementTimeout(TimeoutException):
     message = 'Timed out waiting for element to appear'
 
 
+class WaitTimeout(TimeoutException):
+    """Raised when a wait_for_* or expect_* condition is not met in time."""
+
+    message = 'Timed out waiting for the condition'
+
+
 class DownloadTimeout(TimeoutException):
     """Raised when waiting for a file download to complete times out."""
 

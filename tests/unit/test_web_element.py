@@ -19,6 +19,7 @@ from pydoll.exceptions import (
     ElementNotVisible,
     InvalidFileExtension,
     MissingScreenshotPath,
+    WaitElementTimeout,
 )
 
 
@@ -339,3 +340,77 @@ async def test_scroll_into_view_asks_for_the_box_plus_a_margin(make_element, fak
 async def test_scroll_into_view_falls_back_to_plain_scroll_without_a_box(make_element, fake_conn):
     await make_element().scroll_into_view()
     assert 'rect' not in fake_conn.last_command('DOM.scrollIntoViewIfNeeded')['params']
+
+
+@pytest.mark.asyncio
+async def test_is_detached_reads_is_connected_and_treats_a_lost_object_as_detached(
+    fake_conn, make_element
+):
+    element = make_element()
+    fake_conn.set_response('Runtime.callFunctionOn', {'result': {'value': False}})
+    assert await element.is_detached() is False
+    assert 'isConnected' in fake_conn.last_command('Runtime.callFunctionOn')['params']['functionDeclaration']
+    fake_conn.set_failure('Runtime.callFunctionOn', -32000, 'Could not find object with given id')
+    assert await element.is_detached() is True
+
+
+@pytest.mark.asyncio
+async def test_wait_until_hidden_detached_and_enabled(fake_conn, make_element):
+    element = make_element()
+    fake_conn.set_response('Runtime.callFunctionOn', {'result': {'value': False}})
+    await element.wait_until(is_hidden=True, timeout=1)
+    fake_conn.set_response('Runtime.callFunctionOn', {'result': {'value': True}})
+    await element.wait_until(is_detached=True, timeout=1)
+    await element.wait_until(is_enabled=True, timeout=1)
+    assert 'this.disabled' in fake_conn.last_command('Runtime.callFunctionOn')['params']['functionDeclaration']
+
+
+@pytest.mark.asyncio
+async def test_wait_until_times_out_and_requires_a_condition(fake_conn, make_element):
+    element = make_element()
+    fake_conn.set_response('Runtime.callFunctionOn', {'result': {'value': True}})
+    with pytest.raises(WaitElementTimeout):
+        await element.wait_until(is_hidden=True, timeout=0.05)
+    with pytest.raises(ValueError):
+        await element.wait_until()
+
+
+@pytest.mark.asyncio
+async def test_hover_moves_the_mouse_to_the_element_center(fake_conn, make_element):
+    element = make_element(attributes=['tag_name', 'div'])
+    fake_conn.set_response('Runtime.callFunctionOn', {'result': {'value': True}})
+    fake_conn.set_response('DOM.getBoxModel', {'model': {'content': [10, 10, 30, 10, 30, 50, 10, 50]}})
+
+    await element.hover(x_offset=2, y_offset=-3)
+
+    assert fake_conn.commands_for('DOM.scrollIntoViewIfNeeded')
+    moved = fake_conn.last_command('Input.dispatchMouseEvent')['params']
+    assert moved['type'] == 'mouseMoved'
+    assert (moved['x'], moved['y']) == (22, 27)
+
+
+@pytest.mark.asyncio
+async def test_hover_refuses_an_invisible_element(fake_conn, make_element):
+    element = make_element()
+    fake_conn.set_response('Runtime.callFunctionOn', {'result': {'value': False}})
+    with pytest.raises(ElementNotVisible):
+        await element.hover()
+
+
+@pytest.mark.asyncio
+async def test_double_click_sends_two_press_release_pairs_with_click_counts(fake_conn, make_element):
+    element = make_element(attributes=['tag_name', 'div'])
+    fake_conn.set_response('Runtime.callFunctionOn', {'result': {'value': True}})
+    fake_conn.set_response('DOM.getBoxModel', {'model': {'content': [0, 0, 100, 0, 100, 50, 0, 50]}})
+
+    await element.double_click()
+
+    events = [e['params'] for e in fake_conn.commands_for('Input.dispatchMouseEvent')]
+    assert [(e['type'], e['clickCount']) for e in events] == [
+        ('mousePressed', 1),
+        ('mouseReleased', 1),
+        ('mousePressed', 2),
+        ('mouseReleased', 2),
+    ]
+    assert all((e['x'], e['y']) == (50, 25) for e in events)
+    assert events[0]['force'] == 0.5 and events[0]['buttons'] == 1

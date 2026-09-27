@@ -44,6 +44,7 @@ nav:
           - Proxies: guides/proxies.md
           - Remote connections: guides/remote-connections.md
       - Reacting to events:
+          - Waiting: guides/waiting.md
           - Events: guides/events.md
           - Retrying: guides/retrying.md
       - Coming from Playwright:
@@ -174,6 +175,7 @@ plugins:
             Proxies: 代理
             Remote connections: 远程连接
             Reacting to events: 响应事件
+            Waiting: 等待
             Events: 事件
             Retrying: 重试
             Stealth: Stealth
@@ -245,6 +247,7 @@ plugins:
             Proxies: Proxies
             Remote connections: Conexões remotas
             Reacting to events: Reagir a eventos
+            Waiting: Esperas
             Events: Eventos
             Retrying: Repetição
             Stealth: Stealth

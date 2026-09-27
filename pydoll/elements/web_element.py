@@ -530,28 +530,34 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         *,
         is_visible: bool = False,
         is_interactable: bool = False,
+        is_hidden: bool = False,
+        is_detached: bool = False,
+        is_enabled: bool = False,
         timeout: int = 0,
     ):
-        """Wait for element to meet specified conditions.
+        """Wait for the element to meet every condition you set to True.
+
+        ``is_visible`` and ``is_interactable`` wait for the element to show up
+        and accept input; ``is_hidden`` waits for it to leave the screen (a
+        spinner finishing), ``is_detached`` for it to leave the DOM, and
+        ``is_enabled`` for its ``disabled`` attribute to be cleared.
 
         Raises:
-            ValueError: If neither ``is_visible`` nor ``is_interactable`` is True.
-            WaitElementTimeout: If the condition is not met within ``timeout``.
+            ValueError: If no condition is set to True.
+            WaitElementTimeout: If the conditions are not all met within ``timeout``.
         """
         checks_map = [
-            (is_visible, self.is_visible),
-            (is_interactable, self.is_interactable),
+            (is_visible, 'visible', self.is_visible),
+            (is_interactable, 'interactable', self.is_interactable),
+            (is_hidden, 'hidden', self._is_hidden),
+            (is_detached, 'detached', self.is_detached),
+            (is_enabled, 'enabled', self._is_enabled_now),
         ]
-        checks = [func for flag, func in checks_map if flag]
+        checks = [func for flag, _, func in checks_map if flag]
         if not checks:
-            raise ValueError('At least one of is_visible or is_interactable must be True')
+            raise ValueError('Set at least one condition on wait_until()')
 
-        condition_parts = []
-        if is_visible:
-            condition_parts.append('visible')
-        if is_interactable:
-            condition_parts.append('interactable')
-        condition_msg = ' and '.join(condition_parts)
+        condition_msg = ' and '.join(label for flag, label, _ in checks_map if flag)
 
         logger.info(
             'Waiting for element: visible=%s, interactable=%s, timeout=%ss',
@@ -635,20 +641,7 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
             raise ElementNotVisible()
 
         await self.scroll_into_view()
-
-        try:
-            element_bounds = await self.bounds()
-            position_to_click = self._calculate_center(element_bounds)
-            position_to_click = (
-                position_to_click[0] + x_offset,
-                position_to_click[1] + y_offset,
-            )
-        except KeyError:
-            element_bounds_js = await self.get_bounds_using_js()
-            position_to_click = (
-                element_bounds_js['x'] + element_bounds_js['width'] / 2 + x_offset,
-                element_bounds_js['y'] + element_bounds_js['height'] / 2 + y_offset,
-            )
+        position_to_click = await self._target_point(x_offset, y_offset)
 
         has_iframe_context = getattr(self, '_iframe_context', None) is not None
         if humanize and self._mouse is not None and not has_iframe_context:
@@ -686,6 +679,102 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         if hold_time > 0:
             await asyncio.sleep(hold_time)
         await self._execute_command(release_command)
+
+    async def hover(self, x_offset: int = 0, y_offset: int = 0, humanize: bool = False):
+        """
+        Move the mouse over the element without clicking.
+
+        Scrolls the element into view and moves the pointer to its center plus
+        the offsets, so hover styles, tooltips and menus that open on
+        ``mouseover`` react as they would for a person.
+
+        Args:
+            x_offset: Horizontal offset from the element center.
+            y_offset: Vertical offset from the element center.
+            humanize: Move along a curved path with human timing instead of
+                jumping straight to the point.
+
+        Raises:
+            ElementNotVisible: If the element is not visible.
+        """
+        if not await self.is_visible():
+            raise ElementNotVisible()
+
+        await self.scroll_into_view()
+        x, y = await self._target_point(x_offset, y_offset)
+
+        has_iframe_context = getattr(self, '_iframe_context', None) is not None
+        if humanize and self._mouse is not None and not has_iframe_context:
+            await self._mouse.move(x, y, humanize=True)
+            return
+
+        logger.info('Hovering element: x=%s, y=%s', x, y)
+        await self._execute_command(
+            InputCommands.dispatch_mouse_event(type=MouseEventType.MOUSE_MOVED, x=int(x), y=int(y))
+        )
+
+    async def double_click(self, x_offset: int = 0, y_offset: int = 0, humanize: bool = False):
+        """
+        Double-click the element.
+
+        Sends the two press-and-release pairs a real double click produces,
+        with the second pair carrying ``clickCount=2``, so the page receives
+        ``dblclick`` as well as the two ``click`` events.
+
+        Args:
+            x_offset: Horizontal offset from the element center.
+            y_offset: Vertical offset from the element center.
+            humanize: Move the mouse along a curved path before clicking.
+
+        Raises:
+            ElementNotVisible: If the element is not visible.
+        """
+        if not await self.is_visible():
+            raise ElementNotVisible()
+
+        await self.scroll_into_view()
+        x, y = await self._target_point(x_offset, y_offset)
+
+        has_iframe_context = getattr(self, '_iframe_context', None) is not None
+        if humanize and self._mouse is not None and not has_iframe_context:
+            await self._mouse.double_click(x, y, humanize=True)
+            return
+
+        logger.info('Double-clicking element: x=%s, y=%s', x, y)
+        for click_count in (1, 2):
+            await self._execute_command(
+                InputCommands.dispatch_mouse_event(
+                    type=MouseEventType.MOUSE_PRESSED,
+                    x=int(x),
+                    y=int(y),
+                    button=MouseButton.LEFT,
+                    click_count=click_count,
+                    buttons=MOUSE_BUTTON_MASK[MouseButton.LEFT],
+                    force=PRESSED_POINTER_FORCE,
+                )
+            )
+            await self._execute_command(
+                InputCommands.dispatch_mouse_event(
+                    type=MouseEventType.MOUSE_RELEASED,
+                    x=int(x),
+                    y=int(y),
+                    button=MouseButton.LEFT,
+                    click_count=click_count,
+                )
+            )
+
+    async def _target_point(self, x_offset: int, y_offset: int) -> tuple[float, float]:
+        """The element's center in page coordinates, plus the offsets."""
+        try:
+            element_bounds = await self.bounds()
+            center = self._calculate_center(element_bounds)
+            return center[0] + x_offset, center[1] + y_offset
+        except KeyError:
+            bounds = await self.get_bounds_using_js()
+            return (
+                bounds['x'] + bounds['width'] / 2 + x_offset,
+                bounds['y'] + bounds['height'] / 2 + y_offset,
+            )
 
     async def focus(self):
         """Focus this element via CDP DOM.focus command."""
@@ -808,6 +897,26 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         """Check if element is visible using comprehensive JavaScript visibility test."""
         try:
             result = await self.execute_script(Scripts.ELEMENT_VISIBLE, return_by_value=True)
+        except CommandFailed:
+            return False
+        return bool(result.get('result', {}).get('result', {}).get('value', False))
+
+    async def is_detached(self) -> bool:
+        """Whether the element is no longer part of a document (removed or replaced)."""
+        try:
+            result = await self.execute_script('return !this.isConnected', return_by_value=True)
+        except CommandFailed:
+            return True
+        return bool(result.get('result', {}).get('result', {}).get('value', True))
+
+    async def _is_hidden(self) -> bool:
+        """Whether the element is not visible, counting a detached element as hidden."""
+        return not await self.is_visible()
+
+    async def _is_enabled_now(self) -> bool:
+        """Whether the element accepts input right now, read from the live DOM."""
+        try:
+            result = await self.execute_script('return !this.disabled', return_by_value=True)
         except CommandFailed:
             return False
         return bool(result.get('result', {}).get('result', {}).get('value', False))

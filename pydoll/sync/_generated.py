@@ -16,6 +16,8 @@ from pydoll.browser.chromium.chrome import Chrome as _ChromeImpl
 from pydoll.browser.chromium.edge import Edge as _EdgeImpl
 from pydoll.browser.tab import Tab as _TabImpl
 from pydoll.browser.tab import DownloadHandle as _DownloadHandleImpl
+from pydoll.browser.tab import RequestHandle as _RequestHandleImpl
+from pydoll.browser.tab import ResponseHandle as _ResponseHandleImpl
 from pydoll.elements.web_element import WebElement as _WebElementImpl
 from pydoll.elements.shadow_root import ShadowRoot as _ShadowRootImpl
 from pydoll.interactions.keyboard import Keyboard as _KeyboardImpl
@@ -81,17 +83,18 @@ from pydoll.browser.fingerprint_applier import FingerprintApplier
 from pydoll.commands import DomCommands, FetchCommands, NetworkCommands, PageCommands, RuntimeCommands, StorageCommands, TargetCommands
 from pydoll.constants import PageLoadState
 from pydoll.elements.mixins import FindElementsMixin
-from pydoll.exceptions import CommandExecutionTimeout, CommandFailed, DownloadTimeout, InvalidFileExtension, InvalidScriptWithElement, InvalidTabInitialization, MissingScreenshotPath, NavigationError, NetworkEventsNotEnabled, NoDialogPresent, PageLoadTimeout, TopLevelTargetRequired, WaitElementTimeout, WebSocketConnectionClosed
+from pydoll.exceptions import CommandExecutionTimeout, CommandFailed, DownloadTimeout, InvalidFileExtension, InvalidScriptWithElement, InvalidTabInitialization, MissingScreenshotPath, NavigationError, NetworkEventsNotEnabled, NoDialogPresent, PageLoadTimeout, TopLevelTargetRequired, WaitElementTimeout, WaitTimeout, WebSocketConnectionClosed
 from pydoll.extractor.engine import ExtractionEngine
 from pydoll.interactions import KeyboardAPI, MouseAPI, ScrollAPI
 from pydoll.interactions.iframe import IFrameContext
 from pydoll.protocol.browser.types import DownloadBehavior, DownloadProgressState
 from pydoll.protocol.dom.types import Node, ShadowRootType
+from pydoll.protocol.network.events import NetworkEvent
 from pydoll.protocol.network.types import ResourceType
 from pydoll.protocol.page.events import PageEvent
 from pydoll.protocol.page.types import FrameResourceTree, ScreenshotFormat
 from pydoll.protocol.runtime.methods import EvaluateResponse, SerializationOptions
-from pydoll.utils import PollInterval, decode_base64_to_bytes, has_return_outside_function
+from pydoll.utils import PollInterval, UrlPattern, decode_base64_to_bytes, has_return_outside_function, url_matcher
 from pydoll.utils.bundle import build_asset_filename, collect_frame_resources, filter_fetchable_resources, inline_all_assets, rewrite_html_urls
 from pydoll.extractor.model import ExtractionModel
 from pydoll.protocol.base import EmptyResponse
@@ -1166,6 +1169,133 @@ class Tab(SyncBase):
         """
         return mapping.from_impl(self._run(self._impl.go_to(url=mapping.to_impl(url), timeout=mapping.to_impl(timeout))))
 
+    def wait_for_url(self, url: UrlPattern, timeout: float=30) -> str:
+        """
+        Wait until the tab's URL matches a pattern and return it.
+
+        Covers full navigations and in-page changes (``pushState``) alike,
+        because it reads the live URL instead of listening to one event.
+
+        Args:
+            url: A glob (``'*/checkout/*'``), a compiled regular expression,
+                or a callable that receives the URL and returns True to match.
+            timeout: Maximum seconds to wait.
+
+        Returns:
+            The URL that matched.
+
+        Raises:
+            WaitTimeout: If no matching URL is seen within ``timeout``.
+        """
+        return mapping.from_impl(self._run(self._impl.wait_for_url(url=mapping.to_impl(url), timeout=mapping.to_impl(timeout))))
+
+    def wait_for_script(self, script: str, timeout: float=30) -> Any:
+        """
+        Wait until a JavaScript expression evaluates to a truthy value and return it.
+
+        Args:
+            script: An expression such as ``'window.app && window.app.ready'``,
+                or a script with a ``return``.
+            timeout: Maximum seconds to wait.
+
+        Returns:
+            The first truthy value the script produced.
+
+        Raises:
+            WaitTimeout: If the script stays falsy for ``timeout`` seconds.
+        """
+        return mapping.from_impl(self._run(self._impl.wait_for_script(script=mapping.to_impl(script), timeout=mapping.to_impl(timeout))))
+
+    def wait_for_absence(self, id: Optional[str]=None, class_name: Optional[str]=None, name: Optional[str]=None, tag_name: Optional[str]=None, text: Optional[str]=None, timeout: float=30, **attributes: str) -> None:
+        """
+        Wait until no element matches the criteria, the same criteria ``find()`` takes.
+
+        Use it for the thing that has to go away before you continue: a
+        loading overlay, a "saving" badge, a modal that closes on its own.
+
+        Args:
+            id, class_name, name, tag_name, text, **attributes: Criteria, as in ``find()``.
+            timeout: Maximum seconds to wait.
+
+        Raises:
+            WaitTimeout: If a matching element is still present after ``timeout``.
+        """
+        self._run(self._impl.wait_for_absence(id=mapping.to_impl(id), class_name=mapping.to_impl(class_name), name=mapping.to_impl(name), tag_name=mapping.to_impl(tag_name), text=mapping.to_impl(text), timeout=mapping.to_impl(timeout), **attributes))
+
+    def wait_for_network_idle(self, idle_time: float=0.5, timeout: float=30) -> None:
+        """
+        Wait until the page has had no network requests in flight for ``idle_time`` seconds.
+
+        Requests are counted from the moment this method is called, so call
+        it right after the action that starts them (a navigation, a click that
+        loads data). A request that never finishes keeps the page busy until
+        ``timeout``.
+
+        Args:
+            idle_time: Seconds without any request in flight that count as idle.
+            timeout: Maximum seconds to wait.
+
+        Raises:
+            WaitTimeout: If the network is never idle for ``idle_time`` within ``timeout``.
+        """
+        self._run(self._impl.wait_for_network_idle(idle_time=mapping.to_impl(idle_time), timeout=mapping.to_impl(timeout)))
+
+    def expect_navigation(self, url: Optional[UrlPattern]=None, timeout: float=30) -> AbstractContextManager[None]:
+        """
+        Wait for a navigation started inside the block, and for the new page to load.
+
+        Register before acting, act inside the block, and the block only
+        exits once the main frame has navigated (to a URL matching ``url``,
+        when given) and reached the load state set in ``options.page_load_state``.
+
+        Args:
+            url: Optional glob, regular expression or callable the new URL must match.
+            timeout: Maximum seconds to wait after the block.
+
+        Raises:
+            WaitTimeout: If the navigation or the load does not happen in time.
+        """
+        return mapping.from_impl(self._impl.expect_navigation(url=mapping.to_impl(url), timeout=mapping.to_impl(timeout)))
+
+    def expect_request(self, url: UrlPattern, timeout: float=30) -> AbstractContextManager[RequestHandle]:
+        """
+        Capture the first request whose URL matches, sent during the block.
+
+        The handle is empty inside the block and filled when the block exits,
+        which is when the wait happens.
+
+        Args:
+            url: A glob, a compiled regular expression, or a callable on the URL.
+            timeout: Maximum seconds to wait after the block for the request.
+
+        Yields:
+            RequestHandle: URL, method, headers and body of the request.
+
+        Raises:
+            WaitTimeout: If no matching request is sent within ``timeout``.
+        """
+        return mapping.from_impl(self._impl.expect_request(url=mapping.to_impl(url), timeout=mapping.to_impl(timeout)))
+
+    def expect_response(self, url: UrlPattern, timeout: float=30) -> AbstractContextManager[ResponseHandle]:
+        """
+        Capture the first response whose URL matches, received during the block.
+
+        The block exits once the response has arrived and its body has been
+        read, so ``response.json()`` is ready right after the block: the usual
+        way to read the API call a click triggers instead of scraping the DOM.
+
+        Args:
+            url: A glob, a compiled regular expression, or a callable on the URL.
+            timeout: Maximum seconds to wait after the block for the response.
+
+        Yields:
+            ResponseHandle: status, headers and body of the response.
+
+        Raises:
+            WaitTimeout: If no matching response completes within ``timeout``.
+        """
+        return mapping.from_impl(self._impl.expect_response(url=mapping.to_impl(url), timeout=mapping.to_impl(timeout)))
+
     def refresh(self, ignore_cache: bool=False, script_to_evaluate_on_load: Optional[str]=None):
         """
         Reload current page and wait for completion.
@@ -1576,6 +1706,76 @@ class DownloadHandle(SyncBase):
     def read_base64(self) -> str:
         return mapping.from_impl(self._run(self._impl.read_base64()))
 
+class RequestHandle(SyncBase):
+    """What ``expect_request()`` captured: filled when its block exits."""
+    _impl: _RequestHandleImpl
+
+    @property
+    def request_id(self) -> str:
+        """CDP request id, usable with ``tab.get_network_response_body()``."""
+        return mapping.from_impl(self._impl.request_id)
+
+    @property
+    def url(self) -> str:
+        return mapping.from_impl(self._impl.url)
+
+    @property
+    def method(self) -> str:
+        return mapping.from_impl(self._impl.method)
+
+    @property
+    def headers(self) -> dict[str, str]:
+        return mapping.from_impl(self._impl.headers)
+
+    @property
+    def post_data(self) -> Optional[str]:
+        """The request body, when it had one."""
+        return mapping.from_impl(self._impl.post_data)
+
+    @property
+    def resource_type(self) -> Optional[str]:
+        """Chrome's resource type: Document, XHR, Fetch, Image, ..."""
+        return mapping.from_impl(self._impl.resource_type)
+
+class ResponseHandle(SyncBase):
+    """What ``expect_response()`` captured: filled, body included, when its block exits."""
+    _impl: _ResponseHandleImpl
+
+    @property
+    def request_id(self) -> str:
+        return mapping.from_impl(self._impl.request_id)
+
+    @property
+    def url(self) -> str:
+        return mapping.from_impl(self._impl.url)
+
+    @property
+    def status(self) -> int:
+        return mapping.from_impl(self._impl.status)
+
+    @property
+    def ok(self) -> bool:
+        """True for a 2xx status."""
+        return mapping.from_impl(self._impl.ok)
+
+    @property
+    def headers(self) -> dict[str, str]:
+        return mapping.from_impl(self._impl.headers)
+
+    @property
+    def mime_type(self) -> str:
+        return mapping.from_impl(self._impl.mime_type)
+
+    def body(self) -> bytes:
+        """The raw body. Raises when loading failed, so there was no body to read."""
+        return mapping.from_impl(self._impl.body())
+
+    def text(self, encoding: str='utf-8') -> str:
+        return mapping.from_impl(self._impl.text(encoding=mapping.to_impl(encoding)))
+
+    def json(self) -> Any:
+        return mapping.from_impl(self._impl.json())
+
 class WebElement(SyncBase):
     """
     DOM element wrapper for browser automation.
@@ -1760,14 +1960,19 @@ class WebElement(SyncBase):
         """
         return mapping.from_impl(self._run(self._impl.scroll_into_view()))
 
-    def wait_until(self, *, is_visible: bool=False, is_interactable: bool=False, timeout: int=0):
-        """Wait for element to meet specified conditions.
+    def wait_until(self, *, is_visible: bool=False, is_interactable: bool=False, is_hidden: bool=False, is_detached: bool=False, is_enabled: bool=False, timeout: int=0):
+        """Wait for the element to meet every condition you set to True.
+
+        ``is_visible`` and ``is_interactable`` wait for the element to show up
+        and accept input; ``is_hidden`` waits for it to leave the screen (a
+        spinner finishing), ``is_detached`` for it to leave the DOM, and
+        ``is_enabled`` for its ``disabled`` attribute to be cleared.
 
         Raises:
-            ValueError: If neither ``is_visible`` nor ``is_interactable`` is True.
-            WaitElementTimeout: If the condition is not met within ``timeout``.
+            ValueError: If no condition is set to True.
+            WaitElementTimeout: If the conditions are not all met within ``timeout``.
         """
-        return mapping.from_impl(self._run(self._impl.wait_until(is_visible=mapping.to_impl(is_visible), is_interactable=mapping.to_impl(is_interactable), timeout=mapping.to_impl(timeout))))
+        return mapping.from_impl(self._run(self._impl.wait_until(is_visible=mapping.to_impl(is_visible), is_interactable=mapping.to_impl(is_interactable), is_hidden=mapping.to_impl(is_hidden), is_detached=mapping.to_impl(is_detached), is_enabled=mapping.to_impl(is_enabled), timeout=mapping.to_impl(timeout))))
 
     def click_using_js(self):
         """
@@ -1806,6 +2011,43 @@ class WebElement(SyncBase):
             Element is automatically scrolled into view.
         """
         return mapping.from_impl(self._run(self._impl.click(x_offset=mapping.to_impl(x_offset), y_offset=mapping.to_impl(y_offset), hold_time=mapping.to_impl(hold_time), humanize=mapping.to_impl(humanize))))
+
+    def hover(self, x_offset: int=0, y_offset: int=0, humanize: bool=False):
+        """
+        Move the mouse over the element without clicking.
+
+        Scrolls the element into view and moves the pointer to its center plus
+        the offsets, so hover styles, tooltips and menus that open on
+        ``mouseover`` react as they would for a person.
+
+        Args:
+            x_offset: Horizontal offset from the element center.
+            y_offset: Vertical offset from the element center.
+            humanize: Move along a curved path with human timing instead of
+                jumping straight to the point.
+
+        Raises:
+            ElementNotVisible: If the element is not visible.
+        """
+        return mapping.from_impl(self._run(self._impl.hover(x_offset=mapping.to_impl(x_offset), y_offset=mapping.to_impl(y_offset), humanize=mapping.to_impl(humanize))))
+
+    def double_click(self, x_offset: int=0, y_offset: int=0, humanize: bool=False):
+        """
+        Double-click the element.
+
+        Sends the two press-and-release pairs a real double click produces,
+        with the second pair carrying ``clickCount=2``, so the page receives
+        ``dblclick`` as well as the two ``click`` events.
+
+        Args:
+            x_offset: Horizontal offset from the element center.
+            y_offset: Vertical offset from the element center.
+            humanize: Move the mouse along a curved path before clicking.
+
+        Raises:
+            ElementNotVisible: If the element is not visible.
+        """
+        return mapping.from_impl(self._run(self._impl.double_click(x_offset=mapping.to_impl(x_offset), y_offset=mapping.to_impl(y_offset), humanize=mapping.to_impl(humanize))))
 
     def focus(self):
         """Focus this element via CDP DOM.focus command."""
@@ -1876,6 +2118,10 @@ class WebElement(SyncBase):
     def is_visible(self):
         """Check if element is visible using comprehensive JavaScript visibility test."""
         return mapping.from_impl(self._run(self._impl.is_visible()))
+
+    def is_detached(self) -> bool:
+        """Whether the element is no longer part of a document (removed or replaced)."""
+        return mapping.from_impl(self._run(self._impl.is_detached()))
 
     def is_on_top(self):
         """Check if element is topmost at its center point (not covered by overlays)."""
@@ -2815,6 +3061,8 @@ mapping.register(_ChromeImpl, Chrome)
 mapping.register(_EdgeImpl, Edge)
 mapping.register(_TabImpl, Tab)
 mapping.register(_DownloadHandleImpl, DownloadHandle)
+mapping.register(_RequestHandleImpl, RequestHandle)
+mapping.register(_ResponseHandleImpl, ResponseHandle)
 mapping.register(_WebElementImpl, WebElement)
 mapping.register(_ShadowRootImpl, ShadowRoot)
 mapping.register(_KeyboardImpl, Keyboard)
@@ -2825,4 +3073,4 @@ mapping.register(_ResponseImpl, Response)
 
 
 
-__all__ = ['Chrome', 'Edge', 'Tab', 'DownloadHandle', 'WebElement', 'ShadowRoot', 'Keyboard', 'Mouse', 'Scroll', 'Request', 'Response']
+__all__ = ['Chrome', 'Edge', 'Tab', 'DownloadHandle', 'RequestHandle', 'ResponseHandle', 'WebElement', 'ShadowRoot', 'Keyboard', 'Mouse', 'Scroll', 'Request', 'Response']

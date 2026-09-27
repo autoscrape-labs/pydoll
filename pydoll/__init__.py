@@ -13,7 +13,7 @@ from pydoll.browser.chromium.edge import Edge
 from pydoll.browser.options import ChromiumOptions
 from pydoll.browser.requests.request import Request
 from pydoll.browser.requests.response import Response
-from pydoll.browser.tab import DownloadHandle, Tab
+from pydoll.browser.tab import DownloadHandle, RequestHandle, ResponseHandle, Tab
 from pydoll.constants import Key
 from pydoll.elements.shadow_root import ShadowRoot
 from pydoll.elements.web_element import WebElement
@@ -39,7 +39,9 @@ __all__ = [
     'NetworkEvent',
     'PageEvent',
     'Request',
+    'RequestHandle',
     'Response',
+    'ResponseHandle',
     'Scroll',
     'ShadowRoot',
     'Tab',

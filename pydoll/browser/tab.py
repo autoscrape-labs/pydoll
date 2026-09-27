@@ -4,6 +4,7 @@ import asyncio
 import base64 as _b64
 import contextlib
 import io
+import json
 import logging
 import shutil
 import zipfile
@@ -56,6 +57,7 @@ from pydoll.exceptions import (
     PageLoadTimeout,
     TopLevelTargetRequired,
     WaitElementTimeout,
+    WaitTimeout,
     WebSocketConnectionClosed,
 )
 from pydoll.extractor.engine import ExtractionEngine
@@ -63,6 +65,7 @@ from pydoll.interactions import KeyboardAPI, MouseAPI, ScrollAPI
 from pydoll.interactions.iframe import IFrameContext
 from pydoll.protocol.browser.types import DownloadBehavior, DownloadProgressState
 from pydoll.protocol.dom.types import Node, ShadowRootType
+from pydoll.protocol.network.events import NetworkEvent
 from pydoll.protocol.network.types import ResourceType
 from pydoll.protocol.page.events import PageEvent
 from pydoll.protocol.page.types import FrameResourceTree, ScreenshotFormat
@@ -73,8 +76,10 @@ from pydoll.protocol.runtime.methods import (
 from pydoll.protocol.target.types import TargetInfo
 from pydoll.utils import (
     PollInterval,
+    UrlPattern,
     decode_base64_to_bytes,
     has_return_outside_function,
+    url_matcher,
 )
 from pydoll.utils.bundle import (
     build_asset_filename,
@@ -943,6 +948,349 @@ class Tab(FindElementsMixin):
             if error_text:
                 raise NavigationError(url, error_text)
         logger.info('Navigation complete: %s', url)
+
+    async def wait_for_url(self, url: UrlPattern, timeout: float = 30) -> str:
+        """
+        Wait until the tab's URL matches a pattern and return it.
+
+        Covers full navigations and in-page changes (``pushState``) alike,
+        because it reads the live URL instead of listening to one event.
+
+        Args:
+            url: A glob (``'*/checkout/*'``), a compiled regular expression,
+                or a callable that receives the URL and returns True to match.
+            timeout: Maximum seconds to wait.
+
+        Returns:
+            The URL that matched.
+
+        Raises:
+            WaitTimeout: If no matching URL is seen within ``timeout``.
+        """
+        matches = url_matcher(url)
+        loop = asyncio.get_running_loop()
+        deadline = loop.time() + timeout
+        interval = PollInterval()
+        while True:
+            current = await self.current_url()
+            if matches(current):
+                return current
+            if loop.time() >= deadline:
+                raise WaitTimeout(
+                    f'Timed out after {timeout}s waiting for the URL to match {url!r}'
+                )
+            await interval.wait()
+
+    async def wait_for_script(self, script: str, timeout: float = 30) -> Any:
+        """
+        Wait until a JavaScript expression evaluates to a truthy value and return it.
+
+        Args:
+            script: An expression such as ``'window.app && window.app.ready'``,
+                or a script with a ``return``.
+            timeout: Maximum seconds to wait.
+
+        Returns:
+            The first truthy value the script produced.
+
+        Raises:
+            WaitTimeout: If the script stays falsy for ``timeout`` seconds.
+        """
+        loop = asyncio.get_running_loop()
+        deadline = loop.time() + timeout
+        interval = PollInterval()
+        while True:
+            response = await self.execute_script(script, return_by_value=True)
+            value = response['result']['result'].get('value')
+            if value:
+                return value
+            if loop.time() >= deadline:
+                raise WaitTimeout(f'Timed out after {timeout}s waiting for script: {script!r}')
+            await interval.wait()
+
+    async def wait_for_absence(
+        self,
+        id: Optional[str] = None,
+        class_name: Optional[str] = None,
+        name: Optional[str] = None,
+        tag_name: Optional[str] = None,
+        text: Optional[str] = None,
+        timeout: float = 30,
+        **attributes: str,
+    ) -> None:
+        """
+        Wait until no element matches the criteria, the same criteria ``find()`` takes.
+
+        Use it for the thing that has to go away before you continue: a
+        loading overlay, a "saving" badge, a modal that closes on its own.
+
+        Args:
+            id, class_name, name, tag_name, text, **attributes: Criteria, as in ``find()``.
+            timeout: Maximum seconds to wait.
+
+        Raises:
+            WaitTimeout: If a matching element is still present after ``timeout``.
+        """
+        criteria: dict[str, str] = {
+            key: value
+            for key, value in {
+                'id': id,
+                'class_name': class_name,
+                'name': name,
+                'tag_name': tag_name,
+                'text': text,
+            }.items()
+            if value is not None
+        }
+        criteria.update(attributes)
+        finder = cast('Callable[..., Awaitable[Optional[WebElement]]]', self.find)
+        loop = asyncio.get_running_loop()
+        deadline = loop.time() + timeout
+        interval = PollInterval()
+        while True:
+            element = await finder(timeout=0, raise_exc=False, **criteria)
+            if element is None:
+                return
+            if loop.time() >= deadline:
+                raise WaitTimeout(f'Timed out after {timeout}s waiting for an element to disappear')
+            await interval.wait()
+
+    async def wait_for_network_idle(self, idle_time: float = 0.5, timeout: float = 30) -> None:
+        """
+        Wait until the page has had no network requests in flight for ``idle_time`` seconds.
+
+        Requests are counted from the moment this method is called, so call
+        it right after the action that starts them (a navigation, a click that
+        loads data). A request that never finishes keeps the page busy until
+        ``timeout``.
+
+        Args:
+            idle_time: Seconds without any request in flight that count as idle.
+            timeout: Maximum seconds to wait.
+
+        Raises:
+            WaitTimeout: If the network is never idle for ``idle_time`` within ``timeout``.
+        """
+        loop = asyncio.get_running_loop()
+        deadline = loop.time() + timeout
+        in_flight: set[str] = set()
+        quiet_since = loop.time()
+
+        def started(event: dict) -> None:
+            nonlocal quiet_since
+            in_flight.add(event['params']['requestId'])
+            quiet_since = loop.time()
+
+        def finished(event: dict) -> None:
+            nonlocal quiet_since
+            in_flight.discard(event['params']['requestId'])
+            if not in_flight:
+                quiet_since = loop.time()
+
+        owns_network_events = not self._network_events_enabled
+        if owns_network_events:
+            await self.enable_network_events()
+        callback_ids = [
+            await self.on(NetworkEvent.REQUEST_WILL_BE_SENT, started),
+            await self.on(NetworkEvent.LOADING_FINISHED, finished),
+            await self.on(NetworkEvent.LOADING_FAILED, finished),
+        ]
+        try:
+            while True:
+                if not in_flight and loop.time() - quiet_since >= idle_time:
+                    return
+                if loop.time() >= deadline:
+                    raise WaitTimeout(
+                        f'Timed out after {timeout}s waiting for the network to be idle '
+                        f'({len(in_flight)} requests in flight)'
+                    )
+                await asyncio.sleep(min(0.05, idle_time))
+        finally:
+            for callback_id in callback_ids:
+                with contextlib.suppress(Exception):
+                    await self.remove_callback(callback_id)
+            if owns_network_events:
+                with contextlib.suppress(Exception):
+                    await self.disable_network_events()
+
+    @asynccontextmanager
+    async def expect_navigation(
+        self, url: Optional[UrlPattern] = None, timeout: float = 30
+    ) -> AsyncGenerator[None, None]:
+        """
+        Wait for a navigation started inside the block, and for the new page to load.
+
+        Register before acting, act inside the block, and the block only
+        exits once the main frame has navigated (to a URL matching ``url``,
+        when given) and reached the load state set in ``options.page_load_state``.
+
+        Args:
+            url: Optional glob, regular expression or callable the new URL must match.
+            timeout: Maximum seconds to wait after the block.
+
+        Raises:
+            WaitTimeout: If the navigation or the load does not happen in time.
+        """
+        matches = url_matcher(url) if url is not None else None
+        loop = asyncio.get_running_loop()
+        navigated: asyncio.Future[str] = loop.create_future()
+        loaded = asyncio.Event()
+        load_event = self._PAGE_LOAD_EVENT_MAP[self._browser.options.page_load_state]
+
+        def on_frame_navigated(event: dict) -> None:
+            frame = event['params']['frame']
+            if frame.get('parentId'):
+                return
+            if matches is not None and not matches(frame.get('url', '')):
+                return
+            if not navigated.done():
+                navigated.set_result(frame.get('url', ''))
+
+        def on_loaded(event: dict) -> None:
+            if navigated.done():
+                loaded.set()
+
+        owns_page_events = not self._page_events_enabled
+        if owns_page_events:
+            await self.enable_page_events()
+        callback_ids = [
+            await self.on(PageEvent.FRAME_NAVIGATED, on_frame_navigated),
+            await self.on(load_event, on_loaded),
+        ]
+        try:
+            yield
+            try:
+                await asyncio.wait_for(navigated, timeout)
+                await asyncio.wait_for(loaded.wait(), timeout)
+            except asyncio.TimeoutError:
+                raise WaitTimeout(f'Timed out after {timeout}s waiting for a navigation')
+        finally:
+            for callback_id in callback_ids:
+                with contextlib.suppress(Exception):
+                    await self.remove_callback(callback_id)
+            if owns_page_events:
+                with contextlib.suppress(Exception):
+                    await self.disable_page_events()
+
+    @asynccontextmanager
+    async def expect_request(
+        self, url: UrlPattern, timeout: float = 30
+    ) -> AsyncGenerator[RequestHandle, None]:
+        """
+        Capture the first request whose URL matches, sent during the block.
+
+        The handle is empty inside the block and filled when the block exits,
+        which is when the wait happens.
+
+        Args:
+            url: A glob, a compiled regular expression, or a callable on the URL.
+            timeout: Maximum seconds to wait after the block for the request.
+
+        Yields:
+            RequestHandle: URL, method, headers and body of the request.
+
+        Raises:
+            WaitTimeout: If no matching request is sent within ``timeout``.
+        """
+        matches = url_matcher(url)
+        loop = asyncio.get_running_loop()
+        seen: asyncio.Future[dict] = loop.create_future()
+
+        def on_request(event: dict) -> None:
+            request = event['params']['request']
+            if not seen.done() and matches(request['url']):
+                seen.set_result(event['params'])
+
+        owns_network_events = not self._network_events_enabled
+        if owns_network_events:
+            await self.enable_network_events()
+        callback_id = await self.on(NetworkEvent.REQUEST_WILL_BE_SENT, on_request)
+        handle = RequestHandle()
+        try:
+            yield handle
+            try:
+                params = await asyncio.wait_for(seen, timeout)
+            except asyncio.TimeoutError:
+                raise WaitTimeout(f'Timed out after {timeout}s waiting for a request to {url!r}')
+            handle._fill(params)
+        finally:
+            with contextlib.suppress(Exception):
+                await self.remove_callback(callback_id)
+            if owns_network_events:
+                with contextlib.suppress(Exception):
+                    await self.disable_network_events()
+
+    @asynccontextmanager
+    async def expect_response(
+        self, url: UrlPattern, timeout: float = 30
+    ) -> AsyncGenerator[ResponseHandle, None]:
+        """
+        Capture the first response whose URL matches, received during the block.
+
+        The block exits once the response has arrived and its body has been
+        read, so ``response.json()`` is ready right after the block: the usual
+        way to read the API call a click triggers instead of scraping the DOM.
+
+        Args:
+            url: A glob, a compiled regular expression, or a callable on the URL.
+            timeout: Maximum seconds to wait after the block for the response.
+
+        Yields:
+            ResponseHandle: status, headers and body of the response.
+
+        Raises:
+            WaitTimeout: If no matching response completes within ``timeout``.
+        """
+        matches = url_matcher(url)
+        loop = asyncio.get_running_loop()
+        received: asyncio.Future[dict] = loop.create_future()
+        finished: asyncio.Future[bool] = loop.create_future()
+
+        def on_response(event: dict) -> None:
+            params = event['params']
+            if not received.done() and matches(params['response']['url']):
+                received.set_result(params)
+
+        def on_finished(event: dict) -> None:
+            if received.done() and event['params']['requestId'] == received.result()['requestId']:
+                if not finished.done():
+                    finished.set_result(event['method'] == NetworkEvent.LOADING_FINISHED)
+
+        owns_network_events = not self._network_events_enabled
+        if owns_network_events:
+            await self.enable_network_events()
+        callback_ids = [
+            await self.on(NetworkEvent.RESPONSE_RECEIVED, on_response),
+            await self.on(NetworkEvent.LOADING_FINISHED, on_finished),
+            await self.on(NetworkEvent.LOADING_FAILED, on_finished),
+        ]
+        handle = ResponseHandle()
+        try:
+            yield handle
+            try:
+                params = await asyncio.wait_for(received, timeout)
+                completed = await asyncio.wait_for(finished, timeout)
+            except asyncio.TimeoutError:
+                raise WaitTimeout(f'Timed out after {timeout}s waiting for a response from {url!r}')
+            body: Optional[bytes] = None
+            if completed:
+                raw: GetResponseBodyResponse = await self._execute_command(
+                    NetworkCommands.get_response_body(params['requestId'])
+                )
+                result = raw['result']
+                body = (
+                    decode_base64_to_bytes(result['body'])
+                    if result.get('base64Encoded')
+                    else result['body'].encode('utf-8')
+                )
+            handle._fill(params, body)
+        finally:
+            for callback_id in callback_ids:
+                with contextlib.suppress(Exception):
+                    await self.remove_callback(callback_id)
+            if owns_network_events:
+                with contextlib.suppress(Exception):
+                    await self.disable_network_events()
 
     async def refresh(
         self,
@@ -1953,3 +2301,111 @@ class DownloadHandle:
     async def read_base64(self) -> str:
         data = await self.read_bytes()
         return _b64.b64encode(data).decode('ascii')
+
+
+_SUCCESS_STATUSES = range(200, 300)
+
+
+class RequestHandle:
+    """What ``expect_request()`` captured: filled when its block exits."""
+
+    def __init__(self) -> None:
+        self._params: Optional[dict] = None
+
+    def _fill(self, params: dict) -> None:
+        self._params = params
+
+    @property
+    def _request(self) -> dict:
+        if self._params is None:
+            raise WaitTimeout('The request has not been captured yet; read it after the block')
+        return self._params['request']
+
+    @property
+    def request_id(self) -> str:
+        """CDP request id, usable with ``tab.get_network_response_body()``."""
+        if self._params is None:
+            raise WaitTimeout('The request has not been captured yet; read it after the block')
+        return self._params['requestId']
+
+    @property
+    def url(self) -> str:
+        return self._request['url']
+
+    @property
+    def method(self) -> str:
+        return self._request['method']
+
+    @property
+    def headers(self) -> dict[str, str]:
+        return dict(self._request.get('headers', {}))
+
+    @property
+    def post_data(self) -> Optional[str]:
+        """The request body, when it had one."""
+        return self._request.get('postData')
+
+    @property
+    def resource_type(self) -> Optional[str]:
+        """Chrome's resource type: Document, XHR, Fetch, Image, ..."""
+        if self._params is None:
+            return None
+        return self._params.get('type')
+
+
+class ResponseHandle:
+    """What ``expect_response()`` captured: filled, body included, when its block exits."""
+
+    def __init__(self) -> None:
+        self._params: Optional[dict] = None
+        self._body: Optional[bytes] = None
+
+    def _fill(self, params: dict, body: Optional[bytes]) -> None:
+        self._params = params
+        self._body = body
+
+    @property
+    def _response(self) -> dict:
+        if self._params is None:
+            raise WaitTimeout('The response has not been captured yet; read it after the block')
+        return self._params['response']
+
+    @property
+    def request_id(self) -> str:
+        if self._params is None:
+            raise WaitTimeout('The response has not been captured yet; read it after the block')
+        return self._params['requestId']
+
+    @property
+    def url(self) -> str:
+        return self._response['url']
+
+    @property
+    def status(self) -> int:
+        return int(self._response['status'])
+
+    @property
+    def ok(self) -> bool:
+        """True for a 2xx status."""
+        return self.status in _SUCCESS_STATUSES
+
+    @property
+    def headers(self) -> dict[str, str]:
+        return dict(self._response.get('headers', {}))
+
+    @property
+    def mime_type(self) -> str:
+        return self._response.get('mimeType', '')
+
+    def body(self) -> bytes:
+        """The raw body. Raises when loading failed, so there was no body to read."""
+        if self._body is None:
+            self._response
+            raise WaitTimeout('The response body was not received (the request failed)')
+        return self._body
+
+    def text(self, encoding: str = 'utf-8') -> str:
+        return self.body().decode(encoding, errors='replace')
+
+    def json(self) -> Any:
+        return json.loads(self.text())

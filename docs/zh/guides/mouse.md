@@ -82,6 +82,52 @@ Pydoll 用两种方式驱动鼠标：通过你找到的元素，这是大多数�
 !!! note "元素点击 vs 原始坐标"
     优先使用 `element.click()`。它会替你找出元素的位置，并且能挺过布局变动。只有在没有元素可作为目标时，比如在 `<canvas>` 内部点击或按像素拖动一个手柄，才求助下面的坐标 API。
 
+## 悬停在元素上
+
+`hover()` 把光标移到元素上并停在那里，这就是打开 `mouseover` 时展开的菜单和悬停时显示的提示框的方式。元素会先被滚动到可视区域，`humanize=True` 让光标沿弧线移动而不是瞬移。
+
+=== "Sync"
+
+    ```python
+    menu = tab.find(class_name='nav-item', text='产品')
+    menu.hover()
+    tab.find(text='笔记本', timeout=2).click()
+
+    # 拟人化：光标沿弧线移动到元素上
+    menu.hover(humanize=True)
+    ```
+
+=== "Async"
+
+    ```python
+    menu = await tab.find(class_name='nav-item', text='产品')
+    await menu.hover()
+    await (await tab.find(text='笔记本', timeout=2)).click()
+
+    # 拟人化：光标沿弧线移动到元素上
+    await menu.hover(humanize=True)
+    ```
+
+## 双击元素
+
+`double_click()` 以页面触发 `dblclick` 事件所需的时序和点击计数发送两次点击，因此文本选择、行内编辑器和"打开项目"处理器都会像响应真实双击一样响应。它接受与 `click()` 相同的 `x_offset`、`y_offset` 和 `humanize` 选项。
+
+=== "Sync"
+
+    ```python
+    cell = tab.find(class_name='cell', text='未命名')
+    cell.double_click()
+    tab.find(tag_name='input', timeout=2).type_text('Q3 报告')
+    ```
+
+=== "Async"
+
+    ```python
+    cell = await tab.find(class_name='cell', text='未命名')
+    await cell.double_click()
+    await (await tab.find(tag_name='input', timeout=2)).type_text('Q3 报告')
+    ```
+
 ## 坐标鼠标 API
 
 `tab.mouse` 在明确的坐标处点击、移动和拖动，坐标以 CSS 像素为单位，从页面左上角算起。你通常从元素的边界得到这些坐标（参见[拖动滑块](#drag-a-slider)）。

@@ -82,6 +82,52 @@ The common case is clicking an element you already located with `find()` or `que
 !!! note "Element click vs raw coordinates"
     Prefer `element.click()`. It finds the element's position for you and survives layout changes. Reach for the coordinate API below only when there is no element to target, such as clicking inside a `<canvas>` or dragging a handle by pixel.
 
+## Hover over an element
+
+`hover()` moves the cursor onto the element and stays there, which is how you open menus that expand on `mouseover` and tooltips that show on hover. The element is scrolled into view first, and `humanize=True` moves along a curved path instead of jumping.
+
+=== "Sync"
+
+    ```python
+    menu = tab.find(class_name='nav-item', text='Products')
+    menu.hover()
+    tab.find(text='Laptops', timeout=2).click()
+
+    # humanized: curved cursor path onto the element
+    menu.hover(humanize=True)
+    ```
+
+=== "Async"
+
+    ```python
+    menu = await tab.find(class_name='nav-item', text='Products')
+    await menu.hover()
+    await (await tab.find(text='Laptops', timeout=2)).click()
+
+    # humanized: curved cursor path onto the element
+    await menu.hover(humanize=True)
+    ```
+
+## Double-click an element
+
+`double_click()` sends two clicks with the timing and click counts the page needs to fire a `dblclick` event, so text selection, inline editors and "open item" handlers respond as they would to a real double-click. It takes the same `x_offset`, `y_offset` and `humanize` options as `click()`.
+
+=== "Sync"
+
+    ```python
+    cell = tab.find(class_name='cell', text='Untitled')
+    cell.double_click()
+    tab.find(tag_name='input', timeout=2).type_text('Q3 report')
+    ```
+
+=== "Async"
+
+    ```python
+    cell = await tab.find(class_name='cell', text='Untitled')
+    await cell.double_click()
+    await (await tab.find(tag_name='input', timeout=2)).type_text('Q3 report')
+    ```
+
 ## The coordinate mouse API
 
 `tab.mouse` clicks, moves, and drags at explicit coordinates in CSS pixels, measured from the top-left of the page. You usually get those coordinates from an element's bounds (see [Drag a slider](#drag-a-slider)).

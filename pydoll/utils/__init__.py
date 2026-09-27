@@ -12,6 +12,7 @@ from pydoll.utils.general import (
     validate_browser_paths,
 )
 from pydoll.utils.socks5_proxy_forwarder import SOCKS5Forwarder
+from pydoll.utils.url_match import UrlPattern, glob_to_regex_pattern, url_matcher
 from pydoll.utils.user_agent_parser import UserAgentParser
 
 __all__ = [
@@ -22,6 +23,9 @@ __all__ = [
     'get_browser_ws_address',
     'find_free_port',
     'PollInterval',
+    'UrlPattern',
+    'glob_to_regex_pattern',
+    'url_matcher',
     'has_return_outside_function',
     'is_script_already_function',
     'normalize_synthetic_xpath',

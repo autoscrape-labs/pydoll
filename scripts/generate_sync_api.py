@@ -67,6 +67,8 @@ TARGETS = [
             ('pydoll.browser.chromium.edge', 'Edge'),
             ('pydoll.browser.tab', 'Tab'),
             ('pydoll.browser.tab', 'DownloadHandle'),
+            ('pydoll.browser.tab', 'RequestHandle'),
+            ('pydoll.browser.tab', 'ResponseHandle'),
             ('pydoll.elements.web_element', 'WebElement'),
             ('pydoll.elements.shadow_root', 'ShadowRoot'),
             ('pydoll.interactions.keyboard', 'Keyboard'),

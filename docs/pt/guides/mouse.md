@@ -82,6 +82,52 @@ O `click()` recebe algumas opções:
 !!! note "Clique em elemento vs coordenadas brutas"
     Prefira `element.click()`. Ele encontra a posição do elemento para você e sobrevive a mudanças de layout. Recorra à API de coordenadas abaixo apenas quando não há elemento a mirar, como clicar dentro de um `<canvas>` ou arrastar um controle por pixel.
 
+## Passar o mouse sobre um elemento
+
+`hover()` move o cursor até o elemento e o deixa ali, que é como você abre menus que expandem no `mouseover` e tooltips que aparecem ao passar o mouse. O elemento é rolado para a área visível primeiro, e `humanize=True` move ao longo de um caminho curvo em vez de saltar.
+
+=== "Sync"
+
+    ```python
+    menu = tab.find(class_name='nav-item', text='Produtos')
+    menu.hover()
+    tab.find(text='Notebooks', timeout=2).click()
+
+    # humanizado: caminho curvo do cursor até o elemento
+    menu.hover(humanize=True)
+    ```
+
+=== "Async"
+
+    ```python
+    menu = await tab.find(class_name='nav-item', text='Produtos')
+    await menu.hover()
+    await (await tab.find(text='Notebooks', timeout=2)).click()
+
+    # humanizado: caminho curvo do cursor até o elemento
+    await menu.hover(humanize=True)
+    ```
+
+## Dar um duplo clique em um elemento
+
+`double_click()` envia dois cliques com o intervalo e as contagens de clique que a página precisa para disparar um evento `dblclick`, então seleção de texto, editores inline e handlers de "abrir item" respondem como a um duplo clique real. Aceita as mesmas opções `x_offset`, `y_offset` e `humanize` de `click()`.
+
+=== "Sync"
+
+    ```python
+    cell = tab.find(class_name='cell', text='Sem título')
+    cell.double_click()
+    tab.find(tag_name='input', timeout=2).type_text('Relatório Q3')
+    ```
+
+=== "Async"
+
+    ```python
+    cell = await tab.find(class_name='cell', text='Sem título')
+    await cell.double_click()
+    await (await tab.find(tag_name='input', timeout=2)).type_text('Relatório Q3')
+    ```
+
 ## A API de mouse por coordenadas
 
 `tab.mouse` clica, move e arrasta em coordenadas explícitas em pixels CSS, medidas a partir do canto superior esquerdo da página. Você geralmente obtém essas coordenadas a partir dos limites de um elemento (veja [Arrastar um slider](#drag-a-slider)).
