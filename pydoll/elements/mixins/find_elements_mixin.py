@@ -217,7 +217,7 @@ class FindElementsMixin:
             by_map, id, class_name, name, tag_name, text, **attributes
         )
         logger.debug('find() resolved to by=%s value=%s', by, value)
-        return await self.find_or_wait_element(
+        return await self._find_or_wait_element(
             by, value, timeout=timeout, find_all=find_all, raise_exc=raise_exc
         )
 
@@ -303,11 +303,11 @@ class FindElementsMixin:
         )
         by = self._get_expression_type(expression)
         logger.debug('query() resolved to by=%s', by)
-        return await self.find_or_wait_element(
+        return await self._find_or_wait_element(
             by=by, value=expression, timeout=timeout, find_all=find_all, raise_exc=raise_exc
         )
 
-    async def find_or_wait_element(
+    async def _find_or_wait_element(
         self,
         by: By,
         value: str,
@@ -318,9 +318,9 @@ class FindElementsMixin:
         """
         Core element finding method with optional waiting capability.
 
-        Searches for elements with flexible waiting. If timeout specified,
-        repeatedly attempts to find elements with 0.5s delays until success or timeout.
-        Used by higher-level find() and query() methods.
+        Searches for elements with flexible waiting. If a timeout is given, it
+        polls with a short, growing pause until success or timeout. This is the
+        engine behind ``find()`` and ``query()``; those two are the public way in.
 
         Args:
             by: Selector strategy (CSS_SELECTOR, XPATH, ID, etc.).
@@ -337,7 +337,7 @@ class FindElementsMixin:
             WaitElementTimeout: If elements not found within timeout and raise_exc=True.
         """
         logger.debug(
-            'find_or_wait_element(): by=%s, value=%s, timeout=%s, find_all=%s, raise_exc=%s',
+            '_find_or_wait_element(): by=%s, value=%s, timeout=%s, find_all=%s, raise_exc=%s',
             by,
             value,
             timeout,

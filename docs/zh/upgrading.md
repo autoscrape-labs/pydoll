@@ -79,6 +79,7 @@ Pydoll 2 中所有会发出 `DeprecationWarning` 的接口都已移除。每一�
 
 | 已移除 | 改用 |
 |--------|------|
+| `find_or_wait_element(by, value, ...)` | 带属性的 `find()` 或带选择器的 `query()`；两者都接受 `timeout`、`find_all` 和 `raise_exc`。参见 [元素查找](guides/element-finding.md)。 |
 | `tab.get_frame(element)` | iframe 的 `WebElement` 本身：在它上面调用 `find()` 和 `query()` 即可进入框架内部。参见 [Iframe](guides/iframes.md)。 |
 | `tab.execute_script(script, element)` | `element.execute_script(script)` |
 | `element.key_down()`、`element.key_up()`、`element.press_keyboard_key()` | `tab.keyboard.down()`、`tab.keyboard.up()`、`tab.keyboard.press()`。参见 [键盘](guides/keyboard.md)。 |

@@ -79,6 +79,7 @@ Everything that raised a `DeprecationWarning` in Pydoll 2 is removed. Each row l
 
 | Removed | Use instead |
 |---------|-------------|
+| `find_or_wait_element(by, value, ...)` | `find()` with attributes or `query()` with a selector; both take `timeout`, `find_all` and `raise_exc`. See [Element finding](guides/element-finding.md). |
 | `tab.get_frame(element)` | The iframe `WebElement` itself: `find()` and `query()` on it reach inside the frame. See [Iframes](guides/iframes.md). |
 | `tab.execute_script(script, element)` | `element.execute_script(script)` |
 | `element.key_down()`, `element.key_up()`, `element.press_keyboard_key()` | `tab.keyboard.down()`, `tab.keyboard.up()`, `tab.keyboard.press()`. See [Keyboard](guides/keyboard.md). |

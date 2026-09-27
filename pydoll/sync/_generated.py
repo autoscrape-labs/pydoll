@@ -1616,30 +1616,6 @@ class Tab(SyncBase):
         """
         return mapping.from_impl(self._run(cast('Any', self._impl).query(expression=mapping.to_impl(expression), timeout=mapping.to_impl(timeout), find_all=mapping.to_impl(find_all), raise_exc=mapping.to_impl(raise_exc))))
 
-    def find_or_wait_element(self, by: By, value: str, timeout: int=0, find_all: bool=False, raise_exc: bool=True) -> WebElement | list[WebElement] | None:
-        """
-        Core element finding method with optional waiting capability.
-
-        Searches for elements with flexible waiting. If timeout specified,
-        repeatedly attempts to find elements with 0.5s delays until success or timeout.
-        Used by higher-level find() and query() methods.
-
-        Args:
-            by: Selector strategy (CSS_SELECTOR, XPATH, ID, etc.).
-            value: Selector value to locate element(s).
-            timeout: Maximum seconds to wait (0 = no waiting).
-            find_all: If True, returns all matches; if False, first match only.
-            raise_exc: Whether to raise exception if no elements found.
-
-        Returns:
-            WebElement, list[WebElement], or None based on find_all and raise_exc.
-
-        Raises:
-            ElementNotFound: If no elements found with timeout=0 and raise_exc=True.
-            WaitElementTimeout: If elements not found within timeout and raise_exc=True.
-        """
-        return mapping.from_impl(self._run(self._impl.find_or_wait_element(by=mapping.to_impl(by), value=mapping.to_impl(value), timeout=mapping.to_impl(timeout), find_all=mapping.to_impl(find_all), raise_exc=mapping.to_impl(raise_exc))))
-
     def query_script(self, function_declaration: str, arguments: list[CallArgument] | None=None, execution_context_id: int | None=None) -> list[WebElement]:
         """
         Run a JavaScript function that returns elements and wrap them as WebElements.
@@ -2260,30 +2236,6 @@ class WebElement(SyncBase):
         """
         return mapping.from_impl(self._run(cast('Any', self._impl).query(expression=mapping.to_impl(expression), timeout=mapping.to_impl(timeout), find_all=mapping.to_impl(find_all), raise_exc=mapping.to_impl(raise_exc))))
 
-    def find_or_wait_element(self, by: By, value: str, timeout: int=0, find_all: bool=False, raise_exc: bool=True) -> WebElement | list[WebElement] | None:
-        """
-        Core element finding method with optional waiting capability.
-
-        Searches for elements with flexible waiting. If timeout specified,
-        repeatedly attempts to find elements with 0.5s delays until success or timeout.
-        Used by higher-level find() and query() methods.
-
-        Args:
-            by: Selector strategy (CSS_SELECTOR, XPATH, ID, etc.).
-            value: Selector value to locate element(s).
-            timeout: Maximum seconds to wait (0 = no waiting).
-            find_all: If True, returns all matches; if False, first match only.
-            raise_exc: Whether to raise exception if no elements found.
-
-        Returns:
-            WebElement, list[WebElement], or None based on find_all and raise_exc.
-
-        Raises:
-            ElementNotFound: If no elements found with timeout=0 and raise_exc=True.
-            WaitElementTimeout: If elements not found within timeout and raise_exc=True.
-        """
-        return mapping.from_impl(self._run(self._impl.find_or_wait_element(by=mapping.to_impl(by), value=mapping.to_impl(value), timeout=mapping.to_impl(timeout), find_all=mapping.to_impl(find_all), raise_exc=mapping.to_impl(raise_exc))))
-
     def query_script(self, function_declaration: str, arguments: list[CallArgument] | None=None, execution_context_id: int | None=None) -> list[WebElement]:
         """
         Run a JavaScript function that returns elements and wrap them as WebElements.
@@ -2436,30 +2388,6 @@ class ShadowRoot(SyncBase):
             NotImplementedError: If called with XPath on a ShadowRoot.
         """
         return mapping.from_impl(self._run(cast('Any', self._impl).query(expression=mapping.to_impl(expression), timeout=mapping.to_impl(timeout), find_all=mapping.to_impl(find_all), raise_exc=mapping.to_impl(raise_exc))))
-
-    def find_or_wait_element(self, by: By, value: str, timeout: int=0, find_all: bool=False, raise_exc: bool=True) -> WebElement | list[WebElement] | None:
-        """
-        Core element finding method with optional waiting capability.
-
-        Searches for elements with flexible waiting. If timeout specified,
-        repeatedly attempts to find elements with 0.5s delays until success or timeout.
-        Used by higher-level find() and query() methods.
-
-        Args:
-            by: Selector strategy (CSS_SELECTOR, XPATH, ID, etc.).
-            value: Selector value to locate element(s).
-            timeout: Maximum seconds to wait (0 = no waiting).
-            find_all: If True, returns all matches; if False, first match only.
-            raise_exc: Whether to raise exception if no elements found.
-
-        Returns:
-            WebElement, list[WebElement], or None based on find_all and raise_exc.
-
-        Raises:
-            ElementNotFound: If no elements found with timeout=0 and raise_exc=True.
-            WaitElementTimeout: If elements not found within timeout and raise_exc=True.
-        """
-        return mapping.from_impl(self._run(self._impl.find_or_wait_element(by=mapping.to_impl(by), value=mapping.to_impl(value), timeout=mapping.to_impl(timeout), find_all=mapping.to_impl(find_all), raise_exc=mapping.to_impl(raise_exc))))
 
     def query_script(self, function_declaration: str, arguments: list[CallArgument] | None=None, execution_context_id: int | None=None) -> list[WebElement]:
         """

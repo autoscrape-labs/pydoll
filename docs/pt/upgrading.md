@@ -79,6 +79,7 @@ Tudo que emitia `DeprecationWarning` no Pydoll 2 foi removido. Cada linha lista 
 
 | Removido | Use no lugar |
 |----------|--------------|
+| `find_or_wait_element(by, value, ...)` | `find()` com atributos ou `query()` com um seletor; os dois aceitam `timeout`, `find_all` e `raise_exc`. Veja [Encontrar elementos](guides/element-finding.md). |
 | `tab.get_frame(element)` | O próprio `WebElement` do iframe: `find()` e `query()` nele alcançam o conteúdo do frame. Veja [Iframes](guides/iframes.md). |
 | `tab.execute_script(script, element)` | `element.execute_script(script)` |
 | `element.key_down()`, `element.key_up()`, `element.press_keyboard_key()` | `tab.keyboard.down()`, `tab.keyboard.up()`, `tab.keyboard.press()`. Veja [Teclado](guides/keyboard.md). |
