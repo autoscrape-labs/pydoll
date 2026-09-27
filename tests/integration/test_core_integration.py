@@ -17,23 +17,19 @@ class TestCoreFindQuery:
     async def test_find_by_common_selectors(self, tab):
         await tab.go_to(PAGE)
 
-        # id
         heading = await tab.find(id='main-heading', timeout=5)
         assert heading is not None
         assert isinstance(heading, WebElement)
         assert heading.get_attribute('id') == 'main-heading'
 
-        # class_name (first occurrence)
         first_item = await tab.find(class_name='item')
         assert first_item is not None
         assert 'item' in (first_item.get_attribute('class') or '')
 
-        # name
         name_input = await tab.find(name='username')
         assert name_input is not None
         assert name_input.get_attribute('id') == 'text-input'
 
-        # tag_name (first button)
         button = await tab.find(tag_name='button')
         assert button is not None
         assert button.get_attribute('id') == 'btn-1'
@@ -42,18 +38,15 @@ class TestCoreFindQuery:
     async def test_query_css_and_xpath(self, tab):
         await tab.go_to(PAGE)
 
-        # CSS: list items
         items = await tab.query('.list-item', find_all=True, timeout=5)
         assert items is not None
         assert len(items) == 3
 
-        # XPath absolute
         deep_span = await tab.query('//*[@id="deep-section"]//span[@id="deep-span"]')
         assert deep_span is not None
         text = await deep_span.text()
         assert 'Deep nested element' in text
 
-        # XPath relative from container
         container = await tab.find(id='deep-section')
         rel_span = await container.find(xpath='.//span[@id="deep-span"]')
         assert rel_span is not None
@@ -95,7 +88,6 @@ class TestCoreClickAndInput:
         """Test clear() removes existing value from input and textarea."""
         await tab.go_to(PAGE)
 
-        # -- input: insert text, clear, verify empty, insert again --
         input_el = await tab.find(id='text-input', timeout=5)
         await input_el.insert_text('old value')
         await wait_for_js_value(input_el, 'this.value', 'old value')
@@ -106,7 +98,6 @@ class TestCoreClickAndInput:
         await input_el.insert_text('new value')
         await wait_for_js_value(input_el, 'this.value', 'new value')
 
-        # -- textarea: insert text, clear, verify empty --
         textarea = await tab.find(id='text-area')
         await textarea.insert_text('old message')
         await wait_for_js_value(textarea, 'this.value', 'old message')
@@ -121,11 +112,9 @@ class TestCoreClickAndInput:
         select_el = await tab.find(id='simple-select', timeout=5)
         assert select_el is not None
 
-        # click on option 'beta'
         opt_beta = await select_el.find(xpath='.//option[@value="beta"]')
         await opt_beta.click()
 
-        # verify using JS value read
         await wait_for_js_value(select_el, 'this.value', 'beta')
 
 
@@ -150,8 +139,6 @@ class TestCoreTypeText:
         input_el = await tab.find(id='text-input', timeout=5)
         await input_el.type_text('Test!', humanize=True)
 
-        # Humanized typing may introduce and self-correct typos; the final
-        # value should still be the intended text.
         await wait_for_js_value(input_el, 'this.value', 'Test!')
 
     @pytest.mark.asyncio
@@ -172,7 +159,7 @@ class TestCoreTypeText:
             ('abcdefghijklmnopqrstuvwxyz', 'lowercase'),
             ('ABCDEFGHIJKLMNOPQRSTUVWXYZ', 'uppercase'),
             ('0123456789', 'digits'),
-            ('-=[];\',./', 'punctuation_unshifted'),
+            ("-=[];',./", 'punctuation_unshifted'),
             ('!@#$%^&*()_+{}|:"<>?~', 'punctuation_shifted'),
         ],
     )

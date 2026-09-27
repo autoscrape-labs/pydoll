@@ -203,9 +203,9 @@ def _build() -> dict[str, KeyDescription]:
     result: dict[str, KeyDescription] = {}
     for code, definition in _LAYOUT.items():
         key = str(definition['key'])
-        key_code = int(definition['keyCode'])  # type: ignore[call-overload]
-        without_location = int(definition.get('keyCodeWithoutLocation', key_code))  # type: ignore[call-overload]
-        location = int(definition.get('location', 0))  # type: ignore[call-overload]
+        key_code = int(definition['keyCode'])
+        without_location = int(definition.get('keyCodeWithoutLocation', key_code))
+        location = int(definition.get('location', 0))
         text = str(definition.get('text', key if len(key) == 1 else ''))
         description = KeyDescription(key, key_code, without_location, code, text, location)
         result.setdefault(code, description)
@@ -215,7 +215,7 @@ def _build() -> dict[str, KeyDescription]:
             result.setdefault(alias, description)
         shift_key = definition.get('shiftKey')
         if shift_key is not None:
-            shifted_code = int(definition.get('shiftKeyCode', key_code))  # type: ignore[call-overload]
+            shifted_code = int(definition.get('shiftKeyCode', key_code))
             shifted = KeyDescription(
                 str(shift_key), shifted_code, without_location, code, str(shift_key), location, True
             )
@@ -259,7 +259,7 @@ def describe_key(name: str, shift_pressed: bool) -> KeyDescription:
         if shift_key is not None:
             return KeyDescription(
                 str(shift_key),
-                int(layout.get('shiftKeyCode', description.key_code)),  # type: ignore[call-overload]
+                int(layout.get('shiftKeyCode', description.key_code)),
                 description.key_code_without_location,
                 description.code,
                 str(shift_key),

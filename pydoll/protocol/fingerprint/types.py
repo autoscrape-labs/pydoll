@@ -151,7 +151,7 @@ class WebGLProfile(TypedDict):
     max_vertex_output_components: NotRequired[int]  # gl2.MAX_VERTEX_OUTPUT_COMPONENTS
     max_fragment_input_components: NotRequired[int]  # gl2.MAX_FRAGMENT_INPUT_COMPONENTS
     max_element_index: NotRequired[int]  # gl2.MAX_ELEMENT_INDEX
-    max_texture_max_anisotropy: NotRequired[int]  # EXT_texture_filter_anisotropic limit
+    max_texture_max_anisotropy: NotRequired[int]
     supported_extensions: NotRequired[list[str]]  # WebGL1 extension names
     webgl2_extensions: NotRequired[list[str]]  # WebGL2-specific extension names
     shader_precision_formats: NotRequired[

@@ -100,7 +100,7 @@ class Request:
             return None
         content_type = self._headers.get('content-type', '')
         if 'application/x-www-form-urlencoded' in content_type:
-            from urllib.parse import parse_qs  # noqa: PLC0415
+            from urllib.parse import parse_qs
 
             return {
                 key: values[0] if len(values) == 1 else values
@@ -437,7 +437,7 @@ class Route:
             await self._page._send({
                 'method': 'Fetch.continueResponse',
                 'params': {'requestId': self._interception_id},
-            })  # type: ignore[arg-type]
+            })
             return
         post_data = overrides.get('post_data')
         if isinstance(post_data, dict):
@@ -490,7 +490,7 @@ class Route:
             response_headers.update(response.headers)
             payload = await response.body()
         if json is not None:
-            import json as _json  # noqa: PLC0415
+            import json as _json
 
             body = _json.dumps(json)
             content_type = content_type or 'application/json'
@@ -581,9 +581,10 @@ class Route:
         }
         body = b''
         try:
-            response = await self._page._send(
-                {'method': 'Fetch.getResponseBody', 'params': {'requestId': self._interception_id}}  # type: ignore[arg-type]
-            )
+            response = await self._page._send({
+                'method': 'Fetch.getResponseBody',
+                'params': {'requestId': self._interception_id},
+            })
             result = response['result']
             raw = result.get('body', '')
             body = base64.b64decode(raw) if result.get('base64Encoded') else raw.encode()
@@ -646,7 +647,7 @@ class RouteEntry:
     async def handle(self, route: Route) -> bool:
         self.count += 1
         parameters = inspect.signature(self.handler).parameters
-        result = self.handler(route, route.request) if len(parameters) >= 2 else self.handler(route)  # type: ignore[call-arg]  # noqa: PLR2004
+        result = self.handler(route, route.request) if len(parameters) >= 2 else self.handler(route)  # noqa: PLR2004
         if inspect.isawaitable(result):
             await result
         return route._handled
@@ -672,7 +673,7 @@ class Router:
             await self._page._send({
                 'method': 'Fetch.continueResponse',
                 'params': {'requestId': params['requestId']},
-            })  # type: ignore[arg-type]
+            })
             return
         request = self._page._network.request_for(network_id) or Request(
             self._page, network_id or params['requestId'], params
@@ -716,7 +717,7 @@ async def wait_for_matching(
             if url_matcher is not None:
                 matched = url_matcher.matches(item.url)
             else:
-                outcome = matcher(item)  # type: ignore[operator]
+                outcome = matcher(item)
                 matched = await outcome if inspect.isawaitable(outcome) else bool(outcome)
         except Exception as error:
             future.set_exception(error)

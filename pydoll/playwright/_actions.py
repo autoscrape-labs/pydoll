@@ -68,8 +68,6 @@ class Actions:
     def __init__(self, frame: Frame) -> None:
         self._frame = frame
 
-    # ------------------------------------------------------------ helpers
-
     def _deadline(self, timeout: float | None) -> Deadline:
         return Deadline(self._frame.page._timeout(timeout))
 
@@ -236,8 +234,6 @@ class Actions:
             ),
         )
 
-    # ------------------------------------------------------------ pointer
-
     async def click(
         self,
         resolver: Resolver,
@@ -389,8 +385,6 @@ class Actions:
             trial=trial,
             modifiers=None,
         )
-
-    # ------------------------------------------------------------ keyboard
 
     async def fill(
         self,
@@ -631,8 +625,6 @@ class Actions:
             await self._scroll_into_view(element, log)
 
         await self._retry(resolver, deadline, attempt, 'scrollIntoViewIfNeeded')
-
-    # ------------------------------------------------------------ readers
 
     async def _read(
         self, resolver: Resolver, timeout: float | None, body: str, args: list[Any]

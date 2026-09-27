@@ -20,7 +20,7 @@ def test_id_attribute_name() -> str:
 
 
 def set_test_id_attribute_name(name: str) -> None:
-    global _test_id_attribute_name  # noqa: PLW0603
+    global _test_id_attribute_name
     _test_id_attribute_name = name
 
 

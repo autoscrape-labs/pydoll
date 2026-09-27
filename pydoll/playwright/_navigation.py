@@ -51,8 +51,6 @@ class NavigationTracker:
         self._changed.set()
         self._changed = asyncio.Event()
 
-    # ------------------------------------------------------------ CDP events
-
     def on_lifecycle(self, params: dict[str, Any]) -> None:
         state = self._state(params['frameId'])
         name = params['name']
@@ -101,8 +99,6 @@ class NavigationTracker:
         frame_id = params['frameId']
         self._frames.pop(frame_id, None)
         self._page.emit('framedetached', self._page._frame_for_id(frame_id))
-
-    # ------------------------------------------------------------ waits
 
     def _reached(self, frame_id: str, state_name: str, loader_id: str | None) -> bool:
         state = self._frames.get(frame_id)

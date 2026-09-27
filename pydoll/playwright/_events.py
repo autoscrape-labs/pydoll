@@ -32,7 +32,7 @@ def schedule(loop: asyncio.AbstractEventLoop, coroutine: Awaitable[Any]) -> None
     if running is loop:
         asyncio.ensure_future(coroutine)
     else:
-        asyncio.run_coroutine_threadsafe(coroutine, loop)  # type: ignore[arg-type]
+        asyncio.run_coroutine_threadsafe(coroutine, loop)
 
 
 class EventEmitter:

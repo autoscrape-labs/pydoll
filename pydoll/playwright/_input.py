@@ -60,7 +60,7 @@ class Keyboard:
                 text=text or None,
                 unmodified_text=text or None,
                 auto_repeat=auto_repeat,
-                location=description.location or None,  # type: ignore[arg-type]
+                location=description.location or None,
                 is_keypad=description.location == 3,  # noqa: PLR2004
             )
         )
@@ -77,7 +77,7 @@ class Keyboard:
                 key=description.key,
                 windows_virtual_key_code=description.key_code_without_location,
                 code=description.code,
-                location=description.location or None,  # type: ignore[arg-type]
+                location=description.location or None,
             )
         )
 

@@ -99,8 +99,6 @@ class Locator:
     def _equals(self, other: Locator) -> bool:
         return self._frame is other._frame and self._selector == other._selector
 
-    # ---------------------------------------------------------- composition
-
     def locator(
         self,
         selector_or_locator: str | Locator,
@@ -210,8 +208,6 @@ class Locator:
             self._frame, f'{self._selector} >> internal:and={json.dumps(locator._selector)}'
         )
 
-    # ---------------------------------------------------------- resolution
-
     async def element_handle(self, timeout: float | None = None) -> ElementHandle:
         element = await self._frame.wait_for_selector(
             self._selector, state='attached', timeout=timeout, strict=True
@@ -261,8 +257,6 @@ class Locator:
             expression, arg, timeout=timeout, polling=polling, element=handle.web_element
         )
 
-    # ---------------------------------------------------------- evaluate
-
     async def evaluate(self, expression: str, arg: Any = None, timeout: float | None = None) -> Any:
         handle = await self.element_handle(timeout=timeout)
         return await handle.evaluate(expression, arg)
@@ -276,8 +270,6 @@ class Locator:
     async def evaluate_all(self, expression: str, arg: Any = None) -> Any:
         elements = await self._frame._query_all(self._selector)
         return await self._frame._evaluate_on_elements(elements, expression, arg)
-
-    # ---------------------------------------------------------- actions
 
     async def click(self, **kwargs: Any) -> None:
         await self._frame._actions.click(self._resolver(), **kwargs)
@@ -403,8 +395,6 @@ class Locator:
 
     async def hide_highlight(self) -> None:
         return None
-
-    # ---------------------------------------------------------- readers
 
     async def get_attribute(self, name: str, timeout: float | None = None) -> str | None:
         return await self._frame._actions.get_attribute(self._resolver(), name, timeout=timeout)

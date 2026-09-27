@@ -71,9 +71,7 @@ class _TestAPIHandler(BaseHTTPRequestHandler):
         elif self.path == '/large-page':
             self._respond(200, 'text/html', _fetch_page("'/large'"))
         elif self.path == '/cookies-page':
-            self._respond(
-                200, 'text/html', _fetch_page("'/set-cookie'", "'/needs-cookie'")
-            )
+            self._respond(200, 'text/html', _fetch_page("'/set-cookie'", "'/needs-cookie'"))
         elif self.path == '/redirect-page':
             self._respond(200, 'text/html', _fetch_page("'/redirect'"))
         elif self.path == '/filtered-page':
@@ -103,9 +101,7 @@ class _TestAPIHandler(BaseHTTPRequestHandler):
             self.send_response(200)
             self.send_header('Content-Type', 'text/plain')
             self.send_header('Set-Cookie', 'har_session=abc123; Path=/; HttpOnly')
-            self.send_header(
-                'Set-Cookie', 'har_secure=xyz789; Domain=127.0.0.1; Path=/; Secure'
-            )
+            self.send_header('Set-Cookie', 'har_secure=xyz789; Domain=127.0.0.1; Path=/; Secure')
             self.end_headers()
             self.wfile.write(b'cookie set')
         elif self.path == '/needs-cookie':
@@ -242,7 +238,6 @@ class TestHarRecordIntegration:
         """Recording captures the document load event."""
         page_url = f'file://{test_page_path.absolute()}?base={api_server}'
 
-
         async with tab.request.record() as recording:
             await tab.go_to(page_url)
             assert await _wait_for_requests_done(tab), 'Page requests did not complete'
@@ -252,21 +247,15 @@ class TestHarRecordIntegration:
         entries = recording.entries
         assert len(entries) >= 1
 
-        # First entry should be the document load
-        doc_entries = [
-            e for e in entries if e['request']['url'].startswith('file://')
-        ]
+        doc_entries = [e for e in entries if e['request']['url'].startswith('file://')]
         assert len(doc_entries) >= 1
         assert doc_entries[0]['response']['status'] == 200
         assert doc_entries[0]['response']['content']['mimeType'] == 'text/html'
 
     @pytest.mark.asyncio
-    async def test_record_captures_fetch_requests(
-        self, tab, api_server, test_page_path
-    ):
+    async def test_record_captures_fetch_requests(self, tab, api_server, test_page_path):
         """Recording captures JS fetch() requests with correct URLs and methods."""
         page_url = f'file://{test_page_path.absolute()}?base={api_server}'
-
 
         async with tab.request.record() as recording:
             await tab.go_to(page_url)
@@ -284,12 +273,9 @@ class TestHarRecordIntegration:
         assert any('/api/submit' in u for u in urls)
 
     @pytest.mark.asyncio
-    async def test_record_captures_response_bodies(
-        self, tab, api_server, test_page_path
-    ):
+    async def test_record_captures_response_bodies(self, tab, api_server, test_page_path):
         """Recording captures response bodies for each request."""
         page_url = f'file://{test_page_path.absolute()}?base={api_server}'
-
 
         async with tab.request.record() as recording:
             await tab.go_to(page_url)
@@ -297,27 +283,20 @@ class TestHarRecordIntegration:
             await _wait_for_network_idle(tab)
 
         entries = recording.entries
-        users_entry = next(
-            (e for e in entries if '/api/users' in e['request']['url']), None
-        )
+        users_entry = next((e for e in entries if '/api/users' in e['request']['url']), None)
         assert users_entry is not None
         body_text = users_entry['response']['content'].get('text', '')
         assert 'Alice' in body_text
         assert 'Bob' in body_text
 
-        data_entry = next(
-            (e for e in entries if '/api/data' in e['request']['url']), None
-        )
+        data_entry = next((e for e in entries if '/api/data' in e['request']['url']), None)
         assert data_entry is not None
         assert 'Hello from the test server' in data_entry['response']['content'].get('text', '')
 
     @pytest.mark.asyncio
-    async def test_record_captures_post_request(
-        self, tab, api_server, test_page_path
-    ):
+    async def test_record_captures_post_request(self, tab, api_server, test_page_path):
         """Recording captures POST requests with body data."""
         page_url = f'file://{test_page_path.absolute()}?base={api_server}'
-
 
         async with tab.request.record() as recording:
             await tab.go_to(page_url)
@@ -329,30 +308,24 @@ class TestHarRecordIntegration:
             (
                 e
                 for e in entries
-                if '/api/submit' in e['request']['url']
-                and e['request']['method'] == 'POST'
+                if '/api/submit' in e['request']['url'] and e['request']['method'] == 'POST'
             ),
             None,
         )
         assert post_entry is not None
         assert post_entry['response']['status'] == 201
 
-        # POST body should be captured
         post_data = post_entry['request'].get('postData')
         assert post_data is not None
         assert '"key"' in post_data['text']
 
-        # Response body should contain what the server echoed back
         resp_text = post_entry['response']['content'].get('text', '')
         assert 'created' in resp_text
 
     @pytest.mark.asyncio
-    async def test_record_correct_status_codes(
-        self, tab, api_server, test_page_path
-    ):
+    async def test_record_correct_status_codes(self, tab, api_server, test_page_path):
         """Recording captures correct HTTP status codes."""
         page_url = f'file://{test_page_path.absolute()}?base={api_server}'
-
 
         async with tab.request.record() as recording:
             await tab.go_to(page_url)
@@ -360,9 +333,7 @@ class TestHarRecordIntegration:
             await _wait_for_network_idle(tab)
 
         entries = recording.entries
-        users_entry = next(
-            (e for e in entries if '/api/users' in e['request']['url']), None
-        )
+        users_entry = next((e for e in entries if '/api/users' in e['request']['url']), None)
         assert users_entry is not None
         assert users_entry['response']['status'] == 200
 
@@ -370,8 +341,7 @@ class TestHarRecordIntegration:
             (
                 e
                 for e in entries
-                if '/api/submit' in e['request']['url']
-                and e['request']['method'] == 'POST'
+                if '/api/submit' in e['request']['url'] and e['request']['method'] == 'POST'
             ),
             None,
         )
@@ -383,20 +353,15 @@ class TestHarRecordIntegration:
         """Recording reports correct body sizes from dataReceived events."""
         page_url = f'file://{test_page_path.absolute()}?base={api_server}'
 
-
         async with tab.request.record() as recording:
             await tab.go_to(page_url)
             assert await _wait_for_requests_done(tab), 'Page requests did not complete'
             await _wait_for_network_idle(tab)
 
         entries = recording.entries
-        users_entry = next(
-            (e for e in entries if '/api/users' in e['request']['url']), None
-        )
+        users_entry = next((e for e in entries if '/api/users' in e['request']['url']), None)
         assert users_entry is not None
-        # bodySize should be > 0 for successful requests with body
         assert users_entry['response']['bodySize'] > 0
-        # content.size should match the decoded body length
         assert users_entry['response']['content']['size'] > 0
 
 
@@ -404,12 +369,9 @@ class TestHarSaveIntegration:
     """Integration tests for saving and loading HAR files."""
 
     @pytest.mark.asyncio
-    async def test_save_produces_valid_har(
-        self, tab, api_server, test_page_path, tmp_path
-    ):
+    async def test_save_produces_valid_har(self, tab, api_server, test_page_path, tmp_path):
         """Saved HAR file is valid JSON with HAR 1.2 structure."""
         page_url = f'file://{test_page_path.absolute()}?base={api_server}'
-
 
         async with tab.request.record() as recording:
             await tab.go_to(page_url)
@@ -430,12 +392,9 @@ class TestHarSaveIntegration:
         assert len(har['log']['entries']) >= 4
 
     @pytest.mark.asyncio
-    async def test_save_entries_sorted_by_time(
-        self, tab, api_server, test_page_path, tmp_path
-    ):
+    async def test_save_entries_sorted_by_time(self, tab, api_server, test_page_path, tmp_path):
         """Saved entries are sorted by startedDateTime."""
         page_url = f'file://{test_page_path.absolute()}?base={api_server}'
-
 
         async with tab.request.record() as recording:
             await tab.go_to(page_url)
@@ -458,7 +417,6 @@ class TestHarSaveIntegration:
         """Every entry has required HAR 1.2 fields."""
         page_url = f'file://{test_page_path.absolute()}?base={api_server}'
 
-
         async with tab.request.record() as recording:
             await tab.go_to(page_url)
             assert await _wait_for_requests_done(tab), 'Page requests did not complete'
@@ -471,7 +429,6 @@ class TestHarSaveIntegration:
             har = json.load(f)
 
         for entry in har['log']['entries']:
-            # Required entry fields
             assert 'startedDateTime' in entry
             assert 'time' in entry
             assert 'request' in entry
@@ -479,7 +436,6 @@ class TestHarSaveIntegration:
             assert 'cache' in entry
             assert 'timings' in entry
 
-            # Required request fields
             req = entry['request']
             assert 'method' in req
             assert 'url' in req
@@ -490,7 +446,6 @@ class TestHarSaveIntegration:
             assert 'headersSize' in req
             assert 'bodySize' in req
 
-            # Required response fields
             resp = entry['response']
             assert 'status' in resp
             assert 'statusText' in resp
@@ -502,7 +457,6 @@ class TestHarSaveIntegration:
             assert 'headersSize' in resp
             assert 'bodySize' in resp
 
-            # Required timings fields
             timings = entry['timings']
             for field in ('blocked', 'dns', 'connect', 'ssl', 'send', 'wait', 'receive'):
                 assert field in timings
@@ -544,9 +498,7 @@ class TestHarRedirectIntegration:
 
         final_entry = _origin_entry(recording, '/api/data', status=200)
         assert final_entry is not None
-        assert 'Hello from the test server' in final_entry['response']['content'].get(
-            'text', ''
-        )
+        assert 'Hello from the test server' in final_entry['response']['content'].get('text', '')
 
 
 class TestHarResourceTypeFilter:
@@ -566,11 +518,8 @@ class TestHarResourceTypeFilter:
         entries = recording.entries
         assert len(entries) >= 1
 
-        # The document navigation (Document type) must not be recorded.
         assert not any(e['request']['url'].endswith('/filtered-page') for e in entries)
-        # The fetch() to /api/data (Fetch type) must be recorded.
         assert _origin_entry(recording, '/api/data', status=200) is not None
-        # Every recorded entry is a fetch/xhr resource type.
         for entry in entries:
             assert entry.get('_resourceType') in {'Fetch', 'XHR'}
 
@@ -646,12 +595,9 @@ class TestHarToDictIntegration:
     """The HarCapture.to_dict() export mirrors the saved HAR structure."""
 
     @pytest.mark.asyncio
-    async def test_to_dict_matches_saved_file(
-        self, tab, api_server, test_page_path, tmp_path
-    ):
+    async def test_to_dict_matches_saved_file(self, tab, api_server, test_page_path, tmp_path):
         """to_dict() returns the same HAR 1.2 structure that save() writes."""
         page_url = f'file://{test_page_path.absolute()}?base={api_server}'
-
 
         async with tab.request.record() as recording:
             await tab.go_to(page_url)

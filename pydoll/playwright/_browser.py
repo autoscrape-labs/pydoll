@@ -182,7 +182,7 @@ class Browser(EventEmitter):
             await original_close(run_before_unload=run_before_unload, reason=reason)
             await context.close()
 
-        page.close = close_with_context  # type: ignore[method-assign]
+        page.close = close_with_context
         return page
 
     async def close(self, reason: str | None = None) -> None:

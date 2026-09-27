@@ -88,8 +88,6 @@ class BrowserContext(EventEmitter):
     def __repr__(self) -> str:
         return f'<BrowserContext id={self._context_id!r} pages={len(self._pages)}>'
 
-    # ------------------------------------------------------------ setup
-
     async def _initialize(self) -> None:
         self._downloads_dir.mkdir(parents=True, exist_ok=True)
         await self._browser._chrome.execute_command(
@@ -163,19 +161,19 @@ class BrowserContext(EventEmitter):
                     'downloadThroughput': -1,
                     'uploadThroughput': -1,
                 },
-            })  # type: ignore[arg-type]
+            })
         if options.get('ignore_https_errors'):
             await page._send({
                 'method': 'Security.setIgnoreCertificateErrors',
                 'params': {'ignore': True},
-            })  # type: ignore[arg-type]
+            })
         if options.get('bypass_csp'):
             await page._send(PageCommands.set_bypass_csp(enabled=True))
         if options.get('java_script_enabled') is False:
             await page._send({
                 'method': 'Emulation.setScriptExecutionDisabled',
                 'params': {'value': True},
-            })  # type: ignore[arg-type]
+            })
         if (
             options.get('color_scheme')
             or options.get('reduced_motion')
@@ -190,7 +188,7 @@ class BrowserContext(EventEmitter):
             await page._send({
                 'method': 'Emulation.setTouchEmulationEnabled',
                 'params': {'enabled': True, 'maxTouchPoints': 5 if self._is_mobile else 10},
-            })  # type: ignore[arg-type]
+            })
         if options.get('http_credentials'):
             await page._enable_http_credentials(options['http_credentials'])
         for script in self._init_scripts:
@@ -199,8 +197,6 @@ class BrowserContext(EventEmitter):
             await page._expose(name, callback, with_source)
         if self._routes:
             await page._enable_fetch()
-
-    # ------------------------------------------------------------ pages
 
     async def new_page(self) -> Page:
         if self._closed:
@@ -254,8 +250,6 @@ class BrowserContext(EventEmitter):
     def set_default_navigation_timeout(self, timeout: float) -> None:
         self._default_navigation_timeout = timeout
 
-    # ------------------------------------------------------------ cookies
-
     async def cookies(self, urls: str | Sequence[str] | None = None) -> list[dict[str, Any]]:
         try:
             raw = await self._browser._chrome.get_cookies(browser_context_id=self._context_id)
@@ -288,7 +282,7 @@ class BrowserContext(EventEmitter):
                     entry[key] = cookie[key]
             params.append(entry)
         try:
-            await self._browser._chrome.set_cookies(params, browser_context_id=self._context_id)  # type: ignore[arg-type]
+            await self._browser._chrome.set_cookies(params, browser_context_id=self._context_id)
         except PydollException as error:
             raise translate(error) from error
 
@@ -319,8 +313,6 @@ class BrowserContext(EventEmitter):
         if path is not None:
             Path(path).write_text(json.dumps(state, indent=2), encoding='utf-8')
         return state
-
-    # ------------------------------------------------------------ settings
 
     async def grant_permissions(
         self, permissions: Sequence[str], origin: str | None = None
@@ -367,7 +359,7 @@ class BrowserContext(EventEmitter):
                     'downloadThroughput': -1,
                     'uploadThroughput': -1,
                 },
-            })  # type: ignore[arg-type]
+            })
 
     async def add_init_script(
         self, script: str | None = None, path: str | Path | None = None
@@ -403,8 +395,6 @@ class BrowserContext(EventEmitter):
 
     async def unroute_all(self, behavior: str | None = None) -> None:
         self._routes = []
-
-    # ------------------------------------------------------------ events
 
     async def wait_for_event(
         self,
@@ -462,8 +452,6 @@ class BrowserContext(EventEmitter):
     ) -> EventContextManager[Any]:
         return self.expect_event('console', predicate=predicate, timeout=timeout)
 
-    # ------------------------------------------------------------ lifecycle
-
     async def close(self, reason: str | None = None) -> None:
         if self._closed:
             return
@@ -501,7 +489,7 @@ def _accept_language(locale: str) -> str:
 
 
 def _cookie_matches(cookie: dict[str, Any], url: str) -> bool:
-    from urllib.parse import urlparse  # noqa: PLC0415
+    from urllib.parse import urlparse
 
     parsed = urlparse(url)
     domain = cookie['domain'].lstrip('.')

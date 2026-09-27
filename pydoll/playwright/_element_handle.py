@@ -306,7 +306,7 @@ class ElementHandle(JSHandle):
         return await self._frame.wait_for_selector(selector, root=self._element, **kwargs)
 
     def _resolver(self) -> Any:
-        from pydoll.playwright._actions import fixed_resolver  # noqa: PLC0415
+        from pydoll.playwright._actions import fixed_resolver
 
         return fixed_resolver(self._element, describe(self._element))
 

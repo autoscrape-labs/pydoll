@@ -119,8 +119,6 @@ class Page(EventEmitter):
     def __repr__(self) -> str:
         return f'<Page url={self._url!r}>'
 
-    # ------------------------------------------------------------ setup
-
     async def _initialize(self) -> None:
         await self._tab.enable_page_events()
         await self._send(PageCommands.set_lifecycle_events_enabled(True))
@@ -195,8 +193,6 @@ class Page(EventEmitter):
         if self._default_timeout is not None:
             return self._default_timeout
         return self._context._default_navigation_timeout_value()
-
-    # ------------------------------------------------------------ frames
 
     def _frame_for_id(self, frame_id: str) -> Frame:
         if frame_id == self._main_frame_id_cache or not frame_id:
@@ -277,7 +273,7 @@ class Page(EventEmitter):
         ]
 
     def frame(self, name: str | None = None, url: URLMatch | None = None) -> Frame | None:
-        from pydoll.playwright._glob import URLMatcher  # noqa: PLC0415
+        from pydoll.playwright._glob import URLMatcher
 
         matcher = URLMatcher(url, self._context._base_url) if url is not None else None
         for frame in self.frames:
@@ -286,8 +282,6 @@ class Page(EventEmitter):
             if matcher is not None and matcher.matches(frame.url):
                 return frame
         return None
-
-    # ------------------------------------------------------------ identity
 
     @property
     def context(self) -> BrowserContext:
@@ -346,13 +340,11 @@ class Page(EventEmitter):
     def set_default_navigation_timeout(self, timeout: float) -> None:
         self._default_navigation_timeout = timeout
 
-    # ------------------------------------------------------------ events
-
-    def on(self, event: str, listener: Callable[..., Any]) -> None:  # type: ignore[override]
+    def on(self, event: str, listener: Callable[..., Any]) -> None:
         super().on(event, listener)
         self._ensure_event_source(event)
 
-    def once(self, event: str, listener: Callable[..., Any]) -> None:  # type: ignore[override]
+    def once(self, event: str, listener: Callable[..., Any]) -> None:
         super().once(event, listener)
         self._ensure_event_source(event)
 
@@ -615,8 +607,6 @@ class Page(EventEmitter):
     ) -> EventContextManager[Response | None]:
         return self._main_frame.expect_navigation(url=url, wait_until=wait_until, timeout=timeout)
 
-    # ------------------------------------------------------------ navigation
-
     async def goto(
         self,
         url: str,
@@ -625,7 +615,7 @@ class Page(EventEmitter):
         referer: str | None = None,
     ) -> Response | None:
         if self._context._base_url and not _is_absolute(url):
-            from urllib.parse import urljoin  # noqa: PLC0415
+            from urllib.parse import urljoin
 
             url = urljoin(self._context._base_url, url)
         return await self._main_frame.goto(
@@ -691,8 +681,6 @@ class Page(EventEmitter):
         return await self._main_frame.wait_for_selector(
             selector, timeout=timeout, state=state, strict=strict
         )
-
-    # ------------------------------------------------------------ content
 
     async def content(self) -> str:
         return await self._main_frame.content()
@@ -761,7 +749,7 @@ class Page(EventEmitter):
         await self._send({
             'method': 'Network.setExtraHTTPHeaders',
             'params': {'headers': dict(headers)},
-        })  # type: ignore[arg-type]
+        })
 
     async def set_viewport_size(self, viewport_size: dict[str, int]) -> None:
         """Emulate a viewport, keeping ``screen`` at least as large as the viewport.
@@ -805,18 +793,16 @@ class Page(EventEmitter):
         ):
             if value is not None and value != 'null':
                 features.append({'name': name, 'value': value})
-        await self._send(EmulationCommands.set_emulated_media(media=media or '', features=features))  # type: ignore[arg-type]
+        await self._send(EmulationCommands.set_emulated_media(media=media or '', features=features))
 
     async def bring_to_front(self) -> None:
         await self._tab.bring_to_front()
 
     async def request_gc(self) -> None:
-        await self._send({'method': 'HeapProfiler.collectGarbage', 'params': {}})  # type: ignore[arg-type]
+        await self._send({'method': 'HeapProfiler.collectGarbage', 'params': {}})
 
     async def pause(self) -> None:
         return None
-
-    # ------------------------------------------------------------ routes
 
     async def route(self, url: URLMatch, handler: RouteHandler, times: int | None = None) -> None:
         self._routes.append(make_entry(url, handler, times, self._context._base_url))
@@ -879,8 +865,6 @@ class Page(EventEmitter):
         await self._listen(FetchEvent.AUTH_REQUIRED, on_auth_required)
         await self._enable_fetch(handle_auth=True)
 
-    # ------------------------------------------------------------ media
-
     async def screenshot(
         self,
         timeout: float | None = None,
@@ -930,13 +914,13 @@ class Page(EventEmitter):
             await self._send({
                 'method': 'Emulation.setDefaultBackgroundColorOverride',
                 'params': {'color': {'r': 0, 'g': 0, 'b': 0, 'a': 0}},
-            })  # type: ignore[arg-type]
+            })
         try:
             response = await self._send(
                 PageCommands.capture_screenshot(
-                    format=type,  # type: ignore[arg-type]
+                    format=type,
                     quality=quality if type == 'jpeg' else None,
-                    clip=clip,  # type: ignore[arg-type]
+                    clip=clip,
                     capture_beyond_viewport=capture_beyond_viewport or None,
                 )
             )
@@ -945,7 +929,7 @@ class Page(EventEmitter):
                 await self._send({
                     'method': 'Emulation.setDefaultBackgroundColorOverride',
                     'params': {},
-                })  # type: ignore[arg-type]
+                })
         data = base64.b64decode(response['result']['data'])
         if path is not None:
             Path(path).write_bytes(data)
@@ -994,8 +978,6 @@ class Page(EventEmitter):
             Path(path).write_bytes(data)
         return data
 
-    # ------------------------------------------------------------ lifecycle
-
     async def close(self, run_before_unload: bool | None = None, reason: str | None = None) -> None:
         if self._closed:
             return
@@ -1007,8 +989,6 @@ class Page(EventEmitter):
 
     async def _dispose(self) -> None:
         self._on_target_closed()
-
-    # ------------------------------------------------------------ locators
 
     def locator(self, selector: str, **kwargs: Any) -> Locator:
         return self._main_frame.locator(selector, **kwargs)
@@ -1036,8 +1016,6 @@ class Page(EventEmitter):
 
     def frame_locator(self, selector: str) -> FrameLocator:
         return self._main_frame.frame_locator(selector)
-
-    # ------------------------------------------------------------ selector shortcuts
 
     async def click(self, selector: str, **kwargs: Any) -> None:
         await self._main_frame.click(selector, **kwargs)
@@ -1150,7 +1128,7 @@ def _inches(value: str | float | int) -> float:
 
 
 def _is_absolute(url: str) -> bool:
-    import re  # noqa: PLC0415
+    import re
 
     return bool(re.match(r'^[a-zA-Z][a-zA-Z0-9+\-.]*:', url))
 

@@ -275,9 +275,7 @@ class TestExtractSingle:
     async def test_extract_with_scope(self, tab):
         await tab.go_to(FILE_URL)
 
-        article = await tab.extract(
-            SimpleArticle, scope='#main-article', timeout=5
-        )
+        article = await tab.extract(SimpleArticle, scope='#main-article', timeout=5)
         assert article.title == 'Understanding Web Scraping'
 
     @pytest.mark.asyncio
@@ -335,18 +333,14 @@ class TestExtractAll:
     async def test_extract_all_with_limit(self, tab):
         await tab.go_to(FILE_URL)
 
-        quotes = await tab.extract_all(
-            QuoteModel, scope='.quote', limit=2, timeout=5
-        )
+        quotes = await tab.extract_all(QuoteModel, scope='.quote', limit=2, timeout=5)
         assert len(quotes) == 2
 
     @pytest.mark.asyncio
     async def test_extract_all_with_nested_model(self, tab):
         await tab.go_to(FILE_URL)
 
-        products = await tab.extract_all(
-            ProductModel, scope='.product-card', timeout=5
-        )
+        products = await tab.extract_all(ProductModel, scope='.product-card', timeout=5)
         assert len(products) == 2
         assert products[0].name == 'Laptop Pro'
         assert products[0].price == 5999.00
@@ -359,9 +353,7 @@ class TestExtractAll:
     async def test_extract_all_no_matches_returns_empty(self, tab):
         await tab.go_to(FILE_URL)
 
-        results = await tab.extract_all(
-            QuoteModel, scope='.nonexistent-container', timeout=1
-        )
+        results = await tab.extract_all(QuoteModel, scope='.nonexistent-container', timeout=1)
         assert results == []
 
 
@@ -410,7 +402,6 @@ class TestEdgeCases:
 
         products = await tab.extract_all(ProductModel, scope='.product-card', timeout=5)
         assert len(products) == 2
-        # Verify each product has correct nested data
         for product in products:
             assert product.meta.brand
             assert product.meta.sku
@@ -446,9 +437,7 @@ class TestEdgeCases:
         """list[ExtractionModel] should extract each item as a nested model."""
         await tab.go_to(FILE_URL)
 
-        article = await tab.extract(
-            MultiAuthorArticle, scope='#multi-author-article', timeout=5
-        )
+        article = await tab.extract(MultiAuthorArticle, scope='#multi-author-article', timeout=5)
         assert article.title == 'Collaborative Research Paper'
         assert len(article.contributors) == 3
         assert article.contributors[0].name == 'Alice Smith'
@@ -517,7 +506,6 @@ class TestConcurrentExtraction:
 
         quotes = await tab.extract_all(QuoteWithYear, scope='.quote', timeout=5)
         assert len(quotes) == 3
-        # All quotes should have been extracted correctly
         assert quotes[0].year == 2005
         assert quotes[1].year == 2001
         assert quotes[2].year == 2005
@@ -531,7 +519,6 @@ class TestConcurrentExtraction:
 
         products = await tab.extract_all(ProductModel, scope='.product-card', timeout=5)
         assert len(products) == 2
-        # Both products extracted concurrently with nested meta
         assert products[0].name == 'Laptop Pro'
         assert products[0].meta.brand == 'TechCorp'
         assert products[1].name == 'Mouse Wireless'

@@ -163,7 +163,7 @@ def call_arguments(arg: Any) -> list[CallArgument]:
 
 
 def _serialize(value: Any, handles: list[JSHandle], visited: set[int]) -> Any:
-    from pydoll.playwright._element_handle import JSHandle, PrimitiveHandle  # noqa: PLC0415
+    from pydoll.playwright._element_handle import JSHandle, PrimitiveHandle
 
     if isinstance(value, PrimitiveHandle):
         return _serialize(value._value, handles, visited)

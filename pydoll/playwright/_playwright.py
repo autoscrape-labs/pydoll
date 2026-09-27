@@ -141,7 +141,7 @@ class BrowserType:
             await original_close(reason=reason)
             await browser.close()
 
-        context.close = close_browser  # type: ignore[method-assign]
+        context.close = close_browser
         return context
 
     async def connect_over_cdp(

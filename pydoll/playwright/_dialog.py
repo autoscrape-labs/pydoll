@@ -113,7 +113,7 @@ class _PrimitiveHandle:
         self._remote = remote
 
     async def json_value(self) -> Any:
-        from pydoll.playwright._serialization import parse_remote_value  # noqa: PLC0415
+        from pydoll.playwright._serialization import parse_remote_value
 
         return parse_remote_value(self._remote)
 
@@ -221,9 +221,10 @@ class Download:
     async def cancel(self) -> None:
         if self._done.done():
             return
-        await self._page.context._browser._chrome.execute_command(
-            {'method': 'Browser.cancelDownload', 'params': {'guid': self._guid}}  # type: ignore[arg-type]
-        )
+        await self._page.context._browser._chrome.execute_command({
+            'method': 'Browser.cancelDownload',
+            'params': {'guid': self._guid},
+        })
         self._cancelled = True
 
 

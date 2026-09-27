@@ -81,8 +81,6 @@ class Frame:
     def __repr__(self) -> str:
         return f'<Frame name={self._name!r} url={self.url!r}>'
 
-    # ------------------------------------------------------------ identity
-
     @property
     def page(self) -> Page:
         return self._page
@@ -130,8 +128,6 @@ class Frame:
             self._url = context.document_url or self._url
         return self._frame_id
 
-    # ------------------------------------------------------------ plumbing
-
     async def _send(self, command: Any) -> Any:
         try:
             return await self._root.execute_command(command)
@@ -157,8 +153,6 @@ class Frame:
     def _owner(self, element: WebElement) -> Frame:
         """The frame whose isolated world produced ``element`` (this frame by default)."""
         return self._page._element_frames.get(element, self)
-
-    # ---- worlds: the engine lives in an isolated world, user code in the main world
 
     def _reset_world(self) -> None:
         """Forget the isolated world and every handle bound to it (after navigation)."""
@@ -430,8 +424,6 @@ class Frame:
             return PrimitiveHandle(self, parse_remote_value(remote))
         return self._handle_from_remote_object(remote)
 
-    # ------------------------------------------------------------ queries
-
     async def _query_all(self, selector: str, root: WebElement | None = None) -> list[WebElement]:
         chunks = split_by_frame(selector)
         frames: list[Frame] = [self]
@@ -506,8 +498,6 @@ class Frame:
             if deadline.expired():
                 raise deadline.error(f'waiting for {description}')
             await asyncio.sleep(0.1)
-
-    # ------------------------------------------------------------ evaluate
 
     async def _evaluate(
         self,
@@ -613,8 +603,6 @@ class Frame:
     async def wait_for_timeout(self, timeout: float) -> None:
         await asyncio.sleep(timeout / 1000)
 
-    # ------------------------------------------------------------ content
-
     async def content(self) -> str:
         return await self._call(
             'function() {'
@@ -664,7 +652,7 @@ class Frame:
         type: str | None = None,
     ) -> ElementHandle:
         if path is not None:
-            from pathlib import Path as _Path  # noqa: PLC0415
+            from pathlib import Path as _Path
 
             content = _Path(path).read_text(encoding='utf-8')
         remote = await self._call(
@@ -682,7 +670,7 @@ class Frame:
             by_value=False,
             await_promise=True,
         )
-        return await self._handle_or_element(remote)  # type: ignore[return-value]
+        return await self._handle_or_element(remote)
 
     async def add_style_tag(
         self,
@@ -691,7 +679,7 @@ class Frame:
         content: str | None = None,
     ) -> ElementHandle:
         if path is not None:
-            from pathlib import Path as _Path  # noqa: PLC0415
+            from pathlib import Path as _Path
 
             content = _Path(path).read_text(encoding='utf-8')
         remote = await self._call(
@@ -709,9 +697,7 @@ class Frame:
             by_value=False,
             await_promise=True,
         )
-        return await self._handle_or_element(remote)  # type: ignore[return-value]
-
-    # ------------------------------------------------------------ navigation
+        return await self._handle_or_element(remote)
 
     async def goto(
         self,
@@ -749,8 +735,6 @@ class Frame:
             self, url=url, wait_until=wait_until, timeout=timeout
         )
 
-    # ------------------------------------------------------------ locators
-
     def locator(
         self,
         selector: str,
@@ -787,10 +771,8 @@ class Frame:
     def frame_locator(self, selector: str) -> FrameLocator:
         return FrameLocator(self, selector)
 
-    # ------------------------------------------------------------ selector shortcuts
-
     def _shortcut(self, selector: str, strict: bool | None) -> Any:
-        from pydoll.playwright._actions import Resolver  # noqa: PLC0415
+        from pydoll.playwright._actions import Resolver
 
         async def find() -> WebElement | None:
             return await self._query_one(selector, strict=bool(strict))

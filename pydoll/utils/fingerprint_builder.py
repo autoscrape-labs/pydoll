@@ -114,11 +114,6 @@ _WEBGL_INT32_PARAMS = frozenset({'max_viewport_dims'})
 # and worker (WorkerNavigator.prototype) realms.
 _BOOTSTRAP = r"""
 const _ORIG = Function.prototype.toString;
-// Captured before any page script runs. Every wrapper delegates through it
-// instead of ``fn.call``/``fn.apply``: a property lookup on Function.prototype
-// is observable (a counter installed on ``call`` during a toString() probe
-// catches the hook without ever inspecting it), an apply through the captured
-// builtin is not.
 const _apply = Reflect.apply;
 // Cross-realm native-toString hook WITHOUT shared state. Page + workers + nested
 // iframes all receive this byte-identical script, so each realm independently
@@ -560,11 +555,6 @@ const formatsByExtension = %s;
 const HIDDEN_EXT = 'WEBGL_debug_shaders';
 const _hasOwn = (obj, key) => _apply(Object.prototype.hasOwnProperty, obj, [key]);
 
-// Extension objects for names the profile declares and the context lacks,
-// shaped like Blink's: an instance with no own properties over an interface
-// prototype that holds the constants (frozen, enumerable), the methods
-// (native-looking, right ``length``) and the Symbol.toStringTag, with no
-// ``constructor`` because these interfaces have no interface object.
 function patchContext(proto, extOverrides, extOrder, declared) {
   const allowed = (name) => name !== HIDDEN_EXT
     && (extOverrides === null || extOverrides.includes(name));
