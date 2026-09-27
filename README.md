@@ -107,7 +107,7 @@
 
 <sub>[Learn more about our sponsors](SPONSORS.md) &middot; [Become a sponsor](https://github.com/sponsors/thalissonvs)</sub>
 
-Pydoll drives the Chrome or Edge already on your machine straight over the DevTools Protocol. There is no WebDriver binary and no driver process between your code and the browser, so nothing is added that gives automation away: no `navigator.webdriver`, no `--enable-automation`, no `Runtime.enable`. On top of that it clicks, types and scrolls like a person, applies coherent fingerprint profiles, handles Cloudflare Turnstile, and extracts typed data from the page. The same API comes in a synchronous and an asynchronous form, and an existing Playwright script runs on it by changing one import.
+Pydoll drives the Chrome or Edge already on your machine over the DevTools Protocol. There is no WebDriver binary and no driver process between your code and the browser, so the usual automation markers (`navigator.webdriver`, `--enable-automation`, `Runtime.enable`) are never there to begin with. It clicks, types and scrolls like a person, applies coherent fingerprint profiles, handles Cloudflare Turnstile, and extracts typed data from the page. The API comes in a synchronous and an asynchronous form, and an existing Playwright script runs on it by changing one import.
 
 ### Why Pydoll?
 
@@ -121,9 +121,9 @@ Pydoll drives the Chrome or Edge already on your machine straight over the DevTo
 - **Structured extraction**: define a [Pydantic](https://docs.pydantic.dev/) model, call `tab.extract_all()`, and get typed, validated objects back.
 
 > [!NOTE]
-> **A word from the maintainer.** Pydoll is currently maintained by a single person, and I'm a bit stretched at the moment, so new releases and replies to issues may take a little longer than usual. To be clear: **the project is not dead, and it is not going anywhere.** Development continues; it's just moving at a calmer pace for now.
+> A word from the maintainer. Pydoll is maintained by one person, and I'm a bit stretched at the moment, so new releases and replies to issues may take longer than usual. The project is not dead and it is not going anywhere; development continues at a calmer pace for now.
 >
-> **A goal to aim for:** once the project reaches **10k stars**, I plan to ship **Firefox support**, a big step that opens up a whole new range of possibilities for the library. Momentum like that is exactly the kind of incentive that makes a feature this large worth taking on, so if you'd like to see it happen, that's the push it needs.
+> A goal to aim for: once the project reaches 10k stars, I plan to ship Firefox support, a large piece of work that opens up a whole new range of possibilities. If you'd like to see it happen, that's the push it needs.
 
 ## Installation
 
@@ -208,7 +208,7 @@ asyncio.run(main())
 
 ## Already on Playwright?
 
-Keep your script. Change one import and it runs on Pydoll: no driver process, no patched browser, and Pydoll's stealth underneath.
+Keep your script. Change one import and it runs on Pydoll's CDP connection, with Pydoll's stealth underneath.
 
 ```python
 from pydoll.playwright.sync_api import sync_playwright  # was: from playwright.sync_api import sync_playwright
@@ -234,7 +234,7 @@ page.goto('https://site-with-turnstile.com')
 
 [Bring your Playwright script](https://pydoll.tech/docs/playwright/) is the walkthrough; [Playwright API](https://pydoll.tech/docs/guides/playwright-api/) is the full compatibility matrix.
 
-## What a driver can't do
+## Staying undetected
 
 ### Fingerprint injection
 
@@ -242,7 +242,7 @@ Pydoll can also make the browser *report* a different identity. `tab.apply_finge
 
 Spoofing a fingerprint is less about changing the values than about not getting caught changing them. Modern anti-bot scripts inspect *how* a property was defined: a naive `Object.defineProperty` leaves a fake `toString`, an own-property where a prototype getter should be, or an override that a phantom `iframe` or a Web Worker can see straight through. Pydoll handles this: injected getters read as native under `toString` and prototype introspection, and the same identity is replayed inside dedicated, shared and service workers.
 
-It also neutralizes the **headless** tells, chiefly the SwiftShader WebGL renderer that gives away a GPU-less browser, so `headless=True` is no longer an automatic giveaway. That is what lets a plain Google search run in headless mode. (Cloudflare Turnstile in headless is still under study.)
+It also neutralizes the headless tells, chiefly the SwiftShader WebGL renderer that gives away a GPU-less browser, so `headless=True` is no longer an automatic giveaway. That is what lets a plain Google search run in headless mode. (Cloudflare Turnstile in headless is still under study.)
 
 ```python
 import asyncio
@@ -277,10 +277,10 @@ In our testing it passed each of these fingerprint and bot-detection suites with
 | [BrowserLeaks Canvas](https://browserleaks.com/canvas) | Canvas fingerprint | No detection |
 | [BrowserLeaks WebRTC](https://browserleaks.com/webrtc) | WebRTC IP leak | No detection |
 
-**A fingerprint is only as strong as its weakest layer.** Anti-bot systems correlate signals across all of them. A browser that renders as macOS while its `Accept-Language` says Brazilian Portuguese, its timezone says Tokyo, and its IP geolocates to Germany is *more* suspicious than a browser you never touched. `apply_fingerprint()` keeps the layers it controls consistent, but you own the rest: the profile must match the real Chrome binary you drive (the network-layer TLS / HTTP2 fingerprint is authentic and cannot be spoofed) and the geography of your egress IP or proxy. The deep dive on [browser fingerprinting](https://pydoll.tech/docs/deep-dive/fingerprinting/) and the [Timezone and Locale Consistency](https://pydoll.tech/docs/stealth/evasion-techniques/) section explain why a locale that contradicts the IP gets you blocked.
+A fingerprint is only as strong as its weakest layer. Anti-bot systems correlate signals across all of them. A browser that renders as macOS while its `Accept-Language` says Brazilian Portuguese, its timezone says Tokyo, and its IP geolocates to Germany is *more* suspicious than a browser you never touched. `apply_fingerprint()` keeps the layers it controls consistent, but you own the rest: the profile must match the real Chrome binary you drive (the network-layer TLS / HTTP2 fingerprint is authentic and cannot be spoofed) and the geography of your egress IP or proxy. The deep dive on [browser fingerprinting](https://pydoll.tech/docs/deep-dive/fingerprinting/) and the [Timezone and Locale Consistency](https://pydoll.tech/docs/stealth/evasion-techniques/) section explain why a locale that contradicts the IP gets you blocked.
 
 > [!IMPORTANT]
-> **Pydoll does not generate or ship fingerprints.** The profiles in [`examples/fingerprints.py`](examples/fingerprints.py) exist only as a reference for how coherent a profile has to be and the shape of the [`FingerprintConfig`](pydoll/protocol/fingerprint/types.py) you inject. Bring your own.
+> Pydoll does not generate or ship fingerprints. The profiles in [`examples/fingerprints.py`](examples/fingerprints.py) exist only as a reference for how coherent a profile has to be and the shape of the [`FingerprintConfig`](pydoll/protocol/fingerprint/types.py) you inject. Bring your own.
 
 [Fingerprint Injection Docs](https://pydoll.tech/docs/stealth/fingerprint-injection/)
 
@@ -356,11 +356,11 @@ asyncio.run(extract_quotes())
 
 Mouse operations can produce human-like cursor movement when you pass `humanize=True`:
 
-- **Bezier curve paths** with asymmetric control points
-- **Fitts's Law timing**: duration scales with distance
-- **Minimum-jerk velocity**: bell-shaped speed profile
-- **Physiological tremor**: Gaussian noise scaled with velocity
-- **Overshoot correction**: ~70% chance on fast movements, then corrects back
+- Bezier curve paths with asymmetric control points
+- Fitts's Law timing, so duration scales with distance
+- Minimum-jerk velocity, a bell-shaped speed profile
+- Physiological tremor, Gaussian noise scaled with velocity
+- Overshoot correction, about 70% of fast movements overshoot and correct back
 
 ```python
 await tab.mouse.move(500, 300, humanize=True)

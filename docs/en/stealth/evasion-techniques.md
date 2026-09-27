@@ -117,13 +117,21 @@ A brand-new profile with no history and every feature disabled looks nothing lik
 
 ## Common mistakes
 
-**Randomizing everything.** A random `hardwareConcurrency`, `deviceMemory`, and screen size produce impossible devices. Real machines are constrained: 4 cores with 8 GB RAM and a 1920x1080 screen is plausible; 17 cores with 0.5 GB RAM and a 4K screen is not. Use profiles captured from real browsers, not random values.
+### Randomizing everything
 
-**Injecting canvas noise.** Adding noise to canvas output backfires: detectors sample the fingerprint repeatedly, and a value that changes between reads is itself an automation signal. Pydoll's canvas is authentic and stable; leave it.
+A random `hardwareConcurrency`, `deviceMemory`, and screen size produce impossible devices. Real machines are constrained: 4 cores with 8 GB RAM and a 1920x1080 screen is plausible; 17 cores with 0.5 GB RAM and a 4K screen is not. Use profiles captured from real browsers, not random values.
 
-**Outdated User-Agents.** A UA from a Chrome release six months old lacks features and Client Hints the current version has. Stay within the last two or three major versions, and match the binary you run.
+### Injecting canvas noise
 
-**Ignoring session behavior.** Even with a clean fingerprint, loading 100 pages in a minute, never scrolling, and never idling are anomalies. Add reading delays, vary the pace, and include natural pauses.
+Adding noise to canvas output backfires: detectors sample the fingerprint repeatedly, and a value that changes between reads is itself an automation signal. Pydoll's canvas is authentic and stable; leave it.
+
+### Outdated User-Agents
+
+A UA from a Chrome release six months old lacks features and Client Hints the current version has. Stay within the last two or three major versions, and match the binary you run.
+
+### Ignoring session behavior
+
+Even with a clean fingerprint, loading 100 pages in a minute, never scrolling, and never idling are anomalies. Add reading delays, vary the pace, and include natural pauses.
 
 ## Verify your setup
 

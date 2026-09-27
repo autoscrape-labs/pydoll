@@ -119,8 +119,8 @@ driver.quit()
 
 两者都是异步的，也都会自动等待，所以迁移大多只是重命名。主要的概念差异在于一次查找返回的是什么：
 
-- Playwright 的 **locator** 是惰性的：每次你对它进行操作时，它都会重新解析元素。
-- Pydoll 的 `find()` / `query()` 返回一个当场解析一次的 **`WebElement`**。如果页面替换了该元素，就再次调用 `find()`。
+- Playwright 的 locator 是惰性的：每次你对它进行操作时，它都会重新解析元素。
+- Pydoll 的 `find()` / `query()` 返回一个当场解析一次的 `WebElement`。如果页面替换了该元素，就再次调用 `find()`。
 
 === "Sync"
 

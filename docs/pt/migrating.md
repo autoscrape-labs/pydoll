@@ -119,8 +119,8 @@ Há dois caminhos, e você pode pegar o primeiro hoje e o segundo quando quiser:
 
 Ambos são assíncronos e ambos esperam automaticamente, então migrar é, na maior parte, renomear. A principal diferença conceitual é o que uma busca retorna:
 
-- Um **locator** do Playwright é preguiçoso: ele re-resolve o elemento toda vez que você age sobre ele.
-- Um `find()` / `query()` do Pydoll retorna um **`WebElement`** resolvido uma vez, ali na hora. Chame `find()` de novo se a página substituiu o elemento.
+- Um locator do Playwright é preguiçoso: ele re-resolve o elemento toda vez que você age sobre ele.
+- Um `find()` / `query()` do Pydoll retorna um `WebElement` resolvido uma vez, ali na hora. Chame `find()` de novo se a página substituiu o elemento.
 
 === "Sync"
 

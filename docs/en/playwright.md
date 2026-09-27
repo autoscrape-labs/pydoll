@@ -144,8 +144,8 @@ Three things a blocked script usually needs next, each one line:
 
 ## What this does not change {#what-this-does-not-change}
 
-!!! warning "Pydoll removes the automation tells a library adds; it does not make a bot a person"
-    A headless browser is still recognizable by its rendering and its missing media devices, so run headful or apply a fingerprint profile that covers the headless signals. Your IP reputation counts as much as the browser; a datacenter IP fails challenges a residential one passes. Signals baked into the Chrome binary are not touched. And behavior matters: instant clicks and perfectly regular typing look like what they are, which is what `humanize=True` is for.
+!!! warning "What detection still sees"
+    Pydoll removes the automation tells a library adds; it does not make a bot a person. A headless browser is still recognizable by its rendering and its missing media devices, so run headful or apply a fingerprint profile that covers the headless signals. Your IP reputation counts as much as the browser; a datacenter IP fails challenges a residential one passes. Signals baked into the Chrome binary are not touched. And behavior matters: instant clicks and perfectly regular typing look like what they are, which is what `humanize=True` is for.
 
 [Staying undetected](stealth/index.md) walks through each layer with the minimum setup for it.
 

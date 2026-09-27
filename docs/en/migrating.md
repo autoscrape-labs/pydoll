@@ -119,8 +119,8 @@ There are two ways in, and you can take the first today and the second whenever 
 
 Both are async and both auto-wait, so migration is mostly renaming. The main conceptual difference is what a lookup returns:
 
-- A Playwright **locator** is lazy: it re-resolves the element every time you act on it.
-- A Pydoll `find()` / `query()` returns a **`WebElement`** resolved once, then and there. Call `find()` again if the page replaced the element.
+- A Playwright locator is lazy: it re-resolves the element every time you act on it.
+- A Pydoll `find()` / `query()` returns a `WebElement` resolved once, then and there. Call `find()` again if the page replaced the element.
 
 === "Sync"
 

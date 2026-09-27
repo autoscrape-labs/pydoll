@@ -117,13 +117,21 @@ Um perfil novinho em folha, sem histórico e com todos os recursos desativados, 
 
 ## Erros comuns
 
-**Randomizar tudo.** Um `hardwareConcurrency`, `deviceMemory` e tamanho de tela aleatórios produzem dispositivos impossíveis. Máquinas reais são limitadas: 4 núcleos com 8 GB de RAM e uma tela 1920x1080 é plausível; 17 núcleos com 0,5 GB de RAM e uma tela 4K não é. Use perfis capturados de navegadores reais, não valores aleatórios.
+### Randomizar tudo
 
-**Injetar ruído no canvas.** Adicionar ruído à saída do canvas sai pela culatra: os detectores amostram o fingerprint repetidamente, e um valor que muda entre leituras é, por si só, um sinal de automação. O canvas do Pydoll é autêntico e estável; deixe-o quieto.
+Um `hardwareConcurrency`, `deviceMemory` e tamanho de tela aleatórios produzem dispositivos impossíveis. Máquinas reais são limitadas: 4 núcleos com 8 GB de RAM e uma tela 1920x1080 é plausível; 17 núcleos com 0,5 GB de RAM e uma tela 4K não é. Use perfis capturados de navegadores reais, não valores aleatórios.
 
-**User-Agents desatualizados.** Um UA de uma release do Chrome de seis meses atrás carece de recursos e Client Hints que a versão atual tem. Fique dentro das últimas duas ou três versões principais, e combine com o binário que você executa.
+### Injetar ruído no canvas
 
-**Ignorar o comportamento da sessão.** Mesmo com um fingerprint limpo, carregar 100 páginas num minuto, nunca rolar a página e nunca ficar ocioso são anomalias. Adicione delays de leitura, varie o ritmo e inclua pausas naturais.
+Adicionar ruído à saída do canvas sai pela culatra: os detectores amostram o fingerprint repetidamente, e um valor que muda entre leituras é, por si só, um sinal de automação. O canvas do Pydoll é autêntico e estável; deixe-o quieto.
+
+### User-Agents desatualizados
+
+Um UA de uma release do Chrome de seis meses atrás carece de recursos e Client Hints que a versão atual tem. Fique dentro das últimas duas ou três versões principais, e combine com o binário que você executa.
+
+### Ignorar o comportamento da sessão
+
+Mesmo com um fingerprint limpo, carregar 100 páginas num minuto, nunca rolar a página e nunca ficar ocioso são anomalias. Adicione delays de leitura, varie o ritmo e inclua pausas naturais.
 
 ## Verifique a sua configuração
 

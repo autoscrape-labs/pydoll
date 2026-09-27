@@ -144,8 +144,8 @@ Três coisas que um script bloqueado costuma precisar em seguida, cada uma em um
 
 ## O que isso não muda {#what-this-does-not-change}
 
-!!! warning "O Pydoll remove os sinais de automação que uma biblioteca adiciona; ele não transforma um bot em pessoa"
-    Um navegador headless continua reconhecível pela renderização e pela falta de dispositivos de mídia, então rode com janela ou aplique um perfil de fingerprint que cubra os sinais de headless. A reputação do seu IP conta tanto quanto o navegador; um IP de datacenter falha em desafios que um residencial passa. Sinais embutidos no binário do Chrome não são tocados. E o comportamento importa: cliques instantâneos e digitação perfeitamente regular parecem o que são, e é para isso que existe o `humanize=True`.
+!!! warning "O que a detecção ainda vê"
+    O Pydoll remove os sinais de automação que uma biblioteca adiciona; ele não transforma um bot em pessoa. Um navegador headless continua reconhecível pela renderização e pela falta de dispositivos de mídia, então rode com janela ou aplique um perfil de fingerprint que cubra os sinais de headless. A reputação do seu IP conta tanto quanto o navegador; um IP de datacenter falha em desafios que um residencial passa. Sinais embutidos no binário do Chrome não são tocados. E o comportamento importa: cliques instantâneos e digitação perfeitamente regular parecem o que são, e é para isso que existe o `humanize=True`.
 
 [Passando despercebido](stealth/index.md) percorre cada camada com o mínimo de configuração para ela.
 
