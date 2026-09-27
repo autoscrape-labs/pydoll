@@ -12,9 +12,9 @@ same three forms:
 from __future__ import annotations
 
 import re
-from typing import Callable, Pattern, Union
+from typing import Callable, Pattern
 
-UrlPattern = Union[str, Pattern[str], Callable[[str], bool]]
+UrlPattern = str | Pattern[str] | Callable[[str], bool]
 
 _ESCAPED_CHARS = {'$', '^', '+', '.', '*', '(', ')', '|', '\\', '?', '{', '}', '[', ']'}
 

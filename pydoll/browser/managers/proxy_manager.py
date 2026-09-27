@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from pydoll.browser.options import Options
@@ -28,7 +28,7 @@ class ProxyManager:
         self.options = options
         logger.debug('ProxyManager initialized with options')
 
-    def get_proxy_credentials(self) -> tuple[bool, tuple[Optional[str], Optional[str]]]:
+    def get_proxy_credentials(self) -> tuple[bool, tuple[str | None, str | None]]:
         """
         Extract and secure proxy authentication credentials.
 
@@ -39,7 +39,7 @@ class ProxyManager:
             Tuple of (has_private_proxy, (username, password)).
         """
         private_proxy = False
-        credentials: tuple[Optional[str], Optional[str]] = (None, None)
+        credentials: tuple[str | None, str | None] = (None, None)
 
         proxy_arg = self._find_proxy_argument()
 
@@ -59,7 +59,7 @@ class ProxyManager:
 
         return private_proxy, credentials
 
-    def _find_proxy_argument(self) -> Optional[tuple[int, str]]:
+    def _find_proxy_argument(self) -> tuple[int, str] | None:
         """
         Find proxy server configuration in browser options.
 
@@ -74,7 +74,7 @@ class ProxyManager:
         return None
 
     @staticmethod
-    def _parse_proxy(proxy_value: str) -> tuple[bool, Optional[str], Optional[str], str]:
+    def _parse_proxy(proxy_value: str) -> tuple[bool, str | None, str | None, str]:
         """
         Parse proxy URL to extract authentication credentials.
 

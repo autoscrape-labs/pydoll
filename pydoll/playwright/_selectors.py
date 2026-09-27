@@ -8,9 +8,9 @@ from __future__ import annotations
 
 import json
 import re
-from typing import Optional, Pattern, Union
+from typing import Pattern
 
-TextMatch = Union[str, Pattern[str]]
+TextMatch = str | Pattern[str]
 
 _test_id_attribute_name = 'data-testid'
 
@@ -42,13 +42,13 @@ def escape_regex_for_selector(pattern: Pattern[str]) -> str:
     return f'/{source}/{escape_regex_flags(pattern)}'
 
 
-def escape_for_text_selector(text: TextMatch, exact: Optional[bool] = None) -> str:
+def escape_for_text_selector(text: TextMatch, exact: bool | None = None) -> str:
     if isinstance(text, Pattern):
         return escape_regex_for_selector(text)
     return json.dumps(text, ensure_ascii=False) + ('s' if exact else 'i')
 
 
-def escape_for_attribute_selector(value: TextMatch, exact: Optional[bool] = None) -> str:
+def escape_for_attribute_selector(value: TextMatch, exact: bool | None = None) -> str:
     if isinstance(value, Pattern):
         return escape_regex_for_selector(value)
     escaped = value.replace('\\', '\\\\').replace('"', '\\"')
@@ -65,42 +65,42 @@ def get_by_test_id_selector(test_id: TextMatch) -> str:
 
 
 def get_by_attribute_text_selector(
-    attr_name: str, text: TextMatch, exact: Optional[bool] = None
+    attr_name: str, text: TextMatch, exact: bool | None = None
 ) -> str:
     return f'internal:attr=[{attr_name}={escape_for_attribute_selector(text, exact=exact)}]'
 
 
-def get_by_label_selector(text: TextMatch, exact: Optional[bool] = None) -> str:
+def get_by_label_selector(text: TextMatch, exact: bool | None = None) -> str:
     return 'internal:label=' + escape_for_text_selector(text, exact=exact)
 
 
-def get_by_alt_text_selector(text: TextMatch, exact: Optional[bool] = None) -> str:
+def get_by_alt_text_selector(text: TextMatch, exact: bool | None = None) -> str:
     return get_by_attribute_text_selector('alt', text, exact=exact)
 
 
-def get_by_title_selector(text: TextMatch, exact: Optional[bool] = None) -> str:
+def get_by_title_selector(text: TextMatch, exact: bool | None = None) -> str:
     return get_by_attribute_text_selector('title', text, exact=exact)
 
 
-def get_by_placeholder_selector(text: TextMatch, exact: Optional[bool] = None) -> str:
+def get_by_placeholder_selector(text: TextMatch, exact: bool | None = None) -> str:
     return get_by_attribute_text_selector('placeholder', text, exact=exact)
 
 
-def get_by_text_selector(text: TextMatch, exact: Optional[bool] = None) -> str:
+def get_by_text_selector(text: TextMatch, exact: bool | None = None) -> str:
     return 'internal:text=' + escape_for_text_selector(text, exact=exact)
 
 
 def get_by_role_selector(
     role: str,
-    checked: Optional[bool] = None,
-    disabled: Optional[bool] = None,
-    expanded: Optional[bool] = None,
-    include_hidden: Optional[bool] = None,
-    level: Optional[int] = None,
-    name: Optional[TextMatch] = None,
-    pressed: Optional[bool] = None,
-    selected: Optional[bool] = None,
-    exact: Optional[bool] = None,
+    checked: bool | None = None,
+    disabled: bool | None = None,
+    expanded: bool | None = None,
+    include_hidden: bool | None = None,
+    level: int | None = None,
+    name: TextMatch | None = None,
+    pressed: bool | None = None,
+    selected: bool | None = None,
+    exact: bool | None = None,
 ) -> str:
     props: list[tuple[str, str]] = []
     if checked is not None:
@@ -167,7 +167,7 @@ def _split_top_level(selector: str) -> list[str]:
     parts: list[str] = []
     index = 0
     start = 0
-    quote: Optional[str] = None
+    quote: str | None = None
     while index < len(selector):
         char = selector[index]
         if char == '\\' and index + 1 < len(selector):

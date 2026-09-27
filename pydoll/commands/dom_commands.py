@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from pydoll.protocol.base import Command
 from pydoll.protocol.dom.methods import (
@@ -129,11 +129,11 @@ class DomCommands:
 
     @staticmethod
     def describe_node(
-        node_id: Optional[int] = None,
-        backend_node_id: Optional[int] = None,
-        object_id: Optional[str] = None,
-        depth: Optional[int] = None,
-        pierce: Optional[bool] = None,
+        node_id: int | None = None,
+        backend_node_id: int | None = None,
+        object_id: str | None = None,
+        depth: int | None = None,
+        pierce: bool | None = None,
     ) -> DescribeNodeCommand:
         """
         Describes a DOM node identified by its ID without requiring domain to be enabled.
@@ -183,7 +183,7 @@ class DomCommands:
         return Command(method=DomMethod.DISABLE)
 
     @staticmethod
-    def enable(include_whitespace: Optional['IncludeWhitespace'] = None) -> EnableCommand:
+    def enable(include_whitespace: 'IncludeWhitespace' | None = None) -> EnableCommand:
         """
         Enables DOM agent for the current page.
 
@@ -206,9 +206,9 @@ class DomCommands:
 
     @staticmethod
     def focus(
-        node_id: Optional[int] = None,
-        backend_node_id: Optional[int] = None,
-        object_id: Optional[str] = None,
+        node_id: int | None = None,
+        backend_node_id: int | None = None,
+        object_id: str | None = None,
     ) -> FocusCommand:
         """
         Focuses the given element.
@@ -256,9 +256,9 @@ class DomCommands:
 
     @staticmethod
     def get_box_model(
-        node_id: Optional[int] = None,
-        backend_node_id: Optional[int] = None,
-        object_id: Optional[str] = None,
+        node_id: int | None = None,
+        backend_node_id: int | None = None,
+        object_id: str | None = None,
     ) -> GetBoxModelCommand:
         """
         Returns box model information for the specified node.
@@ -287,9 +287,7 @@ class DomCommands:
         return Command(method=DomMethod.GET_BOX_MODEL, params=params)
 
     @staticmethod
-    def get_document(
-        depth: Optional[int] = None, pierce: Optional[bool] = None
-    ) -> GetDocumentCommand:
+    def get_document(depth: int | None = None, pierce: bool | None = None) -> GetDocumentCommand:
         """
         Returns the root DOM node (and optionally the subtree) to the caller.
 
@@ -318,8 +316,8 @@ class DomCommands:
     def get_node_for_location(
         x: int,
         y: int,
-        include_user_agent_shadow_dom: Optional[bool] = None,
-        ignore_pointer_events_none: Optional[bool] = None,
+        include_user_agent_shadow_dom: bool | None = None,
+        ignore_pointer_events_none: bool | None = None,
     ) -> GetNodeForLocationCommand:
         """
         Returns node id at given location on the page.
@@ -349,9 +347,9 @@ class DomCommands:
 
     @staticmethod
     def get_outer_html(
-        node_id: Optional[int] = None,
-        backend_node_id: Optional[int] = None,
-        object_id: Optional[str] = None,
+        node_id: int | None = None,
+        backend_node_id: int | None = None,
+        object_id: str | None = None,
     ) -> GetOuterHTMLCommand:
         """
         Returns node's HTML markup, including the node itself and all its children.
@@ -423,7 +421,7 @@ class DomCommands:
     def move_to(
         node_id: int,
         target_node_id: int,
-        insert_before_node_id: Optional[int] = None,
+        insert_before_node_id: int | None = None,
     ) -> MoveToCommand:
         """
         Moves node into the new container, placing it before the given anchor.
@@ -535,8 +533,8 @@ class DomCommands:
     @staticmethod
     def request_child_nodes(
         node_id: int,
-        depth: Optional[int] = None,
-        pierce: Optional[bool] = None,
+        depth: int | None = None,
+        pierce: bool | None = None,
     ) -> RequestChildNodesCommand:
         """
         Requests that children of the node with given id are returned to the caller.
@@ -583,10 +581,10 @@ class DomCommands:
 
     @staticmethod
     def resolve_node(
-        node_id: Optional[int] = None,
-        backend_node_id: Optional[int] = None,
-        object_group: Optional[str] = None,
-        execution_context_id: Optional[int] = None,
+        node_id: int | None = None,
+        backend_node_id: int | None = None,
+        object_group: str | None = None,
+        execution_context_id: int | None = None,
     ) -> ResolveNodeCommand:
         """
         Resolves the JavaScript node object for a given NodeId or BackendNodeId.
@@ -617,10 +615,10 @@ class DomCommands:
 
     @staticmethod
     def scroll_into_view_if_needed(
-        node_id: Optional[int] = None,
-        backend_node_id: Optional[int] = None,
-        object_id: Optional[str] = None,
-        rect: Optional[Rect] = None,
+        node_id: int | None = None,
+        backend_node_id: int | None = None,
+        object_id: str | None = None,
+        rect: Rect | None = None,
     ) -> ScrollIntoViewIfNeededCommand:
         """
         Scrolls the specified node into view if not already visible.
@@ -654,7 +652,7 @@ class DomCommands:
     def set_attributes_as_text(
         node_id: int,
         text: str,
-        name: Optional[str] = None,
+        name: str | None = None,
     ) -> SetAttributesAsTextCommand:
         """
         Sets attribute for an element with given id, using text representation.
@@ -704,9 +702,9 @@ class DomCommands:
     @staticmethod
     def set_file_input_files(
         files: list[str],
-        node_id: Optional[int] = None,
-        backend_node_id: Optional[int] = None,
-        object_id: Optional[str] = None,
+        node_id: int | None = None,
+        backend_node_id: int | None = None,
+        object_id: str | None = None,
     ) -> SetFileInputFilesCommand:
         """
         Sets files for the given file input element.
@@ -824,7 +822,7 @@ class DomCommands:
     def copy_to(
         node_id: int,
         target_node_id: int,
-        insert_before_node_id: Optional[int] = None,
+        insert_before_node_id: int | None = None,
     ) -> CopyToCommand:
         """
         Creates a deep copy of the specified node and places it into the target container.
@@ -869,7 +867,7 @@ class DomCommands:
     @staticmethod
     def get_anchor_element(
         node_id: int,
-        anchor_specifier: Optional[str] = None,
+        anchor_specifier: str | None = None,
     ) -> GetAnchorElementCommand:
         """
         Finds the closest ancestor node that is an anchor element for the given node.
@@ -893,10 +891,10 @@ class DomCommands:
     @staticmethod
     def get_container_for_node(
         node_id: int,
-        container_name: Optional[str] = None,
-        physical_axes: Optional['PhysicalAxes'] = None,
-        logical_axes: Optional['LogicalAxes'] = None,
-        queries_scroll_state: Optional[bool] = None,
+        container_name: str | None = None,
+        physical_axes: 'PhysicalAxes' | None = None,
+        logical_axes: 'LogicalAxes' | None = None,
+        queries_scroll_state: bool | None = None,
     ) -> GetContainerForNodeCommand:
         """
         Finds a containing element for the given node based on specified parameters.
@@ -928,9 +926,9 @@ class DomCommands:
 
     @staticmethod
     def get_content_quads(
-        node_id: Optional[int] = None,
-        backend_node_id: Optional[int] = None,
-        object_id: Optional[str] = None,
+        node_id: int | None = None,
+        backend_node_id: int | None = None,
+        object_id: str | None = None,
     ) -> GetContentQuadsCommand:
         """
         Returns quads that describe node position on the page.
@@ -1036,7 +1034,7 @@ class DomCommands:
     def get_nodes_for_subtree_by_style(
         node_id: int,
         computed_styles: list[CSSComputedStyleProperty],
-        pierce: Optional[bool] = None,
+        pierce: bool | None = None,
     ) -> GetNodesForSubtreeByStyleCommand:
         """
         Finds nodes with a given computed style in a subtree.
@@ -1173,7 +1171,7 @@ class DomCommands:
     @staticmethod
     def perform_search(
         query: str,
-        include_user_agent_shadow_dom: Optional[bool] = None,
+        include_user_agent_shadow_dom: bool | None = None,
     ) -> PerformSearchCommand:
         """
         Searches for a given string in the DOM tree.

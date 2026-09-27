@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 import platform
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from pydoll.browser.chromium.base import Browser
 from pydoll.browser.managers import ChromiumOptionsManager
@@ -20,8 +20,8 @@ class Edge(Browser):
 
     def __init__(
         self,
-        options: Optional[Options] = None,
-        connection_port: Optional[int] = None,
+        options: Options | None = None,
+        connection_port: int | None = None,
     ):
         """
         Initialize Edge browser instance.

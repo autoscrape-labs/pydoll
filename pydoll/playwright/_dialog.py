@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 import shutil
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Optional, Sequence, Union
+from typing import TYPE_CHECKING, Any, Sequence
 
 from pydoll.commands import PageCommands
 from pydoll.playwright._element_handle import ElementHandle, JSHandle
@@ -38,16 +38,16 @@ class Dialog:
         return self._default_value
 
     @property
-    def page(self) -> Optional[Page]:
+    def page(self) -> Page | None:
         return self._page
 
-    async def accept(self, prompt_text: Optional[str] = None) -> None:
+    async def accept(self, prompt_text: str | None = None) -> None:
         await self._handle(True, prompt_text)
 
     async def dismiss(self) -> None:
         await self._handle(False, None)
 
-    async def _handle(self, accept: bool, prompt_text: Optional[str]) -> None:
+    async def _handle(self, accept: bool, prompt_text: str | None) -> None:
         if self._handled:
             raise Error('Cannot accept dialog which is already handled!')
         self._handled = True
@@ -95,7 +95,7 @@ class ConsoleMessage:
         return dict(self._location)
 
     @property
-    def page(self) -> Optional[Page]:
+    def page(self) -> Page | None:
         return self._page
 
     @property
@@ -156,8 +156,8 @@ class FileChooser:
 
     async def set_files(
         self,
-        files: Union[str, Path, Sequence[Union[str, Path]], Any],
-        timeout: Optional[float] = None,
+        files: str | Path | Sequence[str | Path] | Any,
+        timeout: float | None = None,
     ) -> None:
         await self._element.set_input_files(files, timeout=timeout)
 
@@ -171,7 +171,7 @@ class Download:
         self._url: str = params.get('url', '')
         self._suggested_filename: str = params.get('suggestedFilename', '')
         self._directory = directory
-        self._done: asyncio.Future[Optional[str]] = page._loop.create_future()
+        self._done: asyncio.Future[str | None] = page._loop.create_future()
         self._cancelled = False
 
     @property
@@ -195,7 +195,7 @@ class Download:
         elif state == 'canceled':
             self._done.set_result('canceled')
 
-    async def failure(self) -> Optional[str]:
+    async def failure(self) -> str | None:
         return await self._done
 
     async def path(self) -> Path:
@@ -204,7 +204,7 @@ class Download:
             raise Error(f'Download failed: {error}')
         return self._directory / self._guid
 
-    async def save_as(self, path: Union[str, Path]) -> None:
+    async def save_as(self, path: str | Path) -> None:
         source = await self.path()
         destination = Path(path)
         destination.parent.mkdir(parents=True, exist_ok=True)

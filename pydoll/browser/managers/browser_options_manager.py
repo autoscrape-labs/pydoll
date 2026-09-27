@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from pydoll.browser.interfaces import BrowserOptionsManager
 from pydoll.browser.options import ChromiumOptions
@@ -21,7 +21,7 @@ class ChromiumOptionsManager(BrowserOptionsManager):
     for Chrome and Edge browsers.
     """
 
-    def __init__(self, options: Optional[Options] = None):
+    def __init__(self, options: Options | None = None):
         self.options = options
         logger.debug(
             f'ChromiumOptionsManager initialized with options='

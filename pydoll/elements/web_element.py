@@ -4,7 +4,7 @@ import asyncio
 import json
 import logging
 from pathlib import Path
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 import aiofiles
 
@@ -82,9 +82,9 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
     """
 
     if TYPE_CHECKING:
-        _routing_session_handler: Optional[ConnectionHandler]
-        _routing_session_id: Optional[str]
-        _routing_parent_frame_id: Optional[str]
+        _routing_session_handler: ConnectionHandler | None
+        _routing_session_id: str | None
+        _routing_parent_frame_id: str | None
 
     _SCROLL_INTO_VIEW_MARGIN = 24
 
@@ -92,10 +92,10 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         self,
         object_id: str,
         connection_handler: ConnectionHandler,
-        method: Optional[str] = None,
-        selector: Optional[str] = None,
-        attributes_list: Optional[list[str]] = None,
-        mouse: Optional['MouseType'] = None,
+        method: str | None = None,
+        selector: str | None = None,
+        attributes_list: list[str] | None = None,
+        mouse: 'MouseType' | None = None,
     ):
         """
         Initialize WebElement wrapper.
@@ -122,10 +122,10 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         self._selector = selector
         self._connection_handler = connection_handler
         self._attributes: dict[str, str] = {}
-        self._keyboard: Optional[Keyboard] = None
+        self._keyboard: Keyboard | None = None
         self._mouse = mouse
-        self._iframe_context: Optional[IFrameContext] = None
-        self._iframe_resolver: Optional[IFrameContextResolver] = None
+        self._iframe_context: IFrameContext | None = None
+        self._iframe_resolver: IFrameContextResolver | None = None
         self._def_attributes(attributes_list or [])
         logger.debug(
             'WebElement initialized: object_id=%s, method=%s, selector=%s, attributes=%s',
@@ -153,22 +153,22 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         return dict(self._attributes)
 
     @property
-    def value(self) -> Optional[str]:
+    def value(self) -> str | None:
         """Element's value attribute (for form elements)."""
         return self._attributes.get('value')
 
     @property
-    def class_name(self) -> Optional[str]:
+    def class_name(self) -> str | None:
         """Element's CSS class name(s)."""
         return self._attributes.get('class_name')
 
     @property
-    def id(self) -> Optional[str]:
+    def id(self) -> str | None:
         """Element's ID attribute."""
         return self._attributes.get('id')
 
     @property
-    def tag_name(self) -> Optional[str]:
+    def tag_name(self) -> str | None:
         """Element's HTML tag name."""
         return self._attributes.get('tag_name')
 
@@ -223,7 +223,7 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         response_get_outer_html: GetOuterHTMLResponse = await self._execute_command(command)
         return response_get_outer_html['result']['outerHTML']
 
-    async def iframe_context(self) -> Optional[IFrameContext]:
+    async def iframe_context(self) -> IFrameContext | None:
         """
         Return the resolved iframe context for this element when it is an ``<iframe>``.
 
@@ -247,7 +247,7 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         self._apply_routing_from_context()
         return self._iframe_context
 
-    def get_attribute(self, name: str) -> Optional[str]:
+    def get_attribute(self, name: str) -> str | None:
         """
         Get element attribute value.
 
@@ -414,10 +414,10 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
 
     async def take_screenshot(
         self,
-        path: Optional[str | Path] = None,
+        path: str | Path | None = None,
         quality: int = 100,
         as_base64: bool = False,
-    ) -> Optional[str]:
+    ) -> str | None:
         """
         Capture screenshot of this element only.
 
@@ -511,7 +511,7 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         except CommandFailed as exc:
             raise ElementNotVisible(f'Element cannot be scrolled into view: {exc}') from exc
 
-    async def _scroll_rect_with_margin(self) -> Optional[Rect]:
+    async def _scroll_rect_with_margin(self) -> Rect | None:
         """Element box padded by the scroll margin, relative to its border box."""
         try:
             bounds = await self.get_bounds_using_js()
@@ -941,43 +941,43 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         self,
         script: str,
         *,
-        arguments: Optional[list[CallArgument]] = None,
-        silent: Optional[bool] = None,
-        return_by_value: Optional[bool] = None,
-        generate_preview: Optional[bool] = None,
-        user_gesture: Optional[bool] = None,
-        await_promise: Optional[bool] = None,
-        execution_context_id: Optional[int] = None,
-        object_group: Optional[str] = None,
-        throw_on_side_effect: Optional[bool] = None,
-        unique_context_id: Optional[str] = None,
-        serialization_options: Optional[SerializationOptions] = None,
+        arguments: list[CallArgument] | None = None,
+        silent: bool | None = None,
+        return_by_value: bool | None = None,
+        generate_preview: bool | None = None,
+        user_gesture: bool | None = None,
+        await_promise: bool | None = None,
+        execution_context_id: int | None = None,
+        object_group: str | None = None,
+        throw_on_side_effect: bool | None = None,
+        unique_context_id: str | None = None,
+        serialization_options: SerializationOptions | None = None,
     ) -> CallFunctionOnResponse:
         """
         Execute JavaScript in element context.
 
         Args:
             script (str): JavaScript code to execute. Use 'this' to reference this element.
-            arguments (Optional[list[CallArgument]]): Arguments to pass to the function
+            arguments (list[CallArgument] | None): Arguments to pass to the function
                 (Runtime.callFunctionOn).
-            silent (Optional[bool]): Whether to silence exceptions (Runtime.callFunctionOn).
-            return_by_value (Optional[bool]): Whether to return the result by value instead of
+            silent (bool | None): Whether to silence exceptions (Runtime.callFunctionOn).
+            return_by_value (bool | None): Whether to return the result by value instead of
                 reference (Runtime.callFunctionOn).
-            generate_preview (Optional[bool]): Whether to generate a preview for the result
+            generate_preview (bool | None): Whether to generate a preview for the result
                 (Runtime.callFunctionOn).
-            user_gesture (Optional[bool]): Whether to treat the call as initiated by user
+            user_gesture (bool | None): Whether to treat the call as initiated by user
                 gesture (Runtime.callFunctionOn).
-            await_promise (Optional[bool]): Whether to await promise result
+            await_promise (bool | None): Whether to await promise result
                 (Runtime.callFunctionOn).
-            execution_context_id (Optional[int]): ID of the execution context to call the
+            execution_context_id (int | None): ID of the execution context to call the
                 function in (Runtime.callFunctionOn).
-            object_group (Optional[str]): Symbolic group name for the result
+            object_group (str | None): Symbolic group name for the result
                 (Runtime.callFunctionOn).
-            throw_on_side_effect (Optional[bool]): Whether to throw if side effect cannot be
+            throw_on_side_effect (bool | None): Whether to throw if side effect cannot be
                 ruled out (Runtime.callFunctionOn).
-            unique_context_id (Optional[str]): Unique context ID for the function call
+            unique_context_id (str | None): Unique context ID for the function call
                 (Runtime.callFunctionOn).
-            serialization_options (Optional[SerializationOptions]): Serialization options for
+            serialization_options (SerializationOptions | None): Serialization options for
                 the result (Runtime.callFunctionOn).
 
         Returns:

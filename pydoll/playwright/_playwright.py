@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, Optional, Sequence, Union
+from typing import Any, Sequence
 
 from pydoll.browser.chromium import Chrome
 from pydoll.exceptions import PydollException
@@ -64,23 +64,23 @@ class BrowserType:
 
     async def launch(
         self,
-        executable_path: Union[str, Path, None] = None,
-        channel: Optional[str] = None,
-        args: Optional[Sequence[str]] = None,
-        ignore_default_args: Union[bool, Sequence[str], None] = None,
-        handle_sigint: Optional[bool] = None,
-        handle_sigterm: Optional[bool] = None,
-        handle_sighup: Optional[bool] = None,
-        timeout: Optional[float] = None,
-        env: Optional[dict[str, Any]] = None,
-        headless: Optional[bool] = None,
-        devtools: Optional[bool] = None,
-        proxy: Optional[dict[str, Any]] = None,
-        downloads_path: Union[str, Path, None] = None,
-        slow_mo: Optional[float] = None,
-        traces_dir: Union[str, Path, None] = None,
-        chromium_sandbox: Optional[bool] = None,
-        firefox_user_prefs: Optional[dict[str, Any]] = None,
+        executable_path: str | Path | None = None,
+        channel: str | None = None,
+        args: Sequence[str] | None = None,
+        ignore_default_args: bool | Sequence[str] | None = None,
+        handle_sigint: bool | None = None,
+        handle_sigterm: bool | None = None,
+        handle_sighup: bool | None = None,
+        timeout: float | None = None,
+        env: dict[str, Any] | None = None,
+        headless: bool | None = None,
+        devtools: bool | None = None,
+        proxy: dict[str, Any] | None = None,
+        downloads_path: str | Path | None = None,
+        slow_mo: float | None = None,
+        traces_dir: str | Path | None = None,
+        chromium_sandbox: bool | None = None,
+        firefox_user_prefs: dict[str, Any] | None = None,
     ) -> Browser:
         self._check_supported()
         options = build_options(
@@ -106,7 +106,7 @@ class BrowserType:
 
     async def launch_persistent_context(
         self,
-        user_data_dir: Union[str, Path],
+        user_data_dir: str | Path,
         **kwargs: Any,
     ) -> BrowserContext:
         self._check_supported()
@@ -137,7 +137,7 @@ class BrowserType:
         await context._adopt(initial_tab, opener=None, emit_popup=False)
         original_close = context.close
 
-        async def close_browser(reason: Optional[str] = None) -> None:
+        async def close_browser(reason: str | None = None) -> None:
             await original_close(reason=reason)
             await browser.close()
 
@@ -147,9 +147,9 @@ class BrowserType:
     async def connect_over_cdp(
         self,
         endpoint_url: str,
-        timeout: Optional[float] = None,
-        slow_mo: Optional[float] = None,
-        headers: Optional[dict[str, str]] = None,
+        timeout: float | None = None,
+        slow_mo: float | None = None,
+        headers: dict[str, str] | None = None,
     ) -> Browser:
         self._check_supported()
         chrome = Chrome()
@@ -180,9 +180,9 @@ class Selectors:
     async def register(
         self,
         name: str,
-        script: Optional[str] = None,
-        path: Union[str, Path, None] = None,
-        content_script: Optional[bool] = None,
+        script: str | None = None,
+        path: str | Path | None = None,
+        content_script: bool | None = None,
     ) -> None:
         raise Error('Custom selector engines are not supported by pydoll.playwright')
 
@@ -214,7 +214,7 @@ class PlaywrightContextManager:
     """``async with async_playwright() as p:`` and ``await async_playwright().start()``."""
 
     def __init__(self) -> None:
-        self._playwright: Optional[Playwright] = None
+        self._playwright: Playwright | None = None
 
     async def __aenter__(self) -> Playwright:
         self._playwright = Playwright()

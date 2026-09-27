@@ -6,7 +6,7 @@ import asyncio
 import inspect
 import logging
 import time
-from typing import Any, Awaitable, Callable, Generic, Optional, TypeAlias, TypeVar
+from typing import Any, Awaitable, Callable, Generic, TypeAlias, TypeVar
 
 from pydoll.playwright._errors import TimeoutError
 
@@ -78,7 +78,7 @@ async def _log_failure(awaitable: Awaitable[Any], event: str) -> None:
 class Deadline:
     """Track the time budget of one API call, in Playwright's millisecond units."""
 
-    def __init__(self, timeout_ms: Optional[float]) -> None:
+    def __init__(self, timeout_ms: float | None) -> None:
         self.timeout_ms = timeout_ms
         self._start = time.monotonic()
 
@@ -86,12 +86,12 @@ class Deadline:
     def elapsed_ms(self) -> float:
         return (time.monotonic() - self._start) * 1000
 
-    def remaining_seconds(self) -> Optional[float]:
+    def remaining_seconds(self) -> float | None:
         if self.timeout_ms is None or self.timeout_ms <= 0:
             return None
         return max(0.0, (self.timeout_ms - self.elapsed_ms) / 1000)
 
-    def remaining_seconds_ms(self) -> Optional[float]:
+    def remaining_seconds_ms(self) -> float | None:
         remaining = self.remaining_seconds()
         return None if remaining is None else remaining * 1000
 
@@ -99,7 +99,7 @@ class Deadline:
         remaining = self.remaining_seconds()
         return remaining is not None and remaining <= 0
 
-    def error(self, description: str, log: Optional[list[str]] = None) -> TimeoutError:
+    def error(self, description: str, log: list[str] | None = None) -> TimeoutError:
         lines = [
             f'Timeout {int(self.timeout_ms or 0)}ms exceeded.',
             f'Call log:\n  - {description}',

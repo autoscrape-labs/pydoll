@@ -22,7 +22,7 @@ import inspect
 import os
 import threading
 import weakref
-from typing import Any, Callable, Coroutine, Generic, Iterator, Optional, TypeVar
+from typing import Any, Callable, Coroutine, Generic, Iterator, TypeVar
 
 T = TypeVar('T')
 
@@ -39,7 +39,7 @@ class EventLoopThread:
     call starts a fresh loop instead of waiting on a dead one.
     """
 
-    _instance: Optional[EventLoopThread] = None
+    _instance: EventLoopThread | None = None
     _instance_lock = threading.Lock()
 
     def __init__(self) -> None:
@@ -79,7 +79,7 @@ class EventLoopThread:
         self._loop.run_forever()
 
     def run(
-        self, awaitable: Coroutine[Any, Any, T] | asyncio.Future[T], timeout: Optional[float] = None
+        self, awaitable: Coroutine[Any, Any, T] | asyncio.Future[T], timeout: float | None = None
     ) -> T:
         """Run a coroutine on the loop from another thread and wait for its result."""
         if self._closed:
@@ -137,7 +137,7 @@ async def _await(awaitable: Any) -> Any:
     return await awaitable
 
 
-def run_sync(awaitable: Any, timeout: Optional[float] = None) -> Any:
+def run_sync(awaitable: Any, timeout: float | None = None) -> Any:
     """Run an awaitable on the shared loop and block for its result."""
     return EventLoopThread.instance().run(awaitable, timeout)
 
@@ -153,7 +153,7 @@ class Mapping:
     def register(self, impl_type: type, facade_type: type[SyncBase]) -> None:
         self._facades[impl_type] = facade_type
 
-    def facade_for(self, value: Any) -> Optional[type[SyncBase]]:
+    def facade_for(self, value: Any) -> type[SyncBase] | None:
         for base in type(value).__mro__:
             facade = self._facades.get(base)
             if facade is not None:

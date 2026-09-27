@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import sys
 from dataclasses import dataclass
-from typing import Optional, cast
+from typing import cast
 
 from pydoll.protocol.input.types import KeyModifier
 
@@ -269,7 +269,7 @@ def describe_key(name: str, shift_pressed: bool) -> KeyDescription:
     return description
 
 
-def modifier_bits(names: list[str]) -> Optional[KeyModifier]:
+def modifier_bits(names: list[str]) -> KeyModifier | None:
     """Combine modifier names into the CDP bitmask (KeyModifier is not a Flag enum)."""
     value = 0
     for name in names:

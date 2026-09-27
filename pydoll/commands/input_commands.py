@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from pydoll.protocol.base import Command
 from pydoll.protocol.input.methods import (
@@ -81,20 +81,20 @@ class InputCommands:
     @staticmethod
     def dispatch_key_event(  # noqa: PLR0912
         type: KeyEventType,
-        modifiers: Optional[KeyModifier] = None,
-        timestamp: Optional[float] = None,
-        text: Optional[str] = None,
-        unmodified_text: Optional[str] = None,
-        key_identifier: Optional[str] = None,
-        code: Optional[str] = None,
-        key: Optional[str] = None,
-        windows_virtual_key_code: Optional[int] = None,
-        native_virtual_key_code: Optional[int] = None,
-        auto_repeat: Optional[bool] = None,
-        is_keypad: Optional[bool] = None,
-        is_system_key: Optional[bool] = None,
-        location: Optional[KeyLocation] = None,
-        commands: Optional[list[str]] = None,
+        modifiers: KeyModifier | None = None,
+        timestamp: float | None = None,
+        text: str | None = None,
+        unmodified_text: str | None = None,
+        key_identifier: str | None = None,
+        code: str | None = None,
+        key: str | None = None,
+        windows_virtual_key_code: int | None = None,
+        native_virtual_key_code: int | None = None,
+        auto_repeat: bool | None = None,
+        is_keypad: bool | None = None,
+        is_system_key: bool | None = None,
+        location: KeyLocation | None = None,
+        commands: list[str] | None = None,
     ) -> DispatchKeyEventCommand:
         """
         Generates a command to dispatch a key event to the page.
@@ -172,19 +172,19 @@ class InputCommands:
         type: MouseEventType,
         x: int,
         y: int,
-        modifiers: Optional[KeyModifier] = None,
-        timestamp: Optional[float] = None,
-        button: Optional[MouseButton] = None,
-        click_count: Optional[int] = None,
-        buttons: Optional[int] = None,
-        force: Optional[float] = None,
-        tangential_pressure: Optional[float] = None,
-        tilt_x: Optional[float] = None,
-        tilt_y: Optional[float] = None,
-        twist: Optional[int] = None,
-        delta_x: Optional[float] = None,
-        delta_y: Optional[float] = None,
-        pointer_type: Optional[PointerType] = None,
+        modifiers: KeyModifier | None = None,
+        timestamp: float | None = None,
+        button: MouseButton | None = None,
+        click_count: int | None = None,
+        buttons: int | None = None,
+        force: float | None = None,
+        tangential_pressure: float | None = None,
+        tilt_x: float | None = None,
+        tilt_y: float | None = None,
+        twist: int | None = None,
+        delta_x: float | None = None,
+        delta_y: float | None = None,
+        pointer_type: PointerType | None = None,
     ) -> DispatchMouseEventCommand:
         """
         Generates a command to dispatch a mouse event to the page.
@@ -254,12 +254,12 @@ class InputCommands:
     @staticmethod
     def _set_pointer_physics(
         params: DispatchMouseEventParams,
-        force: Optional[float],
-        tangential_pressure: Optional[float],
-        tilt_x: Optional[float],
-        tilt_y: Optional[float],
-        twist: Optional[int],
-        pointer_type: Optional[PointerType],
+        force: float | None,
+        tangential_pressure: float | None,
+        tilt_x: float | None,
+        tilt_y: float | None,
+        twist: int | None,
+        pointer_type: PointerType | None,
     ) -> None:
         if force is not None:
             params['force'] = force
@@ -278,8 +278,8 @@ class InputCommands:
     def dispatch_touch_event(
         type: TouchEventType,
         touch_points: list[TouchPoint],
-        modifiers: Optional[KeyModifier] = None,
-        timestamp: Optional[float] = None,
+        modifiers: KeyModifier | None = None,
+        timestamp: float | None = None,
     ) -> DispatchTouchEventCommand:
         """
         Generates a command to dispatch a touch event to the page.
@@ -337,7 +337,7 @@ class InputCommands:
         x: int,
         y: int,
         data: DragData,
-        modifiers: Optional[KeyModifier] = None,
+        modifiers: KeyModifier | None = None,
     ) -> DispatchDragEventCommand:
         """
         Generates a command to dispatch a drag event into the page.
@@ -372,11 +372,11 @@ class InputCommands:
         x: int,
         y: int,
         button: MouseButton,
-        timestamp: Optional[float] = None,
-        delta_x: Optional[float] = None,
-        delta_y: Optional[float] = None,
-        modifiers: Optional[KeyModifier] = None,
-        click_count: Optional[int] = None,
+        timestamp: float | None = None,
+        delta_x: float | None = None,
+        delta_y: float | None = None,
+        modifiers: KeyModifier | None = None,
+        click_count: int | None = None,
     ) -> EmulateTouchFromMouseEventCommand:
         """
         Generates a command to emulate touch event from the mouse event parameters.
@@ -423,8 +423,8 @@ class InputCommands:
         text: str,
         selection_start: int,
         selection_end: int,
-        replacement_start: Optional[int] = None,
-        replacement_end: Optional[int] = None,
+        replacement_start: int | None = None,
+        replacement_end: int | None = None,
     ) -> ImeSetCompositionCommand:
         """
         Generates a command to set the current candidate text for IME.
@@ -506,8 +506,8 @@ class InputCommands:
         x: int,
         y: int,
         scale_factor: float,
-        relative_speed: Optional[int] = None,
-        gesture_source_type: Optional[GestureSourceType] = None,
+        relative_speed: int | None = None,
+        gesture_source_type: GestureSourceType | None = None,
     ) -> SynthesizePinchGestureCommand:
         """
         Generates a command to synthesize a pinch gesture over a time period.
@@ -543,16 +543,16 @@ class InputCommands:
     def synthesize_scroll_gesture(
         x: int,
         y: int,
-        x_distance: Optional[float] = None,
-        y_distance: Optional[float] = None,
-        x_overscroll: Optional[float] = None,
-        y_overscroll: Optional[float] = None,
-        prevent_fling: Optional[bool] = None,
-        speed: Optional[int] = None,
-        gesture_source_type: Optional[GestureSourceType] = None,
-        repeat_count: Optional[int] = None,
-        repeat_delay_ms: Optional[int] = None,
-        interaction_marker_name: Optional[str] = None,
+        x_distance: float | None = None,
+        y_distance: float | None = None,
+        x_overscroll: float | None = None,
+        y_overscroll: float | None = None,
+        prevent_fling: bool | None = None,
+        speed: int | None = None,
+        gesture_source_type: GestureSourceType | None = None,
+        repeat_count: int | None = None,
+        repeat_delay_ms: int | None = None,
+        interaction_marker_name: str | None = None,
     ) -> SynthesizeScrollGestureCommand:
         """
         Generates a command to synthesize a scroll gesture over a time period.
@@ -614,9 +614,9 @@ class InputCommands:
     def synthesize_tap_gesture(
         x: int,
         y: int,
-        duration: Optional[int] = None,
-        tap_count: Optional[int] = None,
-        gesture_source_type: Optional[GestureSourceType] = None,
+        duration: int | None = None,
+        tap_count: int | None = None,
+        gesture_source_type: GestureSourceType | None = None,
     ) -> SynthesizeTapGestureCommand:
         """
         Generates a command to synthesize a tap gesture over a time period.

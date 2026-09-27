@@ -14,7 +14,7 @@ import mimetypes
 import random
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Optional, Sequence, Union
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Sequence
 
 from pydoll.commands import InputCommands, PageCommands
 from pydoll.elements.web_element import WebElement
@@ -39,12 +39,12 @@ _POLL_SECONDS = 0.1
 class Resolver:
     """Where an action finds its element and how it is described in errors."""
 
-    find: Callable[[], Awaitable[Optional[WebElement]]]
+    find: Callable[[], Awaitable[WebElement | None]]
     description: str
 
 
 def fixed_resolver(element: WebElement, description: str) -> Resolver:
-    async def find() -> Optional[WebElement]:
+    async def find() -> WebElement | None:
         return element
 
     return Resolver(find, description)
@@ -70,7 +70,7 @@ class Actions:
 
     # ------------------------------------------------------------ helpers
 
-    def _deadline(self, timeout: Optional[float]) -> Deadline:
+    def _deadline(self, timeout: float | None) -> Deadline:
         return Deadline(self._frame.page._timeout(timeout))
 
     async def _wait(self, deadline: Deadline, log: list[str], resolver: Resolver) -> None:
@@ -163,11 +163,11 @@ class Actions:
         wait_for_enabled: bool,
         perform: Callable[[WebElement, _Point], Awaitable[None]],
         *,
-        timeout: Optional[float],
-        force: Optional[bool],
-        position: Optional[dict[str, float]],
-        trial: Optional[bool],
-        modifiers: Optional[Sequence[str]],
+        timeout: float | None,
+        force: bool | None,
+        position: dict[str, float] | None,
+        trial: bool | None,
+        modifiers: Sequence[str] | None,
     ) -> None:
         deadline = self._deadline(timeout)
 
@@ -221,7 +221,7 @@ class Actions:
         point: _Point,
         button: MouseButton = MouseButton.NONE,
         click_count: int = 0,
-        modifiers: Optional[Sequence[str]] = None,
+        modifiers: Sequence[str] | None = None,
     ) -> None:
         await self._frame._send_for_element(
             element,
@@ -242,15 +242,15 @@ class Actions:
         self,
         resolver: Resolver,
         *,
-        modifiers: Optional[Sequence[str]] = None,
-        position: Optional[dict[str, float]] = None,
-        delay: Optional[float] = None,
+        modifiers: Sequence[str] | None = None,
+        position: dict[str, float] | None = None,
+        delay: float | None = None,
         button: str = 'left',
-        click_count: Optional[int] = None,
-        timeout: Optional[float] = None,
-        force: Optional[bool] = None,
-        no_wait_after: Optional[bool] = None,
-        trial: Optional[bool] = None,
+        click_count: int | None = None,
+        timeout: float | None = None,
+        force: bool | None = None,
+        no_wait_after: bool | None = None,
+        trial: bool | None = None,
     ) -> None:
         count = click_count or 1
         mouse_button = _BUTTONS[button]
@@ -285,12 +285,12 @@ class Actions:
         self,
         resolver: Resolver,
         *,
-        modifiers: Optional[Sequence[str]] = None,
-        position: Optional[dict[str, float]] = None,
-        timeout: Optional[float] = None,
-        force: Optional[bool] = None,
-        no_wait_after: Optional[bool] = None,
-        trial: Optional[bool] = None,
+        modifiers: Sequence[str] | None = None,
+        position: dict[str, float] | None = None,
+        timeout: float | None = None,
+        force: bool | None = None,
+        no_wait_after: bool | None = None,
+        trial: bool | None = None,
     ) -> None:
         async def perform(element: WebElement, point: _Point) -> None:
             await self._mouse(element, MouseEventType.MOUSE_MOVED, point, modifiers=modifiers)
@@ -311,12 +311,12 @@ class Actions:
         self,
         resolver: Resolver,
         *,
-        modifiers: Optional[Sequence[str]] = None,
-        position: Optional[dict[str, float]] = None,
-        timeout: Optional[float] = None,
-        force: Optional[bool] = None,
-        no_wait_after: Optional[bool] = None,
-        trial: Optional[bool] = None,
+        modifiers: Sequence[str] | None = None,
+        position: dict[str, float] | None = None,
+        timeout: float | None = None,
+        force: bool | None = None,
+        no_wait_after: bool | None = None,
+        trial: bool | None = None,
     ) -> None:
         async def perform(element: WebElement, point: _Point) -> None:
             bits = modifier_bits(list(modifiers or []))
@@ -352,12 +352,12 @@ class Actions:
         source: Resolver,
         target: Resolver,
         *,
-        source_position: Optional[dict[str, float]] = None,
-        target_position: Optional[dict[str, float]] = None,
-        timeout: Optional[float] = None,
-        force: Optional[bool] = None,
-        no_wait_after: Optional[bool] = None,
-        trial: Optional[bool] = None,
+        source_position: dict[str, float] | None = None,
+        target_position: dict[str, float] | None = None,
+        timeout: float | None = None,
+        force: bool | None = None,
+        no_wait_after: bool | None = None,
+        trial: bool | None = None,
     ) -> None:
         async def press(element: WebElement, point: _Point) -> None:
             await self._mouse(element, MouseEventType.MOUSE_MOVED, point)
@@ -397,8 +397,8 @@ class Actions:
         resolver: Resolver,
         value: str,
         *,
-        timeout: Optional[float] = None,
-        force: Optional[bool] = None,
+        timeout: float | None = None,
+        force: bool | None = None,
     ) -> None:
         deadline = self._deadline(timeout)
 
@@ -425,7 +425,7 @@ class Actions:
         await self.fill(resolver, '', **kwargs)
 
     async def select_text(
-        self, resolver: Resolver, *, timeout: Optional[float] = None, force: Optional[bool] = None
+        self, resolver: Resolver, *, timeout: float | None = None, force: bool | None = None
     ) -> None:
         deadline = self._deadline(timeout)
 
@@ -440,7 +440,7 @@ class Actions:
 
         await self._retry(resolver, deadline, attempt, 'selectText')
 
-    async def focus(self, resolver: Resolver, timeout: Optional[float] = None) -> None:
+    async def focus(self, resolver: Resolver, timeout: float | None = None) -> None:
         deadline = self._deadline(timeout)
 
         async def attempt(element: WebElement, log: list[str]) -> None:
@@ -452,7 +452,7 @@ class Actions:
 
         await self._retry(resolver, deadline, attempt, 'focus')
 
-    async def blur(self, resolver: Resolver, timeout: Optional[float] = None) -> None:
+    async def blur(self, resolver: Resolver, timeout: float | None = None) -> None:
         deadline = self._deadline(timeout)
 
         async def attempt(element: WebElement, log: list[str]) -> None:
@@ -465,8 +465,8 @@ class Actions:
         resolver: Resolver,
         text: str,
         *,
-        delay: Optional[float] = None,
-        timeout: Optional[float] = None,
+        delay: float | None = None,
+        timeout: float | None = None,
     ) -> None:
         await self.focus(resolver, timeout=timeout)
         await self._frame.page.keyboard.type(text, delay=delay)
@@ -476,8 +476,8 @@ class Actions:
         resolver: Resolver,
         key: str,
         *,
-        delay: Optional[float] = None,
-        timeout: Optional[float] = None,
+        delay: float | None = None,
+        timeout: float | None = None,
     ) -> None:
         await self.focus(resolver, timeout=timeout)
         await self._frame.page.keyboard.press(key, delay=delay)
@@ -486,12 +486,12 @@ class Actions:
         self,
         resolver: Resolver,
         *,
-        value: Union[str, Sequence[str], None] = None,
-        index: Union[int, Sequence[int], None] = None,
-        label: Union[str, Sequence[str], None] = None,
-        element: Union[ElementHandle, Sequence[ElementHandle], None] = None,
-        timeout: Optional[float] = None,
-        force: Optional[bool] = None,
+        value: str | Sequence[str] | None = None,
+        index: int | Sequence[int] | None = None,
+        label: str | Sequence[str] | None = None,
+        element: ElementHandle | Sequence[ElementHandle] | None = None,
+        timeout: float | None = None,
+        force: bool | None = None,
     ) -> list[str]:
         options: list[dict[str, Any]] = []
         for item in _listify(value):
@@ -541,11 +541,11 @@ class Actions:
         resolver: Resolver,
         checked: bool,
         *,
-        position: Optional[dict[str, float]] = None,
-        timeout: Optional[float] = None,
-        force: Optional[bool] = None,
-        no_wait_after: Optional[bool] = None,
-        trial: Optional[bool] = None,
+        position: dict[str, float] | None = None,
+        timeout: float | None = None,
+        force: bool | None = None,
+        no_wait_after: bool | None = None,
+        trial: bool | None = None,
     ) -> None:
         deadline = self._deadline(timeout)
         element = await self._resolve(resolver, deadline, [])
@@ -565,9 +565,9 @@ class Actions:
     async def set_input_files(
         self,
         resolver: Resolver,
-        files: Union[str, Path, FilePayload, Sequence[Union[str, Path]], Sequence[FilePayload]],
+        files: str | Path | FilePayload | Sequence[str | Path] | Sequence[FilePayload],
         *,
-        timeout: Optional[float] = None,
+        timeout: float | None = None,
     ) -> None:
         deadline = self._deadline(timeout)
         items = list(files) if isinstance(files, (list, tuple)) else [files]
@@ -598,7 +598,7 @@ class Actions:
                     element, _SET_FILES_FROM_PAYLOADS, [{'value': payloads}]
                 )
                 return
-            paths: list[Union[str, Path]] = []
+            paths: list[str | Path] = []
             for item in items:
                 path = Path(str(item)).resolve()
                 if not path.exists():
@@ -612,8 +612,8 @@ class Actions:
         self,
         resolver: Resolver,
         type: str,
-        event_init: Optional[dict[str, Any]] = None,
-        timeout: Optional[float] = None,
+        event_init: dict[str, Any] | None = None,
+        timeout: float | None = None,
     ) -> None:
         deadline = self._deadline(timeout)
 
@@ -624,7 +624,7 @@ class Actions:
 
         await self._retry(resolver, deadline, attempt, 'dispatchEvent')
 
-    async def scroll_into_view(self, resolver: Resolver, timeout: Optional[float] = None) -> None:
+    async def scroll_into_view(self, resolver: Resolver, timeout: float | None = None) -> None:
         deadline = self._deadline(timeout)
 
         async def attempt(element: WebElement, log: list[str]) -> None:
@@ -635,7 +635,7 @@ class Actions:
     # ------------------------------------------------------------ readers
 
     async def _read(
-        self, resolver: Resolver, timeout: Optional[float], body: str, args: list[Any]
+        self, resolver: Resolver, timeout: float | None, body: str, args: list[Any]
     ) -> Any:
         deadline = self._deadline(timeout)
 
@@ -647,18 +647,16 @@ class Actions:
         return await self._retry(resolver, deadline, attempt, 'read')
 
     async def get_attribute(
-        self, resolver: Resolver, name: str, timeout: Optional[float] = None
-    ) -> Optional[str]:
+        self, resolver: Resolver, name: str, timeout: float | None = None
+    ) -> str | None:
         return await self._read(
             resolver, timeout, 'function(name) { return this.getAttribute(name); }', [name]
         )
 
-    async def text_content(
-        self, resolver: Resolver, timeout: Optional[float] = None
-    ) -> Optional[str]:
+    async def text_content(self, resolver: Resolver, timeout: float | None = None) -> str | None:
         return await self._read(resolver, timeout, 'function() { return this.textContent; }', [])
 
-    async def inner_text(self, resolver: Resolver, timeout: Optional[float] = None) -> str:
+    async def inner_text(self, resolver: Resolver, timeout: float | None = None) -> str:
         return await self._read(
             resolver,
             timeout,
@@ -669,10 +667,10 @@ class Actions:
             [],
         )
 
-    async def inner_html(self, resolver: Resolver, timeout: Optional[float] = None) -> str:
+    async def inner_html(self, resolver: Resolver, timeout: float | None = None) -> str:
         return await self._read(resolver, timeout, 'function() { return this.innerHTML; }', [])
 
-    async def input_value(self, resolver: Resolver, timeout: Optional[float] = None) -> str:
+    async def input_value(self, resolver: Resolver, timeout: float | None = None) -> str:
         deadline = self._deadline(timeout)
 
         async def attempt(element: WebElement, log: list[str]) -> str:
@@ -681,7 +679,7 @@ class Actions:
         return await self._retry(resolver, deadline, attempt, 'inputValue')
 
     async def element_state(
-        self, resolver: Resolver, state: str, timeout: Optional[float] = None
+        self, resolver: Resolver, state: str, timeout: float | None = None
     ) -> bool:
         element = await resolver.find()
         if element is None:
@@ -697,7 +695,7 @@ class Actions:
         return bool(result['matches'])
 
     async def wait_for_element_state(
-        self, resolver: Resolver, state: str, timeout: Optional[float] = None
+        self, resolver: Resolver, state: str, timeout: float | None = None
     ) -> None:
         deadline = self._deadline(timeout)
         if state == 'stable':
@@ -714,8 +712,8 @@ class Actions:
         await self._retry(resolver, deadline, attempt, 'waitForElementState')
 
     async def bounding_box(
-        self, resolver: Resolver, timeout: Optional[float] = None
-    ) -> Optional[dict[str, float]]:
+        self, resolver: Resolver, timeout: float | None = None
+    ) -> dict[str, float] | None:
         element = await resolver.find()
         if element is None:
             deadline = self._deadline(timeout)
@@ -736,11 +734,11 @@ class Actions:
         self,
         resolver: Resolver,
         *,
-        timeout: Optional[float] = None,
+        timeout: float | None = None,
         type: str = 'png',
-        path: Optional[Union[str, Path]] = None,
-        quality: Optional[int] = None,
-        omit_background: Optional[bool] = None,
+        path: str | Path | None = None,
+        quality: int | None = None,
+        omit_background: bool | None = None,
         **_: Any,
     ) -> bytes:
         deadline = self._deadline(timeout)
@@ -786,7 +784,7 @@ function(payloads) {
 """
 
 
-def _hold_seconds(delay: Optional[float]) -> float:
+def _hold_seconds(delay: float | None) -> float:
     """Button hold time: the caller's ``delay`` in ms, else a human-like 40-110 ms."""
     if delay:
         return delay / 1000

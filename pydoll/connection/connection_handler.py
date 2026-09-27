@@ -22,7 +22,7 @@ from pydoll.protocol.base import CDPEvent, Response
 from pydoll.utils import get_browser_ws_address
 
 if TYPE_CHECKING:
-    from typing import Any, AsyncGenerator, Awaitable, Callable, Coroutine, Optional, Union
+    from typing import Any, AsyncGenerator, Awaitable, Callable, Coroutine
 
     from websockets.asyncio.client import connect as Connect
 
@@ -41,11 +41,11 @@ class ConnectionHandler:
 
     def __init__(
         self,
-        connection_port: Optional[int] = None,
-        page_id: Optional[str] = None,
+        connection_port: int | None = None,
+        page_id: str | None = None,
         ws_address_resolver: Callable[[int], Coroutine[Any, Any, str]] = get_browser_ws_address,
         ws_connector: type[Connect] = websockets.connect,
-        ws_address: Optional[str] = None,
+        ws_address: str | None = None,
     ):
         """
         Initialize connection handler.
@@ -62,10 +62,10 @@ class ConnectionHandler:
         self._ws_address_resolver = ws_address_resolver
         self._ws_connector = ws_connector
         self._ws_address = ws_address
-        self._ws_connection: Optional[ClientConnection] = None
+        self._ws_connection: ClientConnection | None = None
         self._command_manager = CommandsManager()
         self._events_handler = EventsManager()
-        self._receive_task: Optional[asyncio.Task] = None
+        self._receive_task: asyncio.Task | None = None
         self._connection_lock = asyncio.Lock()
         logger.info('ConnectionHandler initialized.')
         logger.debug(
@@ -360,7 +360,7 @@ class ConnectionHandler:
             self._command_manager.fail_all_pending(WebSocketConnectionClosed())
             await self._events_handler.stop()
 
-    async def _incoming_messages(self) -> AsyncGenerator[Union[str, bytes], None]:
+    async def _incoming_messages(self) -> AsyncGenerator[str | bytes, None]:
         """Generator yielding raw messages from WebSocket connection."""
         ws = cast(ClientConnection, self._ws_connection)
 
@@ -384,7 +384,7 @@ class ConnectionHandler:
             self._events_handler.enqueue_event(cast(CDPEvent, message))
 
     @staticmethod
-    def _parse_message(raw_message: str) -> Union[CDPEvent, Response, None]:
+    def _parse_message(raw_message: str) -> CDPEvent | Response | None:
         """Parse raw message string into JSON object."""
         try:
             return json.loads(raw_message)
@@ -393,7 +393,7 @@ class ConnectionHandler:
             return None
 
     @staticmethod
-    def _is_command_response(message: Union[CDPEvent, Response]) -> bool:
+    def _is_command_response(message: CDPEvent | Response) -> bool:
         """Determine if message is command response or event notification."""
         return 'id' in message and isinstance(message.get('id'), int)
 

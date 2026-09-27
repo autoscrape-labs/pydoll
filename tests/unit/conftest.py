@@ -10,7 +10,7 @@ the real handler and FakeCDPServer in the integration suite instead.
 
 from __future__ import annotations
 
-from typing import Awaitable, Callable, Optional
+from typing import Awaitable, Callable
 
 import pytest
 
@@ -50,7 +50,7 @@ class FakeConnection:
         """Every recorded command matching a CDP method, in arrival order."""
         return [command for command in self.commands if command.get('method') == method]
 
-    def last_command(self, method: Optional[str] = None) -> dict:
+    def last_command(self, method: str | None = None) -> dict:
         """The most recent recorded command, optionally filtered by method."""
         commands = self.commands_for(method) if method is not None else self.commands
         if not commands:

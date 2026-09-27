@@ -8,7 +8,7 @@ import inspect
 import json
 import mimetypes
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Optional, Union, cast
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, cast
 
 from pydoll.commands import NetworkCommands
 from pydoll.playwright._errors import Error
@@ -20,7 +20,7 @@ if TYPE_CHECKING:
     from pydoll.playwright._frame import Frame
     from pydoll.playwright._page import Page
 
-RouteHandler = Union[Callable[['Route'], Any], Callable[['Route', 'Request'], Any]]
+RouteHandler = Callable[['Route'], Any] | Callable[['Route', 'Request'], Any]
 
 _ERROR_REASONS = {
     'aborted': ErrorReason.ABORTED,
@@ -48,7 +48,7 @@ class Request:
         page: Page,
         request_id: str,
         params: dict[str, Any],
-        redirected_from: Optional[Request] = None,
+        redirected_from: Request | None = None,
     ) -> None:
         self._page = page
         self._request_id = request_id
@@ -58,20 +58,20 @@ class Request:
         self._headers: dict[str, str] = {
             key.lower(): value for key, value in raw.get('headers', {}).items()
         }
-        self._post_data: Optional[str] = raw.get('postData')
+        self._post_data: str | None = raw.get('postData')
         self._resource_type: str = (params.get('type') or 'other').lower()
-        self._frame_id: Optional[str] = params.get('frameId')
+        self._frame_id: str | None = params.get('frameId')
         self._loader_id: str = params.get('loaderId', '')
         self._is_navigation = bool(params.get('loaderId')) and params.get('loaderId') == request_id
         self._timing: dict[str, Any] = {
             'startTime': params.get('wallTime', 0) * 1000 if params.get('wallTime') else 0
         }
         self._redirected_from = redirected_from
-        self._redirected_to: Optional[Request] = None
-        self._response: Optional[Response] = None
-        self._failure: Optional[str] = None
-        self._response_future: asyncio.Future[Optional[Response]] = page._loop.create_future()
-        self._finished_future: asyncio.Future[Optional[str]] = page._loop.create_future()
+        self._redirected_to: Request | None = None
+        self._response: Response | None = None
+        self._failure: str | None = None
+        self._response_future: asyncio.Future[Response | None] = page._loop.create_future()
+        self._finished_future: asyncio.Future[str | None] = page._loop.create_future()
         if redirected_from is not None:
             redirected_from._redirected_to = self
 
@@ -91,7 +91,7 @@ class Request:
         return self._method
 
     @property
-    def post_data(self) -> Optional[str]:
+    def post_data(self) -> str | None:
         return self._post_data
 
     @property
@@ -109,7 +109,7 @@ class Request:
         return json.loads(self._post_data)
 
     @property
-    def post_data_buffer(self) -> Optional[bytes]:
+    def post_data_buffer(self) -> bytes | None:
         return self._post_data.encode() if self._post_data is not None else None
 
     @property
@@ -122,7 +122,7 @@ class Request:
     async def headers_array(self) -> list[dict[str, str]]:
         return [{'name': name, 'value': value} for name, value in self._headers.items()]
 
-    async def header_value(self, name: str) -> Optional[str]:
+    async def header_value(self, name: str) -> str | None:
         return self._headers.get(name.lower())
 
     @property
@@ -134,15 +134,15 @@ class Request:
         return None
 
     @property
-    def redirected_from(self) -> Optional[Request]:
+    def redirected_from(self) -> Request | None:
         return self._redirected_from
 
     @property
-    def redirected_to(self) -> Optional[Request]:
+    def redirected_to(self) -> Request | None:
         return self._redirected_to
 
     @property
-    def failure(self) -> Optional[str]:
+    def failure(self) -> str | None:
         return self._failure
 
     @property
@@ -152,7 +152,7 @@ class Request:
     def is_navigation_request(self) -> bool:
         return self._is_navigation
 
-    async def response(self) -> Optional[Response]:
+    async def response(self) -> Response | None:
         return await self._response_future
 
     async def sizes(self) -> dict[str, int]:
@@ -189,7 +189,7 @@ class Response:
         self._security_details = raw.get('securityDetails')
         self._protocol = raw.get('protocol', '')
         self._frame_id = params.get('frameId')
-        self._body: Optional[bytes] = None
+        self._body: bytes | None = None
         request._response = self
         if not request._response_future.done():
             request._response_future.set_result(self)
@@ -223,7 +223,7 @@ class Response:
     async def headers_array(self) -> list[dict[str, str]]:
         return [{'name': name, 'value': value} for name, value in self._headers.items()]
 
-    async def header_value(self, name: str) -> Optional[str]:
+    async def header_value(self, name: str) -> str | None:
         return self._headers.get(name.lower())
 
     async def header_values(self, name: str) -> list[str]:
@@ -242,16 +242,16 @@ class Response:
     def frame(self) -> Frame:
         return self._page._frame_for_id(self._frame_id or '')
 
-    async def server_addr(self) -> Optional[dict[str, Any]]:
+    async def server_addr(self) -> dict[str, Any] | None:
         return self._remote_address if self._remote_address.get('ipAddress') else None
 
-    async def security_details(self) -> Optional[dict[str, Any]]:
+    async def security_details(self) -> dict[str, Any] | None:
         return self._security_details
 
     async def http_version(self) -> str:
         return self._protocol or 'HTTP/1.1'
 
-    async def finished(self) -> Optional[str]:
+    async def finished(self) -> str | None:
         return await self._request._finished_future
 
     async def body(self) -> bytes:
@@ -303,7 +303,7 @@ class NetworkManager:
 
     def on_request_will_be_sent(self, params: dict[str, Any]) -> None:
         request_id = params['requestId']
-        redirected_from: Optional[Request] = None
+        redirected_from: Request | None = None
         if 'redirectResponse' in params and request_id in self._requests:
             redirected_from = self._requests[request_id]
             Response(
@@ -341,7 +341,7 @@ class NetworkManager:
         self._finish(request, request._failure)
         self._page.emit('requestfailed', request)
 
-    def _finish(self, request: Request, error: Optional[str]) -> None:
+    def _finish(self, request: Request, error: str | None) -> None:
         self._in_flight.discard(request._request_id)
         if not request._response_future.done():
             request._response_future.set_result(None)
@@ -350,19 +350,19 @@ class NetworkManager:
         self._notify()
         self._page._navigation._notify()
 
-    def navigation_failure(self, loader_id: str) -> Optional[str]:
+    def navigation_failure(self, loader_id: str) -> str | None:
         """The error text of a failed navigation request, if the loader failed."""
         for request in list(self._requests.values()):
             if request._loader_id == loader_id and request._is_navigation and request._failure:
                 return request._failure
         return None
 
-    def request_for(self, request_id: Optional[str]) -> Optional[Request]:
+    def request_for(self, request_id: str | None) -> Request | None:
         if request_id is None:
             return None
         return self._requests.get(request_id)
 
-    async def navigation_response(self, loader_id: str, deadline: Deadline) -> Optional[Response]:
+    async def navigation_response(self, loader_id: str, deadline: Deadline) -> Response | None:
         while True:
             for request in list(self._requests.values()):
                 if request._loader_id == loader_id and request._is_navigation:
@@ -390,12 +390,12 @@ class Route:
     def __init__(self, page: Page, params: dict[str, Any], request: Request) -> None:
         self._page = page
         self._interception_id: str = params['requestId']
-        self._network_id: Optional[str] = params.get('networkId')
+        self._network_id: str | None = params.get('networkId')
         self._request = request
         self._handled = False
         self._at_response_stage = 'responseStatusCode' in params
         self._fallback_overrides: dict[str, Any] = {}
-        self._intercepted: Optional[asyncio.Future[APIResponse]] = None
+        self._intercepted: asyncio.Future[APIResponse] | None = None
 
     @property
     def request(self) -> Request:
@@ -406,17 +406,17 @@ class Route:
             raise Error('Route is already handled!')
         self._handled = True
 
-    async def abort(self, error_code: Optional[str] = None) -> None:
+    async def abort(self, error_code: str | None = None) -> None:
         self._mark()
         reason = _ERROR_REASONS.get((error_code or 'failed').lower(), ErrorReason.FAILED)
         await self._page._tab.fail_request(self._interception_id, reason)
 
     async def continue_(
         self,
-        url: Optional[str] = None,
-        method: Optional[str] = None,
-        headers: Optional[dict[str, str]] = None,
-        post_data: Union[str, bytes, dict[str, Any], None] = None,
+        url: str | None = None,
+        method: str | None = None,
+        headers: dict[str, str] | None = None,
+        post_data: str | bytes | dict[str, Any] | None = None,
     ) -> None:
         self._mark()
         overrides = dict(self._fallback_overrides)
@@ -457,10 +457,10 @@ class Route:
 
     async def fallback(
         self,
-        url: Optional[str] = None,
-        method: Optional[str] = None,
-        headers: Optional[dict[str, str]] = None,
-        post_data: Union[str, bytes, dict[str, Any], None] = None,
+        url: str | None = None,
+        method: str | None = None,
+        headers: dict[str, str] | None = None,
+        post_data: str | bytes | dict[str, Any] | None = None,
     ) -> None:
         for key, value in {
             'url': url,
@@ -473,13 +473,13 @@ class Route:
 
     async def fulfill(
         self,
-        status: Optional[int] = None,
-        headers: Optional[dict[str, str]] = None,
-        body: Union[str, bytes, None] = None,
+        status: int | None = None,
+        headers: dict[str, str] | None = None,
+        body: str | bytes | None = None,
         json: Any = None,  # noqa: A002
-        path: Union[str, Path, None] = None,
-        content_type: Optional[str] = None,
-        response: Optional[APIResponse] = None,
+        path: str | Path | None = None,
+        content_type: str | None = None,
+        response: APIResponse | None = None,
     ) -> None:
         self._mark()
         response_headers: dict[str, str] = {}
@@ -517,13 +517,13 @@ class Route:
 
     async def fetch(
         self,
-        url: Optional[str] = None,
-        method: Optional[str] = None,
-        headers: Optional[dict[str, str]] = None,
-        post_data: Union[str, bytes, dict[str, Any], None] = None,
-        max_redirects: Optional[int] = None,
-        max_retries: Optional[int] = None,
-        timeout: Optional[float] = None,
+        url: str | None = None,
+        method: str | None = None,
+        headers: dict[str, str] | None = None,
+        post_data: str | bytes | dict[str, Any] | None = None,
+        max_redirects: int | None = None,
+        max_retries: int | None = None,
+        timeout: float | None = None,
     ) -> APIResponse:
         """Let the request reach the network and capture its response for ``fulfill``.
 
@@ -634,7 +634,7 @@ class APIResponse:
 class RouteEntry:
     """A registered route: matcher, handler and remaining invocations."""
 
-    def __init__(self, matcher: URLMatcher, handler: RouteHandler, times: Optional[int]) -> None:
+    def __init__(self, matcher: URLMatcher, handler: RouteHandler, times: int | None) -> None:
         self.matcher = matcher
         self.handler = handler
         self.times = times
@@ -691,7 +691,7 @@ class Router:
 
 
 def make_entry(
-    url: URLMatch, handler: RouteHandler, times: Optional[int], base_url: Optional[str]
+    url: URLMatch, handler: RouteHandler, times: int | None, base_url: str | None
 ) -> RouteEntry:
     return RouteEntry(URLMatcher(url, base_url), handler, times)
 
@@ -699,7 +699,7 @@ def make_entry(
 async def wait_for_matching(
     page: Page,
     event: str,
-    matcher: Union[URLMatch, Callable[[Any], Union[bool, Awaitable[bool]]]],
+    matcher: URLMatch | Callable[[Any], bool | Awaitable[bool]],
     deadline: Deadline,
 ) -> Any:
     future: asyncio.Future[Any] = page._loop.create_future()

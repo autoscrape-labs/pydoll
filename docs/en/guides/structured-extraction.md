@@ -234,14 +234,12 @@ Each `.contributor` element becomes the scope for one `Contributor` instance.
 
 ## Optional fields and defaults
 
-Fields that might not be present on every page should use `Optional` with a `default`:
+Fields that might not be present on every page should allow `None` and carry a `default`:
 
 ```python
-from typing import Optional
-
 class Article(ExtractionModel):
     title: str = Field(selector='h1', description='Title')
-    subtitle: Optional[str] = Field(
+    subtitle: str | None = Field(
         selector='.subtitle',
         description='Optional subtitle',
         default=None,

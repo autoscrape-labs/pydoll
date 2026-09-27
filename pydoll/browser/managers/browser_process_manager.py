@@ -1,7 +1,7 @@
 import logging
 import subprocess
 import threading
-from typing import Callable, Optional
+from typing import Callable
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +26,7 @@ class BrowserProcessManager:
 
     def __init__(
         self,
-        process_creator: Optional[Callable[[list[str]], subprocess.Popen]] = None,
+        process_creator: Callable[[list[str]], subprocess.Popen] | None = None,
     ):
         """
         Initialize browser process manager.
@@ -37,7 +37,7 @@ class BrowserProcessManager:
                 Uses default subprocess implementation if None.
         """
         self._process_creator = process_creator or self._default_process_creator
-        self._process: Optional[subprocess.Popen] = None
+        self._process: subprocess.Popen | None = None
         logger.debug(
             f'BrowserProcessManager initialized; custom process_creator={bool(process_creator)}'
         )

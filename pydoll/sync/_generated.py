@@ -30,7 +30,7 @@ from pydoll.browser.requests.response import Response as _ResponseImpl
 
 import logging
 import platform
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 from pydoll.browser.chromium.base import Browser
 from pydoll.browser.managers import ChromiumOptionsManager
 from pydoll.exceptions import UnsupportedOS
@@ -43,7 +43,7 @@ import shutil
 from abc import ABC, abstractmethod
 from contextlib import suppress
 from functools import partial
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Optional, overload
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, overload
 from urllib.parse import urlsplit, urlunsplit
 from pydoll.browser.managers import BrowserProcessManager, ProxyManager, TempDirectoryManager
 from pydoll.commands import BrowserCommands, EmulationCommands, FetchCommands, RuntimeCommands, StorageCommands, TargetCommands
@@ -77,7 +77,7 @@ import zipfile
 from contextlib import asynccontextmanager
 from pathlib import Path
 from tempfile import mkdtemp
-from typing import TYPE_CHECKING, Any, AsyncGenerator, Awaitable, Callable, Optional, TypeVar, Union, cast, overload
+from typing import TYPE_CHECKING, Any, AsyncGenerator, Awaitable, Callable, TypeVar, cast, overload
 import aiofiles
 from pydoll.browser.fingerprint_applier import FingerprintApplier
 from pydoll.commands import DomCommands, FetchCommands, NetworkCommands, PageCommands, RuntimeCommands, StorageCommands, TargetCommands
@@ -110,14 +110,14 @@ from pydoll.protocol.page.methods import CaptureScreenshotResponse, GetResourceC
 from pydoll.protocol.runtime.methods import EvaluateResponse
 from pydoll.protocol.target.methods import AttachToTargetResponse, GetTargetsResponse
 T = TypeVar('T', bound='ExtractionModel')
-from typing import TYPE_CHECKING, Optional, Sequence, Union, cast, overload
+from typing import TYPE_CHECKING, Sequence, cast, overload
 from pydoll.commands import DomCommands, RuntimeCommands
 from pydoll.connection.connection_handler import ConnectionHandler
 from pydoll.constants import By, Scripts
 from pydoll.elements.utils import SelectorParser
 from pydoll.exceptions import CommandFailed, ElementNotFound, ScriptException, WaitElementTimeout
 from pydoll.utils import PollInterval
-from typing import Literal, Optional, Union
+from typing import Literal
 from pydoll.protocol.dom.methods import DescribeNodeResponse
 from pydoll.protocol.dom.types import Node
 from pydoll.protocol.runtime.methods import CallFunctionOnParams, CallFunctionOnResponse, EvaluateParams, EvaluateResponse, GetPropertiesResponse
@@ -137,13 +137,12 @@ from pydoll.protocol.dom.methods import DescribeNodeResponse, GetBoxModelRespons
 from pydoll.protocol.dom.types import Quad
 from pydoll.protocol.page.methods import CaptureScreenshotResponse
 from pydoll.protocol.runtime.methods import GetPropertiesResponse
-from typing import TYPE_CHECKING
 from pydoll.commands import DomCommands
 from pydoll.protocol.dom.types import ShadowRootType
 from pydoll.protocol.dom.methods import GetOuterHTMLResponse
 import random
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Optional, Protocol, cast
+from typing import TYPE_CHECKING, Any, Protocol, cast
 from pydoll.commands import InputCommands
 from pydoll.constants import CHAR_TO_KEY_INFO, DEFAULT_TYPO_PROBABILITY, QWERTY_NEIGHBORS, Key, TypoType
 from pydoll.protocol.input.types import KeyEventType, KeyModifier
@@ -163,7 +162,7 @@ from pydoll.protocol.input.types import MouseEventType
 from pydoll.interactions.scroll import ScrollTimingConfig
 import json as jsonlib
 from collections.abc import AsyncIterator
-from typing import TYPE_CHECKING, Any, Callable, Optional, Union, cast
+from typing import TYPE_CHECKING, Any, Callable, cast
 from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 from pydoll.browser.requests.har_recorder import HarCapture, HarRecorder
 from pydoll.commands.runtime_commands import RuntimeCommands
@@ -172,7 +171,7 @@ from pydoll.exceptions import HTTPError
 from pydoll.protocol.network.events import NetworkEvent, RequestWillBeSentEvent, RequestWillBeSentExtraInfoEvent, ResponseReceivedEvent, ResponseReceivedExtraInfoEvent, ResponseReceivedExtraInfoEventParams
 from pydoll.protocol.network.types import CookieParam, ResourceType
 from pydoll.protocol.network.events import RequestWillBeSentEventParams, RequestWillBeSentExtraInfoEventParams, ResponseReceivedEventParams
-from typing import TYPE_CHECKING, Any, Optional, Union
+from typing import TYPE_CHECKING, Any
 from pydoll.protocol.network.types import CookieParam
 
 
@@ -183,7 +182,7 @@ class Chrome(SyncBase):
     """Chrome browser implementation for CDP automation."""
     _impl: _ChromeImpl
 
-    def __init__(self, options: Optional[ChromiumOptions]=None, connection_port: Optional[int]=None) -> None:
+    def __init__(self, options: ChromiumOptions | None=None, connection_port: int | None=None) -> None:
         """
         Initialize Chrome browser instance.
 
@@ -251,7 +250,7 @@ class Chrome(SyncBase):
         """
         return mapping.from_impl(self._run(self._impl.close()))
 
-    def create_browser_context(self, proxy_server: Optional[str]=None, proxy_bypass_list: Optional[str]=None) -> str:
+    def create_browser_context(self, proxy_server: str | None=None, proxy_bypass_list: str | None=None) -> str:
         """
         Create isolated browser context (like incognito).
 
@@ -283,7 +282,7 @@ class Chrome(SyncBase):
         """Get all browser context IDs including the default context."""
         return mapping.from_impl(self._run(self._impl.get_browser_contexts()))
 
-    def new_tab(self, url: str='', browser_context_id: Optional[str]=None) -> Tab:
+    def new_tab(self, url: str='', browser_context_id: str | None=None) -> Tab:
         """
         Create new tab for page interaction.
 
@@ -322,11 +321,11 @@ class Chrome(SyncBase):
     def get_tab_by_target(self, target: TargetInfo) -> Tab:
         return mapping.from_impl(self._run(self._impl.get_tab_by_target(target=mapping.to_impl(target))))
 
-    def set_download_path(self, path: str, browser_context_id: Optional[str]=None):
+    def set_download_path(self, path: str, browser_context_id: str | None=None):
         """Set download directory path (convenience method for set_download_behavior)."""
         return mapping.from_impl(self._run(self._impl.set_download_path(path=mapping.to_impl(path), browser_context_id=mapping.to_impl(browser_context_id))))
 
-    def set_download_behavior(self, behavior: DownloadBehavior, download_path: Optional[str]=None, browser_context_id: Optional[str]=None, events_enabled: bool=False):
+    def set_download_behavior(self, behavior: DownloadBehavior, download_path: str | None=None, browser_context_id: str | None=None, events_enabled: bool=False):
         """
         Configure download handling.
 
@@ -338,15 +337,15 @@ class Chrome(SyncBase):
         """
         return mapping.from_impl(self._run(self._impl.set_download_behavior(behavior=mapping.to_impl(behavior), download_path=mapping.to_impl(download_path), browser_context_id=mapping.to_impl(browser_context_id), events_enabled=mapping.to_impl(events_enabled))))
 
-    def delete_all_cookies(self, browser_context_id: Optional[str]=None):
+    def delete_all_cookies(self, browser_context_id: str | None=None):
         """Delete all cookies (session, persistent, third-party) from browser or context."""
         return mapping.from_impl(self._run(self._impl.delete_all_cookies(browser_context_id=mapping.to_impl(browser_context_id))))
 
-    def set_cookies(self, cookies: list[CookieParam], browser_context_id: Optional[str]=None):
+    def set_cookies(self, cookies: list[CookieParam], browser_context_id: str | None=None):
         """Set multiple cookies in browser or context."""
         return mapping.from_impl(self._run(self._impl.set_cookies(cookies=mapping.to_impl(cookies), browser_context_id=mapping.to_impl(browser_context_id))))
 
-    def get_cookies(self, browser_context_id: Optional[str]=None) -> list[Cookie]:
+    def get_cookies(self, browser_context_id: str | None=None) -> list[Cookie]:
         """Get all cookies from browser or context.
 
         Note:
@@ -394,7 +393,7 @@ class Chrome(SyncBase):
         """
         return mapping.from_impl(self._run(self._impl.set_window_bounds(bounds=mapping.to_impl(bounds))))
 
-    def grant_permissions(self, permissions: list[PermissionType], origin: Optional[str]=None, browser_context_id: Optional[str]=None):
+    def grant_permissions(self, permissions: list[PermissionType], origin: str | None=None, browser_context_id: str | None=None):
         """
         Grant browser permissions (geolocation, notifications, camera, etc.).
 
@@ -407,7 +406,7 @@ class Chrome(SyncBase):
         """
         return mapping.from_impl(self._run(self._impl.grant_permissions(permissions=mapping.to_impl(permissions), origin=mapping.to_impl(origin), browser_context_id=mapping.to_impl(browser_context_id))))
 
-    def reset_permissions(self, browser_context_id: Optional[str]=None):
+    def reset_permissions(self, browser_context_id: str | None=None):
         """Reset all permissions to defaults and restore prompting behavior."""
         return mapping.from_impl(self._run(self._impl.reset_permissions(browser_context_id=mapping.to_impl(browser_context_id))))
 
@@ -438,7 +437,7 @@ class Chrome(SyncBase):
         """Remove callback from browser."""
         return mapping.from_impl(self._run(self._impl.remove_callback(callback_id=mapping.to_impl(callback_id))))
 
-    def enable_fetch_events(self, handle_auth_requests: bool=False, resource_type: Optional[ResourceType]=None):
+    def enable_fetch_events(self, handle_auth_requests: bool=False, resource_type: ResourceType | None=None):
         """
         Enable network request interception via Fetch domain.
 
@@ -466,7 +465,7 @@ class Chrome(SyncBase):
         """Disable runtime events."""
         return mapping.from_impl(self._run(self._impl.disable_runtime_events()))
 
-    def continue_request(self, request_id: str, url: Optional[str]=None, method: Optional[RequestMethod]=None, post_data: Optional[str]=None, headers: Optional[list[HeaderEntry]]=None, intercept_response: Optional[bool]=None):
+    def continue_request(self, request_id: str, url: str | None=None, method: RequestMethod | None=None, post_data: str | None=None, headers: list[HeaderEntry] | None=None, intercept_response: bool | None=None):
         """
         Continue paused request without modifications.
         """
@@ -476,7 +475,7 @@ class Chrome(SyncBase):
         """Fail request with error code."""
         return mapping.from_impl(self._run(self._impl.fail_request(request_id=mapping.to_impl(request_id), error_reason=mapping.to_impl(error_reason))))
 
-    def fulfill_request(self, request_id: str, response_code: int, response_headers: Optional[list[HeaderEntry]]=None, body: Optional[str]=None, response_phrase: Optional[str]=None):
+    def fulfill_request(self, request_id: str, response_code: int, response_headers: list[HeaderEntry] | None=None, body: str | None=None, response_phrase: str | None=None):
         """Fulfill request with response data."""
         return mapping.from_impl(self._run(self._impl.fulfill_request(request_id=mapping.to_impl(request_id), response_code=mapping.to_impl(response_code), response_headers=mapping.to_impl(response_headers), body=mapping.to_impl(body), response_phrase=mapping.to_impl(response_phrase))))
 
@@ -505,7 +504,7 @@ class Edge(SyncBase):
     """Edge browser implementation for CDP automation."""
     _impl: _EdgeImpl
 
-    def __init__(self, options: Optional[Options]=None, connection_port: Optional[int]=None) -> None:
+    def __init__(self, options: Options | None=None, connection_port: int | None=None) -> None:
         """
         Initialize Edge browser instance.
 
@@ -573,7 +572,7 @@ class Edge(SyncBase):
         """
         return mapping.from_impl(self._run(self._impl.close()))
 
-    def create_browser_context(self, proxy_server: Optional[str]=None, proxy_bypass_list: Optional[str]=None) -> str:
+    def create_browser_context(self, proxy_server: str | None=None, proxy_bypass_list: str | None=None) -> str:
         """
         Create isolated browser context (like incognito).
 
@@ -605,7 +604,7 @@ class Edge(SyncBase):
         """Get all browser context IDs including the default context."""
         return mapping.from_impl(self._run(self._impl.get_browser_contexts()))
 
-    def new_tab(self, url: str='', browser_context_id: Optional[str]=None) -> Tab:
+    def new_tab(self, url: str='', browser_context_id: str | None=None) -> Tab:
         """
         Create new tab for page interaction.
 
@@ -644,11 +643,11 @@ class Edge(SyncBase):
     def get_tab_by_target(self, target: TargetInfo) -> Tab:
         return mapping.from_impl(self._run(self._impl.get_tab_by_target(target=mapping.to_impl(target))))
 
-    def set_download_path(self, path: str, browser_context_id: Optional[str]=None):
+    def set_download_path(self, path: str, browser_context_id: str | None=None):
         """Set download directory path (convenience method for set_download_behavior)."""
         return mapping.from_impl(self._run(self._impl.set_download_path(path=mapping.to_impl(path), browser_context_id=mapping.to_impl(browser_context_id))))
 
-    def set_download_behavior(self, behavior: DownloadBehavior, download_path: Optional[str]=None, browser_context_id: Optional[str]=None, events_enabled: bool=False):
+    def set_download_behavior(self, behavior: DownloadBehavior, download_path: str | None=None, browser_context_id: str | None=None, events_enabled: bool=False):
         """
         Configure download handling.
 
@@ -660,15 +659,15 @@ class Edge(SyncBase):
         """
         return mapping.from_impl(self._run(self._impl.set_download_behavior(behavior=mapping.to_impl(behavior), download_path=mapping.to_impl(download_path), browser_context_id=mapping.to_impl(browser_context_id), events_enabled=mapping.to_impl(events_enabled))))
 
-    def delete_all_cookies(self, browser_context_id: Optional[str]=None):
+    def delete_all_cookies(self, browser_context_id: str | None=None):
         """Delete all cookies (session, persistent, third-party) from browser or context."""
         return mapping.from_impl(self._run(self._impl.delete_all_cookies(browser_context_id=mapping.to_impl(browser_context_id))))
 
-    def set_cookies(self, cookies: list[CookieParam], browser_context_id: Optional[str]=None):
+    def set_cookies(self, cookies: list[CookieParam], browser_context_id: str | None=None):
         """Set multiple cookies in browser or context."""
         return mapping.from_impl(self._run(self._impl.set_cookies(cookies=mapping.to_impl(cookies), browser_context_id=mapping.to_impl(browser_context_id))))
 
-    def get_cookies(self, browser_context_id: Optional[str]=None) -> list[Cookie]:
+    def get_cookies(self, browser_context_id: str | None=None) -> list[Cookie]:
         """Get all cookies from browser or context.
 
         Note:
@@ -716,7 +715,7 @@ class Edge(SyncBase):
         """
         return mapping.from_impl(self._run(self._impl.set_window_bounds(bounds=mapping.to_impl(bounds))))
 
-    def grant_permissions(self, permissions: list[PermissionType], origin: Optional[str]=None, browser_context_id: Optional[str]=None):
+    def grant_permissions(self, permissions: list[PermissionType], origin: str | None=None, browser_context_id: str | None=None):
         """
         Grant browser permissions (geolocation, notifications, camera, etc.).
 
@@ -729,7 +728,7 @@ class Edge(SyncBase):
         """
         return mapping.from_impl(self._run(self._impl.grant_permissions(permissions=mapping.to_impl(permissions), origin=mapping.to_impl(origin), browser_context_id=mapping.to_impl(browser_context_id))))
 
-    def reset_permissions(self, browser_context_id: Optional[str]=None):
+    def reset_permissions(self, browser_context_id: str | None=None):
         """Reset all permissions to defaults and restore prompting behavior."""
         return mapping.from_impl(self._run(self._impl.reset_permissions(browser_context_id=mapping.to_impl(browser_context_id))))
 
@@ -760,7 +759,7 @@ class Edge(SyncBase):
         """Remove callback from browser."""
         return mapping.from_impl(self._run(self._impl.remove_callback(callback_id=mapping.to_impl(callback_id))))
 
-    def enable_fetch_events(self, handle_auth_requests: bool=False, resource_type: Optional[ResourceType]=None):
+    def enable_fetch_events(self, handle_auth_requests: bool=False, resource_type: ResourceType | None=None):
         """
         Enable network request interception via Fetch domain.
 
@@ -788,7 +787,7 @@ class Edge(SyncBase):
         """Disable runtime events."""
         return mapping.from_impl(self._run(self._impl.disable_runtime_events()))
 
-    def continue_request(self, request_id: str, url: Optional[str]=None, method: Optional[RequestMethod]=None, post_data: Optional[str]=None, headers: Optional[list[HeaderEntry]]=None, intercept_response: Optional[bool]=None):
+    def continue_request(self, request_id: str, url: str | None=None, method: RequestMethod | None=None, post_data: str | None=None, headers: list[HeaderEntry] | None=None, intercept_response: bool | None=None):
         """
         Continue paused request without modifications.
         """
@@ -798,7 +797,7 @@ class Edge(SyncBase):
         """Fail request with error code."""
         return mapping.from_impl(self._run(self._impl.fail_request(request_id=mapping.to_impl(request_id), error_reason=mapping.to_impl(error_reason))))
 
-    def fulfill_request(self, request_id: str, response_code: int, response_headers: Optional[list[HeaderEntry]]=None, body: Optional[str]=None, response_phrase: Optional[str]=None):
+    def fulfill_request(self, request_id: str, response_code: int, response_headers: list[HeaderEntry] | None=None, body: str | None=None, response_phrase: str | None=None):
         """Fulfill request with response data."""
         return mapping.from_impl(self._run(self._impl.fulfill_request(request_id=mapping.to_impl(request_id), response_code=mapping.to_impl(response_code), response_headers=mapping.to_impl(response_headers), body=mapping.to_impl(body), response_phrase=mapping.to_impl(response_phrase))))
 
@@ -834,12 +833,12 @@ class Tab(SyncBase):
     _impl: _TabImpl
 
     @property
-    def target_id(self) -> Optional[str]:
+    def target_id(self) -> str | None:
         """CDP target id of this tab, when known."""
         return mapping.from_impl(self._impl.target_id)
 
     @property
-    def browser_context_id(self) -> Optional[str]:
+    def browser_context_id(self) -> str | None:
         """Browser context this tab belongs to (None for the default context)."""
         return mapping.from_impl(self._impl.browser_context_id)
 
@@ -908,7 +907,7 @@ class Tab(SyncBase):
         """
         return mapping.from_impl(self._impl.mouse)
 
-    def extract(self, model: type[T], *, scope: Optional[str]=None, timeout: int=0) -> T:
+    def extract(self, model: type[T], *, scope: str | None=None, timeout: int=0) -> T:
         """Extract structured data from the page into a typed model.
 
         Args:
@@ -925,7 +924,7 @@ class Tab(SyncBase):
         """
         return mapping.from_impl(self._run(self._impl.extract(model=mapping.to_impl(model), scope=mapping.to_impl(scope), timeout=mapping.to_impl(timeout))))
 
-    def extract_all(self, model: type[T], *, scope: str, timeout: int=0, limit: Optional[int]=None) -> list[T]:
+    def extract_all(self, model: type[T], *, scope: str, timeout: int=0, limit: int | None=None) -> list[T]:
         """Extract multiple items from repeated containers on the page.
 
         Each element matching the scope selector generates one model instance.
@@ -967,7 +966,7 @@ class Tab(SyncBase):
         """Enable CDP Network domain events (requests, responses, etc.)."""
         return mapping.from_impl(self._run(self._impl.enable_network_events()))
 
-    def enable_fetch_events(self, handle_auth: bool=False, resource_type: Optional[ResourceType]=None, request_stage: Optional[RequestStage]=None):
+    def enable_fetch_events(self, handle_auth: bool=False, resource_type: ResourceType | None=None, request_stage: RequestStage | None=None):
         """
         Enable CDP Fetch domain for request interception.
 
@@ -1104,7 +1103,7 @@ class Tab(SyncBase):
         """
         return mapping.from_impl(self._run(self._impl.get_network_response_body(request_id=mapping.to_impl(request_id))))
 
-    def get_network_logs(self, filter: Optional[str]=None) -> list[RequestWillBeSentEvent]:
+    def get_network_logs(self, filter: str | None=None) -> list[RequestWillBeSentEvent]:
         """
         Get network logs.
 
@@ -1206,7 +1205,7 @@ class Tab(SyncBase):
         """
         return mapping.from_impl(self._run(self._impl.wait_for_script(script=mapping.to_impl(script), timeout=mapping.to_impl(timeout))))
 
-    def wait_for_absence(self, id: Optional[str]=None, class_name: Optional[str]=None, name: Optional[str]=None, tag_name: Optional[str]=None, text: Optional[str]=None, timeout: float=30, **attributes: str) -> None:
+    def wait_for_absence(self, id: str | None=None, class_name: str | None=None, name: str | None=None, tag_name: str | None=None, text: str | None=None, timeout: float=30, **attributes: str) -> None:
         """
         Wait until no element matches the criteria, the same criteria ``find()`` takes.
 
@@ -1240,7 +1239,7 @@ class Tab(SyncBase):
         """
         self._run(self._impl.wait_for_network_idle(idle_time=mapping.to_impl(idle_time), timeout=mapping.to_impl(timeout)))
 
-    def expect_navigation(self, url: Optional[UrlPattern]=None, timeout: float=30) -> AbstractContextManager[None]:
+    def expect_navigation(self, url: UrlPattern | None=None, timeout: float=30) -> AbstractContextManager[None]:
         """
         Wait for a navigation started inside the block, and for the new page to load.
 
@@ -1296,7 +1295,7 @@ class Tab(SyncBase):
         """
         return mapping.from_impl(self._impl.expect_response(url=mapping.to_impl(url), timeout=mapping.to_impl(timeout)))
 
-    def refresh(self, ignore_cache: bool=False, script_to_evaluate_on_load: Optional[str]=None):
+    def refresh(self, ignore_cache: bool=False, script_to_evaluate_on_load: str | None=None):
         """
         Reload current page and wait for completion.
 
@@ -1309,7 +1308,7 @@ class Tab(SyncBase):
         """
         return mapping.from_impl(self._run(self._impl.refresh(ignore_cache=mapping.to_impl(ignore_cache), script_to_evaluate_on_load=mapping.to_impl(script_to_evaluate_on_load))))
 
-    def take_screenshot(self, path: Optional[str | Path]=None, quality: int=100, beyond_viewport: bool=False, as_base64: bool=False) -> Optional[str]:
+    def take_screenshot(self, path: str | Path | None=None, quality: int=100, beyond_viewport: bool=False, as_base64: bool=False) -> str | None:
         """
         Capture screenshot of current page.
 
@@ -1329,7 +1328,7 @@ class Tab(SyncBase):
         """
         return mapping.from_impl(self._run(self._impl.take_screenshot(path=mapping.to_impl(path), quality=mapping.to_impl(quality), beyond_viewport=mapping.to_impl(beyond_viewport), as_base64=mapping.to_impl(as_base64))))
 
-    def print_to_pdf(self, path: Optional[str | Path]=None, landscape: bool=False, display_header_footer: bool=False, print_background: bool=True, scale: float=1.0, as_base64: bool=False) -> Optional[str]:
+    def print_to_pdf(self, path: str | Path | None=None, landscape: bool=False, display_header_footer: bool=False, print_background: bool=True, scale: float=1.0, as_base64: bool=False) -> str | None:
         """
         Generate PDF of current page.
 
@@ -1386,7 +1385,7 @@ class Tab(SyncBase):
         """
         return mapping.from_impl(self._run(self._impl.get_dialog_message()))
 
-    def handle_dialog(self, accept: bool, prompt_text: Optional[str]=None):
+    def handle_dialog(self, accept: bool, prompt_text: str | None=None):
         """
         Respond to JavaScript dialog.
 
@@ -1402,36 +1401,36 @@ class Tab(SyncBase):
         """
         return mapping.from_impl(self._run(self._impl.handle_dialog(accept=mapping.to_impl(accept), prompt_text=mapping.to_impl(prompt_text))))
 
-    def execute_script(self, script: str, *, object_group: Optional[str]=None, include_command_line_api: Optional[bool]=None, silent: Optional[bool]=None, context_id: Optional[int]=None, return_by_value: Optional[bool]=None, generate_preview: Optional[bool]=None, user_gesture: Optional[bool]=None, await_promise: Optional[bool]=None, throw_on_side_effect: Optional[bool]=None, timeout: Optional[float]=None, disable_breaks: Optional[bool]=None, repl_mode: Optional[bool]=None, allow_unsafe_eval_blocked_by_csp: Optional[bool]=None, unique_context_id: Optional[str]=None, serialization_options: Optional[SerializationOptions]=None) -> EvaluateResponse:
+    def execute_script(self, script: str, *, object_group: str | None=None, include_command_line_api: bool | None=None, silent: bool | None=None, context_id: int | None=None, return_by_value: bool | None=None, generate_preview: bool | None=None, user_gesture: bool | None=None, await_promise: bool | None=None, throw_on_side_effect: bool | None=None, timeout: float | None=None, disable_breaks: bool | None=None, repl_mode: bool | None=None, allow_unsafe_eval_blocked_by_csp: bool | None=None, unique_context_id: str | None=None, serialization_options: SerializationOptions | None=None) -> EvaluateResponse:
         """
         Execute JavaScript in page context.
 
         Args:
             script (str): JavaScript code to execute.
-            object_group (Optional[str]): Symbolic group name for the result (Runtime.evaluate).
-            include_command_line_api (Optional[bool]): Whether to include command line API
+            object_group (str | None): Symbolic group name for the result (Runtime.evaluate).
+            include_command_line_api (bool | None): Whether to include command line API
                 (Runtime.evaluate).
-            silent (Optional[bool]): Whether to silence exceptions (Runtime.evaluate).
-            context_id (Optional[int]): ID of the execution context to evaluate in
+            silent (bool | None): Whether to silence exceptions (Runtime.evaluate).
+            context_id (int | None): ID of the execution context to evaluate in
                 (Runtime.evaluate).
-            return_by_value (Optional[bool]): Whether to return the result by value instead of
+            return_by_value (bool | None): Whether to return the result by value instead of
                 reference (Runtime.evaluate).
-            generate_preview (Optional[bool]): Whether to generate a preview for the result
+            generate_preview (bool | None): Whether to generate a preview for the result
                 (Runtime.evaluate).
-            user_gesture (Optional[bool]): Whether to treat evaluation as initiated by user
+            user_gesture (bool | None): Whether to treat evaluation as initiated by user
                 gesture (Runtime.evaluate).
-            await_promise (Optional[bool]): Whether to await promise result (Runtime.evaluate).
-            throw_on_side_effect (Optional[bool]): Whether to throw if side effect cannot be
+            await_promise (bool | None): Whether to await promise result (Runtime.evaluate).
+            throw_on_side_effect (bool | None): Whether to throw if side effect cannot be
                 ruled out (Runtime.evaluate).
-            timeout (Optional[float]): Timeout in milliseconds (Runtime.evaluate).
-            disable_breaks (Optional[bool]): Whether to disable breakpoints during evaluation
+            timeout (float | None): Timeout in milliseconds (Runtime.evaluate).
+            disable_breaks (bool | None): Whether to disable breakpoints during evaluation
                 (Runtime.evaluate).
-            repl_mode (Optional[bool]): Whether to execute in REPL mode (Runtime.evaluate).
-            allow_unsafe_eval_blocked_by_csp (Optional[bool]): Allow unsafe evaluation
+            repl_mode (bool | None): Whether to execute in REPL mode (Runtime.evaluate).
+            allow_unsafe_eval_blocked_by_csp (bool | None): Allow unsafe evaluation
                 (Runtime.evaluate).
-            unique_context_id (Optional[str]): Unique context ID for evaluation
+            unique_context_id (str | None): Unique context ID for evaluation
                 (Runtime.evaluate).
-            serialization_options (Optional[SerializationOptions]): Serialization options for
+            serialization_options (SerializationOptions | None): Serialization options for
                 the result (Runtime.evaluate).
 
         Returns:
@@ -1450,7 +1449,7 @@ class Tab(SyncBase):
         """
         return mapping.from_impl(self._run(self._impl.execute_script(script=mapping.to_impl(script), object_group=mapping.to_impl(object_group), include_command_line_api=mapping.to_impl(include_command_line_api), silent=mapping.to_impl(silent), context_id=mapping.to_impl(context_id), return_by_value=mapping.to_impl(return_by_value), generate_preview=mapping.to_impl(generate_preview), user_gesture=mapping.to_impl(user_gesture), await_promise=mapping.to_impl(await_promise), throw_on_side_effect=mapping.to_impl(throw_on_side_effect), timeout=mapping.to_impl(timeout), disable_breaks=mapping.to_impl(disable_breaks), repl_mode=mapping.to_impl(repl_mode), allow_unsafe_eval_blocked_by_csp=mapping.to_impl(allow_unsafe_eval_blocked_by_csp), unique_context_id=mapping.to_impl(unique_context_id), serialization_options=mapping.to_impl(serialization_options))))
 
-    def continue_request(self, request_id: str, url: Optional[str]=None, method: Optional[RequestMethod]=None, post_data: Optional[str]=None, headers: Optional[list[HeaderEntry]]=None, intercept_response: Optional[bool]=None):
+    def continue_request(self, request_id: str, url: str | None=None, method: RequestMethod | None=None, post_data: str | None=None, headers: list[HeaderEntry] | None=None, intercept_response: bool | None=None):
         """
         Continue paused request without modifications.
         """
@@ -1460,11 +1459,11 @@ class Tab(SyncBase):
         """Fail request with error code."""
         return mapping.from_impl(self._run(self._impl.fail_request(request_id=mapping.to_impl(request_id), error_reason=mapping.to_impl(error_reason))))
 
-    def fulfill_request(self, request_id: str, response_code: int, response_headers: Optional[list[HeaderEntry]]=None, body: Optional[str]=None, response_phrase: Optional[str]=None):
+    def fulfill_request(self, request_id: str, response_code: int, response_headers: list[HeaderEntry] | None=None, body: str | None=None, response_phrase: str | None=None):
         """Fulfill request with response data."""
         return mapping.from_impl(self._run(self._impl.fulfill_request(request_id=mapping.to_impl(request_id), response_code=mapping.to_impl(response_code), response_headers=mapping.to_impl(response_headers), body=mapping.to_impl(body), response_phrase=mapping.to_impl(response_phrase))))
 
-    def continue_with_auth(self, request_id: str, auth_challenge_response: AuthChallengeResponseType, proxy_username: Optional[str]=None, proxy_password: Optional[str]=None):
+    def continue_with_auth(self, request_id: str, auth_challenge_response: AuthChallengeResponseType, proxy_username: str | None=None, proxy_password: str | None=None):
         """Continue a paused request replying to an authentication challenge.
 
         Useful for proxy auth (407) or server auth (401) when Fetch is enabled
@@ -1490,7 +1489,7 @@ class Tab(SyncBase):
         """
         return mapping.from_impl(self._impl.expect_cloudflare_turnstile(time_to_wait_captcha=mapping.to_impl(time_to_wait_captcha)))
 
-    def expect_download(self, keep_file_at: Optional[Union[str, Path]]=None, timeout: Optional[float]=None) -> AbstractContextManager[DownloadHandle]:
+    def expect_download(self, keep_file_at: str | Path | None=None, timeout: float | None=None) -> AbstractContextManager[DownloadHandle]:
         """
         Context manager for handling a file download triggered inside the block.
 
@@ -1540,16 +1539,16 @@ class Tab(SyncBase):
         return mapping.from_impl(self._run(self._impl.clear_callbacks()))
 
     @overload
-    def find(self, id: Optional[str]=..., class_name: Optional[str]=..., name: Optional[str]=..., tag_name: Optional[str]=..., text: Optional[str]=..., timeout: int=..., find_all: Literal[False]=False, raise_exc: Literal[True]=True, **attributes) -> WebElement: ...
+    def find(self, id: str | None=..., class_name: str | None=..., name: str | None=..., tag_name: str | None=..., text: str | None=..., timeout: int=..., find_all: Literal[False]=False, raise_exc: Literal[True]=True, **attributes) -> WebElement: ...
     @overload
-    def find(self, id: Optional[str]=..., class_name: Optional[str]=..., name: Optional[str]=..., tag_name: Optional[str]=..., text: Optional[str]=..., timeout: int=..., find_all: Literal[False]=False, raise_exc: Literal[False]=False, **attributes) -> Optional[WebElement]: ...
+    def find(self, id: str | None=..., class_name: str | None=..., name: str | None=..., tag_name: str | None=..., text: str | None=..., timeout: int=..., find_all: Literal[False]=False, raise_exc: Literal[False]=False, **attributes) -> WebElement | None: ...
     @overload
-    def find(self, id: Optional[str]=..., class_name: Optional[str]=..., name: Optional[str]=..., tag_name: Optional[str]=..., text: Optional[str]=..., timeout: int=..., find_all: Literal[True]=True, raise_exc: Literal[True]=True, **attributes) -> list[WebElement]: ...
+    def find(self, id: str | None=..., class_name: str | None=..., name: str | None=..., tag_name: str | None=..., text: str | None=..., timeout: int=..., find_all: Literal[True]=True, raise_exc: Literal[True]=True, **attributes) -> list[WebElement]: ...
     @overload
-    def find(self, id: Optional[str]=..., class_name: Optional[str]=..., name: Optional[str]=..., tag_name: Optional[str]=..., text: Optional[str]=..., timeout: int=..., find_all: Literal[True]=True, raise_exc: Literal[False]=False, **attributes) -> Optional[list[WebElement]]: ...
+    def find(self, id: str | None=..., class_name: str | None=..., name: str | None=..., tag_name: str | None=..., text: str | None=..., timeout: int=..., find_all: Literal[True]=True, raise_exc: Literal[False]=False, **attributes) -> list[WebElement] | None: ...
     @overload
-    def find(self, id: Optional[str]=..., class_name: Optional[str]=..., name: Optional[str]=..., tag_name: Optional[str]=..., text: Optional[str]=..., timeout: int=..., find_all: bool=..., raise_exc: bool=..., **attributes) -> Union[WebElement, list[WebElement], None]: ...
-    def find(self, id: Optional[str]=None, class_name: Optional[str]=None, name: Optional[str]=None, tag_name: Optional[str]=None, text: Optional[str]=None, timeout: int=0, find_all: bool=False, raise_exc: bool=True, **attributes: dict[str, str]) -> Union[WebElement, list[WebElement], None]:
+    def find(self, id: str | None=..., class_name: str | None=..., name: str | None=..., tag_name: str | None=..., text: str | None=..., timeout: int=..., find_all: bool=..., raise_exc: bool=..., **attributes) -> WebElement | list[WebElement] | None: ...
+    def find(self, id: str | None=None, class_name: str | None=None, name: str | None=None, tag_name: str | None=None, text: str | None=None, timeout: int=0, find_all: bool=False, raise_exc: bool=True, **attributes: dict[str, str]) -> WebElement | list[WebElement] | None:
         """
         Find element(s) using combination of common HTML attributes.
 
@@ -1581,14 +1580,14 @@ class Tab(SyncBase):
     @overload
     def query(self, expression: str, timeout: int=..., find_all: Literal[False]=False, raise_exc: Literal[True]=True) -> WebElement: ...
     @overload
-    def query(self, expression: str, timeout: int=..., find_all: Literal[False]=False, raise_exc: Literal[False]=False) -> Optional[WebElement]: ...
+    def query(self, expression: str, timeout: int=..., find_all: Literal[False]=False, raise_exc: Literal[False]=False) -> WebElement | None: ...
     @overload
     def query(self, expression: str, timeout: int=..., find_all: Literal[True]=True, raise_exc: Literal[True]=True) -> list[WebElement]: ...
     @overload
-    def query(self, expression: str, timeout: int=..., find_all: Literal[True]=True, raise_exc: Literal[False]=False) -> Optional[list[WebElement]]: ...
+    def query(self, expression: str, timeout: int=..., find_all: Literal[True]=True, raise_exc: Literal[False]=False) -> list[WebElement] | None: ...
     @overload
-    def query(self, expression: str, timeout: int=..., find_all: bool=..., raise_exc: bool=...) -> Union[WebElement, list[WebElement], None]: ...
-    def query(self, expression: str, timeout: int=0, find_all: bool=False, raise_exc: bool=True) -> Union[WebElement, list[WebElement], None]:
+    def query(self, expression: str, timeout: int=..., find_all: bool=..., raise_exc: bool=...) -> WebElement | list[WebElement] | None: ...
+    def query(self, expression: str, timeout: int=0, find_all: bool=False, raise_exc: bool=True) -> WebElement | list[WebElement] | None:
         """
         Find element(s) using raw CSS selector or XPath expression.
 
@@ -1611,7 +1610,7 @@ class Tab(SyncBase):
         """
         return mapping.from_impl(self._run(cast('Any', self._impl).query(expression=mapping.to_impl(expression), timeout=mapping.to_impl(timeout), find_all=mapping.to_impl(find_all), raise_exc=mapping.to_impl(raise_exc))))
 
-    def find_or_wait_element(self, by: By, value: str, timeout: int=0, find_all: bool=False, raise_exc: bool=True) -> Union[WebElement, list[WebElement], None]:
+    def find_or_wait_element(self, by: By, value: str, timeout: int=0, find_all: bool=False, raise_exc: bool=True) -> WebElement | list[WebElement] | None:
         """
         Core element finding method with optional waiting capability.
 
@@ -1635,7 +1634,7 @@ class Tab(SyncBase):
         """
         return mapping.from_impl(self._run(self._impl.find_or_wait_element(by=mapping.to_impl(by), value=mapping.to_impl(value), timeout=mapping.to_impl(timeout), find_all=mapping.to_impl(find_all), raise_exc=mapping.to_impl(raise_exc))))
 
-    def query_script(self, function_declaration: str, arguments: Optional[list[CallArgument]]=None, execution_context_id: Optional[int]=None) -> list[WebElement]:
+    def query_script(self, function_declaration: str, arguments: list[CallArgument] | None=None, execution_context_id: int | None=None) -> list[WebElement]:
         """
         Run a JavaScript function that returns elements and wrap them as WebElements.
 
@@ -1691,13 +1690,13 @@ class DownloadHandle(SyncBase):
     _impl: _DownloadHandleImpl
 
     @property
-    def file_path(self) -> Optional[str]:
+    def file_path(self) -> str | None:
         return mapping.from_impl(self._impl.file_path)
 
-    def wait_started(self, timeout: Optional[float]=None) -> None:
+    def wait_started(self, timeout: float | None=None) -> None:
         self._run(self._impl.wait_started(timeout=mapping.to_impl(timeout)))
 
-    def wait_finished(self, timeout: Optional[float]=None) -> None:
+    def wait_finished(self, timeout: float | None=None) -> None:
         self._run(self._impl.wait_finished(timeout=mapping.to_impl(timeout)))
 
     def read_bytes(self) -> bytes:
@@ -1728,12 +1727,12 @@ class RequestHandle(SyncBase):
         return mapping.from_impl(self._impl.headers)
 
     @property
-    def post_data(self) -> Optional[str]:
+    def post_data(self) -> str | None:
         """The request body, when it had one."""
         return mapping.from_impl(self._impl.post_data)
 
     @property
-    def resource_type(self) -> Optional[str]:
+    def resource_type(self) -> str | None:
         """Chrome's resource type: Document, XHR, Fetch, Image, ..."""
         return mapping.from_impl(self._impl.resource_type)
 
@@ -1791,22 +1790,22 @@ class WebElement(SyncBase):
         return mapping.from_impl(self._impl.attributes)
 
     @property
-    def value(self) -> Optional[str]:
+    def value(self) -> str | None:
         """Element's value attribute (for form elements)."""
         return mapping.from_impl(self._impl.value)
 
     @property
-    def class_name(self) -> Optional[str]:
+    def class_name(self) -> str | None:
         """Element's CSS class name(s)."""
         return mapping.from_impl(self._impl.class_name)
 
     @property
-    def id(self) -> Optional[str]:
+    def id(self) -> str | None:
         """Element's ID attribute."""
         return mapping.from_impl(self._impl.id)
 
     @property
-    def tag_name(self) -> Optional[str]:
+    def tag_name(self) -> str | None:
         """Element's HTML tag name."""
         return mapping.from_impl(self._impl.tag_name)
 
@@ -1835,7 +1834,7 @@ class WebElement(SyncBase):
     def inner_html(self) -> str:
         return mapping.from_impl(self._run(self._impl.inner_html()))
 
-    def iframe_context(self) -> Optional[IFrameContext]:
+    def iframe_context(self) -> IFrameContext | None:
         """
         Return the resolved iframe context for this element when it is an ``<iframe>``.
 
@@ -1850,7 +1849,7 @@ class WebElement(SyncBase):
         """
         return mapping.from_impl(self._run(self._impl.iframe_context()))
 
-    def get_attribute(self, name: str) -> Optional[str]:
+    def get_attribute(self, name: str) -> str | None:
         """
         Get element attribute value.
 
@@ -1928,7 +1927,7 @@ class WebElement(SyncBase):
         """
         return mapping.from_impl(self._run(self._impl.get_siblings_elements(tag_filter=mapping.to_impl(tag_filter), raise_exc=mapping.to_impl(raise_exc))))
 
-    def take_screenshot(self, path: Optional[str | Path]=None, quality: int=100, as_base64: bool=False) -> Optional[str]:
+    def take_screenshot(self, path: str | Path | None=None, quality: int=100, as_base64: bool=False) -> str | None:
         """
         Capture screenshot of this element only.
 
@@ -2131,32 +2130,32 @@ class WebElement(SyncBase):
         """Check if element is interactable based on visibility and position."""
         return mapping.from_impl(self._run(self._impl.is_interactable()))
 
-    def execute_script(self, script: str, *, arguments: Optional[list[CallArgument]]=None, silent: Optional[bool]=None, return_by_value: Optional[bool]=None, generate_preview: Optional[bool]=None, user_gesture: Optional[bool]=None, await_promise: Optional[bool]=None, execution_context_id: Optional[int]=None, object_group: Optional[str]=None, throw_on_side_effect: Optional[bool]=None, unique_context_id: Optional[str]=None, serialization_options: Optional[SerializationOptions]=None) -> CallFunctionOnResponse:
+    def execute_script(self, script: str, *, arguments: list[CallArgument] | None=None, silent: bool | None=None, return_by_value: bool | None=None, generate_preview: bool | None=None, user_gesture: bool | None=None, await_promise: bool | None=None, execution_context_id: int | None=None, object_group: str | None=None, throw_on_side_effect: bool | None=None, unique_context_id: str | None=None, serialization_options: SerializationOptions | None=None) -> CallFunctionOnResponse:
         """
         Execute JavaScript in element context.
 
         Args:
             script (str): JavaScript code to execute. Use 'this' to reference this element.
-            arguments (Optional[list[CallArgument]]): Arguments to pass to the function
+            arguments (list[CallArgument] | None): Arguments to pass to the function
                 (Runtime.callFunctionOn).
-            silent (Optional[bool]): Whether to silence exceptions (Runtime.callFunctionOn).
-            return_by_value (Optional[bool]): Whether to return the result by value instead of
+            silent (bool | None): Whether to silence exceptions (Runtime.callFunctionOn).
+            return_by_value (bool | None): Whether to return the result by value instead of
                 reference (Runtime.callFunctionOn).
-            generate_preview (Optional[bool]): Whether to generate a preview for the result
+            generate_preview (bool | None): Whether to generate a preview for the result
                 (Runtime.callFunctionOn).
-            user_gesture (Optional[bool]): Whether to treat the call as initiated by user
+            user_gesture (bool | None): Whether to treat the call as initiated by user
                 gesture (Runtime.callFunctionOn).
-            await_promise (Optional[bool]): Whether to await promise result
+            await_promise (bool | None): Whether to await promise result
                 (Runtime.callFunctionOn).
-            execution_context_id (Optional[int]): ID of the execution context to call the
+            execution_context_id (int | None): ID of the execution context to call the
                 function in (Runtime.callFunctionOn).
-            object_group (Optional[str]): Symbolic group name for the result
+            object_group (str | None): Symbolic group name for the result
                 (Runtime.callFunctionOn).
-            throw_on_side_effect (Optional[bool]): Whether to throw if side effect cannot be
+            throw_on_side_effect (bool | None): Whether to throw if side effect cannot be
                 ruled out (Runtime.callFunctionOn).
-            unique_context_id (Optional[str]): Unique context ID for the function call
+            unique_context_id (str | None): Unique context ID for the function call
                 (Runtime.callFunctionOn).
-            serialization_options (Optional[SerializationOptions]): Serialization options for
+            serialization_options (SerializationOptions | None): Serialization options for
                 the result (Runtime.callFunctionOn).
 
         Returns:
@@ -2178,16 +2177,16 @@ class WebElement(SyncBase):
         return mapping.from_impl(self._run(self._impl.execute_script(script=mapping.to_impl(script), arguments=mapping.to_impl(arguments), silent=mapping.to_impl(silent), return_by_value=mapping.to_impl(return_by_value), generate_preview=mapping.to_impl(generate_preview), user_gesture=mapping.to_impl(user_gesture), await_promise=mapping.to_impl(await_promise), execution_context_id=mapping.to_impl(execution_context_id), object_group=mapping.to_impl(object_group), throw_on_side_effect=mapping.to_impl(throw_on_side_effect), unique_context_id=mapping.to_impl(unique_context_id), serialization_options=mapping.to_impl(serialization_options))))
 
     @overload
-    def find(self, id: Optional[str]=..., class_name: Optional[str]=..., name: Optional[str]=..., tag_name: Optional[str]=..., text: Optional[str]=..., timeout: int=..., find_all: Literal[False]=False, raise_exc: Literal[True]=True, **attributes) -> WebElement: ...
+    def find(self, id: str | None=..., class_name: str | None=..., name: str | None=..., tag_name: str | None=..., text: str | None=..., timeout: int=..., find_all: Literal[False]=False, raise_exc: Literal[True]=True, **attributes) -> WebElement: ...
     @overload
-    def find(self, id: Optional[str]=..., class_name: Optional[str]=..., name: Optional[str]=..., tag_name: Optional[str]=..., text: Optional[str]=..., timeout: int=..., find_all: Literal[False]=False, raise_exc: Literal[False]=False, **attributes) -> Optional[WebElement]: ...
+    def find(self, id: str | None=..., class_name: str | None=..., name: str | None=..., tag_name: str | None=..., text: str | None=..., timeout: int=..., find_all: Literal[False]=False, raise_exc: Literal[False]=False, **attributes) -> WebElement | None: ...
     @overload
-    def find(self, id: Optional[str]=..., class_name: Optional[str]=..., name: Optional[str]=..., tag_name: Optional[str]=..., text: Optional[str]=..., timeout: int=..., find_all: Literal[True]=True, raise_exc: Literal[True]=True, **attributes) -> list[WebElement]: ...
+    def find(self, id: str | None=..., class_name: str | None=..., name: str | None=..., tag_name: str | None=..., text: str | None=..., timeout: int=..., find_all: Literal[True]=True, raise_exc: Literal[True]=True, **attributes) -> list[WebElement]: ...
     @overload
-    def find(self, id: Optional[str]=..., class_name: Optional[str]=..., name: Optional[str]=..., tag_name: Optional[str]=..., text: Optional[str]=..., timeout: int=..., find_all: Literal[True]=True, raise_exc: Literal[False]=False, **attributes) -> Optional[list[WebElement]]: ...
+    def find(self, id: str | None=..., class_name: str | None=..., name: str | None=..., tag_name: str | None=..., text: str | None=..., timeout: int=..., find_all: Literal[True]=True, raise_exc: Literal[False]=False, **attributes) -> list[WebElement] | None: ...
     @overload
-    def find(self, id: Optional[str]=..., class_name: Optional[str]=..., name: Optional[str]=..., tag_name: Optional[str]=..., text: Optional[str]=..., timeout: int=..., find_all: bool=..., raise_exc: bool=..., **attributes) -> Union[WebElement, list[WebElement], None]: ...
-    def find(self, id: Optional[str]=None, class_name: Optional[str]=None, name: Optional[str]=None, tag_name: Optional[str]=None, text: Optional[str]=None, timeout: int=0, find_all: bool=False, raise_exc: bool=True, **attributes: dict[str, str]) -> Union[WebElement, list[WebElement], None]:
+    def find(self, id: str | None=..., class_name: str | None=..., name: str | None=..., tag_name: str | None=..., text: str | None=..., timeout: int=..., find_all: bool=..., raise_exc: bool=..., **attributes) -> WebElement | list[WebElement] | None: ...
+    def find(self, id: str | None=None, class_name: str | None=None, name: str | None=None, tag_name: str | None=None, text: str | None=None, timeout: int=0, find_all: bool=False, raise_exc: bool=True, **attributes: dict[str, str]) -> WebElement | list[WebElement] | None:
         """
         Find element(s) using combination of common HTML attributes.
 
@@ -2219,14 +2218,14 @@ class WebElement(SyncBase):
     @overload
     def query(self, expression: str, timeout: int=..., find_all: Literal[False]=False, raise_exc: Literal[True]=True) -> WebElement: ...
     @overload
-    def query(self, expression: str, timeout: int=..., find_all: Literal[False]=False, raise_exc: Literal[False]=False) -> Optional[WebElement]: ...
+    def query(self, expression: str, timeout: int=..., find_all: Literal[False]=False, raise_exc: Literal[False]=False) -> WebElement | None: ...
     @overload
     def query(self, expression: str, timeout: int=..., find_all: Literal[True]=True, raise_exc: Literal[True]=True) -> list[WebElement]: ...
     @overload
-    def query(self, expression: str, timeout: int=..., find_all: Literal[True]=True, raise_exc: Literal[False]=False) -> Optional[list[WebElement]]: ...
+    def query(self, expression: str, timeout: int=..., find_all: Literal[True]=True, raise_exc: Literal[False]=False) -> list[WebElement] | None: ...
     @overload
-    def query(self, expression: str, timeout: int=..., find_all: bool=..., raise_exc: bool=...) -> Union[WebElement, list[WebElement], None]: ...
-    def query(self, expression: str, timeout: int=0, find_all: bool=False, raise_exc: bool=True) -> Union[WebElement, list[WebElement], None]:
+    def query(self, expression: str, timeout: int=..., find_all: bool=..., raise_exc: bool=...) -> WebElement | list[WebElement] | None: ...
+    def query(self, expression: str, timeout: int=0, find_all: bool=False, raise_exc: bool=True) -> WebElement | list[WebElement] | None:
         """
         Find element(s) using raw CSS selector or XPath expression.
 
@@ -2249,7 +2248,7 @@ class WebElement(SyncBase):
         """
         return mapping.from_impl(self._run(cast('Any', self._impl).query(expression=mapping.to_impl(expression), timeout=mapping.to_impl(timeout), find_all=mapping.to_impl(find_all), raise_exc=mapping.to_impl(raise_exc))))
 
-    def find_or_wait_element(self, by: By, value: str, timeout: int=0, find_all: bool=False, raise_exc: bool=True) -> Union[WebElement, list[WebElement], None]:
+    def find_or_wait_element(self, by: By, value: str, timeout: int=0, find_all: bool=False, raise_exc: bool=True) -> WebElement | list[WebElement] | None:
         """
         Core element finding method with optional waiting capability.
 
@@ -2273,7 +2272,7 @@ class WebElement(SyncBase):
         """
         return mapping.from_impl(self._run(self._impl.find_or_wait_element(by=mapping.to_impl(by), value=mapping.to_impl(value), timeout=mapping.to_impl(timeout), find_all=mapping.to_impl(find_all), raise_exc=mapping.to_impl(raise_exc))))
 
-    def query_script(self, function_declaration: str, arguments: Optional[list[CallArgument]]=None, execution_context_id: Optional[int]=None) -> list[WebElement]:
+    def query_script(self, function_declaration: str, arguments: list[CallArgument] | None=None, execution_context_id: int | None=None) -> list[WebElement]:
         """
         Run a JavaScript function that returns elements and wrap them as WebElements.
 
@@ -2355,16 +2354,16 @@ class ShadowRoot(SyncBase):
         return mapping.from_impl(self._run(self._impl.inner_html()))
 
     @overload
-    def find(self, id: Optional[str]=..., class_name: Optional[str]=..., name: Optional[str]=..., tag_name: Optional[str]=..., text: Optional[str]=..., timeout: int=..., find_all: Literal[False]=False, raise_exc: Literal[True]=True, **attributes) -> WebElement: ...
+    def find(self, id: str | None=..., class_name: str | None=..., name: str | None=..., tag_name: str | None=..., text: str | None=..., timeout: int=..., find_all: Literal[False]=False, raise_exc: Literal[True]=True, **attributes) -> WebElement: ...
     @overload
-    def find(self, id: Optional[str]=..., class_name: Optional[str]=..., name: Optional[str]=..., tag_name: Optional[str]=..., text: Optional[str]=..., timeout: int=..., find_all: Literal[False]=False, raise_exc: Literal[False]=False, **attributes) -> Optional[WebElement]: ...
+    def find(self, id: str | None=..., class_name: str | None=..., name: str | None=..., tag_name: str | None=..., text: str | None=..., timeout: int=..., find_all: Literal[False]=False, raise_exc: Literal[False]=False, **attributes) -> WebElement | None: ...
     @overload
-    def find(self, id: Optional[str]=..., class_name: Optional[str]=..., name: Optional[str]=..., tag_name: Optional[str]=..., text: Optional[str]=..., timeout: int=..., find_all: Literal[True]=True, raise_exc: Literal[True]=True, **attributes) -> list[WebElement]: ...
+    def find(self, id: str | None=..., class_name: str | None=..., name: str | None=..., tag_name: str | None=..., text: str | None=..., timeout: int=..., find_all: Literal[True]=True, raise_exc: Literal[True]=True, **attributes) -> list[WebElement]: ...
     @overload
-    def find(self, id: Optional[str]=..., class_name: Optional[str]=..., name: Optional[str]=..., tag_name: Optional[str]=..., text: Optional[str]=..., timeout: int=..., find_all: Literal[True]=True, raise_exc: Literal[False]=False, **attributes) -> Optional[list[WebElement]]: ...
+    def find(self, id: str | None=..., class_name: str | None=..., name: str | None=..., tag_name: str | None=..., text: str | None=..., timeout: int=..., find_all: Literal[True]=True, raise_exc: Literal[False]=False, **attributes) -> list[WebElement] | None: ...
     @overload
-    def find(self, id: Optional[str]=..., class_name: Optional[str]=..., name: Optional[str]=..., tag_name: Optional[str]=..., text: Optional[str]=..., timeout: int=..., find_all: bool=..., raise_exc: bool=..., **attributes) -> Union[WebElement, list[WebElement], None]: ...
-    def find(self, id: Optional[str]=None, class_name: Optional[str]=None, name: Optional[str]=None, tag_name: Optional[str]=None, text: Optional[str]=None, timeout: int=0, find_all: bool=False, raise_exc: bool=True, **attributes: dict[str, str]) -> Union[WebElement, list[WebElement], None]:
+    def find(self, id: str | None=..., class_name: str | None=..., name: str | None=..., tag_name: str | None=..., text: str | None=..., timeout: int=..., find_all: bool=..., raise_exc: bool=..., **attributes) -> WebElement | list[WebElement] | None: ...
+    def find(self, id: str | None=None, class_name: str | None=None, name: str | None=None, tag_name: str | None=None, text: str | None=None, timeout: int=0, find_all: bool=False, raise_exc: bool=True, **attributes: dict[str, str]) -> WebElement | list[WebElement] | None:
         """
         Find element(s) using combination of common HTML attributes.
 
@@ -2396,14 +2395,14 @@ class ShadowRoot(SyncBase):
     @overload
     def query(self, expression: str, timeout: int=..., find_all: Literal[False]=False, raise_exc: Literal[True]=True) -> WebElement: ...
     @overload
-    def query(self, expression: str, timeout: int=..., find_all: Literal[False]=False, raise_exc: Literal[False]=False) -> Optional[WebElement]: ...
+    def query(self, expression: str, timeout: int=..., find_all: Literal[False]=False, raise_exc: Literal[False]=False) -> WebElement | None: ...
     @overload
     def query(self, expression: str, timeout: int=..., find_all: Literal[True]=True, raise_exc: Literal[True]=True) -> list[WebElement]: ...
     @overload
-    def query(self, expression: str, timeout: int=..., find_all: Literal[True]=True, raise_exc: Literal[False]=False) -> Optional[list[WebElement]]: ...
+    def query(self, expression: str, timeout: int=..., find_all: Literal[True]=True, raise_exc: Literal[False]=False) -> list[WebElement] | None: ...
     @overload
-    def query(self, expression: str, timeout: int=..., find_all: bool=..., raise_exc: bool=...) -> Union[WebElement, list[WebElement], None]: ...
-    def query(self, expression: str, timeout: int=0, find_all: bool=False, raise_exc: bool=True) -> Union[WebElement, list[WebElement], None]:
+    def query(self, expression: str, timeout: int=..., find_all: bool=..., raise_exc: bool=...) -> WebElement | list[WebElement] | None: ...
+    def query(self, expression: str, timeout: int=0, find_all: bool=False, raise_exc: bool=True) -> WebElement | list[WebElement] | None:
         """
         Find element(s) using raw CSS selector or XPath expression.
 
@@ -2426,7 +2425,7 @@ class ShadowRoot(SyncBase):
         """
         return mapping.from_impl(self._run(cast('Any', self._impl).query(expression=mapping.to_impl(expression), timeout=mapping.to_impl(timeout), find_all=mapping.to_impl(find_all), raise_exc=mapping.to_impl(raise_exc))))
 
-    def find_or_wait_element(self, by: By, value: str, timeout: int=0, find_all: bool=False, raise_exc: bool=True) -> Union[WebElement, list[WebElement], None]:
+    def find_or_wait_element(self, by: By, value: str, timeout: int=0, find_all: bool=False, raise_exc: bool=True) -> WebElement | list[WebElement] | None:
         """
         Core element finding method with optional waiting capability.
 
@@ -2450,7 +2449,7 @@ class ShadowRoot(SyncBase):
         """
         return mapping.from_impl(self._run(self._impl.find_or_wait_element(by=mapping.to_impl(by), value=mapping.to_impl(value), timeout=mapping.to_impl(timeout), find_all=mapping.to_impl(find_all), raise_exc=mapping.to_impl(raise_exc))))
 
-    def query_script(self, function_declaration: str, arguments: Optional[list[CallArgument]]=None, execution_context_id: Optional[int]=None) -> list[WebElement]:
+    def query_script(self, function_declaration: str, arguments: list[CallArgument] | None=None, execution_context_id: int | None=None) -> list[WebElement]:
         """
         Run a JavaScript function that returns elements and wrap them as WebElements.
 
@@ -2511,7 +2510,7 @@ class Keyboard(SyncBase):
     """
     _impl: _KeyboardImpl
 
-    def press(self, key: Key, modifiers: Optional[KeyModifier]=None, interval: float=0):
+    def press(self, key: Key, modifiers: KeyModifier | None=None, interval: float=0):
         """
         Press and release a key (down + optional hold + up).
 
@@ -2527,7 +2526,7 @@ class Keyboard(SyncBase):
         """
         return mapping.from_impl(self._run(self._impl.press(key=mapping.to_impl(key), modifiers=mapping.to_impl(modifiers), interval=mapping.to_impl(interval))))
 
-    def down(self, key: Key, modifiers: Optional[KeyModifier]=None):
+    def down(self, key: Key, modifiers: KeyModifier | None=None):
         """
         Press a key down (without releasing).
 
@@ -2546,7 +2545,7 @@ class Keyboard(SyncBase):
         """
         return mapping.from_impl(self._run(self._impl.up(key=mapping.to_impl(key))))
 
-    def hotkey(self, key1: Key, key2: Key, key3: Optional[Key]=None):
+    def hotkey(self, key1: Key, key2: Key, key3: Key | None=None):
         """
         Execute a key combination (hotkey) with up to 3 keys.
 
@@ -2738,7 +2737,7 @@ class Request(SyncBase):
     def tab(self) -> Any:
         return mapping.from_impl(self._impl.tab)
 
-    def request(self, method: str, url: str, params: Optional[dict[str, str]]=None, data: Optional[Union[dict, list, tuple, str, bytes]]=None, json: Optional[dict[str, Any]]=None, headers: Optional[list[HeaderEntry]]=None, **kwargs) -> Response:
+    def request(self, method: str, url: str, params: dict[str, str] | None=None, data: dict | list | tuple | str | bytes | None=None, json: dict[str, Any] | None=None, headers: list[HeaderEntry] | None=None, **kwargs) -> Response:
         """Execute an HTTP request in the browser's JavaScript context.
 
         This method uses the browser's fetch API to make requests, inheriting all
@@ -2775,7 +2774,7 @@ class Request(SyncBase):
         """
         return mapping.from_impl(self._run(self._impl.request(method=mapping.to_impl(method), url=mapping.to_impl(url), params=mapping.to_impl(params), data=mapping.to_impl(data), json=mapping.to_impl(json), headers=mapping.to_impl(headers), **kwargs)))
 
-    def get(self, url: str, params: Optional[dict[str, str]]=None, **kwargs) -> Response:
+    def get(self, url: str, params: dict[str, str] | None=None, **kwargs) -> Response:
         """Execute a GET request for retrieving data.
 
         Args:
@@ -2788,7 +2787,7 @@ class Request(SyncBase):
         """
         return mapping.from_impl(self._run(self._impl.get(url=mapping.to_impl(url), params=mapping.to_impl(params), **kwargs)))
 
-    def post(self, url: str, data: Optional[Union[dict, list, tuple, str, bytes]]=None, json: Optional[dict[str, Any]]=None, **kwargs) -> Response:
+    def post(self, url: str, data: dict | list | tuple | str | bytes | None=None, json: dict[str, Any] | None=None, **kwargs) -> Response:
         """Execute a POST request for creating or submitting data.
 
         Args:
@@ -2802,7 +2801,7 @@ class Request(SyncBase):
         """
         return mapping.from_impl(self._run(self._impl.post(url=mapping.to_impl(url), data=mapping.to_impl(data), json=mapping.to_impl(json), **kwargs)))
 
-    def put(self, url: str, data: Optional[Union[dict, list, tuple, str, bytes]]=None, json: Optional[dict[str, Any]]=None, **kwargs) -> Response:
+    def put(self, url: str, data: dict | list | tuple | str | bytes | None=None, json: dict[str, Any] | None=None, **kwargs) -> Response:
         """Execute a PUT request for updating/replacing resources.
 
         Args:
@@ -2816,7 +2815,7 @@ class Request(SyncBase):
         """
         return mapping.from_impl(self._run(self._impl.put(url=mapping.to_impl(url), data=mapping.to_impl(data), json=mapping.to_impl(json), **kwargs)))
 
-    def patch(self, url: str, data: Optional[Union[dict, list, tuple, str, bytes]]=None, json: Optional[dict[str, Any]]=None, **kwargs) -> Response:
+    def patch(self, url: str, data: dict | list | tuple | str | bytes | None=None, json: dict[str, Any] | None=None, **kwargs) -> Response:
         """Execute a PATCH request for partial resource updates.
 
         Args:
@@ -3022,7 +3021,7 @@ class Response(SyncBase):
         """
         return mapping.from_impl(self._impl.url)
 
-    def json(self) -> Union[dict[str, Any], list]:
+    def json(self) -> dict[str, Any] | list:
         """Parse and return the response content as JSON data.
 
         Attempts to parse the response text as JSON. Uses caching to avoid

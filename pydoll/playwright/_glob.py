@@ -3,20 +3,20 @@
 from __future__ import annotations
 
 import re
-from typing import Callable, Optional, Pattern, Union
+from typing import Callable, Pattern
 from urllib.parse import urljoin
 
 from pydoll.utils.url_match import glob_to_regex_pattern
 
-URLMatch = Union[str, Pattern[str], Callable[[str], bool]]
+URLMatch = str | Pattern[str] | Callable[[str], bool]
 
 
 class URLMatcher:
     """Match URLs the way Playwright's ``url`` options do."""
 
-    def __init__(self, match: URLMatch, base_url: Optional[str] = None) -> None:
+    def __init__(self, match: URLMatch, base_url: str | None = None) -> None:
         self._match = match
-        self._regex: Optional[Pattern[str]] = None
+        self._regex: Pattern[str] | None = None
         if isinstance(match, str):
             glob = match
             if (

@@ -5,7 +5,7 @@ import logging
 import math
 import random
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from pydoll.commands import InputCommands, RuntimeCommands
 from pydoll.constants import PRESSED_POINTER_FORCE
@@ -98,7 +98,7 @@ class Mouse:
     def __init__(
         self,
         tab: Tab,
-        timing: Optional[MouseTimingConfig] = None,
+        timing: MouseTimingConfig | None = None,
         debug: bool = False,
     ):
         """
@@ -112,7 +112,7 @@ class Mouse:
         self._tab = tab
         self._timing = timing or MouseTimingConfig()
         self._position: tuple[float, float] = (0.0, 0.0)
-        self._pressed_button: Optional[MouseButton] = None
+        self._pressed_button: MouseButton | None = None
         self._debug = debug
 
     @property

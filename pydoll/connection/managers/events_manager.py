@@ -4,7 +4,7 @@ import asyncio
 import logging
 from collections import deque
 from contextlib import suppress
-from typing import TYPE_CHECKING, Optional, cast
+from typing import TYPE_CHECKING, cast
 
 from pydoll.protocol.page.events import (
     JavascriptDialogOpeningEvent,
@@ -37,7 +37,7 @@ class EventsManager:
         self.network_logs: deque[RequestWillBeSentEvent] = deque(maxlen=MAX_NETWORK_LOGS)
         self.dialog = JavascriptDialogOpeningEvent()  # type: ignore
         self._event_queue: asyncio.Queue = asyncio.Queue()
-        self._worker_task: Optional[asyncio.Task] = None
+        self._worker_task: asyncio.Task | None = None
         logger.info('EventsManager initialized')
         logger.debug('Initial state: callbacks=0, logs=0, dialog=empty')
 

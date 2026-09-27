@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import asyncio
-from typing import TYPE_CHECKING, Literal, Optional, TypeAlias
+from typing import TYPE_CHECKING, Literal, TypeAlias
 
 from pydoll.commands import InputCommands
 from pydoll.playwright._keys import (
@@ -38,7 +38,7 @@ class Keyboard:
         self._pressed_modifiers: set[str] = set()
         self._pressed_keys: set[str] = set()
 
-    def _modifiers(self) -> Optional[KeyModifier]:
+    def _modifiers(self) -> KeyModifier | None:
         return modifier_bits(sorted(self._pressed_modifiers))
 
     async def down(self, key: str) -> None:
@@ -84,7 +84,7 @@ class Keyboard:
     async def insert_text(self, text: str) -> None:
         await self._page._send(InputCommands.insert_text(text))
 
-    async def type(self, text: str, delay: Optional[float] = None) -> None:
+    async def type(self, text: str, delay: float | None = None) -> None:
         for char in text:
             description = _safe_describe(char)
             if description is None or not description.code:
@@ -94,7 +94,7 @@ class Keyboard:
             if delay:
                 await asyncio.sleep(delay / 1000)
 
-    async def press(self, key: str, delay: Optional[float] = None) -> None:
+    async def press(self, key: str, delay: float | None = None) -> None:
         tokens = split_key_string(key)
         last = tokens[-1]
         for token in tokens[:-1]:
@@ -122,7 +122,7 @@ class Keyboard:
         return restore
 
 
-def _safe_describe(char: str) -> Optional[KeyDescription]:
+def _safe_describe(char: str) -> KeyDescription | None:
     try:
         return describe_key(char, False)
     except ValueError:
@@ -139,7 +139,7 @@ class Mouse:
         self._button: MouseButton = MouseButton.NONE
         self._pressed_buttons: set[MouseButton] = set()
 
-    async def move(self, x: float, y: float, steps: Optional[int] = None) -> None:
+    async def move(self, x: float, y: float, steps: int | None = None) -> None:
         steps = steps or 1
         from_x, from_y = self._x, self._y
         for i in range(1, steps + 1):
@@ -155,9 +155,7 @@ class Mouse:
                 )
             )
 
-    async def down(
-        self, button: MouseButtonName = 'left', click_count: Optional[int] = None
-    ) -> None:
+    async def down(self, button: MouseButtonName = 'left', click_count: int | None = None) -> None:
         self._button = _BUTTONS[button]
         self._pressed_buttons.add(self._button)
         await self._page._send(
@@ -171,7 +169,7 @@ class Mouse:
             )
         )
 
-    async def up(self, button: MouseButtonName = 'left', click_count: Optional[int] = None) -> None:
+    async def up(self, button: MouseButtonName = 'left', click_count: int | None = None) -> None:
         released = _BUTTONS[button]
         self._pressed_buttons.discard(released)
         self._button = MouseButton.NONE
@@ -190,9 +188,9 @@ class Mouse:
         self,
         x: float,
         y: float,
-        delay: Optional[float] = None,
+        delay: float | None = None,
         button: MouseButtonName = 'left',
-        click_count: Optional[int] = None,
+        click_count: int | None = None,
     ) -> None:
         await self.move(x, y)
         await self.down(button=button, click_count=click_count)
@@ -204,7 +202,7 @@ class Mouse:
         self,
         x: float,
         y: float,
-        delay: Optional[float] = None,
+        delay: float | None = None,
         button: MouseButtonName = 'left',
     ) -> None:
         await self.move(x, y)

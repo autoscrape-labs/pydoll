@@ -40,7 +40,7 @@ from pydoll.playwright._events import EventInfo as _EventInfoImpl
 
 
 from pathlib import Path
-from typing import Any, Optional, Sequence, Union
+from typing import Any, Sequence
 from pydoll.browser.chromium import Chrome
 from pydoll.exceptions import PydollException
 from pydoll.playwright._browser import build_options
@@ -48,7 +48,7 @@ from pydoll.playwright._errors import Error, translate
 from pydoll.playwright._selectors import set_test_id_attribute_name
 import asyncio
 import logging
-from typing import TYPE_CHECKING, Any, Optional, Sequence, Union, cast
+from typing import TYPE_CHECKING, Any, Sequence, cast
 from pydoll.browser.options import ChromiumOptions
 from pydoll.commands import TargetCommands
 from pydoll.playwright._events import EventEmitter
@@ -56,7 +56,7 @@ from pydoll.protocol.target.events import TargetEvent
 from pydoll.protocol.target.types import TargetInfo
 import inspect
 import time
-from typing import Any, Awaitable, Callable, Generic, Optional, TypeAlias, TypeVar
+from typing import Any, Awaitable, Callable, Generic, TypeAlias, TypeVar
 from pydoll.playwright._errors import TimeoutError
 T = TypeVar('T')
 Listener: TypeAlias = Callable[..., Any]
@@ -65,7 +65,7 @@ from pydoll.playwright._events import EventContextManager
 import json
 import shutil
 import tempfile
-from typing import TYPE_CHECKING, Any, Callable, Optional, Sequence, Union
+from typing import TYPE_CHECKING, Any, Callable, Sequence
 from pydoll.browser.tab import Tab
 from pydoll.commands import BrowserCommands, EmulationCommands, PageCommands, RuntimeCommands
 from pydoll.playwright._events import DEFAULT_TIMEOUT_MS, Deadline, EventContextManager, EventEmitter, create_future, schedule
@@ -76,7 +76,7 @@ from pydoll.utils.user_agent_parser import UserAgentParser
 import base64
 import secrets
 import weakref
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Optional, Sequence, Union
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Sequence
 from pydoll.commands import DomCommands, EmulationCommands, PageCommands, RuntimeCommands
 from pydoll.elements.web_element import WebElement
 from pydoll.playwright._errors import Error, TargetClosedError, translate
@@ -89,7 +89,7 @@ from pydoll.protocol.fetch.types import AuthChallengeResponseType
 from pydoll.protocol.network.events import NetworkEvent
 from pydoll.protocol.page.events import PageEvent
 from pydoll.protocol.runtime.events import RuntimeEvent
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Optional, Sequence, TypeVar, Union, cast
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Sequence, TypeVar, cast
 from pydoll.commands import DomCommands, PageCommands, RuntimeCommands
 from pydoll.playwright._actions import Actions
 from pydoll.playwright._element_handle import PrimitiveHandle
@@ -99,21 +99,21 @@ from pydoll.playwright._selectors import TextMatch, get_by_alt_text_selector, ge
 from pydoll.playwright._serialization import call_arguments, evaluate_source, parse_remote_value
 from pydoll.protocol.runtime.types import CallArgument
 import re
-from typing import TYPE_CHECKING, Any, Optional, Pattern, Sequence, TypedDict, Union
+from typing import TYPE_CHECKING, Any, Pattern, Sequence, TypedDict
 from pydoll.playwright._actions import Resolver
 from pydoll.playwright._errors import Error
 from pydoll.playwright._selectors import ENTER_FRAME, TextMatch, get_by_alt_text_selector, get_by_label_selector, get_by_placeholder_selector, get_by_role_selector, get_by_test_id_selector, get_by_text_selector, get_by_title_selector, with_has, with_has_not, with_has_not_text, with_has_text, with_visible
 from pydoll.playwright._locator import SelectOption
-from typing import TYPE_CHECKING, Any, Optional, Sequence, Union
+from typing import TYPE_CHECKING, Any, Sequence
 from pydoll.commands import RuntimeCommands
 from pydoll.playwright._serialization import parse_remote_value
-from typing import TYPE_CHECKING, Literal, Optional, TypeAlias
+from typing import TYPE_CHECKING, Literal, TypeAlias
 from pydoll.commands import InputCommands
 from pydoll.playwright._keys import MODIFIER_NAMES, KeyDescription, describe_key, modifier_bits, resolve_smart_modifier, split_key_string
 from pydoll.protocol.input.types import KeyEventType, KeyModifier, MouseButton, MouseEventType, TouchEventType
 MouseButtonName: TypeAlias = Literal['left', 'right', 'middle']
 import mimetypes
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Optional, Union, cast
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, cast
 from pydoll.commands import NetworkCommands
 from pydoll.playwright._glob import URLMatch, URLMatcher
 from pydoll.protocol.network.types import ErrorReason
@@ -170,13 +170,13 @@ class BrowserType(SyncBase):
     def executable_path(self) -> str:
         return mapping.from_impl(self._impl.executable_path)
 
-    def launch(self, executable_path: Union[str, Path, None]=None, channel: Optional[str]=None, args: Optional[Sequence[str]]=None, ignore_default_args: Union[bool, Sequence[str], None]=None, handle_sigint: Optional[bool]=None, handle_sigterm: Optional[bool]=None, handle_sighup: Optional[bool]=None, timeout: Optional[float]=None, env: Optional[dict[str, Any]]=None, headless: Optional[bool]=None, devtools: Optional[bool]=None, proxy: Optional[dict[str, Any]]=None, downloads_path: Union[str, Path, None]=None, slow_mo: Optional[float]=None, traces_dir: Union[str, Path, None]=None, chromium_sandbox: Optional[bool]=None, firefox_user_prefs: Optional[dict[str, Any]]=None) -> Browser:
+    def launch(self, executable_path: str | Path | None=None, channel: str | None=None, args: Sequence[str] | None=None, ignore_default_args: bool | Sequence[str] | None=None, handle_sigint: bool | None=None, handle_sigterm: bool | None=None, handle_sighup: bool | None=None, timeout: float | None=None, env: dict[str, Any] | None=None, headless: bool | None=None, devtools: bool | None=None, proxy: dict[str, Any] | None=None, downloads_path: str | Path | None=None, slow_mo: float | None=None, traces_dir: str | Path | None=None, chromium_sandbox: bool | None=None, firefox_user_prefs: dict[str, Any] | None=None) -> Browser:
         return mapping.from_impl(self._run(self._impl.launch(executable_path=mapping.to_impl(executable_path), channel=mapping.to_impl(channel), args=mapping.to_impl(args), ignore_default_args=mapping.to_impl(ignore_default_args), handle_sigint=mapping.to_impl(handle_sigint), handle_sigterm=mapping.to_impl(handle_sigterm), handle_sighup=mapping.to_impl(handle_sighup), timeout=mapping.to_impl(timeout), env=mapping.to_impl(env), headless=mapping.to_impl(headless), devtools=mapping.to_impl(devtools), proxy=mapping.to_impl(proxy), downloads_path=mapping.to_impl(downloads_path), slow_mo=mapping.to_impl(slow_mo), traces_dir=mapping.to_impl(traces_dir), chromium_sandbox=mapping.to_impl(chromium_sandbox), firefox_user_prefs=mapping.to_impl(firefox_user_prefs))))
 
-    def launch_persistent_context(self, user_data_dir: Union[str, Path], **kwargs: Any) -> BrowserContext:
+    def launch_persistent_context(self, user_data_dir: str | Path, **kwargs: Any) -> BrowserContext:
         return mapping.from_impl(self._run(self._impl.launch_persistent_context(user_data_dir=mapping.to_impl(user_data_dir), **kwargs)))
 
-    def connect_over_cdp(self, endpoint_url: str, timeout: Optional[float]=None, slow_mo: Optional[float]=None, headers: Optional[dict[str, str]]=None) -> Browser:
+    def connect_over_cdp(self, endpoint_url: str, timeout: float | None=None, slow_mo: float | None=None, headers: dict[str, str] | None=None) -> Browser:
         return mapping.from_impl(self._run(self._impl.connect_over_cdp(endpoint_url=mapping.to_impl(endpoint_url), timeout=mapping.to_impl(timeout), slow_mo=mapping.to_impl(slow_mo), headers=mapping.to_impl(headers))))
 
     def connect(self, ws_endpoint: str, **kwargs: Any) -> Browser:
@@ -186,7 +186,7 @@ class Selectors(SyncBase):
     """``playwright.selectors``: only the test id attribute is configurable."""
     _impl: _SelectorsImpl
 
-    def register(self, name: str, script: Optional[str]=None, path: Union[str, Path, None]=None, content_script: Optional[bool]=None) -> None:
+    def register(self, name: str, script: str | None=None, path: str | Path | None=None, content_script: bool | None=None) -> None:
         self._run(self._impl.register(name=mapping.to_impl(name), script=mapping.to_impl(script), path=mapping.to_impl(path), content_script=mapping.to_impl(content_script)))
 
     def set_test_id_attribute(self, attribute_name: str) -> None:
@@ -235,7 +235,7 @@ class Browser(SyncBase):
     def new_page(self, **options: Any) -> Page:
         return mapping.from_impl(self._run(self._impl.new_page(**options)))
 
-    def close(self, reason: Optional[str]=None) -> None:
+    def close(self, reason: str | None=None) -> None:
         self._run(self._impl.close(reason=mapping.to_impl(reason)))
 
     def new_browser_cdp_session(self) -> Any:
@@ -274,7 +274,7 @@ class BrowserContext(SyncBase):
         return mapping.from_impl(self._impl.pages)
 
     @property
-    def browser(self) -> Optional[Browser]:
+    def browser(self) -> Browser | None:
         return mapping.from_impl(self._impl.browser)
 
     @property
@@ -303,7 +303,7 @@ class BrowserContext(SyncBase):
     def set_default_navigation_timeout(self, timeout: float) -> None:
         self._impl.set_default_navigation_timeout(timeout=mapping.to_impl(timeout))
 
-    def cookies(self, urls: Union[str, Sequence[str], None]=None) -> list[dict[str, Any]]:
+    def cookies(self, urls: str | Sequence[str] | None=None) -> list[dict[str, Any]]:
         return mapping.from_impl(self._run(self._impl.cookies(urls=mapping.to_impl(urls))))
 
     def add_cookies(self, cookies: Sequence[dict[str, Any]]) -> None:
@@ -312,16 +312,16 @@ class BrowserContext(SyncBase):
     def clear_cookies(self, **kwargs: Any) -> None:
         self._run(self._impl.clear_cookies(**kwargs))
 
-    def storage_state(self, path: Union[str, Path, None]=None, indexed_db: Optional[bool]=None) -> dict[str, Any]:
+    def storage_state(self, path: str | Path | None=None, indexed_db: bool | None=None) -> dict[str, Any]:
         return mapping.from_impl(self._run(self._impl.storage_state(path=mapping.to_impl(path), indexed_db=mapping.to_impl(indexed_db))))
 
-    def grant_permissions(self, permissions: Sequence[str], origin: Optional[str]=None) -> None:
+    def grant_permissions(self, permissions: Sequence[str], origin: str | None=None) -> None:
         self._run(self._impl.grant_permissions(permissions=mapping.to_impl(permissions), origin=mapping.to_impl(origin)))
 
     def clear_permissions(self) -> None:
         self._run(self._impl.clear_permissions())
 
-    def set_geolocation(self, geolocation: Optional[dict[str, float]]) -> None:
+    def set_geolocation(self, geolocation: dict[str, float] | None) -> None:
         self._run(self._impl.set_geolocation(geolocation=mapping.to_impl(geolocation)))
 
     def set_extra_http_headers(self, headers: dict[str, str]) -> None:
@@ -330,37 +330,37 @@ class BrowserContext(SyncBase):
     def set_offline(self, offline: bool) -> None:
         self._run(self._impl.set_offline(offline=mapping.to_impl(offline)))
 
-    def add_init_script(self, script: Optional[str]=None, path: Union[str, Path, None]=None) -> None:
+    def add_init_script(self, script: str | None=None, path: str | Path | None=None) -> None:
         self._run(self._impl.add_init_script(script=mapping.to_impl(script), path=mapping.to_impl(path)))
 
     def expose_function(self, name: str, callback: Callable[..., Any]) -> None:
         self._run(self._impl.expose_function(name=mapping.to_impl(name), callback=mapping.wrap_handler(callback)))
 
-    def expose_binding(self, name: str, callback: Callable[..., Any], handle: Optional[bool]=None) -> None:
+    def expose_binding(self, name: str, callback: Callable[..., Any], handle: bool | None=None) -> None:
         self._run(self._impl.expose_binding(name=mapping.to_impl(name), callback=mapping.wrap_handler(callback), handle=mapping.to_impl(handle)))
 
-    def route(self, url: URLMatch, handler: RouteHandler, times: Optional[int]=None) -> None:
+    def route(self, url: URLMatch, handler: RouteHandler, times: int | None=None) -> None:
         self._run(self._impl.route(url=mapping.to_impl(url), handler=mapping.wrap_handler(handler), times=mapping.to_impl(times)))
 
-    def unroute(self, url: URLMatch, handler: Optional[RouteHandler]=None) -> None:
+    def unroute(self, url: URLMatch, handler: RouteHandler | None=None) -> None:
         self._run(self._impl.unroute(url=mapping.to_impl(url), handler=mapping.wrap_handler(handler)))
 
-    def unroute_all(self, behavior: Optional[str]=None) -> None:
+    def unroute_all(self, behavior: str | None=None) -> None:
         self._run(self._impl.unroute_all(behavior=mapping.to_impl(behavior)))
 
-    def wait_for_event(self, event: str, predicate: Optional[Callable[[Any], Any]]=None, timeout: Optional[float]=None) -> Any:
+    def wait_for_event(self, event: str, predicate: Callable[[Any], Any] | None=None, timeout: float | None=None) -> Any:
         return mapping.from_impl(self._run(self._impl.wait_for_event(event=mapping.to_impl(event), predicate=mapping.wrap_predicate(predicate), timeout=mapping.to_impl(timeout))))
 
-    def expect_event(self, event: str, predicate: Optional[Callable[[Any], Any]]=None, timeout: Optional[float]=None) -> EventContextManager[Any]:
+    def expect_event(self, event: str, predicate: Callable[[Any], Any] | None=None, timeout: float | None=None) -> EventContextManager[Any]:
         return mapping.from_impl(self._impl.expect_event(event=mapping.to_impl(event), predicate=mapping.wrap_predicate(predicate), timeout=mapping.to_impl(timeout)))
 
-    def expect_page(self, predicate: Optional[Callable[[Page], bool]]=None, timeout: Optional[float]=None) -> EventContextManager[Page]:
+    def expect_page(self, predicate: Callable[[Page], bool] | None=None, timeout: float | None=None) -> EventContextManager[Page]:
         return mapping.from_impl(self._impl.expect_page(predicate=mapping.wrap_predicate(predicate), timeout=mapping.to_impl(timeout)))
 
-    def expect_console_message(self, predicate: Any=None, timeout: Optional[float]=None) -> EventContextManager[Any]:
+    def expect_console_message(self, predicate: Any=None, timeout: float | None=None) -> EventContextManager[Any]:
         return mapping.from_impl(self._impl.expect_console_message(predicate=mapping.wrap_predicate(predicate), timeout=mapping.to_impl(timeout)))
 
-    def close(self, reason: Optional[str]=None) -> None:
+    def close(self, reason: str | None=None) -> None:
         self._run(self._impl.close(reason=mapping.to_impl(reason)))
 
     def new_cdp_session(self, page: Page) -> Any:
@@ -393,7 +393,7 @@ class Page(SyncBase):
     def frames(self) -> list[Frame]:
         return mapping.from_impl(self._impl.frames)
 
-    def frame(self, name: Optional[str]=None, url: Optional[URLMatch]=None) -> Optional[Frame]:
+    def frame(self, name: str | None=None, url: URLMatch | None=None) -> Frame | None:
         return mapping.from_impl(self._impl.frame(name=mapping.to_impl(name), url=mapping.to_impl(url)))
 
     @property
@@ -417,7 +417,7 @@ class Page(SyncBase):
         return mapping.from_impl(self._impl.touchscreen)
 
     @property
-    def viewport_size(self) -> Optional[dict[str, int]]:
+    def viewport_size(self) -> dict[str, int] | None:
         return mapping.from_impl(self._impl.viewport_size)
 
     @property
@@ -444,7 +444,7 @@ class Page(SyncBase):
     def is_closed(self) -> bool:
         return mapping.from_impl(self._impl.is_closed())
 
-    def opener(self) -> Optional[Page]:
+    def opener(self) -> Page | None:
         return mapping.from_impl(self._run(self._impl.opener()))
 
     def set_default_timeout(self, timeout: float) -> None:
@@ -459,73 +459,73 @@ class Page(SyncBase):
     def once(self, event: str, listener: Callable[..., Any]) -> None:
         self._impl.once(event=mapping.to_impl(event), listener=mapping.wrap_handler(listener))
 
-    def wait_for_event(self, event: str, predicate: Optional[Callable[[Any], Any]]=None, timeout: Optional[float]=None) -> Any:
+    def wait_for_event(self, event: str, predicate: Callable[[Any], Any] | None=None, timeout: float | None=None) -> Any:
         return mapping.from_impl(self._run(self._impl.wait_for_event(event=mapping.to_impl(event), predicate=mapping.wrap_predicate(predicate), timeout=mapping.to_impl(timeout))))
 
-    def expect_event(self, event: str, predicate: Optional[Callable[[Any], Any]]=None, timeout: Optional[float]=None) -> EventContextManager[Any]:
+    def expect_event(self, event: str, predicate: Callable[[Any], Any] | None=None, timeout: float | None=None) -> EventContextManager[Any]:
         return mapping.from_impl(self._impl.expect_event(event=mapping.to_impl(event), predicate=mapping.wrap_predicate(predicate), timeout=mapping.to_impl(timeout)))
 
-    def expect_console_message(self, predicate: Optional[Callable[[ConsoleMessage], bool]]=None, timeout: Optional[float]=None) -> EventContextManager[ConsoleMessage]:
+    def expect_console_message(self, predicate: Callable[[ConsoleMessage], bool] | None=None, timeout: float | None=None) -> EventContextManager[ConsoleMessage]:
         return mapping.from_impl(self._impl.expect_console_message(predicate=mapping.wrap_predicate(predicate), timeout=mapping.to_impl(timeout)))
 
-    def expect_download(self, predicate: Optional[Callable[[Download], bool]]=None, timeout: Optional[float]=None) -> EventContextManager[Download]:
+    def expect_download(self, predicate: Callable[[Download], bool] | None=None, timeout: float | None=None) -> EventContextManager[Download]:
         return mapping.from_impl(self._impl.expect_download(predicate=mapping.wrap_predicate(predicate), timeout=mapping.to_impl(timeout)))
 
-    def expect_file_chooser(self, predicate: Optional[Callable[[FileChooser], bool]]=None, timeout: Optional[float]=None) -> EventContextManager[FileChooser]:
+    def expect_file_chooser(self, predicate: Callable[[FileChooser], bool] | None=None, timeout: float | None=None) -> EventContextManager[FileChooser]:
         return mapping.from_impl(self._impl.expect_file_chooser(predicate=mapping.wrap_predicate(predicate), timeout=mapping.to_impl(timeout)))
 
-    def expect_popup(self, predicate: Optional[Callable[[Page], bool]]=None, timeout: Optional[float]=None) -> EventContextManager[Page]:
+    def expect_popup(self, predicate: Callable[[Page], bool] | None=None, timeout: float | None=None) -> EventContextManager[Page]:
         return mapping.from_impl(self._impl.expect_popup(predicate=mapping.wrap_predicate(predicate), timeout=mapping.to_impl(timeout)))
 
-    def expect_worker(self, predicate: Any=None, timeout: Optional[float]=None) -> EventContextManager[Any]:
+    def expect_worker(self, predicate: Any=None, timeout: float | None=None) -> EventContextManager[Any]:
         return mapping.from_impl(self._impl.expect_worker(predicate=mapping.wrap_predicate(predicate), timeout=mapping.to_impl(timeout)))
 
-    def expect_websocket(self, predicate: Any=None, timeout: Optional[float]=None) -> EventContextManager[Any]:
+    def expect_websocket(self, predicate: Any=None, timeout: float | None=None) -> EventContextManager[Any]:
         return mapping.from_impl(self._impl.expect_websocket(predicate=mapping.wrap_predicate(predicate), timeout=mapping.to_impl(timeout)))
 
-    def expect_request(self, url_or_predicate: Union[URLMatch, Callable[[Request], Any]], timeout: Optional[float]=None) -> EventContextManager[Request]:
+    def expect_request(self, url_or_predicate: URLMatch | Callable[[Request], Any], timeout: float | None=None) -> EventContextManager[Request]:
         return mapping.from_impl(self._impl.expect_request(url_or_predicate=mapping.wrap_predicate(url_or_predicate), timeout=mapping.to_impl(timeout)))
 
-    def expect_request_finished(self, predicate: Optional[Callable[[Request], Any]]=None, timeout: Optional[float]=None) -> EventContextManager[Request]:
+    def expect_request_finished(self, predicate: Callable[[Request], Any] | None=None, timeout: float | None=None) -> EventContextManager[Request]:
         return mapping.from_impl(self._impl.expect_request_finished(predicate=mapping.wrap_predicate(predicate), timeout=mapping.to_impl(timeout)))
 
-    def expect_response(self, url_or_predicate: Union[URLMatch, Callable[[Response], Any]], timeout: Optional[float]=None) -> EventContextManager[Response]:
+    def expect_response(self, url_or_predicate: URLMatch | Callable[[Response], Any], timeout: float | None=None) -> EventContextManager[Response]:
         return mapping.from_impl(self._impl.expect_response(url_or_predicate=mapping.wrap_predicate(url_or_predicate), timeout=mapping.to_impl(timeout)))
 
-    def expect_navigation(self, url: Optional[URLMatch]=None, wait_until: Optional[str]=None, timeout: Optional[float]=None) -> EventContextManager[Optional[Response]]:
+    def expect_navigation(self, url: URLMatch | None=None, wait_until: str | None=None, timeout: float | None=None) -> EventContextManager[Response | None]:
         return mapping.from_impl(self._impl.expect_navigation(url=mapping.to_impl(url), wait_until=mapping.to_impl(wait_until), timeout=mapping.to_impl(timeout)))
 
-    def goto(self, url: str, timeout: Optional[float]=None, wait_until: Optional[str]=None, referer: Optional[str]=None) -> Optional[Response]:
+    def goto(self, url: str, timeout: float | None=None, wait_until: str | None=None, referer: str | None=None) -> Response | None:
         return mapping.from_impl(self._run(self._impl.goto(url=mapping.to_impl(url), timeout=mapping.to_impl(timeout), wait_until=mapping.to_impl(wait_until), referer=mapping.to_impl(referer))))
 
-    def reload(self, timeout: Optional[float]=None, wait_until: Optional[str]=None) -> Optional[Response]:
+    def reload(self, timeout: float | None=None, wait_until: str | None=None) -> Response | None:
         return mapping.from_impl(self._run(self._impl.reload(timeout=mapping.to_impl(timeout), wait_until=mapping.to_impl(wait_until))))
 
-    def go_back(self, timeout: Optional[float]=None, wait_until: Optional[str]=None) -> Optional[Response]:
+    def go_back(self, timeout: float | None=None, wait_until: str | None=None) -> Response | None:
         return mapping.from_impl(self._run(self._impl.go_back(timeout=mapping.to_impl(timeout), wait_until=mapping.to_impl(wait_until))))
 
-    def go_forward(self, timeout: Optional[float]=None, wait_until: Optional[str]=None) -> Optional[Response]:
+    def go_forward(self, timeout: float | None=None, wait_until: str | None=None) -> Response | None:
         return mapping.from_impl(self._run(self._impl.go_forward(timeout=mapping.to_impl(timeout), wait_until=mapping.to_impl(wait_until))))
 
-    def wait_for_load_state(self, state: Optional[str]=None, timeout: Optional[float]=None) -> None:
+    def wait_for_load_state(self, state: str | None=None, timeout: float | None=None) -> None:
         self._run(self._impl.wait_for_load_state(state=mapping.to_impl(state), timeout=mapping.to_impl(timeout)))
 
-    def wait_for_url(self, url: URLMatch, wait_until: Optional[str]=None, timeout: Optional[float]=None) -> None:
+    def wait_for_url(self, url: URLMatch, wait_until: str | None=None, timeout: float | None=None) -> None:
         self._run(self._impl.wait_for_url(url=mapping.to_impl(url), wait_until=mapping.to_impl(wait_until), timeout=mapping.to_impl(timeout)))
 
     def wait_for_timeout(self, timeout: float) -> None:
         self._run(self._impl.wait_for_timeout(timeout=mapping.to_impl(timeout)))
 
-    def wait_for_function(self, expression: str, arg: Any=None, timeout: Optional[float]=None, polling: Any=None) -> JSHandle:
+    def wait_for_function(self, expression: str, arg: Any=None, timeout: float | None=None, polling: Any=None) -> JSHandle:
         return mapping.from_impl(self._run(self._impl.wait_for_function(expression=mapping.to_impl(expression), arg=mapping.to_impl(arg), timeout=mapping.to_impl(timeout), polling=mapping.to_impl(polling))))
 
-    def wait_for_selector(self, selector: str, timeout: Optional[float]=None, state: str='visible', strict: Optional[bool]=None) -> Optional[ElementHandle]:
+    def wait_for_selector(self, selector: str, timeout: float | None=None, state: str='visible', strict: bool | None=None) -> ElementHandle | None:
         return mapping.from_impl(self._run(self._impl.wait_for_selector(selector=mapping.to_impl(selector), timeout=mapping.to_impl(timeout), state=mapping.to_impl(state), strict=mapping.to_impl(strict))))
 
     def content(self) -> str:
         return mapping.from_impl(self._run(self._impl.content()))
 
-    def set_content(self, html: str, timeout: Optional[float]=None, wait_until: Optional[str]=None) -> None:
+    def set_content(self, html: str, timeout: float | None=None, wait_until: str | None=None) -> None:
         self._run(self._impl.set_content(html=mapping.to_impl(html), timeout=mapping.to_impl(timeout), wait_until=mapping.to_impl(wait_until)))
 
     def title(self) -> str:
@@ -537,13 +537,13 @@ class Page(SyncBase):
     def evaluate_handle(self, expression: str, arg: Any=None) -> JSHandle:
         return mapping.from_impl(self._run(self._impl.evaluate_handle(expression=mapping.to_impl(expression), arg=mapping.to_impl(arg))))
 
-    def query_selector(self, selector: str, strict: Optional[bool]=None) -> Optional[ElementHandle]:
+    def query_selector(self, selector: str, strict: bool | None=None) -> ElementHandle | None:
         return mapping.from_impl(self._run(self._impl.query_selector(selector=mapping.to_impl(selector), strict=mapping.to_impl(strict))))
 
     def query_selector_all(self, selector: str) -> list[ElementHandle]:
         return mapping.from_impl(self._run(self._impl.query_selector_all(selector=mapping.to_impl(selector))))
 
-    def eval_on_selector(self, selector: str, expression: str, arg: Any=None, strict: Optional[bool]=None) -> Any:
+    def eval_on_selector(self, selector: str, expression: str, arg: Any=None, strict: bool | None=None) -> Any:
         return mapping.from_impl(self._run(self._impl.eval_on_selector(selector=mapping.to_impl(selector), expression=mapping.to_impl(expression), arg=mapping.to_impl(arg), strict=mapping.to_impl(strict))))
 
     def eval_on_selector_all(self, selector: str, expression: str, arg: Any=None) -> Any:
@@ -555,13 +555,13 @@ class Page(SyncBase):
     def add_style_tag(self, **kwargs: Any) -> ElementHandle:
         return mapping.from_impl(self._run(self._impl.add_style_tag(**kwargs)))
 
-    def add_init_script(self, script: Optional[str]=None, path: Union[str, Path, None]=None) -> None:
+    def add_init_script(self, script: str | None=None, path: str | Path | None=None) -> None:
         self._run(self._impl.add_init_script(script=mapping.to_impl(script), path=mapping.to_impl(path)))
 
     def expose_function(self, name: str, callback: Callable[..., Any]) -> None:
         self._run(self._impl.expose_function(name=mapping.to_impl(name), callback=mapping.wrap_handler(callback)))
 
-    def expose_binding(self, name: str, callback: Callable[..., Any], handle: Optional[bool]=None) -> None:
+    def expose_binding(self, name: str, callback: Callable[..., Any], handle: bool | None=None) -> None:
         self._run(self._impl.expose_binding(name=mapping.to_impl(name), callback=mapping.wrap_handler(callback), handle=mapping.to_impl(handle)))
 
     def set_extra_http_headers(self, headers: dict[str, str]) -> None:
@@ -576,7 +576,7 @@ class Page(SyncBase):
         """
         self._run(self._impl.set_viewport_size(viewport_size=mapping.to_impl(viewport_size)))
 
-    def emulate_media(self, media: Optional[str]=None, color_scheme: Optional[str]=None, reduced_motion: Optional[str]=None, forced_colors: Optional[str]=None, contrast: Optional[str]=None) -> None:
+    def emulate_media(self, media: str | None=None, color_scheme: str | None=None, reduced_motion: str | None=None, forced_colors: str | None=None, contrast: str | None=None) -> None:
         self._run(self._impl.emulate_media(media=mapping.to_impl(media), color_scheme=mapping.to_impl(color_scheme), reduced_motion=mapping.to_impl(reduced_motion), forced_colors=mapping.to_impl(forced_colors), contrast=mapping.to_impl(contrast)))
 
     def bring_to_front(self) -> None:
@@ -588,34 +588,34 @@ class Page(SyncBase):
     def pause(self) -> None:
         self._run(self._impl.pause())
 
-    def route(self, url: URLMatch, handler: RouteHandler, times: Optional[int]=None) -> None:
+    def route(self, url: URLMatch, handler: RouteHandler, times: int | None=None) -> None:
         self._run(self._impl.route(url=mapping.to_impl(url), handler=mapping.wrap_handler(handler), times=mapping.to_impl(times)))
 
-    def unroute(self, url: URLMatch, handler: Optional[RouteHandler]=None) -> None:
+    def unroute(self, url: URLMatch, handler: RouteHandler | None=None) -> None:
         self._run(self._impl.unroute(url=mapping.to_impl(url), handler=mapping.wrap_handler(handler)))
 
-    def unroute_all(self, behavior: Optional[str]=None) -> None:
+    def unroute_all(self, behavior: str | None=None) -> None:
         self._run(self._impl.unroute_all(behavior=mapping.to_impl(behavior)))
 
-    def screenshot(self, timeout: Optional[float]=None, type: Optional[str]=None, path: Union[str, Path, None]=None, quality: Optional[int]=None, omit_background: Optional[bool]=None, full_page: Optional[bool]=None, clip: Optional[dict[str, float]]=None, animations: Optional[str]=None, caret: Optional[str]=None, scale: Optional[str]=None, mask: Optional[Sequence[Locator]]=None, mask_color: Optional[str]=None, style: Optional[str]=None) -> bytes:
+    def screenshot(self, timeout: float | None=None, type: str | None=None, path: str | Path | None=None, quality: int | None=None, omit_background: bool | None=None, full_page: bool | None=None, clip: dict[str, float] | None=None, animations: str | None=None, caret: str | None=None, scale: str | None=None, mask: Sequence[Locator] | None=None, mask_color: str | None=None, style: str | None=None) -> bytes:
         return mapping.from_impl(self._run(self._impl.screenshot(timeout=mapping.to_impl(timeout), type=mapping.to_impl(type), path=mapping.to_impl(path), quality=mapping.to_impl(quality), omit_background=mapping.to_impl(omit_background), full_page=mapping.to_impl(full_page), clip=mapping.to_impl(clip), animations=mapping.to_impl(animations), caret=mapping.to_impl(caret), scale=mapping.to_impl(scale), mask=mapping.to_impl(mask), mask_color=mapping.to_impl(mask_color), style=mapping.to_impl(style))))
 
-    def pdf(self, scale: Optional[float]=None, display_header_footer: Optional[bool]=None, header_template: Optional[str]=None, footer_template: Optional[str]=None, print_background: Optional[bool]=None, landscape: Optional[bool]=None, page_ranges: Optional[str]=None, format: Optional[str]=None, width: Union[str, float, None]=None, height: Union[str, float, None]=None, prefer_css_page_size: Optional[bool]=None, margin: Optional[dict[str, Union[str, float]]]=None, path: Union[str, Path, None]=None, outline: Optional[bool]=None, tagged: Optional[bool]=None) -> bytes:
+    def pdf(self, scale: float | None=None, display_header_footer: bool | None=None, header_template: str | None=None, footer_template: str | None=None, print_background: bool | None=None, landscape: bool | None=None, page_ranges: str | None=None, format: str | None=None, width: str | float | None=None, height: str | float | None=None, prefer_css_page_size: bool | None=None, margin: dict[str, str | float] | None=None, path: str | Path | None=None, outline: bool | None=None, tagged: bool | None=None) -> bytes:
         return mapping.from_impl(self._run(self._impl.pdf(scale=mapping.to_impl(scale), display_header_footer=mapping.to_impl(display_header_footer), header_template=mapping.to_impl(header_template), footer_template=mapping.to_impl(footer_template), print_background=mapping.to_impl(print_background), landscape=mapping.to_impl(landscape), page_ranges=mapping.to_impl(page_ranges), format=mapping.to_impl(format), width=mapping.to_impl(width), height=mapping.to_impl(height), prefer_css_page_size=mapping.to_impl(prefer_css_page_size), margin=mapping.to_impl(margin), path=mapping.to_impl(path), outline=mapping.to_impl(outline), tagged=mapping.to_impl(tagged))))
 
-    def close(self, run_before_unload: Optional[bool]=None, reason: Optional[str]=None) -> None:
+    def close(self, run_before_unload: bool | None=None, reason: str | None=None) -> None:
         self._run(self._impl.close(run_before_unload=mapping.to_impl(run_before_unload), reason=mapping.to_impl(reason)))
 
     def locator(self, selector: str, **kwargs: Any) -> Locator:
         return mapping.from_impl(self._impl.locator(selector=mapping.to_impl(selector), **kwargs))
 
-    def get_by_alt_text(self, text: TextMatch, exact: Optional[bool]=None) -> Locator:
+    def get_by_alt_text(self, text: TextMatch, exact: bool | None=None) -> Locator:
         return mapping.from_impl(self._impl.get_by_alt_text(text=mapping.to_impl(text), exact=mapping.to_impl(exact)))
 
-    def get_by_label(self, text: TextMatch, exact: Optional[bool]=None) -> Locator:
+    def get_by_label(self, text: TextMatch, exact: bool | None=None) -> Locator:
         return mapping.from_impl(self._impl.get_by_label(text=mapping.to_impl(text), exact=mapping.to_impl(exact)))
 
-    def get_by_placeholder(self, text: TextMatch, exact: Optional[bool]=None) -> Locator:
+    def get_by_placeholder(self, text: TextMatch, exact: bool | None=None) -> Locator:
         return mapping.from_impl(self._impl.get_by_placeholder(text=mapping.to_impl(text), exact=mapping.to_impl(exact)))
 
     def get_by_role(self, role: str, **kwargs: Any) -> Locator:
@@ -624,10 +624,10 @@ class Page(SyncBase):
     def get_by_test_id(self, test_id: TextMatch) -> Locator:
         return mapping.from_impl(self._impl.get_by_test_id(test_id=mapping.to_impl(test_id)))
 
-    def get_by_text(self, text: TextMatch, exact: Optional[bool]=None) -> Locator:
+    def get_by_text(self, text: TextMatch, exact: bool | None=None) -> Locator:
         return mapping.from_impl(self._impl.get_by_text(text=mapping.to_impl(text), exact=mapping.to_impl(exact)))
 
-    def get_by_title(self, text: TextMatch, exact: Optional[bool]=None) -> Locator:
+    def get_by_title(self, text: TextMatch, exact: bool | None=None) -> Locator:
         return mapping.from_impl(self._impl.get_by_title(text=mapping.to_impl(text), exact=mapping.to_impl(exact)))
 
     def frame_locator(self, selector: str) -> FrameLocator:
@@ -672,16 +672,16 @@ class Page(SyncBase):
     def set_input_files(self, selector: str, files: Any, **kwargs: Any) -> None:
         self._run(self._impl.set_input_files(selector=mapping.to_impl(selector), files=mapping.to_impl(files), **kwargs))
 
-    def dispatch_event(self, selector: str, type: str, event_init: Optional[dict[str, Any]]=None, **kwargs: Any) -> None:
+    def dispatch_event(self, selector: str, type: str, event_init: dict[str, Any] | None=None, **kwargs: Any) -> None:
         self._run(self._impl.dispatch_event(selector=mapping.to_impl(selector), type=mapping.to_impl(type), event_init=mapping.to_impl(event_init), **kwargs))
 
     def drag_and_drop(self, source: str, target: str, **kwargs: Any) -> None:
         self._run(self._impl.drag_and_drop(source=mapping.to_impl(source), target=mapping.to_impl(target), **kwargs))
 
-    def get_attribute(self, selector: str, name: str, **kwargs: Any) -> Optional[str]:
+    def get_attribute(self, selector: str, name: str, **kwargs: Any) -> str | None:
         return mapping.from_impl(self._run(self._impl.get_attribute(selector=mapping.to_impl(selector), name=mapping.to_impl(name), **kwargs)))
 
-    def text_content(self, selector: str, **kwargs: Any) -> Optional[str]:
+    def text_content(self, selector: str, **kwargs: Any) -> str | None:
         return mapping.from_impl(self._run(self._impl.text_content(selector=mapping.to_impl(selector), **kwargs)))
 
     def inner_text(self, selector: str, **kwargs: Any) -> str:
@@ -737,7 +737,7 @@ class Frame(SyncBase):
         return mapping.from_impl(self._impl.url)
 
     @property
-    def parent_frame(self) -> Optional[Frame]:
+    def parent_frame(self) -> Frame | None:
         return mapping.from_impl(self._impl.parent_frame)
 
     @property
@@ -750,7 +750,7 @@ class Frame(SyncBase):
     def frame_element(self) -> ElementHandle:
         return mapping.from_impl(self._run(self._impl.frame_element()))
 
-    def wait_for_selector(self, selector: str, timeout: Optional[float]=None, state: str='visible', strict: Optional[bool]=None, root: Optional[WebElement]=None) -> Optional[ElementHandle]:
+    def wait_for_selector(self, selector: str, timeout: float | None=None, state: str='visible', strict: bool | None=None, root: WebElement | None=None) -> ElementHandle | None:
         return mapping.from_impl(self._run(self._impl.wait_for_selector(selector=mapping.to_impl(selector), timeout=mapping.to_impl(timeout), state=mapping.to_impl(state), strict=mapping.to_impl(strict), root=mapping.to_impl(root))))
 
     def evaluate(self, expression: str, arg: Any=None) -> Any:
@@ -759,7 +759,7 @@ class Frame(SyncBase):
     def evaluate_handle(self, expression: str, arg: Any=None) -> JSHandle:
         return mapping.from_impl(self._run(self._impl.evaluate_handle(expression=mapping.to_impl(expression), arg=mapping.to_impl(arg))))
 
-    def wait_for_function(self, expression: str, arg: Any=None, timeout: Optional[float]=None, polling: Any=None) -> JSHandle:
+    def wait_for_function(self, expression: str, arg: Any=None, timeout: float | None=None, polling: Any=None) -> JSHandle:
         return mapping.from_impl(self._run(self._impl.wait_for_function(expression=mapping.to_impl(expression), arg=mapping.to_impl(arg), timeout=mapping.to_impl(timeout), polling=mapping.to_impl(polling))))
 
     def wait_for_timeout(self, timeout: float) -> None:
@@ -768,52 +768,52 @@ class Frame(SyncBase):
     def content(self) -> str:
         return mapping.from_impl(self._run(self._impl.content()))
 
-    def set_content(self, html: str, timeout: Optional[float]=None, wait_until: Optional[str]=None) -> None:
+    def set_content(self, html: str, timeout: float | None=None, wait_until: str | None=None) -> None:
         self._run(self._impl.set_content(html=mapping.to_impl(html), timeout=mapping.to_impl(timeout), wait_until=mapping.to_impl(wait_until)))
 
     def title(self) -> str:
         return mapping.from_impl(self._run(self._impl.title()))
 
-    def query_selector(self, selector: str, strict: Optional[bool]=None) -> Optional[ElementHandle]:
+    def query_selector(self, selector: str, strict: bool | None=None) -> ElementHandle | None:
         return mapping.from_impl(self._run(self._impl.query_selector(selector=mapping.to_impl(selector), strict=mapping.to_impl(strict))))
 
     def query_selector_all(self, selector: str) -> list[ElementHandle]:
         return mapping.from_impl(self._run(self._impl.query_selector_all(selector=mapping.to_impl(selector))))
 
-    def eval_on_selector(self, selector: str, expression: str, arg: Any=None, strict: Optional[bool]=None) -> Any:
+    def eval_on_selector(self, selector: str, expression: str, arg: Any=None, strict: bool | None=None) -> Any:
         return mapping.from_impl(self._run(self._impl.eval_on_selector(selector=mapping.to_impl(selector), expression=mapping.to_impl(expression), arg=mapping.to_impl(arg), strict=mapping.to_impl(strict))))
 
     def eval_on_selector_all(self, selector: str, expression: str, arg: Any=None) -> Any:
         return mapping.from_impl(self._run(self._impl.eval_on_selector_all(selector=mapping.to_impl(selector), expression=mapping.to_impl(expression), arg=mapping.to_impl(arg))))
 
-    def add_script_tag(self, url: Optional[str]=None, path: Optional[Union[str, Path]]=None, content: Optional[str]=None, type: Optional[str]=None) -> ElementHandle:
+    def add_script_tag(self, url: str | None=None, path: str | Path | None=None, content: str | None=None, type: str | None=None) -> ElementHandle:
         return mapping.from_impl(self._run(self._impl.add_script_tag(url=mapping.to_impl(url), path=mapping.to_impl(path), content=mapping.to_impl(content), type=mapping.to_impl(type))))
 
-    def add_style_tag(self, url: Optional[str]=None, path: Optional[Union[str, Path]]=None, content: Optional[str]=None) -> ElementHandle:
+    def add_style_tag(self, url: str | None=None, path: str | Path | None=None, content: str | None=None) -> ElementHandle:
         return mapping.from_impl(self._run(self._impl.add_style_tag(url=mapping.to_impl(url), path=mapping.to_impl(path), content=mapping.to_impl(content))))
 
-    def goto(self, url: str, timeout: Optional[float]=None, wait_until: Optional[str]=None, referer: Optional[str]=None) -> Optional[Response]:
+    def goto(self, url: str, timeout: float | None=None, wait_until: str | None=None, referer: str | None=None) -> Response | None:
         return mapping.from_impl(self._run(self._impl.goto(url=mapping.to_impl(url), timeout=mapping.to_impl(timeout), wait_until=mapping.to_impl(wait_until), referer=mapping.to_impl(referer))))
 
-    def wait_for_load_state(self, state: Optional[str]=None, timeout: Optional[float]=None) -> None:
+    def wait_for_load_state(self, state: str | None=None, timeout: float | None=None) -> None:
         self._run(self._impl.wait_for_load_state(state=mapping.to_impl(state), timeout=mapping.to_impl(timeout)))
 
-    def wait_for_url(self, url: Any, wait_until: Optional[str]=None, timeout: Optional[float]=None) -> None:
+    def wait_for_url(self, url: Any, wait_until: str | None=None, timeout: float | None=None) -> None:
         self._run(self._impl.wait_for_url(url=mapping.to_impl(url), wait_until=mapping.to_impl(wait_until), timeout=mapping.to_impl(timeout)))
 
-    def expect_navigation(self, url: Any=None, wait_until: Optional[str]=None, timeout: Optional[float]=None) -> Any:
+    def expect_navigation(self, url: Any=None, wait_until: str | None=None, timeout: float | None=None) -> Any:
         return mapping.from_impl(self._impl.expect_navigation(url=mapping.to_impl(url), wait_until=mapping.to_impl(wait_until), timeout=mapping.to_impl(timeout)))
 
-    def locator(self, selector: str, has_text: Optional[TextMatch]=None, has_not_text: Optional[TextMatch]=None, has: Optional[Locator]=None, has_not: Optional[Locator]=None) -> Locator:
+    def locator(self, selector: str, has_text: TextMatch | None=None, has_not_text: TextMatch | None=None, has: Locator | None=None, has_not: Locator | None=None) -> Locator:
         return mapping.from_impl(self._impl.locator(selector=mapping.to_impl(selector), has_text=mapping.to_impl(has_text), has_not_text=mapping.to_impl(has_not_text), has=mapping.to_impl(has), has_not=mapping.to_impl(has_not)))
 
-    def get_by_alt_text(self, text: TextMatch, exact: Optional[bool]=None) -> Locator:
+    def get_by_alt_text(self, text: TextMatch, exact: bool | None=None) -> Locator:
         return mapping.from_impl(self._impl.get_by_alt_text(text=mapping.to_impl(text), exact=mapping.to_impl(exact)))
 
-    def get_by_label(self, text: TextMatch, exact: Optional[bool]=None) -> Locator:
+    def get_by_label(self, text: TextMatch, exact: bool | None=None) -> Locator:
         return mapping.from_impl(self._impl.get_by_label(text=mapping.to_impl(text), exact=mapping.to_impl(exact)))
 
-    def get_by_placeholder(self, text: TextMatch, exact: Optional[bool]=None) -> Locator:
+    def get_by_placeholder(self, text: TextMatch, exact: bool | None=None) -> Locator:
         return mapping.from_impl(self._impl.get_by_placeholder(text=mapping.to_impl(text), exact=mapping.to_impl(exact)))
 
     def get_by_role(self, role: str, **kwargs: Any) -> Locator:
@@ -822,91 +822,91 @@ class Frame(SyncBase):
     def get_by_test_id(self, test_id: TextMatch) -> Locator:
         return mapping.from_impl(self._impl.get_by_test_id(test_id=mapping.to_impl(test_id)))
 
-    def get_by_text(self, text: TextMatch, exact: Optional[bool]=None) -> Locator:
+    def get_by_text(self, text: TextMatch, exact: bool | None=None) -> Locator:
         return mapping.from_impl(self._impl.get_by_text(text=mapping.to_impl(text), exact=mapping.to_impl(exact)))
 
-    def get_by_title(self, text: TextMatch, exact: Optional[bool]=None) -> Locator:
+    def get_by_title(self, text: TextMatch, exact: bool | None=None) -> Locator:
         return mapping.from_impl(self._impl.get_by_title(text=mapping.to_impl(text), exact=mapping.to_impl(exact)))
 
     def frame_locator(self, selector: str) -> FrameLocator:
         return mapping.from_impl(self._impl.frame_locator(selector=mapping.to_impl(selector)))
 
-    def click(self, selector: str, strict: Optional[bool]=None, **kwargs: Any) -> None:
+    def click(self, selector: str, strict: bool | None=None, **kwargs: Any) -> None:
         self._run(self._impl.click(selector=mapping.to_impl(selector), strict=mapping.to_impl(strict), **kwargs))
 
-    def dblclick(self, selector: str, strict: Optional[bool]=None, **kwargs: Any) -> None:
+    def dblclick(self, selector: str, strict: bool | None=None, **kwargs: Any) -> None:
         self._run(self._impl.dblclick(selector=mapping.to_impl(selector), strict=mapping.to_impl(strict), **kwargs))
 
-    def tap(self, selector: str, strict: Optional[bool]=None, **kwargs: Any) -> None:
+    def tap(self, selector: str, strict: bool | None=None, **kwargs: Any) -> None:
         self._run(self._impl.tap(selector=mapping.to_impl(selector), strict=mapping.to_impl(strict), **kwargs))
 
-    def hover(self, selector: str, strict: Optional[bool]=None, **kwargs: Any) -> None:
+    def hover(self, selector: str, strict: bool | None=None, **kwargs: Any) -> None:
         self._run(self._impl.hover(selector=mapping.to_impl(selector), strict=mapping.to_impl(strict), **kwargs))
 
-    def fill(self, selector: str, value: str, strict: Optional[bool]=None, **kwargs: Any) -> None:
+    def fill(self, selector: str, value: str, strict: bool | None=None, **kwargs: Any) -> None:
         self._run(self._impl.fill(selector=mapping.to_impl(selector), value=mapping.to_impl(value), strict=mapping.to_impl(strict), **kwargs))
 
-    def focus(self, selector: str, strict: Optional[bool]=None, timeout: Optional[float]=None) -> None:
+    def focus(self, selector: str, strict: bool | None=None, timeout: float | None=None) -> None:
         self._run(self._impl.focus(selector=mapping.to_impl(selector), strict=mapping.to_impl(strict), timeout=mapping.to_impl(timeout)))
 
-    def type(self, selector: str, text: str, strict: Optional[bool]=None, **kwargs: Any) -> None:
+    def type(self, selector: str, text: str, strict: bool | None=None, **kwargs: Any) -> None:
         self._run(self._impl.type(selector=mapping.to_impl(selector), text=mapping.to_impl(text), strict=mapping.to_impl(strict), **kwargs))
 
-    def press(self, selector: str, key: str, strict: Optional[bool]=None, **kwargs: Any) -> None:
+    def press(self, selector: str, key: str, strict: bool | None=None, **kwargs: Any) -> None:
         self._run(self._impl.press(selector=mapping.to_impl(selector), key=mapping.to_impl(key), strict=mapping.to_impl(strict), **kwargs))
 
-    def check(self, selector: str, strict: Optional[bool]=None, **kwargs: Any) -> None:
+    def check(self, selector: str, strict: bool | None=None, **kwargs: Any) -> None:
         self._run(self._impl.check(selector=mapping.to_impl(selector), strict=mapping.to_impl(strict), **kwargs))
 
-    def uncheck(self, selector: str, strict: Optional[bool]=None, **kwargs: Any) -> None:
+    def uncheck(self, selector: str, strict: bool | None=None, **kwargs: Any) -> None:
         self._run(self._impl.uncheck(selector=mapping.to_impl(selector), strict=mapping.to_impl(strict), **kwargs))
 
-    def set_checked(self, selector: str, checked: bool, strict: Optional[bool]=None, **kwargs: Any) -> None:
+    def set_checked(self, selector: str, checked: bool, strict: bool | None=None, **kwargs: Any) -> None:
         self._run(self._impl.set_checked(selector=mapping.to_impl(selector), checked=mapping.to_impl(checked), strict=mapping.to_impl(strict), **kwargs))
 
-    def select_option(self, selector: str, value: Any=None, strict: Optional[bool]=None, **kwargs: Any) -> list[str]:
+    def select_option(self, selector: str, value: Any=None, strict: bool | None=None, **kwargs: Any) -> list[str]:
         return mapping.from_impl(self._run(self._impl.select_option(selector=mapping.to_impl(selector), value=mapping.to_impl(value), strict=mapping.to_impl(strict), **kwargs)))
 
-    def set_input_files(self, selector: str, files: Union[str, Path, FilePayload, Sequence[Any]], strict: Optional[bool]=None, **kwargs: Any) -> None:
+    def set_input_files(self, selector: str, files: str | Path | FilePayload | Sequence[Any], strict: bool | None=None, **kwargs: Any) -> None:
         self._run(self._impl.set_input_files(selector=mapping.to_impl(selector), files=mapping.to_impl(files), strict=mapping.to_impl(strict), **kwargs))
 
-    def dispatch_event(self, selector: str, type: str, event_init: Optional[dict[str, Any]]=None, strict: Optional[bool]=None, **kwargs: Any) -> None:
+    def dispatch_event(self, selector: str, type: str, event_init: dict[str, Any] | None=None, strict: bool | None=None, **kwargs: Any) -> None:
         self._run(self._impl.dispatch_event(selector=mapping.to_impl(selector), type=mapping.to_impl(type), event_init=mapping.to_impl(event_init), strict=mapping.to_impl(strict), **kwargs))
 
-    def drag_and_drop(self, source: str, target: str, strict: Optional[bool]=None, **kwargs: Any) -> None:
+    def drag_and_drop(self, source: str, target: str, strict: bool | None=None, **kwargs: Any) -> None:
         self._run(self._impl.drag_and_drop(source=mapping.to_impl(source), target=mapping.to_impl(target), strict=mapping.to_impl(strict), **kwargs))
 
-    def get_attribute(self, selector: str, name: str, strict: Optional[bool]=None, timeout: Optional[float]=None) -> Optional[str]:
+    def get_attribute(self, selector: str, name: str, strict: bool | None=None, timeout: float | None=None) -> str | None:
         return mapping.from_impl(self._run(self._impl.get_attribute(selector=mapping.to_impl(selector), name=mapping.to_impl(name), strict=mapping.to_impl(strict), timeout=mapping.to_impl(timeout))))
 
-    def text_content(self, selector: str, strict: Optional[bool]=None, timeout: Optional[float]=None) -> Optional[str]:
+    def text_content(self, selector: str, strict: bool | None=None, timeout: float | None=None) -> str | None:
         return mapping.from_impl(self._run(self._impl.text_content(selector=mapping.to_impl(selector), strict=mapping.to_impl(strict), timeout=mapping.to_impl(timeout))))
 
-    def inner_text(self, selector: str, strict: Optional[bool]=None, timeout: Optional[float]=None) -> str:
+    def inner_text(self, selector: str, strict: bool | None=None, timeout: float | None=None) -> str:
         return mapping.from_impl(self._run(self._impl.inner_text(selector=mapping.to_impl(selector), strict=mapping.to_impl(strict), timeout=mapping.to_impl(timeout))))
 
-    def inner_html(self, selector: str, strict: Optional[bool]=None, timeout: Optional[float]=None) -> str:
+    def inner_html(self, selector: str, strict: bool | None=None, timeout: float | None=None) -> str:
         return mapping.from_impl(self._run(self._impl.inner_html(selector=mapping.to_impl(selector), strict=mapping.to_impl(strict), timeout=mapping.to_impl(timeout))))
 
-    def input_value(self, selector: str, strict: Optional[bool]=None, timeout: Optional[float]=None) -> str:
+    def input_value(self, selector: str, strict: bool | None=None, timeout: float | None=None) -> str:
         return mapping.from_impl(self._run(self._impl.input_value(selector=mapping.to_impl(selector), strict=mapping.to_impl(strict), timeout=mapping.to_impl(timeout))))
 
-    def is_checked(self, selector: str, strict: Optional[bool]=None, timeout: Optional[float]=None) -> bool:
+    def is_checked(self, selector: str, strict: bool | None=None, timeout: float | None=None) -> bool:
         return mapping.from_impl(self._run(self._impl.is_checked(selector=mapping.to_impl(selector), strict=mapping.to_impl(strict), timeout=mapping.to_impl(timeout))))
 
-    def is_disabled(self, selector: str, strict: Optional[bool]=None, timeout: Optional[float]=None) -> bool:
+    def is_disabled(self, selector: str, strict: bool | None=None, timeout: float | None=None) -> bool:
         return mapping.from_impl(self._run(self._impl.is_disabled(selector=mapping.to_impl(selector), strict=mapping.to_impl(strict), timeout=mapping.to_impl(timeout))))
 
-    def is_editable(self, selector: str, strict: Optional[bool]=None, timeout: Optional[float]=None) -> bool:
+    def is_editable(self, selector: str, strict: bool | None=None, timeout: float | None=None) -> bool:
         return mapping.from_impl(self._run(self._impl.is_editable(selector=mapping.to_impl(selector), strict=mapping.to_impl(strict), timeout=mapping.to_impl(timeout))))
 
-    def is_enabled(self, selector: str, strict: Optional[bool]=None, timeout: Optional[float]=None) -> bool:
+    def is_enabled(self, selector: str, strict: bool | None=None, timeout: float | None=None) -> bool:
         return mapping.from_impl(self._run(self._impl.is_enabled(selector=mapping.to_impl(selector), strict=mapping.to_impl(strict), timeout=mapping.to_impl(timeout))))
 
-    def is_hidden(self, selector: str, strict: Optional[bool]=None, timeout: Optional[float]=None) -> bool:
+    def is_hidden(self, selector: str, strict: bool | None=None, timeout: float | None=None) -> bool:
         return mapping.from_impl(self._run(self._impl.is_hidden(selector=mapping.to_impl(selector), strict=mapping.to_impl(strict), timeout=mapping.to_impl(timeout))))
 
-    def is_visible(self, selector: str, strict: Optional[bool]=None, timeout: Optional[float]=None) -> bool:
+    def is_visible(self, selector: str, strict: bool | None=None, timeout: float | None=None) -> bool:
         return mapping.from_impl(self._run(self._impl.is_visible(selector=mapping.to_impl(selector), strict=mapping.to_impl(strict), timeout=mapping.to_impl(timeout))))
 
 class Locator(SyncBase):
@@ -922,16 +922,16 @@ class Locator(SyncBase):
         """The resolved selector string, in Playwright's ``>>`` syntax."""
         return mapping.from_impl(self._impl.selector)
 
-    def locator(self, selector_or_locator: Union[str, Locator], has_text: Optional[TextMatch]=None, has_not_text: Optional[TextMatch]=None, has: Optional[Locator]=None, has_not: Optional[Locator]=None) -> Locator:
+    def locator(self, selector_or_locator: str | Locator, has_text: TextMatch | None=None, has_not_text: TextMatch | None=None, has: Locator | None=None, has_not: Locator | None=None) -> Locator:
         return mapping.from_impl(self._impl.locator(selector_or_locator=mapping.to_impl(selector_or_locator), has_text=mapping.to_impl(has_text), has_not_text=mapping.to_impl(has_not_text), has=mapping.to_impl(has), has_not=mapping.to_impl(has_not)))
 
-    def get_by_alt_text(self, text: TextMatch, exact: Optional[bool]=None) -> Locator:
+    def get_by_alt_text(self, text: TextMatch, exact: bool | None=None) -> Locator:
         return mapping.from_impl(self._impl.get_by_alt_text(text=mapping.to_impl(text), exact=mapping.to_impl(exact)))
 
-    def get_by_label(self, text: TextMatch, exact: Optional[bool]=None) -> Locator:
+    def get_by_label(self, text: TextMatch, exact: bool | None=None) -> Locator:
         return mapping.from_impl(self._impl.get_by_label(text=mapping.to_impl(text), exact=mapping.to_impl(exact)))
 
-    def get_by_placeholder(self, text: TextMatch, exact: Optional[bool]=None) -> Locator:
+    def get_by_placeholder(self, text: TextMatch, exact: bool | None=None) -> Locator:
         return mapping.from_impl(self._impl.get_by_placeholder(text=mapping.to_impl(text), exact=mapping.to_impl(exact)))
 
     def get_by_role(self, role: str, **kwargs: Any) -> Locator:
@@ -940,10 +940,10 @@ class Locator(SyncBase):
     def get_by_test_id(self, test_id: TextMatch) -> Locator:
         return mapping.from_impl(self._impl.get_by_test_id(test_id=mapping.to_impl(test_id)))
 
-    def get_by_text(self, text: TextMatch, exact: Optional[bool]=None) -> Locator:
+    def get_by_text(self, text: TextMatch, exact: bool | None=None) -> Locator:
         return mapping.from_impl(self._impl.get_by_text(text=mapping.to_impl(text), exact=mapping.to_impl(exact)))
 
-    def get_by_title(self, text: TextMatch, exact: Optional[bool]=None) -> Locator:
+    def get_by_title(self, text: TextMatch, exact: bool | None=None) -> Locator:
         return mapping.from_impl(self._impl.get_by_title(text=mapping.to_impl(text), exact=mapping.to_impl(exact)))
 
     def frame_locator(self, selector: str) -> FrameLocator:
@@ -968,10 +968,10 @@ class Locator(SyncBase):
         return mapping.from_impl(self._impl.describe(description=mapping.to_impl(description)))
 
     @property
-    def description(self) -> Optional[str]:
+    def description(self) -> str | None:
         return mapping.from_impl(self._impl.description)
 
-    def filter(self, has_text: Optional[TextMatch]=None, has_not_text: Optional[TextMatch]=None, has: Optional[Locator]=None, has_not: Optional[Locator]=None, visible: Optional[bool]=None) -> Locator:
+    def filter(self, has_text: TextMatch | None=None, has_not_text: TextMatch | None=None, has: Locator | None=None, has_not: Locator | None=None, visible: bool | None=None) -> Locator:
         return mapping.from_impl(self._impl.filter(has_text=mapping.to_impl(has_text), has_not_text=mapping.to_impl(has_not_text), has=mapping.to_impl(has), has_not=mapping.to_impl(has_not), visible=mapping.to_impl(visible)))
 
     def or_(self, locator: Locator) -> Locator:
@@ -980,7 +980,7 @@ class Locator(SyncBase):
     def and_(self, locator: Locator) -> Locator:
         return mapping.from_impl(self._impl.and_(locator=mapping.to_impl(locator)))
 
-    def element_handle(self, timeout: Optional[float]=None) -> ElementHandle:
+    def element_handle(self, timeout: float | None=None) -> ElementHandle:
         return mapping.from_impl(self._run(self._impl.element_handle(timeout=mapping.to_impl(timeout))))
 
     def element_handles(self) -> list[ElementHandle]:
@@ -998,16 +998,16 @@ class Locator(SyncBase):
     def all_text_contents(self) -> list[str]:
         return mapping.from_impl(self._run(self._impl.all_text_contents()))
 
-    def wait_for(self, timeout: Optional[float]=None, state: str='visible') -> None:
+    def wait_for(self, timeout: float | None=None, state: str='visible') -> None:
         self._run(self._impl.wait_for(timeout=mapping.to_impl(timeout), state=mapping.to_impl(state)))
 
-    def wait_for_function(self, expression: str, arg: Any=None, timeout: Optional[float]=None, polling: Any=None) -> Any:
+    def wait_for_function(self, expression: str, arg: Any=None, timeout: float | None=None, polling: Any=None) -> Any:
         return mapping.from_impl(self._run(self._impl.wait_for_function(expression=mapping.to_impl(expression), arg=mapping.to_impl(arg), timeout=mapping.to_impl(timeout), polling=mapping.to_impl(polling))))
 
-    def evaluate(self, expression: str, arg: Any=None, timeout: Optional[float]=None) -> Any:
+    def evaluate(self, expression: str, arg: Any=None, timeout: float | None=None) -> Any:
         return mapping.from_impl(self._run(self._impl.evaluate(expression=mapping.to_impl(expression), arg=mapping.to_impl(arg), timeout=mapping.to_impl(timeout))))
 
-    def evaluate_handle(self, expression: str, arg: Any=None, timeout: Optional[float]=None) -> Any:
+    def evaluate_handle(self, expression: str, arg: Any=None, timeout: float | None=None) -> Any:
         return mapping.from_impl(self._run(self._impl.evaluate_handle(expression=mapping.to_impl(expression), arg=mapping.to_impl(arg), timeout=mapping.to_impl(timeout))))
 
     def evaluate_all(self, expression: str, arg: Any=None) -> Any:
@@ -1025,25 +1025,25 @@ class Locator(SyncBase):
     def tap(self, **kwargs: Any) -> None:
         self._run(self._impl.tap(**kwargs))
 
-    def fill(self, value: str, timeout: Optional[float]=None, force: Optional[bool]=None, no_wait_after: Optional[bool]=None) -> None:
+    def fill(self, value: str, timeout: float | None=None, force: bool | None=None, no_wait_after: bool | None=None) -> None:
         self._run(self._impl.fill(value=mapping.to_impl(value), timeout=mapping.to_impl(timeout), force=mapping.to_impl(force), no_wait_after=mapping.to_impl(no_wait_after)))
 
-    def clear(self, timeout: Optional[float]=None, force: Optional[bool]=None, no_wait_after: Optional[bool]=None) -> None:
+    def clear(self, timeout: float | None=None, force: bool | None=None, no_wait_after: bool | None=None) -> None:
         self._run(self._impl.clear(timeout=mapping.to_impl(timeout), force=mapping.to_impl(force), no_wait_after=mapping.to_impl(no_wait_after)))
 
-    def type(self, text: str, delay: Optional[float]=None, timeout: Optional[float]=None, no_wait_after: Optional[bool]=None) -> None:
+    def type(self, text: str, delay: float | None=None, timeout: float | None=None, no_wait_after: bool | None=None) -> None:
         self._run(self._impl.type(text=mapping.to_impl(text), delay=mapping.to_impl(delay), timeout=mapping.to_impl(timeout), no_wait_after=mapping.to_impl(no_wait_after)))
 
-    def press_sequentially(self, text: str, delay: Optional[float]=None, timeout: Optional[float]=None, no_wait_after: Optional[bool]=None) -> None:
+    def press_sequentially(self, text: str, delay: float | None=None, timeout: float | None=None, no_wait_after: bool | None=None) -> None:
         self._run(self._impl.press_sequentially(text=mapping.to_impl(text), delay=mapping.to_impl(delay), timeout=mapping.to_impl(timeout), no_wait_after=mapping.to_impl(no_wait_after)))
 
-    def press(self, key: str, delay: Optional[float]=None, timeout: Optional[float]=None, no_wait_after: Optional[bool]=None) -> None:
+    def press(self, key: str, delay: float | None=None, timeout: float | None=None, no_wait_after: bool | None=None) -> None:
         self._run(self._impl.press(key=mapping.to_impl(key), delay=mapping.to_impl(delay), timeout=mapping.to_impl(timeout), no_wait_after=mapping.to_impl(no_wait_after)))
 
-    def focus(self, timeout: Optional[float]=None) -> None:
+    def focus(self, timeout: float | None=None) -> None:
         self._run(self._impl.focus(timeout=mapping.to_impl(timeout)))
 
-    def blur(self, timeout: Optional[float]=None) -> None:
+    def blur(self, timeout: float | None=None) -> None:
         self._run(self._impl.blur(timeout=mapping.to_impl(timeout)))
 
     def check(self, **kwargs: Any) -> None:
@@ -1055,19 +1055,19 @@ class Locator(SyncBase):
     def set_checked(self, checked: bool, **kwargs: Any) -> None:
         self._run(self._impl.set_checked(checked=mapping.to_impl(checked), **kwargs))
 
-    def select_option(self, value: Union[str, Sequence[str], None]=None, *, index: Union[int, Sequence[int], None]=None, label: Union[str, Sequence[str], None]=None, element: Union[ElementHandle, Sequence[ElementHandle], None]=None, timeout: Optional[float]=None, force: Optional[bool]=None, no_wait_after: Optional[bool]=None) -> list[str]:
+    def select_option(self, value: str | Sequence[str] | None=None, *, index: int | Sequence[int] | None=None, label: str | Sequence[str] | None=None, element: ElementHandle | Sequence[ElementHandle] | None=None, timeout: float | None=None, force: bool | None=None, no_wait_after: bool | None=None) -> list[str]:
         return mapping.from_impl(self._run(self._impl.select_option(value=mapping.to_impl(value), index=mapping.to_impl(index), label=mapping.to_impl(label), element=mapping.to_impl(element), timeout=mapping.to_impl(timeout), force=mapping.to_impl(force), no_wait_after=mapping.to_impl(no_wait_after))))
 
-    def select_text(self, force: Optional[bool]=None, timeout: Optional[float]=None) -> None:
+    def select_text(self, force: bool | None=None, timeout: float | None=None) -> None:
         self._run(self._impl.select_text(force=mapping.to_impl(force), timeout=mapping.to_impl(timeout)))
 
-    def set_input_files(self, files: Union[str, Path, FilePayload, Sequence[Union[str, Path]], Sequence[FilePayload]], timeout: Optional[float]=None, no_wait_after: Optional[bool]=None) -> None:
+    def set_input_files(self, files: str | Path | FilePayload | Sequence[str | Path] | Sequence[FilePayload], timeout: float | None=None, no_wait_after: bool | None=None) -> None:
         self._run(self._impl.set_input_files(files=mapping.to_impl(files), timeout=mapping.to_impl(timeout), no_wait_after=mapping.to_impl(no_wait_after)))
 
-    def dispatch_event(self, type: str, event_init: Optional[dict[str, Any]]=None, timeout: Optional[float]=None) -> None:
+    def dispatch_event(self, type: str, event_init: dict[str, Any] | None=None, timeout: float | None=None) -> None:
         self._run(self._impl.dispatch_event(type=mapping.to_impl(type), event_init=mapping.to_impl(event_init), timeout=mapping.to_impl(timeout)))
 
-    def scroll_into_view_if_needed(self, timeout: Optional[float]=None) -> None:
+    def scroll_into_view_if_needed(self, timeout: float | None=None) -> None:
         self._run(self._impl.scroll_into_view_if_needed(timeout=mapping.to_impl(timeout)))
 
     def drag_to(self, target: Locator, **kwargs: Any) -> None:
@@ -1079,40 +1079,40 @@ class Locator(SyncBase):
     def hide_highlight(self) -> None:
         self._run(self._impl.hide_highlight())
 
-    def get_attribute(self, name: str, timeout: Optional[float]=None) -> Optional[str]:
+    def get_attribute(self, name: str, timeout: float | None=None) -> str | None:
         return mapping.from_impl(self._run(self._impl.get_attribute(name=mapping.to_impl(name), timeout=mapping.to_impl(timeout))))
 
-    def text_content(self, timeout: Optional[float]=None) -> Optional[str]:
+    def text_content(self, timeout: float | None=None) -> str | None:
         return mapping.from_impl(self._run(self._impl.text_content(timeout=mapping.to_impl(timeout))))
 
-    def inner_text(self, timeout: Optional[float]=None) -> str:
+    def inner_text(self, timeout: float | None=None) -> str:
         return mapping.from_impl(self._run(self._impl.inner_text(timeout=mapping.to_impl(timeout))))
 
-    def inner_html(self, timeout: Optional[float]=None) -> str:
+    def inner_html(self, timeout: float | None=None) -> str:
         return mapping.from_impl(self._run(self._impl.inner_html(timeout=mapping.to_impl(timeout))))
 
-    def input_value(self, timeout: Optional[float]=None) -> str:
+    def input_value(self, timeout: float | None=None) -> str:
         return mapping.from_impl(self._run(self._impl.input_value(timeout=mapping.to_impl(timeout))))
 
-    def is_checked(self, timeout: Optional[float]=None) -> bool:
+    def is_checked(self, timeout: float | None=None) -> bool:
         return mapping.from_impl(self._run(self._impl.is_checked(timeout=mapping.to_impl(timeout))))
 
-    def is_disabled(self, timeout: Optional[float]=None) -> bool:
+    def is_disabled(self, timeout: float | None=None) -> bool:
         return mapping.from_impl(self._run(self._impl.is_disabled(timeout=mapping.to_impl(timeout))))
 
-    def is_editable(self, timeout: Optional[float]=None) -> bool:
+    def is_editable(self, timeout: float | None=None) -> bool:
         return mapping.from_impl(self._run(self._impl.is_editable(timeout=mapping.to_impl(timeout))))
 
-    def is_enabled(self, timeout: Optional[float]=None) -> bool:
+    def is_enabled(self, timeout: float | None=None) -> bool:
         return mapping.from_impl(self._run(self._impl.is_enabled(timeout=mapping.to_impl(timeout))))
 
-    def is_hidden(self, timeout: Optional[float]=None) -> bool:
+    def is_hidden(self, timeout: float | None=None) -> bool:
         return mapping.from_impl(self._run(self._impl.is_hidden(timeout=mapping.to_impl(timeout))))
 
-    def is_visible(self, timeout: Optional[float]=None) -> bool:
+    def is_visible(self, timeout: float | None=None) -> bool:
         return mapping.from_impl(self._run(self._impl.is_visible(timeout=mapping.to_impl(timeout))))
 
-    def bounding_box(self, timeout: Optional[float]=None) -> Optional[dict[str, float]]:
+    def bounding_box(self, timeout: float | None=None) -> dict[str, float] | None:
         return mapping.from_impl(self._run(self._impl.bounding_box(timeout=mapping.to_impl(timeout))))
 
     def screenshot(self, **kwargs: Any) -> bytes:
@@ -1122,16 +1122,16 @@ class FrameLocator(SyncBase):
     """Entry point to a child frame found by a selector, with the same lazy semantics."""
     _impl: _FrameLocatorImpl
 
-    def locator(self, selector_or_locator: Union[str, Locator], has_text: Optional[TextMatch]=None, has_not_text: Optional[TextMatch]=None, has: Optional[Locator]=None, has_not: Optional[Locator]=None) -> Locator:
+    def locator(self, selector_or_locator: str | Locator, has_text: TextMatch | None=None, has_not_text: TextMatch | None=None, has: Locator | None=None, has_not: Locator | None=None) -> Locator:
         return mapping.from_impl(self._impl.locator(selector_or_locator=mapping.to_impl(selector_or_locator), has_text=mapping.to_impl(has_text), has_not_text=mapping.to_impl(has_not_text), has=mapping.to_impl(has), has_not=mapping.to_impl(has_not)))
 
-    def get_by_alt_text(self, text: TextMatch, exact: Optional[bool]=None) -> Locator:
+    def get_by_alt_text(self, text: TextMatch, exact: bool | None=None) -> Locator:
         return mapping.from_impl(self._impl.get_by_alt_text(text=mapping.to_impl(text), exact=mapping.to_impl(exact)))
 
-    def get_by_label(self, text: TextMatch, exact: Optional[bool]=None) -> Locator:
+    def get_by_label(self, text: TextMatch, exact: bool | None=None) -> Locator:
         return mapping.from_impl(self._impl.get_by_label(text=mapping.to_impl(text), exact=mapping.to_impl(exact)))
 
-    def get_by_placeholder(self, text: TextMatch, exact: Optional[bool]=None) -> Locator:
+    def get_by_placeholder(self, text: TextMatch, exact: bool | None=None) -> Locator:
         return mapping.from_impl(self._impl.get_by_placeholder(text=mapping.to_impl(text), exact=mapping.to_impl(exact)))
 
     def get_by_role(self, role: str, **kwargs: Any) -> Locator:
@@ -1140,10 +1140,10 @@ class FrameLocator(SyncBase):
     def get_by_test_id(self, test_id: TextMatch) -> Locator:
         return mapping.from_impl(self._impl.get_by_test_id(test_id=mapping.to_impl(test_id)))
 
-    def get_by_text(self, text: TextMatch, exact: Optional[bool]=None) -> Locator:
+    def get_by_text(self, text: TextMatch, exact: bool | None=None) -> Locator:
         return mapping.from_impl(self._impl.get_by_text(text=mapping.to_impl(text), exact=mapping.to_impl(exact)))
 
-    def get_by_title(self, text: TextMatch, exact: Optional[bool]=None) -> Locator:
+    def get_by_title(self, text: TextMatch, exact: bool | None=None) -> Locator:
         return mapping.from_impl(self._impl.get_by_title(text=mapping.to_impl(text), exact=mapping.to_impl(exact)))
 
     def frame_locator(self, selector: str) -> FrameLocator:
@@ -1184,7 +1184,7 @@ class JSHandle(SyncBase):
     def get_properties(self) -> dict[str, JSHandle]:
         return mapping.from_impl(self._run(self._impl.get_properties()))
 
-    def as_element(self) -> Optional[ElementHandle]:
+    def as_element(self) -> ElementHandle | None:
         return mapping.from_impl(self._impl.as_element())
 
     def dispose(self) -> None:
@@ -1206,7 +1206,7 @@ class ElementHandle(SyncBase):
     def object_id(self) -> str:
         return mapping.from_impl(self._impl.object_id)
 
-    def as_element(self) -> Optional[ElementHandle]:
+    def as_element(self) -> ElementHandle | None:
         return mapping.from_impl(self._impl.as_element())
 
     def evaluate(self, expression: str, arg: Any=None) -> Any:
@@ -1225,16 +1225,16 @@ class ElementHandle(SyncBase):
     def page(self) -> Page:
         return mapping.from_impl(self._impl.page)
 
-    def owner_frame(self) -> Optional[Frame]:
+    def owner_frame(self) -> Frame | None:
         return mapping.from_impl(self._run(self._impl.owner_frame()))
 
-    def content_frame(self) -> Optional[Frame]:
+    def content_frame(self) -> Frame | None:
         return mapping.from_impl(self._run(self._impl.content_frame()))
 
-    def get_attribute(self, name: str) -> Optional[str]:
+    def get_attribute(self, name: str) -> str | None:
         return mapping.from_impl(self._run(self._impl.get_attribute(name=mapping.to_impl(name))))
 
-    def text_content(self) -> Optional[str]:
+    def text_content(self) -> str | None:
         return mapping.from_impl(self._run(self._impl.text_content()))
 
     def inner_text(self) -> str:
@@ -1243,7 +1243,7 @@ class ElementHandle(SyncBase):
     def inner_html(self) -> str:
         return mapping.from_impl(self._run(self._impl.inner_html()))
 
-    def input_value(self, timeout: Optional[float]=None) -> str:
+    def input_value(self, timeout: float | None=None) -> str:
         return mapping.from_impl(self._run(self._impl.input_value(timeout=mapping.to_impl(timeout))))
 
     def is_checked(self) -> bool:
@@ -1264,10 +1264,10 @@ class ElementHandle(SyncBase):
     def is_visible(self) -> bool:
         return mapping.from_impl(self._run(self._impl.is_visible()))
 
-    def dispatch_event(self, type: str, event_init: Optional[dict[str, Any]]=None) -> None:
+    def dispatch_event(self, type: str, event_init: dict[str, Any] | None=None) -> None:
         self._run(self._impl.dispatch_event(type=mapping.to_impl(type), event_init=mapping.to_impl(event_init)))
 
-    def scroll_into_view_if_needed(self, timeout: Optional[float]=None) -> None:
+    def scroll_into_view_if_needed(self, timeout: float | None=None) -> None:
         self._run(self._impl.scroll_into_view_if_needed(timeout=mapping.to_impl(timeout)))
 
     def hover(self, **kwargs: Any) -> None:
@@ -1282,25 +1282,25 @@ class ElementHandle(SyncBase):
     def tap(self, **kwargs: Any) -> None:
         self._run(self._impl.tap(**kwargs))
 
-    def select_option(self, value: Union[str, Sequence[str], None]=None, *, index: Union[int, Sequence[int], None]=None, label: Union[str, Sequence[str], None]=None, element: Union[ElementHandle, Sequence[ElementHandle], None]=None, timeout: Optional[float]=None, force: Optional[bool]=None) -> list[str]:
+    def select_option(self, value: str | Sequence[str] | None=None, *, index: int | Sequence[int] | None=None, label: str | Sequence[str] | None=None, element: ElementHandle | Sequence[ElementHandle] | None=None, timeout: float | None=None, force: bool | None=None) -> list[str]:
         return mapping.from_impl(self._run(self._impl.select_option(value=mapping.to_impl(value), index=mapping.to_impl(index), label=mapping.to_impl(label), element=mapping.to_impl(element), timeout=mapping.to_impl(timeout), force=mapping.to_impl(force))))
 
-    def fill(self, value: str, timeout: Optional[float]=None, force: Optional[bool]=None) -> None:
+    def fill(self, value: str, timeout: float | None=None, force: bool | None=None) -> None:
         self._run(self._impl.fill(value=mapping.to_impl(value), timeout=mapping.to_impl(timeout), force=mapping.to_impl(force)))
 
-    def select_text(self, timeout: Optional[float]=None, force: Optional[bool]=None) -> None:
+    def select_text(self, timeout: float | None=None, force: bool | None=None) -> None:
         self._run(self._impl.select_text(timeout=mapping.to_impl(timeout), force=mapping.to_impl(force)))
 
-    def set_input_files(self, files: Union[str, Path, FilePayload, Sequence[Union[str, Path]], Sequence[FilePayload]], timeout: Optional[float]=None) -> None:
+    def set_input_files(self, files: str | Path | FilePayload | Sequence[str | Path] | Sequence[FilePayload], timeout: float | None=None) -> None:
         self._run(self._impl.set_input_files(files=mapping.to_impl(files), timeout=mapping.to_impl(timeout)))
 
     def focus(self) -> None:
         self._run(self._impl.focus())
 
-    def type(self, text: str, delay: Optional[float]=None, timeout: Optional[float]=None) -> None:
+    def type(self, text: str, delay: float | None=None, timeout: float | None=None) -> None:
         self._run(self._impl.type(text=mapping.to_impl(text), delay=mapping.to_impl(delay), timeout=mapping.to_impl(timeout)))
 
-    def press(self, key: str, delay: Optional[float]=None, timeout: Optional[float]=None) -> None:
+    def press(self, key: str, delay: float | None=None, timeout: float | None=None) -> None:
         self._run(self._impl.press(key=mapping.to_impl(key), delay=mapping.to_impl(delay), timeout=mapping.to_impl(timeout)))
 
     def set_checked(self, checked: bool, **kwargs: Any) -> None:
@@ -1312,13 +1312,13 @@ class ElementHandle(SyncBase):
     def uncheck(self, **kwargs: Any) -> None:
         self._run(self._impl.uncheck(**kwargs))
 
-    def bounding_box(self) -> Optional[dict[str, float]]:
+    def bounding_box(self) -> dict[str, float] | None:
         return mapping.from_impl(self._run(self._impl.bounding_box()))
 
     def screenshot(self, **kwargs: Any) -> bytes:
         return mapping.from_impl(self._run(self._impl.screenshot(**kwargs)))
 
-    def query_selector(self, selector: str) -> Optional[ElementHandle]:
+    def query_selector(self, selector: str) -> ElementHandle | None:
         return mapping.from_impl(self._run(self._impl.query_selector(selector=mapping.to_impl(selector))))
 
     def query_selector_all(self, selector: str) -> list[ElementHandle]:
@@ -1330,10 +1330,10 @@ class ElementHandle(SyncBase):
     def eval_on_selector_all(self, selector: str, expression: str, arg: Any=None) -> Any:
         return mapping.from_impl(self._run(self._impl.eval_on_selector_all(selector=mapping.to_impl(selector), expression=mapping.to_impl(expression), arg=mapping.to_impl(arg))))
 
-    def wait_for_element_state(self, state: str, timeout: Optional[float]=None) -> None:
+    def wait_for_element_state(self, state: str, timeout: float | None=None) -> None:
         self._run(self._impl.wait_for_element_state(state=mapping.to_impl(state), timeout=mapping.to_impl(timeout)))
 
-    def wait_for_selector(self, selector: str, **kwargs: Any) -> Optional[ElementHandle]:
+    def wait_for_selector(self, selector: str, **kwargs: Any) -> ElementHandle | None:
         return mapping.from_impl(self._run(self._impl.wait_for_selector(selector=mapping.to_impl(selector), **kwargs)))
 
     def get_property(self, property_name: str) -> JSHandle:
@@ -1355,29 +1355,29 @@ class Keyboard(SyncBase):
     def insert_text(self, text: str) -> None:
         self._run(self._impl.insert_text(text=mapping.to_impl(text)))
 
-    def type(self, text: str, delay: Optional[float]=None) -> None:
+    def type(self, text: str, delay: float | None=None) -> None:
         self._run(self._impl.type(text=mapping.to_impl(text), delay=mapping.to_impl(delay)))
 
-    def press(self, key: str, delay: Optional[float]=None) -> None:
+    def press(self, key: str, delay: float | None=None) -> None:
         self._run(self._impl.press(key=mapping.to_impl(key), delay=mapping.to_impl(delay)))
 
 class Mouse(SyncBase):
     """``page.mouse``: pointer events in main-frame CSS pixels."""
     _impl: _MouseImpl
 
-    def move(self, x: float, y: float, steps: Optional[int]=None) -> None:
+    def move(self, x: float, y: float, steps: int | None=None) -> None:
         self._run(self._impl.move(x=mapping.to_impl(x), y=mapping.to_impl(y), steps=mapping.to_impl(steps)))
 
-    def down(self, button: MouseButtonName='left', click_count: Optional[int]=None) -> None:
+    def down(self, button: MouseButtonName='left', click_count: int | None=None) -> None:
         self._run(self._impl.down(button=mapping.to_impl(button), click_count=mapping.to_impl(click_count)))
 
-    def up(self, button: MouseButtonName='left', click_count: Optional[int]=None) -> None:
+    def up(self, button: MouseButtonName='left', click_count: int | None=None) -> None:
         self._run(self._impl.up(button=mapping.to_impl(button), click_count=mapping.to_impl(click_count)))
 
-    def click(self, x: float, y: float, delay: Optional[float]=None, button: MouseButtonName='left', click_count: Optional[int]=None) -> None:
+    def click(self, x: float, y: float, delay: float | None=None, button: MouseButtonName='left', click_count: int | None=None) -> None:
         self._run(self._impl.click(x=mapping.to_impl(x), y=mapping.to_impl(y), delay=mapping.to_impl(delay), button=mapping.to_impl(button), click_count=mapping.to_impl(click_count)))
 
-    def dblclick(self, x: float, y: float, delay: Optional[float]=None, button: MouseButtonName='left') -> None:
+    def dblclick(self, x: float, y: float, delay: float | None=None, button: MouseButtonName='left') -> None:
         self._run(self._impl.dblclick(x=mapping.to_impl(x), y=mapping.to_impl(y), delay=mapping.to_impl(delay), button=mapping.to_impl(button)))
 
     def wheel(self, delta_x: float, delta_y: float) -> None:
@@ -1407,7 +1407,7 @@ class Request(SyncBase):
         return mapping.from_impl(self._impl.method)
 
     @property
-    def post_data(self) -> Optional[str]:
+    def post_data(self) -> str | None:
         return mapping.from_impl(self._impl.post_data)
 
     @property
@@ -1415,7 +1415,7 @@ class Request(SyncBase):
         return mapping.from_impl(self._impl.post_data_json)
 
     @property
-    def post_data_buffer(self) -> Optional[bytes]:
+    def post_data_buffer(self) -> bytes | None:
         return mapping.from_impl(self._impl.post_data_buffer)
 
     @property
@@ -1428,7 +1428,7 @@ class Request(SyncBase):
     def headers_array(self) -> list[dict[str, str]]:
         return mapping.from_impl(self._run(self._impl.headers_array()))
 
-    def header_value(self, name: str) -> Optional[str]:
+    def header_value(self, name: str) -> str | None:
         return mapping.from_impl(self._run(self._impl.header_value(name=mapping.to_impl(name))))
 
     @property
@@ -1440,15 +1440,15 @@ class Request(SyncBase):
         return mapping.from_impl(self._impl.service_worker)
 
     @property
-    def redirected_from(self) -> Optional[Request]:
+    def redirected_from(self) -> Request | None:
         return mapping.from_impl(self._impl.redirected_from)
 
     @property
-    def redirected_to(self) -> Optional[Request]:
+    def redirected_to(self) -> Request | None:
         return mapping.from_impl(self._impl.redirected_to)
 
     @property
-    def failure(self) -> Optional[str]:
+    def failure(self) -> str | None:
         return mapping.from_impl(self._impl.failure)
 
     @property
@@ -1458,7 +1458,7 @@ class Request(SyncBase):
     def is_navigation_request(self) -> bool:
         return mapping.from_impl(self._impl.is_navigation_request())
 
-    def response(self) -> Optional[Response]:
+    def response(self) -> Response | None:
         return mapping.from_impl(self._run(self._impl.response()))
 
     def sizes(self) -> dict[str, int]:
@@ -1494,7 +1494,7 @@ class Response(SyncBase):
     def headers_array(self) -> list[dict[str, str]]:
         return mapping.from_impl(self._run(self._impl.headers_array()))
 
-    def header_value(self, name: str) -> Optional[str]:
+    def header_value(self, name: str) -> str | None:
         return mapping.from_impl(self._run(self._impl.header_value(name=mapping.to_impl(name))))
 
     def header_values(self, name: str) -> list[str]:
@@ -1512,16 +1512,16 @@ class Response(SyncBase):
     def frame(self) -> Frame:
         return mapping.from_impl(self._impl.frame)
 
-    def server_addr(self) -> Optional[dict[str, Any]]:
+    def server_addr(self) -> dict[str, Any] | None:
         return mapping.from_impl(self._run(self._impl.server_addr()))
 
-    def security_details(self) -> Optional[dict[str, Any]]:
+    def security_details(self) -> dict[str, Any] | None:
         return mapping.from_impl(self._run(self._impl.security_details()))
 
     def http_version(self) -> str:
         return mapping.from_impl(self._run(self._impl.http_version()))
 
-    def finished(self) -> Optional[str]:
+    def finished(self) -> str | None:
         return mapping.from_impl(self._run(self._impl.finished()))
 
     def body(self) -> bytes:
@@ -1541,19 +1541,19 @@ class Route(SyncBase):
     def request(self) -> Request:
         return mapping.from_impl(self._impl.request)
 
-    def abort(self, error_code: Optional[str]=None) -> None:
+    def abort(self, error_code: str | None=None) -> None:
         self._run(self._impl.abort(error_code=mapping.to_impl(error_code)))
 
-    def continue_(self, url: Optional[str]=None, method: Optional[str]=None, headers: Optional[dict[str, str]]=None, post_data: Union[str, bytes, dict[str, Any], None]=None) -> None:
+    def continue_(self, url: str | None=None, method: str | None=None, headers: dict[str, str] | None=None, post_data: str | bytes | dict[str, Any] | None=None) -> None:
         self._run(self._impl.continue_(url=mapping.to_impl(url), method=mapping.to_impl(method), headers=mapping.to_impl(headers), post_data=mapping.to_impl(post_data)))
 
-    def fallback(self, url: Optional[str]=None, method: Optional[str]=None, headers: Optional[dict[str, str]]=None, post_data: Union[str, bytes, dict[str, Any], None]=None) -> None:
+    def fallback(self, url: str | None=None, method: str | None=None, headers: dict[str, str] | None=None, post_data: str | bytes | dict[str, Any] | None=None) -> None:
         self._run(self._impl.fallback(url=mapping.to_impl(url), method=mapping.to_impl(method), headers=mapping.to_impl(headers), post_data=mapping.to_impl(post_data)))
 
-    def fulfill(self, status: Optional[int]=None, headers: Optional[dict[str, str]]=None, body: Union[str, bytes, None]=None, json: Any=None, path: Union[str, Path, None]=None, content_type: Optional[str]=None, response: Optional[APIResponse]=None) -> None:
+    def fulfill(self, status: int | None=None, headers: dict[str, str] | None=None, body: str | bytes | None=None, json: Any=None, path: str | Path | None=None, content_type: str | None=None, response: APIResponse | None=None) -> None:
         self._run(self._impl.fulfill(status=mapping.to_impl(status), headers=mapping.to_impl(headers), body=mapping.to_impl(body), json=mapping.to_impl(json), path=mapping.to_impl(path), content_type=mapping.to_impl(content_type), response=mapping.to_impl(response)))
 
-    def fetch(self, url: Optional[str]=None, method: Optional[str]=None, headers: Optional[dict[str, str]]=None, post_data: Union[str, bytes, dict[str, Any], None]=None, max_redirects: Optional[int]=None, max_retries: Optional[int]=None, timeout: Optional[float]=None) -> APIResponse:
+    def fetch(self, url: str | None=None, method: str | None=None, headers: dict[str, str] | None=None, post_data: str | bytes | dict[str, Any] | None=None, max_redirects: int | None=None, max_retries: int | None=None, timeout: float | None=None) -> APIResponse:
         """Let the request reach the network and capture its response for ``fulfill``.
 
         The request continues with the given overrides and pauses again at the
@@ -1608,10 +1608,10 @@ class Dialog(SyncBase):
         return mapping.from_impl(self._impl.default_value)
 
     @property
-    def page(self) -> Optional[Page]:
+    def page(self) -> Page | None:
         return mapping.from_impl(self._impl.page)
 
-    def accept(self, prompt_text: Optional[str]=None) -> None:
+    def accept(self, prompt_text: str | None=None) -> None:
         self._run(self._impl.accept(prompt_text=mapping.to_impl(prompt_text)))
 
     def dismiss(self) -> None:
@@ -1638,7 +1638,7 @@ class ConsoleMessage(SyncBase):
         return mapping.from_impl(self._impl.location)
 
     @property
-    def page(self) -> Optional[Page]:
+    def page(self) -> Page | None:
         return mapping.from_impl(self._impl.page)
 
     @property
@@ -1660,7 +1660,7 @@ class FileChooser(SyncBase):
     def is_multiple(self) -> bool:
         return mapping.from_impl(self._impl.is_multiple())
 
-    def set_files(self, files: Union[str, Path, Sequence[Union[str, Path]], Any], timeout: Optional[float]=None) -> None:
+    def set_files(self, files: str | Path | Sequence[str | Path] | Any, timeout: float | None=None) -> None:
         self._run(self._impl.set_files(files=mapping.to_impl(files), timeout=mapping.to_impl(timeout)))
 
 class Download(SyncBase):
@@ -1679,13 +1679,13 @@ class Download(SyncBase):
     def suggested_filename(self) -> str:
         return mapping.from_impl(self._impl.suggested_filename)
 
-    def failure(self) -> Optional[str]:
+    def failure(self) -> str | None:
         return mapping.from_impl(self._run(self._impl.failure()))
 
     def path(self) -> Path:
         return mapping.from_impl(self._run(self._impl.path()))
 
-    def save_as(self, path: Union[str, Path]) -> None:
+    def save_as(self, path: str | Path) -> None:
         self._run(self._impl.save_as(path=mapping.to_impl(path)))
 
     def delete(self) -> None:

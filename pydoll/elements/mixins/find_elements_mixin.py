@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from typing import TYPE_CHECKING, Optional, Sequence, Union, cast, overload
+from typing import TYPE_CHECKING, Sequence, cast, overload
 
 from pydoll.commands import (
     DomCommands,
@@ -20,7 +20,7 @@ from pydoll.exceptions import (
 from pydoll.utils import PollInterval
 
 if TYPE_CHECKING:
-    from typing import Literal, Optional, Union
+    from typing import Literal
 
     from pydoll.elements.web_element import WebElement
     from pydoll.interactions.iframe import IFrameContext
@@ -68,7 +68,7 @@ class FindElementsMixin:
         _connection_handler: ConnectionHandler
 
     @staticmethod
-    def _build_text_expression(selector: str, method: str) -> Optional[str]:
+    def _build_text_expression(selector: str, method: str) -> str | None:
         """
         Build JS expression using Scripts to extract textContent based on selector type.
         """
@@ -77,11 +77,11 @@ class FindElementsMixin:
     @overload
     async def find(
         self,
-        id: Optional[str] = ...,
-        class_name: Optional[str] = ...,
-        name: Optional[str] = ...,
-        tag_name: Optional[str] = ...,
-        text: Optional[str] = ...,
+        id: str | None = ...,
+        class_name: str | None = ...,
+        name: str | None = ...,
+        tag_name: str | None = ...,
+        text: str | None = ...,
         timeout: int = ...,
         find_all: Literal[False] = False,
         raise_exc: Literal[True] = True,
@@ -91,25 +91,25 @@ class FindElementsMixin:
     @overload
     async def find(
         self,
-        id: Optional[str] = ...,
-        class_name: Optional[str] = ...,
-        name: Optional[str] = ...,
-        tag_name: Optional[str] = ...,
-        text: Optional[str] = ...,
+        id: str | None = ...,
+        class_name: str | None = ...,
+        name: str | None = ...,
+        tag_name: str | None = ...,
+        text: str | None = ...,
         timeout: int = ...,
         find_all: Literal[False] = False,
         raise_exc: Literal[False] = False,
         **attributes,
-    ) -> Optional[WebElement]: ...
+    ) -> WebElement | None: ...
 
     @overload
     async def find(
         self,
-        id: Optional[str] = ...,
-        class_name: Optional[str] = ...,
-        name: Optional[str] = ...,
-        tag_name: Optional[str] = ...,
-        text: Optional[str] = ...,
+        id: str | None = ...,
+        class_name: str | None = ...,
+        name: str | None = ...,
+        tag_name: str | None = ...,
+        text: str | None = ...,
         timeout: int = ...,
         find_all: Literal[True] = True,
         raise_exc: Literal[True] = True,
@@ -119,43 +119,43 @@ class FindElementsMixin:
     @overload
     async def find(
         self,
-        id: Optional[str] = ...,
-        class_name: Optional[str] = ...,
-        name: Optional[str] = ...,
-        tag_name: Optional[str] = ...,
-        text: Optional[str] = ...,
+        id: str | None = ...,
+        class_name: str | None = ...,
+        name: str | None = ...,
+        tag_name: str | None = ...,
+        text: str | None = ...,
         timeout: int = ...,
         find_all: Literal[True] = True,
         raise_exc: Literal[False] = False,
         **attributes,
-    ) -> Optional[list[WebElement]]: ...
+    ) -> list[WebElement] | None: ...
 
     @overload
     async def find(
         self,
-        id: Optional[str] = ...,
-        class_name: Optional[str] = ...,
-        name: Optional[str] = ...,
-        tag_name: Optional[str] = ...,
-        text: Optional[str] = ...,
+        id: str | None = ...,
+        class_name: str | None = ...,
+        name: str | None = ...,
+        tag_name: str | None = ...,
+        text: str | None = ...,
         timeout: int = ...,
         find_all: bool = ...,
         raise_exc: bool = ...,
         **attributes,
-    ) -> Union[WebElement, list[WebElement], None]: ...
+    ) -> WebElement | list[WebElement] | None: ...
 
     async def find(
         self,
-        id: Optional[str] = None,
-        class_name: Optional[str] = None,
-        name: Optional[str] = None,
-        tag_name: Optional[str] = None,
-        text: Optional[str] = None,
+        id: str | None = None,
+        class_name: str | None = None,
+        name: str | None = None,
+        tag_name: str | None = None,
+        text: str | None = None,
         timeout: int = 0,
         find_all: bool = False,
         raise_exc: bool = True,
         **attributes: dict[str, str],
-    ) -> Union[WebElement, list[WebElement], None]:
+    ) -> WebElement | list[WebElement] | None:
         """
         Find element(s) using combination of common HTML attributes.
 
@@ -237,7 +237,7 @@ class FindElementsMixin:
         timeout: int = ...,
         find_all: Literal[False] = False,
         raise_exc: Literal[False] = False,
-    ) -> Optional[WebElement]: ...
+    ) -> WebElement | None: ...
 
     @overload
     async def query(
@@ -255,7 +255,7 @@ class FindElementsMixin:
         timeout: int = ...,
         find_all: Literal[True] = True,
         raise_exc: Literal[False] = False,
-    ) -> Optional[list[WebElement]]: ...
+    ) -> list[WebElement] | None: ...
 
     @overload
     async def query(
@@ -264,11 +264,11 @@ class FindElementsMixin:
         timeout: int = ...,
         find_all: bool = ...,
         raise_exc: bool = ...,
-    ) -> Union[WebElement, list[WebElement], None]: ...
+    ) -> WebElement | list[WebElement] | None: ...
 
     async def query(
         self, expression: str, timeout: int = 0, find_all: bool = False, raise_exc: bool = True
-    ) -> Union[WebElement, list[WebElement], None]:
+    ) -> WebElement | list[WebElement] | None:
         """
         Find element(s) using raw CSS selector or XPath expression.
 
@@ -314,7 +314,7 @@ class FindElementsMixin:
         timeout: int = 0,
         find_all: bool = False,
         raise_exc: bool = True,
-    ) -> Union[WebElement, list[WebElement], None]:
+    ) -> WebElement | list[WebElement] | None:
         """
         Core element finding method with optional waiting capability.
 
@@ -389,7 +389,7 @@ class FindElementsMixin:
         timeout: int,
         find_all: bool,
         raise_exc: bool,
-    ) -> Union[WebElement, list[WebElement], None]:
+    ) -> WebElement | list[WebElement] | None:
         """
         Retry loop for iframe-crossing element searches.
 
@@ -438,7 +438,7 @@ class FindElementsMixin:
         self,
         segments: list[tuple[By, str]],
         find_all: bool,
-    ) -> Union[WebElement, list[WebElement], None]:
+    ) -> WebElement | list[WebElement] | None:
         """
         Single attempt to walk iframe segments and find the target element.
 
@@ -468,9 +468,7 @@ class FindElementsMixin:
             current_context = element
         return None
 
-    async def _find_element(
-        self, by: By, value: str, raise_exc: bool = True
-    ) -> Optional[WebElement]:
+    async def _find_element(self, by: By, value: str, raise_exc: bool = True) -> WebElement | None:
         """
         Find first element matching selector.
 
@@ -508,9 +506,9 @@ class FindElementsMixin:
             command = self._get_find_element_command(by, value)
 
         try:
-            response_for_command: Union[
-                EvaluateResponse, CallFunctionOnResponse
-            ] = await self._execute_command(command)
+            response_for_command: (
+                EvaluateResponse | CallFunctionOnResponse
+            ) = await self._execute_command(command)
         except CommandFailed as exc:
             self._not_found(raise_exc, f'Element search rejected by the browser: {exc}', exc)
             return None
@@ -573,9 +571,9 @@ class FindElementsMixin:
             command = self._get_find_elements_command(by, value)
 
         try:
-            response_for_command: Union[
-                EvaluateResponse, CallFunctionOnResponse
-            ] = await self._execute_command(command)
+            response_for_command: (
+                EvaluateResponse | CallFunctionOnResponse
+            ) = await self._execute_command(command)
         except CommandFailed as exc:
             self._not_found(raise_exc, f'Element search rejected by the browser: {exc}', exc)
             return []
@@ -599,8 +597,8 @@ class FindElementsMixin:
     async def query_script(
         self,
         function_declaration: str,
-        arguments: Optional[list[CallArgument]] = None,
-        execution_context_id: Optional[int] = None,
+        arguments: list[CallArgument] | None = None,
+        execution_context_id: int | None = None,
     ) -> list[WebElement]:
         """
         Run a JavaScript function that returns elements and wrap them as WebElements.
@@ -698,8 +696,8 @@ class FindElementsMixin:
     async def _wrap_elements(
         self,
         object_ids: list[str],
-        by: Optional[str],
-        value: Optional[str],
+        by: str | None,
+        value: str | None,
         inherited_context: IFrameContext | None,
     ) -> list[WebElement]:
         """Describe each node and build the WebElements, propagating iframe context."""
@@ -753,11 +751,11 @@ class FindElementsMixin:
     def _get_by_and_value(
         self,
         by_map: dict[str, By],
-        id: Optional[str] = None,
-        class_name: Optional[str] = None,
-        name: Optional[str] = None,
-        tag_name: Optional[str] = None,
-        text: Optional[str] = None,
+        id: str | None = None,
+        class_name: str | None = None,
+        name: str | None = None,
+        tag_name: str | None = None,
+        text: str | None = None,
         **attributes,
     ) -> tuple[By, str]:
         """
@@ -800,11 +798,11 @@ class FindElementsMixin:
 
     @staticmethod
     def _build_xpath(
-        id: Optional[str] = None,
-        class_name: Optional[str] = None,
-        name: Optional[str] = None,
-        tag_name: Optional[str] = None,
-        text: Optional[str] = None,
+        id: str | None = None,
+        class_name: str | None = None,
+        name: str | None = None,
+        tag_name: str | None = None,
+        text: str | None = None,
         **attributes: str,
     ) -> str:
         """
@@ -863,7 +861,7 @@ class FindElementsMixin:
             return
         element._iframe_context = iframe_context
 
-    def _resolve_routing(self) -> tuple[ConnectionHandler, Optional[str]]:
+    def _resolve_routing(self) -> tuple[ConnectionHandler, str | None]:
         """
         Resolve handler and sessionId for the current context (iframe routed or default).
         """
@@ -927,7 +925,7 @@ class FindElementsMixin:
         by: By,
         value: str,
         object_id: str = '',
-        execution_context_id: Optional[int] = None,
+        execution_context_id: int | None = None,
     ):
         """
         Create CDP command for finding single element.
@@ -939,10 +937,10 @@ class FindElementsMixin:
         - NAME: converts to XPath expression
         """
         escaped_value = value.replace('"', '\\"')
-        command: Union[
-            Command[CallFunctionOnParams, CallFunctionOnResponse],
-            Command[EvaluateParams, EvaluateResponse],
-        ]
+        command: (
+            Command[CallFunctionOnParams, CallFunctionOnResponse]
+            | Command[EvaluateParams, EvaluateResponse]
+        )
         match by:
             case By.CLASS_NAME:
                 selector = f'.{escaped_value}'
@@ -979,7 +977,7 @@ class FindElementsMixin:
         by: By,
         value: str,
         object_id: str = '',
-        execution_context_id: Optional[int] = None,
+        execution_context_id: int | None = None,
     ):
         """
         Create CDP command for finding multiple elements.
@@ -988,10 +986,10 @@ class FindElementsMixin:
         Handles same special cases and selector type conversions.
         """
         escaped_value = value.replace('"', '\\"')
-        command: Union[
-            Command[CallFunctionOnParams, CallFunctionOnResponse],
-            Command[EvaluateParams, EvaluateResponse],
-        ]
+        command: (
+            Command[CallFunctionOnParams, CallFunctionOnResponse]
+            | Command[EvaluateParams, EvaluateResponse]
+        )
         match by:
             case By.CLASS_NAME:
                 selector = f'.{escaped_value}'
@@ -1021,7 +1019,7 @@ class FindElementsMixin:
         self,
         xpath: str,
         object_id: str,
-        execution_context_id: Optional[int] = None,
+        execution_context_id: int | None = None,
     ):
         """
         Create CDP command specifically for XPath single element finding.
@@ -1029,10 +1027,10 @@ class FindElementsMixin:
         XPath requires special handling vs CSS selectors. Ensures relative
         XPath for context-based searches.
         """
-        command: Union[
-            Command[CallFunctionOnParams, CallFunctionOnResponse],
-            Command[EvaluateParams, EvaluateResponse],
-        ]
+        command: (
+            Command[CallFunctionOnParams, CallFunctionOnResponse]
+            | Command[EvaluateParams, EvaluateResponse]
+        )
         escaped_value = xpath.replace('"', '\\"')
         if object_id:
             escaped_value = self._ensure_relative_xpath(escaped_value)
@@ -1051,7 +1049,7 @@ class FindElementsMixin:
         self,
         xpath: str,
         object_id: str,
-        execution_context_id: Optional[int] = None,
+        execution_context_id: int | None = None,
     ):
         """
         Create CDP command specifically for XPath multiple element finding.
@@ -1060,10 +1058,10 @@ class FindElementsMixin:
         XPath for context-based searches.
         """
         escaped_value = xpath.replace('"', '\\"')
-        command: Union[
-            Command[CallFunctionOnParams, CallFunctionOnResponse],
-            Command[EvaluateParams, EvaluateResponse],
-        ]
+        command: (
+            Command[CallFunctionOnParams, CallFunctionOnResponse]
+            | Command[EvaluateParams, EvaluateResponse]
+        )
         if object_id:
             escaped_value = self._ensure_relative_xpath(escaped_value)
             script = Scripts.FIND_RELATIVE_XPATH_ELEMENTS.replace('{escaped_value}', escaped_value)
@@ -1087,14 +1085,14 @@ class FindElementsMixin:
         return SelectorParser.ensure_relative_xpath(xpath)
 
     @staticmethod
-    def _not_found(raise_exc: bool, reason: str, cause: Optional[BaseException] = None) -> None:
+    def _not_found(raise_exc: bool, reason: str, cause: BaseException | None = None) -> None:
         """Log a failed search and raise ElementNotFound when the caller asked for it."""
         logger.debug(reason)
         if raise_exc:
             raise ElementNotFound() from cause
 
     @staticmethod
-    def _has_object_id_key(response: Union[EvaluateResponse, CallFunctionOnResponse]) -> bool:
+    def _has_object_id_key(response: EvaluateResponse | CallFunctionOnResponse) -> bool:
         """
         Check if response has objectId key.
         """

@@ -4,7 +4,7 @@ import logging
 import time
 import traceback
 from functools import wraps
-from typing import Any, Callable, List, Optional, Type, TypeVar, Union, cast
+from typing import Any, Callable, List, Type, TypeVar, cast
 
 logger = logging.getLogger(__name__)
 
@@ -16,8 +16,8 @@ class RetryConfig:
     def __init__(
         self,
         max_retries: int = 5,
-        exceptions: Union[Type[Exception], List[Type[Exception]]] = Exception,
-        on_retry: Optional[Callable] = None,
+        exceptions: Type[Exception] | List[Type[Exception]] = Exception,
+        on_retry: Callable | None = None,
         delay: float = 0,
         exponential_backoff: bool = False,
     ):
@@ -82,11 +82,11 @@ class RetryConfig:
 
 def retry(
     max_retries: int = 5,
-    exceptions: Union[Type[Exception], List[Type[Exception]]] = Exception,
-    on_retry: Optional[Callable] = None,
+    exceptions: Type[Exception] | List[Type[Exception]] = Exception,
+    on_retry: Callable | None = None,
     delay: float = 0,
     exponential_backoff: bool = False,
-    exception_to_raise: Optional[Exception] = None,
+    exception_to_raise: Exception | None = None,
 ):
     """
     Decorator to try to execute a function again in case of exception.
@@ -97,9 +97,9 @@ def retry(
 
     Args:
         max_retries (int): Maximum number of attempts
-        exceptions (Union[Type[Exception], List[Type[Exception]]]): Exception types that should be
+        exceptions (type[Exception] | list[type[Exception]]): Exception types that should be
             handled
-        on_retry (Optional[Callable], optional): Function called after each failed attempt
+        on_retry (Callable | None, optional): Function called after each failed attempt
         delay (float): Delay between attempts in seconds
         exponential_backoff (bool): If True, increase the delay exponentially
 
@@ -126,7 +126,7 @@ def retry(
 
         @wraps(func)
         async def wrapper(*args: Any, **kwargs: Any) -> Any:
-            last_exception: Optional[Exception] = None
+            last_exception: Exception | None = None
             caller_instance = args[0] if args else None
 
             for attempt in range(config.max_retries + 1):
@@ -157,12 +157,12 @@ def retry(
     return decorator
 
 
-def _sync_retry(func: F, config: RetryConfig, exception_to_raise: Optional[Exception]) -> F:
+def _sync_retry(func: F, config: RetryConfig, exception_to_raise: Exception | None) -> F:
     """Build the retry wrapper for a synchronous function."""
 
     @wraps(func)
     def wrapper(*args: Any, **kwargs: Any) -> Any:
-        last_exception: Optional[Exception] = None
+        last_exception: Exception | None = None
         caller_instance = args[0] if args else None
 
         for attempt in range(config.max_retries + 1):

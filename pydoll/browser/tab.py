@@ -18,9 +18,7 @@ from typing import (
     AsyncGenerator,
     Awaitable,
     Callable,
-    Optional,
     TypeVar,
-    Union,
     cast,
     overload,
 )
@@ -149,11 +147,11 @@ class Tab(FindElementsMixin):
     def __init__(
         self,
         browser: Browser,
-        connection_port: Optional[int] = None,
-        target_id: Optional[str] = None,
-        browser_context_id: Optional[str] = None,
-        ws_address: Optional[str] = None,
-        connection_handler: Optional[ConnectionHandler] = None,
+        connection_port: int | None = None,
+        target_id: str | None = None,
+        browser_context_id: str | None = None,
+        ws_address: str | None = None,
+        connection_handler: ConnectionHandler | None = None,
     ):
         """
         Initialize tab controller for existing browser tab.
@@ -182,13 +180,13 @@ class Tab(FindElementsMixin):
         self._dom_events_enabled = False
         self._runtime_events_enabled = False
         self._intercept_file_chooser_dialog_enabled = False
-        self._cloudflare_captcha_callback_id: Optional[int] = None
-        self._fingerprint_applier: Optional[FingerprintApplier] = None
-        self._request: Optional[Request] = None
-        self._scroll: Optional[ScrollAPI] = None
-        self._keyboard: Optional[KeyboardAPI] = None
+        self._cloudflare_captcha_callback_id: int | None = None
+        self._fingerprint_applier: FingerprintApplier | None = None
+        self._request: Request | None = None
+        self._scroll: ScrollAPI | None = None
+        self._keyboard: KeyboardAPI | None = None
         self._mouse: MouseAPI = MouseAPI(self)
-        self._extraction_engine: Optional[ExtractionEngine] = None
+        self._extraction_engine: ExtractionEngine | None = None
         logger.debug(
             'Tab initialized: target_id=%s, ws_address_set=%s, context_id=%s, port=%s',
             self._target_id,
@@ -198,12 +196,12 @@ class Tab(FindElementsMixin):
         )
 
     @property
-    def target_id(self) -> Optional[str]:
+    def target_id(self) -> str | None:
         """CDP target id of this tab, when known."""
         return self._target_id
 
     @property
-    def browser_context_id(self) -> Optional[str]:
+    def browser_context_id(self) -> str | None:
         """Browser context this tab belongs to (None for the default context)."""
         return self._browser_context_id
 
@@ -289,7 +287,7 @@ class Tab(FindElementsMixin):
         self,
         model: type[T],
         *,
-        scope: Optional[str] = None,
+        scope: str | None = None,
         timeout: int = 0,
     ) -> T:
         """Extract structured data from the page into a typed model.
@@ -314,7 +312,7 @@ class Tab(FindElementsMixin):
         *,
         scope: str,
         timeout: int = 0,
-        limit: Optional[int] = None,
+        limit: int | None = None,
     ) -> list[T]:
         """Extract multiple items from repeated containers on the page.
 
@@ -377,8 +375,8 @@ class Tab(FindElementsMixin):
     async def enable_fetch_events(
         self,
         handle_auth: bool = False,
-        resource_type: Optional[ResourceType] = None,
-        request_stage: Optional[RequestStage] = None,
+        resource_type: ResourceType | None = None,
+        request_stage: RequestStage | None = None,
     ):
         """
         Enable CDP Fetch domain for request interception.
@@ -857,7 +855,7 @@ class Tab(FindElementsMixin):
         logger.debug('Retrieved network response body for request_id=%s', request_id)
         return response['result']['body']
 
-    async def get_network_logs(self, filter: Optional[str] = None) -> list[RequestWillBeSentEvent]:
+    async def get_network_logs(self, filter: str | None = None) -> list[RequestWillBeSentEvent]:
         """
         Get network logs.
 
@@ -1010,11 +1008,11 @@ class Tab(FindElementsMixin):
 
     async def wait_for_absence(
         self,
-        id: Optional[str] = None,
-        class_name: Optional[str] = None,
-        name: Optional[str] = None,
-        tag_name: Optional[str] = None,
-        text: Optional[str] = None,
+        id: str | None = None,
+        class_name: str | None = None,
+        name: str | None = None,
+        tag_name: str | None = None,
+        text: str | None = None,
         timeout: float = 30,
         **attributes: str,
     ) -> None:
@@ -1043,7 +1041,7 @@ class Tab(FindElementsMixin):
             if value is not None
         }
         criteria.update(attributes)
-        finder = cast('Callable[..., Awaitable[Optional[WebElement]]]', self.find)
+        finder = cast('Callable[..., Awaitable[WebElement | None]]', self.find)
         loop = asyncio.get_running_loop()
         deadline = loop.time() + timeout
         interval = PollInterval()
@@ -1115,7 +1113,7 @@ class Tab(FindElementsMixin):
 
     @asynccontextmanager
     async def expect_navigation(
-        self, url: Optional[UrlPattern] = None, timeout: float = 30
+        self, url: UrlPattern | None = None, timeout: float = 30
     ) -> AsyncGenerator[None, None]:
         """
         Wait for a navigation started inside the block, and for the new page to load.
@@ -1272,7 +1270,7 @@ class Tab(FindElementsMixin):
                 completed = await asyncio.wait_for(finished, timeout)
             except asyncio.TimeoutError:
                 raise WaitTimeout(f'Timed out after {timeout}s waiting for a response from {url!r}')
-            body: Optional[bytes] = None
+            body: bytes | None = None
             if completed:
                 raw: GetResponseBodyResponse = await self._execute_command(
                     NetworkCommands.get_response_body(params['requestId'])
@@ -1295,7 +1293,7 @@ class Tab(FindElementsMixin):
     async def refresh(
         self,
         ignore_cache: bool = False,
-        script_to_evaluate_on_load: Optional[str] = None,
+        script_to_evaluate_on_load: str | None = None,
     ):
         """
         Reload current page and wait for completion.
@@ -1323,11 +1321,11 @@ class Tab(FindElementsMixin):
 
     async def take_screenshot(
         self,
-        path: Optional[str | Path] = None,
+        path: str | Path | None = None,
         quality: int = 100,
         beyond_viewport: bool = False,
         as_base64: bool = False,
-    ) -> Optional[str]:
+    ) -> str | None:
         """
         Capture screenshot of current page.
 
@@ -1404,13 +1402,13 @@ class Tab(FindElementsMixin):
 
     async def print_to_pdf(
         self,
-        path: Optional[str | Path] = None,
+        path: str | Path | None = None,
         landscape: bool = False,
         display_header_footer: bool = False,
         print_background: bool = True,
         scale: float = 1.0,
         as_base64: bool = False,
-    ) -> Optional[str]:
+    ) -> str | None:
         """
         Generate PDF of current page.
 
@@ -1591,7 +1589,7 @@ class Tab(FindElementsMixin):
         logger.debug('Dialog message retrieved: %s', message)
         return message
 
-    async def handle_dialog(self, accept: bool, prompt_text: Optional[str] = None):
+    async def handle_dialog(self, accept: bool, prompt_text: str | None = None):
         """
         Respond to JavaScript dialog.
 
@@ -1616,51 +1614,51 @@ class Tab(FindElementsMixin):
         self,
         script: str,
         *,
-        object_group: Optional[str] = None,
-        include_command_line_api: Optional[bool] = None,
-        silent: Optional[bool] = None,
-        context_id: Optional[int] = None,
-        return_by_value: Optional[bool] = None,
-        generate_preview: Optional[bool] = None,
-        user_gesture: Optional[bool] = None,
-        await_promise: Optional[bool] = None,
-        throw_on_side_effect: Optional[bool] = None,
-        timeout: Optional[float] = None,
-        disable_breaks: Optional[bool] = None,
-        repl_mode: Optional[bool] = None,
-        allow_unsafe_eval_blocked_by_csp: Optional[bool] = None,
-        unique_context_id: Optional[str] = None,
-        serialization_options: Optional[SerializationOptions] = None,
+        object_group: str | None = None,
+        include_command_line_api: bool | None = None,
+        silent: bool | None = None,
+        context_id: int | None = None,
+        return_by_value: bool | None = None,
+        generate_preview: bool | None = None,
+        user_gesture: bool | None = None,
+        await_promise: bool | None = None,
+        throw_on_side_effect: bool | None = None,
+        timeout: float | None = None,
+        disable_breaks: bool | None = None,
+        repl_mode: bool | None = None,
+        allow_unsafe_eval_blocked_by_csp: bool | None = None,
+        unique_context_id: str | None = None,
+        serialization_options: SerializationOptions | None = None,
     ) -> EvaluateResponse:
         """
         Execute JavaScript in page context.
 
         Args:
             script (str): JavaScript code to execute.
-            object_group (Optional[str]): Symbolic group name for the result (Runtime.evaluate).
-            include_command_line_api (Optional[bool]): Whether to include command line API
+            object_group (str | None): Symbolic group name for the result (Runtime.evaluate).
+            include_command_line_api (bool | None): Whether to include command line API
                 (Runtime.evaluate).
-            silent (Optional[bool]): Whether to silence exceptions (Runtime.evaluate).
-            context_id (Optional[int]): ID of the execution context to evaluate in
+            silent (bool | None): Whether to silence exceptions (Runtime.evaluate).
+            context_id (int | None): ID of the execution context to evaluate in
                 (Runtime.evaluate).
-            return_by_value (Optional[bool]): Whether to return the result by value instead of
+            return_by_value (bool | None): Whether to return the result by value instead of
                 reference (Runtime.evaluate).
-            generate_preview (Optional[bool]): Whether to generate a preview for the result
+            generate_preview (bool | None): Whether to generate a preview for the result
                 (Runtime.evaluate).
-            user_gesture (Optional[bool]): Whether to treat evaluation as initiated by user
+            user_gesture (bool | None): Whether to treat evaluation as initiated by user
                 gesture (Runtime.evaluate).
-            await_promise (Optional[bool]): Whether to await promise result (Runtime.evaluate).
-            throw_on_side_effect (Optional[bool]): Whether to throw if side effect cannot be
+            await_promise (bool | None): Whether to await promise result (Runtime.evaluate).
+            throw_on_side_effect (bool | None): Whether to throw if side effect cannot be
                 ruled out (Runtime.evaluate).
-            timeout (Optional[float]): Timeout in milliseconds (Runtime.evaluate).
-            disable_breaks (Optional[bool]): Whether to disable breakpoints during evaluation
+            timeout (float | None): Timeout in milliseconds (Runtime.evaluate).
+            disable_breaks (bool | None): Whether to disable breakpoints during evaluation
                 (Runtime.evaluate).
-            repl_mode (Optional[bool]): Whether to execute in REPL mode (Runtime.evaluate).
-            allow_unsafe_eval_blocked_by_csp (Optional[bool]): Allow unsafe evaluation
+            repl_mode (bool | None): Whether to execute in REPL mode (Runtime.evaluate).
+            allow_unsafe_eval_blocked_by_csp (bool | None): Allow unsafe evaluation
                 (Runtime.evaluate).
-            unique_context_id (Optional[str]): Unique context ID for evaluation
+            unique_context_id (str | None): Unique context ID for evaluation
                 (Runtime.evaluate).
-            serialization_options (Optional[SerializationOptions]): Serialization options for
+            serialization_options (SerializationOptions | None): Serialization options for
                 the result (Runtime.evaluate).
 
         Returns:
@@ -1707,11 +1705,11 @@ class Tab(FindElementsMixin):
     async def continue_request(
         self,
         request_id: str,
-        url: Optional[str] = None,
-        method: Optional[RequestMethod] = None,
-        post_data: Optional[str] = None,
-        headers: Optional[list[HeaderEntry]] = None,
-        intercept_response: Optional[bool] = None,
+        url: str | None = None,
+        method: RequestMethod | None = None,
+        post_data: str | None = None,
+        headers: list[HeaderEntry] | None = None,
+        intercept_response: bool | None = None,
     ):
         """
         Continue paused request without modifications.
@@ -1737,9 +1735,9 @@ class Tab(FindElementsMixin):
         self,
         request_id: str,
         response_code: int,
-        response_headers: Optional[list[HeaderEntry]] = None,
-        body: Optional[str] = None,
-        response_phrase: Optional[str] = None,
+        response_headers: list[HeaderEntry] | None = None,
+        body: str | None = None,
+        response_phrase: str | None = None,
     ):
         """Fulfill request with response data."""
         logger.debug(
@@ -1763,8 +1761,8 @@ class Tab(FindElementsMixin):
         self,
         request_id: str,
         auth_challenge_response: AuthChallengeResponseType,
-        proxy_username: Optional[str] = None,
-        proxy_password: Optional[str] = None,
+        proxy_username: str | None = None,
+        proxy_password: str | None = None,
     ):
         """Continue a paused request replying to an authentication challenge.
 
@@ -1873,8 +1871,8 @@ class Tab(FindElementsMixin):
     @asynccontextmanager
     async def expect_download(
         self,
-        keep_file_at: Optional[Union[str, Path]] = None,
-        timeout: Optional[float] = None,
+        keep_file_at: str | Path | None = None,
+        timeout: float | None = None,
     ) -> AsyncGenerator[DownloadHandle, None]:
         """
         Context manager for handling a file download triggered inside the block.
@@ -2083,21 +2081,21 @@ class Tab(FindElementsMixin):
     def _get_evaluate_command(
         script: str,
         *,
-        object_group: Optional[str] = None,
-        include_command_line_api: Optional[bool] = None,
-        silent: Optional[bool] = None,
-        context_id: Optional[int] = None,
-        return_by_value: Optional[bool] = None,
-        generate_preview: Optional[bool] = None,
-        user_gesture: Optional[bool] = None,
-        await_promise: Optional[bool] = None,
-        throw_on_side_effect: Optional[bool] = None,
-        timeout: Optional[float] = None,
-        disable_breaks: Optional[bool] = None,
-        repl_mode: Optional[bool] = None,
-        allow_unsafe_eval_blocked_by_csp: Optional[bool] = None,
-        unique_context_id: Optional[str] = None,
-        serialization_options: Optional[SerializationOptions] = None,
+        object_group: str | None = None,
+        include_command_line_api: bool | None = None,
+        silent: bool | None = None,
+        context_id: int | None = None,
+        return_by_value: bool | None = None,
+        generate_preview: bool | None = None,
+        user_gesture: bool | None = None,
+        await_promise: bool | None = None,
+        throw_on_side_effect: bool | None = None,
+        timeout: float | None = None,
+        disable_breaks: bool | None = None,
+        repl_mode: bool | None = None,
+        allow_unsafe_eval_blocked_by_csp: bool | None = None,
+        unique_context_id: str | None = None,
+        serialization_options: SerializationOptions | None = None,
     ):
         """Create an evaluate command with the given parameters."""
         return RuntimeCommands.evaluate(
@@ -2201,7 +2199,7 @@ class Tab(FindElementsMixin):
                 with contextlib.suppress(Exception):
                     await self.disable_page_events()
 
-    async def _find_cloudflare_shadow_root(self) -> Optional[ShadowRoot]:
+    async def _find_cloudflare_shadow_root(self) -> ShadowRoot | None:
         """Return the Cloudflare Turnstile shadow root if currently present.
 
         Performs a single scan of the page's shadow roots and returns the first
@@ -2247,7 +2245,7 @@ class Tab(FindElementsMixin):
         """
         loop = asyncio.get_event_loop()
         deadline = loop.time() + time_to_wait_captcha
-        last_error: Optional[Exception] = None
+        last_error: Exception | None = None
         while True:
             try:
                 shadow_root = await self._find_cloudflare_shadow_root()
@@ -2282,13 +2280,13 @@ class DownloadHandle:
         self._timeout = timeout
 
     @property
-    def file_path(self) -> Optional[str]:
+    def file_path(self) -> str | None:
         return self._state.get('filePath')
 
-    async def wait_started(self, timeout: Optional[float] = None) -> None:
+    async def wait_started(self, timeout: float | None = None) -> None:
         await asyncio.wait_for(self._will_begin_future, timeout=timeout or self._timeout)
 
-    async def wait_finished(self, timeout: Optional[float] = None) -> None:
+    async def wait_finished(self, timeout: float | None = None) -> None:
         await asyncio.wait_for(self._done_future, timeout=timeout or self._timeout)
 
     async def read_bytes(self) -> bytes:
@@ -2310,7 +2308,7 @@ class RequestHandle:
     """What ``expect_request()`` captured: filled when its block exits."""
 
     def __init__(self) -> None:
-        self._params: Optional[dict] = None
+        self._params: dict | None = None
 
     def _fill(self, params: dict) -> None:
         self._params = params
@@ -2341,12 +2339,12 @@ class RequestHandle:
         return dict(self._request.get('headers', {}))
 
     @property
-    def post_data(self) -> Optional[str]:
+    def post_data(self) -> str | None:
         """The request body, when it had one."""
         return self._request.get('postData')
 
     @property
-    def resource_type(self) -> Optional[str]:
+    def resource_type(self) -> str | None:
         """Chrome's resource type: Document, XHR, Fetch, Image, ..."""
         if self._params is None:
             return None
@@ -2357,10 +2355,10 @@ class ResponseHandle:
     """What ``expect_response()`` captured: filled, body included, when its block exits."""
 
     def __init__(self) -> None:
-        self._params: Optional[dict] = None
-        self._body: Optional[bytes] = None
+        self._params: dict | None = None
+        self._body: bytes | None = None
 
-    def _fill(self, params: dict, body: Optional[bytes]) -> None:
+    def _fill(self, params: dict, body: bytes | None) -> None:
         self._params = params
         self._body = body
 

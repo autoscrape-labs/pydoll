@@ -234,14 +234,12 @@ Cada elemento `.contributor` se torna o escopo de uma instância de `Contributor
 
 ## Campos opcionais e valores padrão
 
-Campos que podem não estar presentes em toda página devem usar `Optional` com um `default`:
+Campos que podem não estar presentes em toda página devem aceitar `None` e ter um `default`:
 
 ```python
-from typing import Optional
-
 class Article(ExtractionModel):
     title: str = Field(selector='h1', description='Title')
-    subtitle: Optional[str] = Field(
+    subtitle: str | None = Field(
         selector='.subtitle',
         description='Optional subtitle',
         default=None,

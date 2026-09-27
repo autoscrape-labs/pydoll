@@ -11,7 +11,7 @@ from __future__ import annotations
 import asyncio
 import json
 import weakref
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Optional, Sequence, TypeVar, Union, cast
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Sequence, TypeVar, cast
 
 from pydoll.browser.tab import Tab
 from pydoll.commands import DomCommands, PageCommands, RuntimeCommands
@@ -43,7 +43,7 @@ if TYPE_CHECKING:
     from pydoll.playwright._network import Response
     from pydoll.playwright._page import Page
 
-FrameRoot = Union[Tab, WebElement]
+FrameRoot = Tab | WebElement
 T = TypeVar('T')
 
 _QUERY_ALL = engine_call('return engine.querySelectorAll(a0, this);')
@@ -64,16 +64,16 @@ _QUERY_FRAME_OWNERS = engine_call(
 class Frame:
     """A document inside a page: the main frame or an ``<iframe>``."""
 
-    def __init__(self, page: Page, root: FrameRoot, parent: Optional[Frame] = None) -> None:
+    def __init__(self, page: Page, root: FrameRoot, parent: Frame | None = None) -> None:
         self._page = page
         self._root = root
         self._parent = parent
         self._actions = Actions(self)
-        self._document_object_id: Optional[str] = None
-        self._world_id: Optional[int] = None
-        self._engine_id: Optional[str] = None
+        self._document_object_id: str | None = None
+        self._world_id: int | None = None
+        self._engine_id: str | None = None
         self._main_ids: weakref.WeakKeyDictionary[WebElement, str] = weakref.WeakKeyDictionary()
-        self._frame_id: Optional[str] = None
+        self._frame_id: str | None = None
         self._url = ''
         self._name = ''
         self._detached = False
@@ -102,7 +102,7 @@ class Frame:
         return self._url
 
     @property
-    def parent_frame(self) -> Optional[Frame]:
+    def parent_frame(self) -> Frame | None:
         return self._parent
 
     @property
@@ -243,7 +243,7 @@ class Frame:
         function_declaration: str,
         arguments: Sequence[CallArgument],
         *,
-        object_id: Optional[str] = None,
+        object_id: str | None = None,
         by_value: bool = True,
         await_promise: bool = False,
         user_gesture: bool = False,
@@ -329,7 +329,7 @@ class Frame:
         args: Sequence[Any],
         *,
         await_promise: bool = False,
-        extra_arguments: Optional[Sequence[CallArgument]] = None,
+        extra_arguments: Sequence[CallArgument] | None = None,
     ) -> Any:
         """Run an engine body with ``this`` bound to an element of the isolated world."""
 
@@ -351,7 +351,7 @@ class Frame:
         return await self._with_world(operation)
 
     async def _query_script(
-        self, root: Optional[WebElement], script: str, selector: str
+        self, root: WebElement | None, script: str, selector: str
     ) -> list[WebElement]:
         """Resolve a selector in the isolated world and wrap the matches as WebElements."""
 
@@ -432,12 +432,10 @@ class Frame:
 
     # ------------------------------------------------------------ queries
 
-    async def _query_all(
-        self, selector: str, root: Optional[WebElement] = None
-    ) -> list[WebElement]:
+    async def _query_all(self, selector: str, root: WebElement | None = None) -> list[WebElement]:
         chunks = split_by_frame(selector)
         frames: list[Frame] = [self]
-        roots: list[Optional[WebElement]] = [root]
+        roots: list[WebElement | None] = [root]
         for chunk in chunks[:-1]:
             next_frames: list[Frame] = []
             for frame, frame_root in zip(frames, roots):
@@ -454,8 +452,8 @@ class Frame:
         return result
 
     async def _query_one(
-        self, selector: str, strict: bool, root: Optional[WebElement] = None
-    ) -> Optional[WebElement]:
+        self, selector: str, strict: bool, root: WebElement | None = None
+    ) -> WebElement | None:
         if not strict:
             elements = await self._query_all(selector, root=root)
             return elements[0] if elements else None
@@ -468,7 +466,7 @@ class Frame:
             raise Error(f'strict mode violation: {selector} resolved to {len(elements)} elements')
         return elements[0] if elements else None
 
-    async def _query_visible(self, selector: str, root: Optional[WebElement]) -> list[WebElement]:
+    async def _query_visible(self, selector: str, root: WebElement | None) -> list[WebElement]:
         chunks = split_by_frame(selector)
         if len(chunks) == 1:
             return await self._query_script(root, _QUERY_VISIBLE, selector)
@@ -482,11 +480,11 @@ class Frame:
     async def wait_for_selector(
         self,
         selector: str,
-        timeout: Optional[float] = None,
+        timeout: float | None = None,
         state: str = 'visible',
-        strict: Optional[bool] = None,
-        root: Optional[WebElement] = None,
-    ) -> Optional[ElementHandle]:
+        strict: bool | None = None,
+        root: WebElement | None = None,
+    ) -> ElementHandle | None:
         if state not in {'attached', 'detached', 'visible', 'hidden'}:
             raise Error(f'state: expected one of (attached|detached|visible|hidden), got {state!r}')
         deadline = Deadline(self._page._timeout(timeout))
@@ -516,7 +514,7 @@ class Frame:
         expression: str,
         arg: Any = None,
         *,
-        this_object_id: Optional[str] = None,
+        this_object_id: str | None = None,
         by_value: bool = True,
     ) -> Any:
         source = evaluate_source(expression, with_this=bool(this_object_id), by_value=by_value)
@@ -587,9 +585,9 @@ class Frame:
         self,
         expression: str,
         arg: Any = None,
-        timeout: Optional[float] = None,
+        timeout: float | None = None,
         polling: Any = None,
-        element: Optional[WebElement] = None,
+        element: WebElement | None = None,
     ) -> JSHandle:
         deadline = Deadline(self._page._timeout(timeout))
         interval = (polling / 1000) if isinstance(polling, (int, float)) else 0.1
@@ -608,7 +606,7 @@ class Frame:
             await asyncio.sleep(interval)
 
     async def wait_for_function(
-        self, expression: str, arg: Any = None, timeout: Optional[float] = None, polling: Any = None
+        self, expression: str, arg: Any = None, timeout: float | None = None, polling: Any = None
     ) -> JSHandle:
         return await self._wait_for_function(expression, arg, timeout=timeout, polling=polling)
 
@@ -628,7 +626,7 @@ class Frame:
         )
 
     async def set_content(
-        self, html: str, timeout: Optional[float] = None, wait_until: Optional[str] = None
+        self, html: str, timeout: float | None = None, wait_until: str | None = None
     ) -> None:
         frame_id = await self._frame_id_value()
         self._document_object_id = None
@@ -639,8 +637,8 @@ class Frame:
         return await self._call('function() { return document.title; }', [])
 
     async def query_selector(
-        self, selector: str, strict: Optional[bool] = None
-    ) -> Optional[ElementHandle]:
+        self, selector: str, strict: bool | None = None
+    ) -> ElementHandle | None:
         element = await self._query_one(selector, strict=bool(strict))
         return ElementHandle(self, element) if element else None
 
@@ -648,7 +646,7 @@ class Frame:
         return [ElementHandle(self, element) for element in await self._query_all(selector)]
 
     async def eval_on_selector(
-        self, selector: str, expression: str, arg: Any = None, strict: Optional[bool] = None
+        self, selector: str, expression: str, arg: Any = None, strict: bool | None = None
     ) -> Any:
         element = await self._query_one(selector, strict=bool(strict))
         if element is None:
@@ -660,10 +658,10 @@ class Frame:
 
     async def add_script_tag(
         self,
-        url: Optional[str] = None,
-        path: Optional[Union[str, Path]] = None,
-        content: Optional[str] = None,
-        type: Optional[str] = None,
+        url: str | None = None,
+        path: str | Path | None = None,
+        content: str | None = None,
+        type: str | None = None,
     ) -> ElementHandle:
         if path is not None:
             from pathlib import Path as _Path  # noqa: PLC0415
@@ -688,9 +686,9 @@ class Frame:
 
     async def add_style_tag(
         self,
-        url: Optional[str] = None,
-        path: Optional[Union[str, Path]] = None,
-        content: Optional[str] = None,
+        url: str | None = None,
+        path: str | Path | None = None,
+        content: str | None = None,
     ) -> ElementHandle:
         if path is not None:
             from pathlib import Path as _Path  # noqa: PLC0415
@@ -718,10 +716,10 @@ class Frame:
     async def goto(
         self,
         url: str,
-        timeout: Optional[float] = None,
-        wait_until: Optional[str] = None,
-        referer: Optional[str] = None,
-    ) -> Optional[Response]:
+        timeout: float | None = None,
+        wait_until: str | None = None,
+        referer: str | None = None,
+    ) -> Response | None:
         frame_id = await self._frame_id_value()
         self._document_object_id = None
         return await self._page._navigation.navigate(
@@ -729,7 +727,7 @@ class Frame:
         )
 
     async def wait_for_load_state(
-        self, state: Optional[str] = None, timeout: Optional[float] = None
+        self, state: str | None = None, timeout: float | None = None
     ) -> None:
         frame_id = await self._frame_id_value()
         await self._page._navigation.wait_for_load_state(
@@ -737,7 +735,7 @@ class Frame:
         )
 
     async def wait_for_url(
-        self, url: Any, wait_until: Optional[str] = None, timeout: Optional[float] = None
+        self, url: Any, wait_until: str | None = None, timeout: float | None = None
     ) -> None:
         frame_id = await self._frame_id_value()
         await self._page._navigation.wait_for_url(
@@ -745,7 +743,7 @@ class Frame:
         )
 
     def expect_navigation(
-        self, url: Any = None, wait_until: Optional[str] = None, timeout: Optional[float] = None
+        self, url: Any = None, wait_until: str | None = None, timeout: float | None = None
     ) -> Any:
         return self._page._navigation.expect_navigation(
             self, url=url, wait_until=wait_until, timeout=timeout
@@ -756,22 +754,22 @@ class Frame:
     def locator(
         self,
         selector: str,
-        has_text: Optional[TextMatch] = None,
-        has_not_text: Optional[TextMatch] = None,
-        has: Optional[Locator] = None,
-        has_not: Optional[Locator] = None,
+        has_text: TextMatch | None = None,
+        has_not_text: TextMatch | None = None,
+        has: Locator | None = None,
+        has_not: Locator | None = None,
     ) -> Locator:
         return Locator(
             self, selector, has_text=has_text, has_not_text=has_not_text, has=has, has_not=has_not
         )
 
-    def get_by_alt_text(self, text: TextMatch, exact: Optional[bool] = None) -> Locator:
+    def get_by_alt_text(self, text: TextMatch, exact: bool | None = None) -> Locator:
         return self.locator(get_by_alt_text_selector(text, exact=exact))
 
-    def get_by_label(self, text: TextMatch, exact: Optional[bool] = None) -> Locator:
+    def get_by_label(self, text: TextMatch, exact: bool | None = None) -> Locator:
         return self.locator(get_by_label_selector(text, exact=exact))
 
-    def get_by_placeholder(self, text: TextMatch, exact: Optional[bool] = None) -> Locator:
+    def get_by_placeholder(self, text: TextMatch, exact: bool | None = None) -> Locator:
         return self.locator(get_by_placeholder_selector(text, exact=exact))
 
     def get_by_role(self, role: str, **kwargs: Any) -> Locator:
@@ -780,10 +778,10 @@ class Frame:
     def get_by_test_id(self, test_id: TextMatch) -> Locator:
         return self.locator(get_by_test_id_selector(test_id))
 
-    def get_by_text(self, text: TextMatch, exact: Optional[bool] = None) -> Locator:
+    def get_by_text(self, text: TextMatch, exact: bool | None = None) -> Locator:
         return self.locator(get_by_text_selector(text, exact=exact))
 
-    def get_by_title(self, text: TextMatch, exact: Optional[bool] = None) -> Locator:
+    def get_by_title(self, text: TextMatch, exact: bool | None = None) -> Locator:
         return self.locator(get_by_title_selector(text, exact=exact))
 
     def frame_locator(self, selector: str) -> FrameLocator:
@@ -791,59 +789,59 @@ class Frame:
 
     # ------------------------------------------------------------ selector shortcuts
 
-    def _shortcut(self, selector: str, strict: Optional[bool]) -> Any:
+    def _shortcut(self, selector: str, strict: bool | None) -> Any:
         from pydoll.playwright._actions import Resolver  # noqa: PLC0415
 
-        async def find() -> Optional[WebElement]:
+        async def find() -> WebElement | None:
             return await self._query_one(selector, strict=bool(strict))
 
         return Resolver(find, f'locator({json.dumps(selector)})')
 
-    async def click(self, selector: str, strict: Optional[bool] = None, **kwargs: Any) -> None:
+    async def click(self, selector: str, strict: bool | None = None, **kwargs: Any) -> None:
         await self._actions.click(self._shortcut(selector, strict), **kwargs)
 
-    async def dblclick(self, selector: str, strict: Optional[bool] = None, **kwargs: Any) -> None:
+    async def dblclick(self, selector: str, strict: bool | None = None, **kwargs: Any) -> None:
         await self._actions.dblclick(self._shortcut(selector, strict), **kwargs)
 
-    async def tap(self, selector: str, strict: Optional[bool] = None, **kwargs: Any) -> None:
+    async def tap(self, selector: str, strict: bool | None = None, **kwargs: Any) -> None:
         await self._actions.tap(self._shortcut(selector, strict), **kwargs)
 
-    async def hover(self, selector: str, strict: Optional[bool] = None, **kwargs: Any) -> None:
+    async def hover(self, selector: str, strict: bool | None = None, **kwargs: Any) -> None:
         await self._actions.hover(self._shortcut(selector, strict), **kwargs)
 
     async def fill(
-        self, selector: str, value: str, strict: Optional[bool] = None, **kwargs: Any
+        self, selector: str, value: str, strict: bool | None = None, **kwargs: Any
     ) -> None:
         await self._actions.fill(self._shortcut(selector, strict), value, **kwargs)
 
     async def focus(
-        self, selector: str, strict: Optional[bool] = None, timeout: Optional[float] = None
+        self, selector: str, strict: bool | None = None, timeout: float | None = None
     ) -> None:
         await self._actions.focus(self._shortcut(selector, strict), timeout=timeout)
 
     async def type(
-        self, selector: str, text: str, strict: Optional[bool] = None, **kwargs: Any
+        self, selector: str, text: str, strict: bool | None = None, **kwargs: Any
     ) -> None:
         await self._actions.type(self._shortcut(selector, strict), text, **kwargs)
 
     async def press(
-        self, selector: str, key: str, strict: Optional[bool] = None, **kwargs: Any
+        self, selector: str, key: str, strict: bool | None = None, **kwargs: Any
     ) -> None:
         await self._actions.press(self._shortcut(selector, strict), key, **kwargs)
 
-    async def check(self, selector: str, strict: Optional[bool] = None, **kwargs: Any) -> None:
+    async def check(self, selector: str, strict: bool | None = None, **kwargs: Any) -> None:
         await self._actions.set_checked(self._shortcut(selector, strict), True, **kwargs)
 
-    async def uncheck(self, selector: str, strict: Optional[bool] = None, **kwargs: Any) -> None:
+    async def uncheck(self, selector: str, strict: bool | None = None, **kwargs: Any) -> None:
         await self._actions.set_checked(self._shortcut(selector, strict), False, **kwargs)
 
     async def set_checked(
-        self, selector: str, checked: bool, strict: Optional[bool] = None, **kwargs: Any
+        self, selector: str, checked: bool, strict: bool | None = None, **kwargs: Any
     ) -> None:
         await self._actions.set_checked(self._shortcut(selector, strict), checked, **kwargs)
 
     async def select_option(
-        self, selector: str, value: Any = None, strict: Optional[bool] = None, **kwargs: Any
+        self, selector: str, value: Any = None, strict: bool | None = None, **kwargs: Any
     ) -> list[str]:
         return await self._actions.select_option(
             self._shortcut(selector, strict), value=value, **kwargs
@@ -852,8 +850,8 @@ class Frame:
     async def set_input_files(
         self,
         selector: str,
-        files: Union[str, Path, FilePayload, Sequence[Any]],
-        strict: Optional[bool] = None,
+        files: str | Path | FilePayload | Sequence[Any],
+        strict: bool | None = None,
         **kwargs: Any,
     ) -> None:
         await self._actions.set_input_files(self._shortcut(selector, strict), files, **kwargs)
@@ -862,8 +860,8 @@ class Frame:
         self,
         selector: str,
         type: str,
-        event_init: Optional[dict[str, Any]] = None,
-        strict: Optional[bool] = None,
+        event_init: dict[str, Any] | None = None,
+        strict: bool | None = None,
         **kwargs: Any,
     ) -> None:
         await self._actions.dispatch_event(
@@ -871,7 +869,7 @@ class Frame:
         )
 
     async def drag_and_drop(
-        self, source: str, target: str, strict: Optional[bool] = None, **kwargs: Any
+        self, source: str, target: str, strict: bool | None = None, **kwargs: Any
     ) -> None:
         await self._actions.drag_to(
             self._shortcut(source, strict), self._shortcut(target, strict), **kwargs
@@ -881,70 +879,70 @@ class Frame:
         self,
         selector: str,
         name: str,
-        strict: Optional[bool] = None,
-        timeout: Optional[float] = None,
-    ) -> Optional[str]:
+        strict: bool | None = None,
+        timeout: float | None = None,
+    ) -> str | None:
         return await self._actions.get_attribute(
             self._shortcut(selector, strict), name, timeout=timeout
         )
 
     async def text_content(
-        self, selector: str, strict: Optional[bool] = None, timeout: Optional[float] = None
-    ) -> Optional[str]:
+        self, selector: str, strict: bool | None = None, timeout: float | None = None
+    ) -> str | None:
         return await self._actions.text_content(self._shortcut(selector, strict), timeout=timeout)
 
     async def inner_text(
-        self, selector: str, strict: Optional[bool] = None, timeout: Optional[float] = None
+        self, selector: str, strict: bool | None = None, timeout: float | None = None
     ) -> str:
         return await self._actions.inner_text(self._shortcut(selector, strict), timeout=timeout)
 
     async def inner_html(
-        self, selector: str, strict: Optional[bool] = None, timeout: Optional[float] = None
+        self, selector: str, strict: bool | None = None, timeout: float | None = None
     ) -> str:
         return await self._actions.inner_html(self._shortcut(selector, strict), timeout=timeout)
 
     async def input_value(
-        self, selector: str, strict: Optional[bool] = None, timeout: Optional[float] = None
+        self, selector: str, strict: bool | None = None, timeout: float | None = None
     ) -> str:
         return await self._actions.input_value(self._shortcut(selector, strict), timeout=timeout)
 
     async def is_checked(
-        self, selector: str, strict: Optional[bool] = None, timeout: Optional[float] = None
+        self, selector: str, strict: bool | None = None, timeout: float | None = None
     ) -> bool:
         return await self._actions.element_state(
             self._shortcut(selector, strict), 'checked', timeout=timeout
         )
 
     async def is_disabled(
-        self, selector: str, strict: Optional[bool] = None, timeout: Optional[float] = None
+        self, selector: str, strict: bool | None = None, timeout: float | None = None
     ) -> bool:
         return await self._actions.element_state(
             self._shortcut(selector, strict), 'disabled', timeout=timeout
         )
 
     async def is_editable(
-        self, selector: str, strict: Optional[bool] = None, timeout: Optional[float] = None
+        self, selector: str, strict: bool | None = None, timeout: float | None = None
     ) -> bool:
         return await self._actions.element_state(
             self._shortcut(selector, strict), 'editable', timeout=timeout
         )
 
     async def is_enabled(
-        self, selector: str, strict: Optional[bool] = None, timeout: Optional[float] = None
+        self, selector: str, strict: bool | None = None, timeout: float | None = None
     ) -> bool:
         return await self._actions.element_state(
             self._shortcut(selector, strict), 'enabled', timeout=timeout
         )
 
     async def is_hidden(
-        self, selector: str, strict: Optional[bool] = None, timeout: Optional[float] = None
+        self, selector: str, strict: bool | None = None, timeout: float | None = None
     ) -> bool:
         return await self._actions.element_state(
             self._shortcut(selector, strict), 'hidden', timeout=timeout
         )
 
     async def is_visible(
-        self, selector: str, strict: Optional[bool] = None, timeout: Optional[float] = None
+        self, selector: str, strict: bool | None = None, timeout: float | None = None
     ) -> bool:
         return await self._actions.element_state(
             self._shortcut(selector, strict), 'visible', timeout=timeout

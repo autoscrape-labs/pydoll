@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from typing import Optional
-
 from pydoll.exceptions import (
     CommandExecutionTimeout,
     CommandFailed,
@@ -23,8 +21,8 @@ class Error(Exception):
 
     def __init__(self, message: str) -> None:
         self._message = message
-        self._name: Optional[str] = None
-        self._stack: Optional[str] = None
+        self._name: str | None = None
+        self._stack: str | None = None
         super().__init__(message)
 
     @property
@@ -32,11 +30,11 @@ class Error(Exception):
         return self._message
 
     @property
-    def name(self) -> Optional[str]:
+    def name(self) -> str | None:
         return self._name
 
     @property
-    def stack(self) -> Optional[str]:
+    def stack(self) -> str | None:
         return self._stack
 
 
@@ -47,7 +45,7 @@ class TimeoutError(Error):  # noqa: A001
 class TargetClosedError(Error):
     """Raised when the page, context or browser was closed."""
 
-    def __init__(self, message: Optional[str] = None) -> None:
+    def __init__(self, message: str | None = None) -> None:
         super().__init__(message or 'Target page, context or browser has been closed')
 
 

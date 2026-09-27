@@ -10,7 +10,7 @@ import logging
 import secrets
 import weakref
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Optional, Sequence, Union
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Sequence
 
 from pydoll.browser.tab import Tab
 from pydoll.commands import DomCommands, EmulationCommands, PageCommands, RuntimeCommands
@@ -80,7 +80,7 @@ _EXPOSE_SOURCE = """
 class Page(EventEmitter):
     """A single tab of a browser context."""
 
-    def __init__(self, context: BrowserContext, tab: Tab, opener: Optional[Page] = None) -> None:
+    def __init__(self, context: BrowserContext, tab: Tab, opener: Page | None = None) -> None:
         super().__init__()
         self._context = context
         self._tab = tab
@@ -88,7 +88,7 @@ class Page(EventEmitter):
         self._closed = False
         self._url = ''
         self._main_frame = Frame(self, tab)
-        self._main_frame_id_cache: Optional[str] = None
+        self._main_frame_id_cache: str | None = None
         self._frames_by_id: dict[str, Frame] = {}
         self._element_frames: weakref.WeakKeyDictionary[WebElement, Frame] = (
             weakref.WeakKeyDictionary()
@@ -100,9 +100,9 @@ class Page(EventEmitter):
         self._keyboard = Keyboard(self)
         self._mouse = Mouse(self)
         self._touchscreen = Touchscreen(self)
-        self._default_timeout: Optional[float] = None
-        self._default_navigation_timeout: Optional[float] = None
-        self._viewport: Optional[dict[str, int]] = None
+        self._default_timeout: float | None = None
+        self._default_navigation_timeout: float | None = None
+        self._viewport: dict[str, int] | None = None
         self._user_gesture = bool(context._options.get('user_gesture_on_evaluate', False))
         self._world_name = f'w{secrets.token_hex(4)}'
         self._fetch_enabled = False
@@ -180,14 +180,14 @@ class Page(EventEmitter):
         except PydollException as error:
             raise translate(error) from error
 
-    def _timeout(self, timeout: Optional[float]) -> float:
+    def _timeout(self, timeout: float | None) -> float:
         if timeout is not None:
             return timeout
         if self._default_timeout is not None:
             return self._default_timeout
         return self._context._default_timeout_value()
 
-    def _navigation_timeout(self, timeout: Optional[float]) -> float:
+    def _navigation_timeout(self, timeout: float | None) -> float:
         if timeout is not None:
             return timeout
         if self._default_navigation_timeout is not None:
@@ -276,7 +276,7 @@ class Page(EventEmitter):
             *[frame for frame in self._frames_by_id.values() if not frame._detached],
         ]
 
-    def frame(self, name: Optional[str] = None, url: Optional[URLMatch] = None) -> Optional[Frame]:
+    def frame(self, name: str | None = None, url: URLMatch | None = None) -> Frame | None:
         from pydoll.playwright._glob import URLMatcher  # noqa: PLC0415
 
         matcher = URLMatcher(url, self._context._base_url) if url is not None else None
@@ -310,7 +310,7 @@ class Page(EventEmitter):
         return self._touchscreen
 
     @property
-    def viewport_size(self) -> Optional[dict[str, int]]:
+    def viewport_size(self) -> dict[str, int] | None:
         return dict(self._viewport) if self._viewport else None
 
     @property
@@ -337,7 +337,7 @@ class Page(EventEmitter):
     def is_closed(self) -> bool:
         return self._closed
 
-    async def opener(self) -> Optional[Page]:
+    async def opener(self) -> Page | None:
         return self._opener
 
     def set_default_timeout(self, timeout: float) -> None:
@@ -450,11 +450,11 @@ class Page(EventEmitter):
         name: str,
         binding: tuple[Callable[..., Any], bool],
         payload: dict[str, Any],
-        context_id: Optional[int],
+        context_id: int | None,
     ) -> None:
         callback, with_source = binding
         result: Any = None
-        error: Optional[str] = None
+        error: str | None = None
         try:
             args = payload.get('args', [])
             if with_source:
@@ -489,8 +489,8 @@ class Page(EventEmitter):
     async def wait_for_event(
         self,
         event: str,
-        predicate: Optional[Callable[[Any], Any]] = None,
-        timeout: Optional[float] = None,
+        predicate: Callable[[Any], Any] | None = None,
+        timeout: float | None = None,
     ) -> Any:
         async with self.expect_event(event, predicate=predicate, timeout=timeout) as info:
             pass
@@ -499,8 +499,8 @@ class Page(EventEmitter):
     def expect_event(
         self,
         event: str,
-        predicate: Optional[Callable[[Any], Any]] = None,
-        timeout: Optional[float] = None,
+        predicate: Callable[[Any], Any] | None = None,
+        timeout: float | None = None,
     ) -> EventContextManager[Any]:
         deadline = Deadline(self._timeout(timeout))
         future = create_future(self._loop)
@@ -538,61 +538,61 @@ class Page(EventEmitter):
 
     def expect_console_message(
         self,
-        predicate: Optional[Callable[[ConsoleMessage], bool]] = None,
-        timeout: Optional[float] = None,
+        predicate: Callable[[ConsoleMessage], bool] | None = None,
+        timeout: float | None = None,
     ) -> EventContextManager[ConsoleMessage]:
         return self.expect_event('console', predicate=predicate, timeout=timeout)
 
     def expect_download(
         self,
-        predicate: Optional[Callable[[Download], bool]] = None,
-        timeout: Optional[float] = None,
+        predicate: Callable[[Download], bool] | None = None,
+        timeout: float | None = None,
     ) -> EventContextManager[Download]:
         return self.expect_event('download', predicate=predicate, timeout=timeout)
 
     def expect_file_chooser(
         self,
-        predicate: Optional[Callable[[FileChooser], bool]] = None,
-        timeout: Optional[float] = None,
+        predicate: Callable[[FileChooser], bool] | None = None,
+        timeout: float | None = None,
     ) -> EventContextManager[FileChooser]:
         return self.expect_event('filechooser', predicate=predicate, timeout=timeout)
 
     def expect_popup(
-        self, predicate: Optional[Callable[[Page], bool]] = None, timeout: Optional[float] = None
+        self, predicate: Callable[[Page], bool] | None = None, timeout: float | None = None
     ) -> EventContextManager[Page]:
         return self.expect_event('popup', predicate=predicate, timeout=timeout)
 
     def expect_worker(
-        self, predicate: Any = None, timeout: Optional[float] = None
+        self, predicate: Any = None, timeout: float | None = None
     ) -> EventContextManager[Any]:
         return self.expect_event('worker', predicate=predicate, timeout=timeout)
 
     def expect_websocket(
-        self, predicate: Any = None, timeout: Optional[float] = None
+        self, predicate: Any = None, timeout: float | None = None
     ) -> EventContextManager[Any]:
         return self.expect_event('websocket', predicate=predicate, timeout=timeout)
 
     def expect_request(
         self,
-        url_or_predicate: Union[URLMatch, Callable[[Request], Any]],
-        timeout: Optional[float] = None,
+        url_or_predicate: URLMatch | Callable[[Request], Any],
+        timeout: float | None = None,
     ) -> EventContextManager[Request]:
         return self._expect_network('request', url_or_predicate, timeout)
 
     def expect_request_finished(
-        self, predicate: Optional[Callable[[Request], Any]] = None, timeout: Optional[float] = None
+        self, predicate: Callable[[Request], Any] | None = None, timeout: float | None = None
     ) -> EventContextManager[Request]:
         return self.expect_event('requestfinished', predicate=predicate, timeout=timeout)
 
     def expect_response(
         self,
-        url_or_predicate: Union[URLMatch, Callable[[Response], Any]],
-        timeout: Optional[float] = None,
+        url_or_predicate: URLMatch | Callable[[Response], Any],
+        timeout: float | None = None,
     ) -> EventContextManager[Response]:
         return self._expect_network('response', url_or_predicate, timeout)
 
     def _expect_network(
-        self, event: str, matcher: Any, timeout: Optional[float]
+        self, event: str, matcher: Any, timeout: float | None
     ) -> EventContextManager[Any]:
         deadline = Deadline(self._timeout(timeout))
         future = create_future(self._loop)
@@ -609,10 +609,10 @@ class Page(EventEmitter):
 
     def expect_navigation(
         self,
-        url: Optional[URLMatch] = None,
-        wait_until: Optional[str] = None,
-        timeout: Optional[float] = None,
-    ) -> EventContextManager[Optional[Response]]:
+        url: URLMatch | None = None,
+        wait_until: str | None = None,
+        timeout: float | None = None,
+    ) -> EventContextManager[Response | None]:
         return self._main_frame.expect_navigation(url=url, wait_until=wait_until, timeout=timeout)
 
     # ------------------------------------------------------------ navigation
@@ -620,10 +620,10 @@ class Page(EventEmitter):
     async def goto(
         self,
         url: str,
-        timeout: Optional[float] = None,
-        wait_until: Optional[str] = None,
-        referer: Optional[str] = None,
-    ) -> Optional[Response]:
+        timeout: float | None = None,
+        wait_until: str | None = None,
+        referer: str | None = None,
+    ) -> Response | None:
         if self._context._base_url and not _is_absolute(url):
             from urllib.parse import urljoin  # noqa: PLC0415
 
@@ -633,25 +633,25 @@ class Page(EventEmitter):
         )
 
     async def reload(
-        self, timeout: Optional[float] = None, wait_until: Optional[str] = None
-    ) -> Optional[Response]:
+        self, timeout: float | None = None, wait_until: str | None = None
+    ) -> Response | None:
         async with self.expect_navigation(wait_until=wait_until, timeout=timeout) as info:
             await self._send(PageCommands.reload())
         return await info.value
 
     async def go_back(
-        self, timeout: Optional[float] = None, wait_until: Optional[str] = None
-    ) -> Optional[Response]:
+        self, timeout: float | None = None, wait_until: str | None = None
+    ) -> Response | None:
         return await self._history(-1, timeout, wait_until)
 
     async def go_forward(
-        self, timeout: Optional[float] = None, wait_until: Optional[str] = None
-    ) -> Optional[Response]:
+        self, timeout: float | None = None, wait_until: str | None = None
+    ) -> Response | None:
         return await self._history(1, timeout, wait_until)
 
     async def _history(
-        self, delta: int, timeout: Optional[float], wait_until: Optional[str]
-    ) -> Optional[Response]:
+        self, delta: int, timeout: float | None, wait_until: str | None
+    ) -> Response | None:
         history = (await self._send(PageCommands.get_navigation_history()))['result']
         index = history['currentIndex'] + delta
         entries = history['entries']
@@ -662,12 +662,12 @@ class Page(EventEmitter):
         return await info.value
 
     async def wait_for_load_state(
-        self, state: Optional[str] = None, timeout: Optional[float] = None
+        self, state: str | None = None, timeout: float | None = None
     ) -> None:
         await self._main_frame.wait_for_load_state(state, timeout=timeout)
 
     async def wait_for_url(
-        self, url: URLMatch, wait_until: Optional[str] = None, timeout: Optional[float] = None
+        self, url: URLMatch, wait_until: str | None = None, timeout: float | None = None
     ) -> None:
         await self._main_frame.wait_for_url(url, wait_until=wait_until, timeout=timeout)
 
@@ -675,7 +675,7 @@ class Page(EventEmitter):
         await asyncio.sleep(timeout / 1000)
 
     async def wait_for_function(
-        self, expression: str, arg: Any = None, timeout: Optional[float] = None, polling: Any = None
+        self, expression: str, arg: Any = None, timeout: float | None = None, polling: Any = None
     ) -> JSHandle:
         return await self._main_frame.wait_for_function(
             expression, arg, timeout=timeout, polling=polling
@@ -684,10 +684,10 @@ class Page(EventEmitter):
     async def wait_for_selector(
         self,
         selector: str,
-        timeout: Optional[float] = None,
+        timeout: float | None = None,
         state: str = 'visible',
-        strict: Optional[bool] = None,
-    ) -> Optional[ElementHandle]:
+        strict: bool | None = None,
+    ) -> ElementHandle | None:
         return await self._main_frame.wait_for_selector(
             selector, timeout=timeout, state=state, strict=strict
         )
@@ -698,7 +698,7 @@ class Page(EventEmitter):
         return await self._main_frame.content()
 
     async def set_content(
-        self, html: str, timeout: Optional[float] = None, wait_until: Optional[str] = None
+        self, html: str, timeout: float | None = None, wait_until: str | None = None
     ) -> None:
         await self._main_frame.set_content(html, timeout=timeout, wait_until=wait_until)
 
@@ -712,15 +712,15 @@ class Page(EventEmitter):
         return await self._main_frame.evaluate_handle(expression, arg)
 
     async def query_selector(
-        self, selector: str, strict: Optional[bool] = None
-    ) -> Optional[ElementHandle]:
+        self, selector: str, strict: bool | None = None
+    ) -> ElementHandle | None:
         return await self._main_frame.query_selector(selector, strict=strict)
 
     async def query_selector_all(self, selector: str) -> list[ElementHandle]:
         return await self._main_frame.query_selector_all(selector)
 
     async def eval_on_selector(
-        self, selector: str, expression: str, arg: Any = None, strict: Optional[bool] = None
+        self, selector: str, expression: str, arg: Any = None, strict: bool | None = None
     ) -> Any:
         return await self._main_frame.eval_on_selector(selector, expression, arg, strict=strict)
 
@@ -734,7 +734,7 @@ class Page(EventEmitter):
         return await self._main_frame.add_style_tag(**kwargs)
 
     async def add_init_script(
-        self, script: Optional[str] = None, path: Union[str, Path, None] = None
+        self, script: str | None = None, path: str | Path | None = None
     ) -> None:
         source = script if script is not None else Path(str(path)).read_text(encoding='utf-8')
         await self._send(PageCommands.add_script_to_evaluate_on_new_document(source=source))
@@ -743,7 +743,7 @@ class Page(EventEmitter):
         await self._expose(name, callback, False)
 
     async def expose_binding(
-        self, name: str, callback: Callable[..., Any], handle: Optional[bool] = None
+        self, name: str, callback: Callable[..., Any], handle: bool | None = None
     ) -> None:
         await self._expose(name, callback, True)
 
@@ -790,11 +790,11 @@ class Page(EventEmitter):
 
     async def emulate_media(
         self,
-        media: Optional[str] = None,
-        color_scheme: Optional[str] = None,
-        reduced_motion: Optional[str] = None,
-        forced_colors: Optional[str] = None,
-        contrast: Optional[str] = None,
+        media: str | None = None,
+        color_scheme: str | None = None,
+        reduced_motion: str | None = None,
+        forced_colors: str | None = None,
+        contrast: str | None = None,
     ) -> None:
         features = []
         for name, value in (
@@ -818,20 +818,18 @@ class Page(EventEmitter):
 
     # ------------------------------------------------------------ routes
 
-    async def route(
-        self, url: URLMatch, handler: RouteHandler, times: Optional[int] = None
-    ) -> None:
+    async def route(self, url: URLMatch, handler: RouteHandler, times: int | None = None) -> None:
         self._routes.append(make_entry(url, handler, times, self._context._base_url))
         await self._enable_fetch()
 
-    async def unroute(self, url: URLMatch, handler: Optional[RouteHandler] = None) -> None:
+    async def unroute(self, url: URLMatch, handler: RouteHandler | None = None) -> None:
         self._routes = [
             entry
             for entry in self._routes
             if not (entry.matcher._match == url and (handler is None or entry.handler is handler))
         ]
 
-    async def unroute_all(self, behavior: Optional[str] = None) -> None:
+    async def unroute_all(self, behavior: str | None = None) -> None:
         self._routes = []
 
     async def _enable_fetch(self, handle_auth: bool = False) -> None:
@@ -885,19 +883,19 @@ class Page(EventEmitter):
 
     async def screenshot(
         self,
-        timeout: Optional[float] = None,
-        type: Optional[str] = None,
-        path: Union[str, Path, None] = None,
-        quality: Optional[int] = None,
-        omit_background: Optional[bool] = None,
-        full_page: Optional[bool] = None,
-        clip: Optional[dict[str, float]] = None,
-        animations: Optional[str] = None,
-        caret: Optional[str] = None,
-        scale: Optional[str] = None,
-        mask: Optional[Sequence[Locator]] = None,
-        mask_color: Optional[str] = None,
-        style: Optional[str] = None,
+        timeout: float | None = None,
+        type: str | None = None,
+        path: str | Path | None = None,
+        quality: int | None = None,
+        omit_background: bool | None = None,
+        full_page: bool | None = None,
+        clip: dict[str, float] | None = None,
+        animations: str | None = None,
+        caret: str | None = None,
+        scale: str | None = None,
+        mask: Sequence[Locator] | None = None,
+        mask_color: str | None = None,
+        style: str | None = None,
     ) -> bytes:
         image_type = type or (
             'jpeg' if str(path or '').lower().endswith(('.jpg', '.jpeg')) else 'png'
@@ -922,10 +920,10 @@ class Page(EventEmitter):
         self,
         *,
         type: str,
-        quality: Optional[int],
-        clip: Optional[dict[str, float]],
-        omit_background: Optional[bool],
-        path: Union[str, Path, None],
+        quality: int | None,
+        clip: dict[str, float] | None,
+        omit_background: bool | None,
+        path: str | Path | None,
         capture_beyond_viewport: bool,
     ) -> bytes:
         if omit_background:
@@ -955,21 +953,21 @@ class Page(EventEmitter):
 
     async def pdf(
         self,
-        scale: Optional[float] = None,
-        display_header_footer: Optional[bool] = None,
-        header_template: Optional[str] = None,
-        footer_template: Optional[str] = None,
-        print_background: Optional[bool] = None,
-        landscape: Optional[bool] = None,
-        page_ranges: Optional[str] = None,
-        format: Optional[str] = None,  # noqa: A002
-        width: Union[str, float, None] = None,
-        height: Union[str, float, None] = None,
-        prefer_css_page_size: Optional[bool] = None,
-        margin: Optional[dict[str, Union[str, float]]] = None,
-        path: Union[str, Path, None] = None,
-        outline: Optional[bool] = None,
-        tagged: Optional[bool] = None,
+        scale: float | None = None,
+        display_header_footer: bool | None = None,
+        header_template: str | None = None,
+        footer_template: str | None = None,
+        print_background: bool | None = None,
+        landscape: bool | None = None,
+        page_ranges: str | None = None,
+        format: str | None = None,  # noqa: A002
+        width: str | float | None = None,
+        height: str | float | None = None,
+        prefer_css_page_size: bool | None = None,
+        margin: dict[str, str | float] | None = None,
+        path: str | Path | None = None,
+        outline: bool | None = None,
+        tagged: bool | None = None,
     ) -> bytes:
         paper = _PAPER_FORMATS.get((format or 'letter').lower(), _PAPER_FORMATS['letter'])
         margins = margin or {}
@@ -998,9 +996,7 @@ class Page(EventEmitter):
 
     # ------------------------------------------------------------ lifecycle
 
-    async def close(
-        self, run_before_unload: Optional[bool] = None, reason: Optional[str] = None
-    ) -> None:
+    async def close(self, run_before_unload: bool | None = None, reason: str | None = None) -> None:
         if self._closed:
             return
         try:
@@ -1017,13 +1013,13 @@ class Page(EventEmitter):
     def locator(self, selector: str, **kwargs: Any) -> Locator:
         return self._main_frame.locator(selector, **kwargs)
 
-    def get_by_alt_text(self, text: TextMatch, exact: Optional[bool] = None) -> Locator:
+    def get_by_alt_text(self, text: TextMatch, exact: bool | None = None) -> Locator:
         return self._main_frame.get_by_alt_text(text, exact=exact)
 
-    def get_by_label(self, text: TextMatch, exact: Optional[bool] = None) -> Locator:
+    def get_by_label(self, text: TextMatch, exact: bool | None = None) -> Locator:
         return self._main_frame.get_by_label(text, exact=exact)
 
-    def get_by_placeholder(self, text: TextMatch, exact: Optional[bool] = None) -> Locator:
+    def get_by_placeholder(self, text: TextMatch, exact: bool | None = None) -> Locator:
         return self._main_frame.get_by_placeholder(text, exact=exact)
 
     def get_by_role(self, role: str, **kwargs: Any) -> Locator:
@@ -1032,10 +1028,10 @@ class Page(EventEmitter):
     def get_by_test_id(self, test_id: TextMatch) -> Locator:
         return self._main_frame.get_by_test_id(test_id)
 
-    def get_by_text(self, text: TextMatch, exact: Optional[bool] = None) -> Locator:
+    def get_by_text(self, text: TextMatch, exact: bool | None = None) -> Locator:
         return self._main_frame.get_by_text(text, exact=exact)
 
-    def get_by_title(self, text: TextMatch, exact: Optional[bool] = None) -> Locator:
+    def get_by_title(self, text: TextMatch, exact: bool | None = None) -> Locator:
         return self._main_frame.get_by_title(text, exact=exact)
 
     def frame_locator(self, selector: str) -> FrameLocator:
@@ -1083,17 +1079,17 @@ class Page(EventEmitter):
         await self._main_frame.set_input_files(selector, files, **kwargs)
 
     async def dispatch_event(
-        self, selector: str, type: str, event_init: Optional[dict[str, Any]] = None, **kwargs: Any
+        self, selector: str, type: str, event_init: dict[str, Any] | None = None, **kwargs: Any
     ) -> None:
         await self._main_frame.dispatch_event(selector, type, event_init, **kwargs)
 
     async def drag_and_drop(self, source: str, target: str, **kwargs: Any) -> None:
         await self._main_frame.drag_and_drop(source, target, **kwargs)
 
-    async def get_attribute(self, selector: str, name: str, **kwargs: Any) -> Optional[str]:
+    async def get_attribute(self, selector: str, name: str, **kwargs: Any) -> str | None:
         return await self._main_frame.get_attribute(selector, name, **kwargs)
 
-    async def text_content(self, selector: str, **kwargs: Any) -> Optional[str]:
+    async def text_content(self, selector: str, **kwargs: Any) -> str | None:
         return await self._main_frame.text_content(selector, **kwargs)
 
     async def inner_text(self, selector: str, **kwargs: Any) -> str:
@@ -1143,7 +1139,7 @@ _PAPER_FORMATS = {
 _UNITS = {'px': 1 / 96, 'in': 1, 'cm': 0.393701, 'mm': 0.0393701}
 
 
-def _inches(value: Union[str, float, int]) -> float:
+def _inches(value: str | float | int) -> float:
     if isinstance(value, (int, float)):
         return float(value) / 96
     text = str(value).strip().lower()

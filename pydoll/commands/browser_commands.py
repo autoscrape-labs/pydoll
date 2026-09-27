@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from pydoll.protocol.base import Command
 from pydoll.protocol.browser.methods import (
@@ -100,7 +100,7 @@ class BrowserCommands:
 
     @staticmethod
     def get_histograms(
-        query: Optional[str] = None,
+        query: str | None = None,
         delta: bool = False,
     ) -> GetHistogramsCommand:
         """
@@ -158,7 +158,7 @@ class BrowserCommands:
 
     @staticmethod
     def get_window_for_target(
-        target_id: Optional[str] = None,
+        target_id: str | None = None,
     ) -> GetWindowForTargetCommand:
         """
         Get the browser window that contains the devtools target.
@@ -196,8 +196,8 @@ class BrowserCommands:
     @staticmethod
     def set_contents_size(
         window_id: WindowID,
-        width: Optional[int] = None,
-        height: Optional[int] = None,
+        width: int | None = None,
+        height: int | None = None,
     ) -> SetContentsSizeCommand:
         """
         Set size of the browser contents resizing browser window as necessary.
@@ -221,8 +221,8 @@ class BrowserCommands:
 
     @staticmethod
     def set_dock_tile(
-        badge_label: Optional[str] = None,
-        image: Optional[str] = None,
+        badge_label: str | None = None,
+        image: str | None = None,
     ) -> SetDockTileCommand:
         """
         Set dock tile details, platform-specific.
@@ -278,7 +278,7 @@ class BrowserCommands:
         api: PrivacySandboxAPI,
         coordinator_origin: str,
         key_config: str,
-        browser_context_id: Optional[BrowserContextID] = None,
+        browser_context_id: BrowserContextID | None = None,
     ) -> AddPrivacySandboxCoordinatorKeyConfigCommand:
         """
         Configures encryption keys used with a given privacy sandbox API to talk
@@ -311,8 +311,8 @@ class BrowserCommands:
     def set_permission(
         permission: PermissionDescriptor,
         setting: PermissionSetting,
-        origin: Optional[str] = None,
-        browser_context_id: Optional[BrowserContextID] = None,
+        origin: str | None = None,
+        browser_context_id: BrowserContextID | None = None,
     ) -> SetPermissionCommand:
         """
         Set permission settings for given origin.
@@ -336,8 +336,8 @@ class BrowserCommands:
     @staticmethod
     def grant_permissions(
         permissions: list['PermissionType'],
-        origin: Optional[str] = None,
-        browser_context_id: Optional['BrowserContextID'] = None,
+        origin: str | None = None,
+        browser_context_id: 'BrowserContextID' | None = None,
     ) -> GrantPermissionsCommand:
         """
         Grant specific permissions to the given origin and reject all others.
@@ -360,7 +360,7 @@ class BrowserCommands:
 
     @staticmethod
     def reset_permissions(
-        browser_context_id: Optional['BrowserContextID'] = None,
+        browser_context_id: 'BrowserContextID' | None = None,
     ) -> ResetPermissionsCommand:
         """
         Reset all permission management for all origins.
@@ -380,8 +380,8 @@ class BrowserCommands:
     @staticmethod
     def set_download_behavior(
         behavior: DownloadBehavior,
-        browser_context_id: Optional['BrowserContextID'] = None,
-        download_path: Optional[str] = None,
+        browser_context_id: 'BrowserContextID' | None = None,
+        download_path: str | None = None,
         events_enabled: bool = False,
     ) -> SetDownloadBehaviorCommand:
         """
@@ -412,7 +412,7 @@ class BrowserCommands:
     @staticmethod
     def cancel_download(
         guid: str,
-        browser_context_id: Optional['BrowserContextID'] = None,
+        browser_context_id: 'BrowserContextID' | None = None,
     ) -> CancelDownloadCommand:
         """
         Cancel a download if in progress.

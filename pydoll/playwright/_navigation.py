@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import asyncio
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any
 
 from pydoll.commands import PageCommands
 from pydoll.playwright._errors import Error
@@ -104,7 +104,7 @@ class NavigationTracker:
 
     # ------------------------------------------------------------ waits
 
-    def _reached(self, frame_id: str, state_name: str, loader_id: Optional[str]) -> bool:
+    def _reached(self, frame_id: str, state_name: str, loader_id: str | None) -> bool:
         state = self._frames.get(frame_id)
         if state is None:
             return False
@@ -113,7 +113,7 @@ class NavigationTracker:
         return _LIFECYCLE_NAMES[state_name] in state.reached
 
     async def _wait_reached(
-        self, frame_id: str, state_name: str, loader_id: Optional[str], deadline: Deadline, log: str
+        self, frame_id: str, state_name: str, loader_id: str | None, deadline: Deadline, log: str
     ) -> None:
         while not self._reached(frame_id, state_name, loader_id):
             if loader_id:
@@ -134,10 +134,10 @@ class NavigationTracker:
         url: str,
         frame_id: str,
         *,
-        timeout: Optional[float],
-        wait_until: Optional[str],
-        referer: Optional[str],
-    ) -> Optional[Response]:
+        timeout: float | None,
+        wait_until: str | None,
+        referer: str | None,
+    ) -> Response | None:
         state_name = _validate_state(wait_until)
         deadline = Deadline(self._page._navigation_timeout(timeout))
         response = await self._page._send(
@@ -174,7 +174,7 @@ class NavigationTracker:
                 raise deadline.error(f'navigating to "{url}"') from None
 
     async def wait_for_load_state(
-        self, frame: Frame, frame_id: str, state_name: str, timeout: Optional[float]
+        self, frame: Frame, frame_id: str, state_name: str, timeout: float | None
     ) -> None:
         state_name = _validate_state(state_name)
         if state_name == 'commit':
@@ -202,8 +202,8 @@ class NavigationTracker:
         frame_id: str,
         url: Any,
         *,
-        wait_until: Optional[str],
-        timeout: Optional[float],
+        wait_until: str | None,
+        timeout: float | None,
     ) -> None:
         matcher = URLMatcher(url, self._page.context._base_url)
         deadline = Deadline(self._page._navigation_timeout(timeout))
@@ -224,9 +224,9 @@ class NavigationTracker:
         )
 
     def expect_navigation(
-        self, frame: Frame, *, url: Any, wait_until: Optional[str], timeout: Optional[float]
-    ) -> EventContextManager[Optional[Response]]:
-        future: asyncio.Future[Optional[Response]] = create_future(self._page._loop)
+        self, frame: Frame, *, url: Any, wait_until: str | None, timeout: float | None
+    ) -> EventContextManager[Response | None]:
+        future: asyncio.Future[Response | None] = create_future(self._page._loop)
 
         async def waiter() -> None:
             try:
@@ -270,7 +270,7 @@ class NavigationTracker:
         return EventContextManager(future)
 
 
-def _validate_state(state: Optional[str]) -> str:
+def _validate_state(state: str | None) -> str:
     name = state or 'load'
     if name not in _LIFECYCLE_NAMES:
         raise Error(

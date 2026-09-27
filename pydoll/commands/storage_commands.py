@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from pydoll.protocol.base import Command
 from pydoll.protocol.storage.methods import (
@@ -104,7 +104,7 @@ class StorageCommands:  # noqa: PLR0904
     """
 
     @staticmethod
-    def clear_cookies(browser_context_id: Optional[str] = None) -> ClearCookiesCommand:
+    def clear_cookies(browser_context_id: str | None = None) -> ClearCookiesCommand:
         """
         Generates a command to clear all browser cookies.
 
@@ -160,7 +160,7 @@ class StorageCommands:  # noqa: PLR0904
         return Command(method=StorageMethod.CLEAR_DATA_FOR_STORAGE_KEY, params=params)
 
     @staticmethod
-    def get_cookies(browser_context_id: Optional[str] = None) -> GetCookiesCommand:
+    def get_cookies(browser_context_id: str | None = None) -> GetCookiesCommand:
         """
         Generates a command to get all browser cookies.
 
@@ -217,7 +217,7 @@ class StorageCommands:  # noqa: PLR0904
 
     @staticmethod
     def set_cookies(
-        cookies: list[CookieParam], browser_context_id: Optional[str] = None
+        cookies: list[CookieParam], browser_context_id: str | None = None
     ) -> SetCookiesCommand:
         """
         Generates a command to set browser cookies.
@@ -580,7 +580,7 @@ class StorageCommands:  # noqa: PLR0904
 
     @staticmethod
     def override_quota_for_origin(
-        origin: str, quota_size: Optional[float] = None
+        origin: str, quota_size: float | None = None
     ) -> OverrideQuotaForOriginCommand:
         """
         Generates a command to override the storage quota for a specific origin.
@@ -718,7 +718,7 @@ class StorageCommands:  # noqa: PLR0904
 
     @staticmethod
     def set_shared_storage_entry(
-        owner_origin: str, key: str, value: str, ignore_if_present: Optional[bool] = None
+        owner_origin: str, key: str, value: str, ignore_if_present: bool | None = None
     ) -> SetSharedStorageEntryCommand:
         """
         Generates a command to set an entry in Shared Storage.

@@ -234,14 +234,12 @@ class Project(ExtractionModel):
 
 ## 可选字段与默认值
 
-那些未必出现在每个页面上的字段，应当配合 `default` 使用 `Optional`：
+那些未必出现在每个页面上的字段，应当允许 `None` 并带有 `default`：
 
 ```python
-from typing import Optional
-
 class Article(ExtractionModel):
     title: str = Field(selector='h1', description='Title')
-    subtitle: Optional[str] = Field(
+    subtitle: str | None = Field(
         selector='.subtitle',
         description='Optional subtitle',
         default=None,

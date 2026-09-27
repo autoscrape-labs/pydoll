@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Iterable, Optional
+from typing import TYPE_CHECKING, Iterable
 
 from pydoll.commands import DomCommands, PageCommands, RuntimeCommands, TargetCommands
 from pydoll.connection import ConnectionHandler
@@ -25,11 +25,11 @@ class IFrameContext:
     """Context information for an iframe element."""
 
     frame_id: str
-    document_url: Optional[str] = None
-    execution_context_id: Optional[int] = None
-    document_object_id: Optional[str] = None
-    session_handler: Optional[ConnectionHandler] = None
-    session_id: Optional[str] = None
+    document_url: str | None = None
+    execution_context_id: int | None = None
+    document_object_id: str | None = None
+    session_handler: ConnectionHandler | None = None
+    session_id: str | None = None
 
     async def close(self) -> None:
         """Close the session handler if one was created for this context."""
@@ -97,7 +97,7 @@ class IFrameContextResolver:
 
         return context
 
-    def _get_base_session(self) -> tuple[ConnectionHandler, Optional[str]]:
+    def _get_base_session(self) -> tuple[ConnectionHandler, str | None]:
         """Return the default handler and session id for routing commands."""
         handler = (
             getattr(self._element, '_routing_session_handler', None)
@@ -109,7 +109,7 @@ class IFrameContextResolver:
     async def _describe_element_node(
         self,
         handler: ConnectionHandler,
-        session_id: Optional[str],
+        session_id: str | None,
     ) -> Node:
         """Describe the iframe element using the given handler/session.
 
@@ -129,7 +129,7 @@ class IFrameContextResolver:
     @staticmethod
     def _extract_frame_metadata(
         node_info: Node,
-    ) -> tuple[Optional[str], Optional[str], Optional[str], Optional[int]]:
+    ) -> tuple[str | None, str | None, str | None, int | None]:
         """Extract iframe-related metadata from DOM node info.
 
         Returns:
@@ -155,10 +155,10 @@ class IFrameContextResolver:
     async def _resolve_frame_by_owner(
         self,
         base_handler: ConnectionHandler,
-        base_session_id: Optional[str],
+        base_session_id: str | None,
         backend_node_id: int,
-        current_document_url: Optional[str],
-    ) -> tuple[Optional[str], Optional[str]]:
+        current_document_url: str | None,
+    ) -> tuple[str | None, str | None]:
         """Resolve frame id and URL by matching owner backend_node_id."""
         owner_frame_id, owner_url = await self._find_frame_by_owner(
             base_handler, base_session_id, backend_node_id
@@ -170,9 +170,9 @@ class IFrameContextResolver:
     async def _find_frame_by_owner(
         self,
         handler: ConnectionHandler,
-        session_id: Optional[str],
+        session_id: str | None,
         backend_node_id: int,
-    ) -> tuple[Optional[str], Optional[str]]:
+    ) -> tuple[str | None, str | None]:
         """Find frame by matching owner backend_node_id."""
         frame_tree = await self._get_frame_tree_for(handler, session_id)
         if not frame_tree:
@@ -191,8 +191,8 @@ class IFrameContextResolver:
     @staticmethod
     async def _get_frame_tree_for(
         handler: ConnectionHandler,
-        session_id: Optional[str],
-    ) -> Optional[FrameTree]:
+        session_id: str | None,
+    ) -> FrameTree | None:
         """Get Page frame tree for the given connection/target, None if it is gone."""
         command = PageCommands.get_frame_tree()
         if session_id:
@@ -217,9 +217,9 @@ class IFrameContextResolver:
     @staticmethod
     async def _owner_backend_for(
         handler: ConnectionHandler,
-        session_id: Optional[str],
+        session_id: str | None,
         frame_id: str,
-    ) -> Optional[int]:
+    ) -> int | None:
         """Get backendNodeId of the DOM element that owns the given frame."""
         command = DomCommands.get_frame_owner(frame_id=frame_id)
         if session_id:
@@ -232,7 +232,7 @@ class IFrameContextResolver:
 
     async def _attach_and_read_tree(
         self, handler: ConnectionHandler, target_id: str
-    ) -> tuple[Optional[str], Optional[FrameTree]]:
+    ) -> tuple[str | None, FrameTree | None]:
         """Attach to a target and read its frame tree; (None, None) when the target is gone."""
         try:
             attach_response: AttachToTargetResponse = await handler.execute_command(
@@ -250,13 +250,13 @@ class IFrameContextResolver:
 
     async def _resolve_oopif_if_needed(
         self,
-        current_frame_id: Optional[str],
-        content_frame_id: Optional[str],
-        backend_node_id: Optional[int],
-        current_document_url: Optional[str],
-        base_handler: Optional[ConnectionHandler] = None,
-        base_session_id: Optional[str] = None,
-    ) -> tuple[Optional[ConnectionHandler], Optional[str], Optional[str], Optional[str]]:
+        current_frame_id: str | None,
+        content_frame_id: str | None,
+        backend_node_id: int | None,
+        current_document_url: str | None,
+        base_handler: ConnectionHandler | None = None,
+        base_session_id: str | None = None,
+    ) -> tuple[ConnectionHandler | None, str | None, str | None, str | None]:
         """Resolve OOPIF and routing when needed."""
         if not content_frame_id or (current_frame_id and backend_node_id is None):
             return None, None, current_frame_id, current_document_url
@@ -291,10 +291,10 @@ class IFrameContextResolver:
     async def _resolve_oopif_by_parent(
         self,
         content_frame_id: str,
-        backend_node_id: Optional[int],
-        base_handler: Optional[ConnectionHandler] = None,
-        base_session_id: Optional[str] = None,
-    ) -> tuple[Optional[ConnectionHandler], Optional[str], Optional[str], Optional[str]]:
+        backend_node_id: int | None,
+        base_handler: ConnectionHandler | None = None,
+        base_session_id: str | None = None,
+    ) -> tuple[ConnectionHandler | None, str | None, str | None, str | None]:
         """Resolve out-of-process iframe using content frame id.
 
         ``content_frame_id`` is the frame ID of the frame *created* by the
@@ -329,10 +329,10 @@ class IFrameContextResolver:
         self,
         browser_handler: ConnectionHandler,
         content_frame_id: str,
-        backend_node_id: Optional[int],
-        base_handler: Optional[ConnectionHandler],
-        base_session_id: Optional[str],
-    ) -> tuple[Optional[ConnectionHandler], Optional[str], Optional[str], Optional[str]]:
+        backend_node_id: int | None,
+        base_handler: ConnectionHandler | None,
+        base_session_id: str | None,
+    ) -> tuple[ConnectionHandler | None, str | None, str | None, str | None]:
         """Core logic for OOPIF resolution. Caller owns the handler lifecycle."""
         targets_response: GetTargetsResponse = await browser_handler.execute_command(
             TargetCommands.get_targets()
@@ -426,7 +426,7 @@ class IFrameContextResolver:
         return None, None, None, None
 
     @staticmethod
-    def _find_child_by_parent(tree: FrameTree, parent_id: str) -> Optional[str]:
+    def _find_child_by_parent(tree: FrameTree, parent_id: str) -> str | None:
         """Find id of child frame whose parentId equals the given one."""
         if not tree:
             return None
@@ -443,7 +443,7 @@ class IFrameContextResolver:
     async def _create_isolated_world_for_frame(
         frame_id: str,
         handler: ConnectionHandler,
-        session_id: Optional[str],
+        session_id: str | None,
     ) -> int:
         """Create isolated world for the given frame."""
         create_command = PageCommands.create_isolated_world(

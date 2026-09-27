@@ -7,7 +7,7 @@ import json
 import shutil
 import tempfile
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Callable, Optional, Sequence, Union
+from typing import TYPE_CHECKING, Any, Callable, Sequence
 
 from pydoll.browser.tab import Tab
 from pydoll.commands import BrowserCommands, EmulationCommands, PageCommands, RuntimeCommands
@@ -52,32 +52,30 @@ _PERMISSIONS = {
 class BrowserContext(EventEmitter):
     """An isolated browsing session; ``browser.new_context()`` creates one."""
 
-    def __init__(
-        self, browser: Browser, context_id: Optional[str], options: dict[str, Any]
-    ) -> None:
+    def __init__(self, browser: Browser, context_id: str | None, options: dict[str, Any]) -> None:
         super().__init__()
         self._browser = browser
         self._context_id = context_id
         self._options = options
         self._pages: list[Page] = []
         self._closed = False
-        self._default_timeout: Optional[float] = None
-        self._default_navigation_timeout: Optional[float] = None
+        self._default_timeout: float | None = None
+        self._default_navigation_timeout: float | None = None
         self._routes: list[RouteEntry] = []
         self._init_scripts: list[str] = []
         self._bindings: list[tuple[str, Callable[..., Any], bool]] = []
         self._extra_http_headers: dict[str, str] = dict(options.get('extra_http_headers') or {})
         self._offline = bool(options.get('offline'))
-        self._geolocation: Optional[dict[str, float]] = options.get('geolocation')
-        self._base_url: Optional[str] = options.get('base_url')
+        self._geolocation: dict[str, float] | None = options.get('geolocation')
+        self._base_url: str | None = options.get('base_url')
         self._device_scale_factor: float = float(options.get('device_scale_factor') or 1)
         self._is_mobile: bool = bool(options.get('is_mobile'))
         self._has_touch: bool = bool(options.get('has_touch'))
-        self._screen: Optional[dict[str, int]] = (
+        self._screen: dict[str, int] | None = (
             dict(options['screen']) if options.get('screen') else None
         )
         viewport = options.get('viewport', {'width': 1280, 'height': 720})
-        self._viewport: Optional[dict[str, int]] = (
+        self._viewport: dict[str, int] | None = (
             dict(viewport) if viewport and not options.get('no_viewport') else None
         )
         self._downloads_dir = Path(
@@ -213,7 +211,7 @@ class BrowserContext(EventEmitter):
             raise translate(error) from error
         return await self._adopt(tab, opener=None, emit_popup=False)
 
-    async def _adopt(self, tab: Tab, opener: Optional[Page], emit_popup: bool) -> Page:
+    async def _adopt(self, tab: Tab, opener: Page | None, emit_popup: bool) -> Page:
         page = Page(self, tab, opener=opener)
         self._pages.append(page)
         await page._initialize()
@@ -227,7 +225,7 @@ class BrowserContext(EventEmitter):
         return list(self._pages)
 
     @property
-    def browser(self) -> Optional[Browser]:
+    def browser(self) -> Browser | None:
         return self._browser
 
     @property
@@ -258,7 +256,7 @@ class BrowserContext(EventEmitter):
 
     # ------------------------------------------------------------ cookies
 
-    async def cookies(self, urls: Union[str, Sequence[str], None] = None) -> list[dict[str, Any]]:
+    async def cookies(self, urls: str | Sequence[str] | None = None) -> list[dict[str, Any]]:
         try:
             raw = await self._browser._chrome.get_cookies(browser_context_id=self._context_id)
         except PydollException as error:
@@ -301,7 +299,7 @@ class BrowserContext(EventEmitter):
             raise translate(error) from error
 
     async def storage_state(
-        self, path: Union[str, Path, None] = None, indexed_db: Optional[bool] = None
+        self, path: str | Path | None = None, indexed_db: bool | None = None
     ) -> dict[str, Any]:
         state: dict[str, Any] = {'cookies': await self.cookies(), 'origins': []}
         seen: set[str] = set()
@@ -325,7 +323,7 @@ class BrowserContext(EventEmitter):
     # ------------------------------------------------------------ settings
 
     async def grant_permissions(
-        self, permissions: Sequence[str], origin: Optional[str] = None
+        self, permissions: Sequence[str], origin: str | None = None
     ) -> None:
         mapped = []
         for permission in permissions:
@@ -345,7 +343,7 @@ class BrowserContext(EventEmitter):
         except PydollException as error:
             raise translate(error) from error
 
-    async def set_geolocation(self, geolocation: Optional[dict[str, float]]) -> None:
+    async def set_geolocation(self, geolocation: dict[str, float] | None) -> None:
         self._geolocation = dict(geolocation) if geolocation else None
         for page in self._pages:
             if self._geolocation:
@@ -372,7 +370,7 @@ class BrowserContext(EventEmitter):
             })  # type: ignore[arg-type]
 
     async def add_init_script(
-        self, script: Optional[str] = None, path: Union[str, Path, None] = None
+        self, script: str | None = None, path: str | Path | None = None
     ) -> None:
         source = script if script is not None else Path(str(path)).read_text(encoding='utf-8')
         self._init_scripts.append(source)
@@ -385,27 +383,25 @@ class BrowserContext(EventEmitter):
             await page._expose(name, callback, False)
 
     async def expose_binding(
-        self, name: str, callback: Callable[..., Any], handle: Optional[bool] = None
+        self, name: str, callback: Callable[..., Any], handle: bool | None = None
     ) -> None:
         self._bindings.append((name, callback, True))
         for page in self._pages:
             await page._expose(name, callback, True)
 
-    async def route(
-        self, url: URLMatch, handler: RouteHandler, times: Optional[int] = None
-    ) -> None:
+    async def route(self, url: URLMatch, handler: RouteHandler, times: int | None = None) -> None:
         self._routes.append(make_entry(url, handler, times, self._base_url))
         for page in self._pages:
             await page._enable_fetch()
 
-    async def unroute(self, url: URLMatch, handler: Optional[RouteHandler] = None) -> None:
+    async def unroute(self, url: URLMatch, handler: RouteHandler | None = None) -> None:
         self._routes = [
             entry
             for entry in self._routes
             if not (entry.matcher._match == url and (handler is None or entry.handler is handler))
         ]
 
-    async def unroute_all(self, behavior: Optional[str] = None) -> None:
+    async def unroute_all(self, behavior: str | None = None) -> None:
         self._routes = []
 
     # ------------------------------------------------------------ events
@@ -413,8 +409,8 @@ class BrowserContext(EventEmitter):
     async def wait_for_event(
         self,
         event: str,
-        predicate: Optional[Callable[[Any], Any]] = None,
-        timeout: Optional[float] = None,
+        predicate: Callable[[Any], Any] | None = None,
+        timeout: float | None = None,
     ) -> Any:
         async with self.expect_event(event, predicate=predicate, timeout=timeout) as info:
             pass
@@ -423,8 +419,8 @@ class BrowserContext(EventEmitter):
     def expect_event(
         self,
         event: str,
-        predicate: Optional[Callable[[Any], Any]] = None,
-        timeout: Optional[float] = None,
+        predicate: Callable[[Any], Any] | None = None,
+        timeout: float | None = None,
     ) -> EventContextManager[Any]:
         deadline = Deadline(self._default_timeout_value() if timeout is None else timeout)
         future = create_future(self._loop)
@@ -457,18 +453,18 @@ class BrowserContext(EventEmitter):
         return EventContextManager(future)
 
     def expect_page(
-        self, predicate: Optional[Callable[[Page], bool]] = None, timeout: Optional[float] = None
+        self, predicate: Callable[[Page], bool] | None = None, timeout: float | None = None
     ) -> EventContextManager[Page]:
         return self.expect_event('page', predicate=predicate, timeout=timeout)
 
     def expect_console_message(
-        self, predicate: Any = None, timeout: Optional[float] = None
+        self, predicate: Any = None, timeout: float | None = None
     ) -> EventContextManager[Any]:
         return self.expect_event('console', predicate=predicate, timeout=timeout)
 
     # ------------------------------------------------------------ lifecycle
 
-    async def close(self, reason: Optional[str] = None) -> None:
+    async def close(self, reason: str | None = None) -> None:
         if self._closed:
             return
         self._closed = True

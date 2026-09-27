@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-from typing import Optional
 
 import pytest_asyncio
 import websockets
@@ -26,7 +25,7 @@ class FakeCDPServer:
     """
 
     def __init__(self) -> None:
-        self._server: Optional[Server] = None
+        self._server: Server | None = None
         self._connections: set[ServerConnection] = set()
         self._received: list[dict] = []
         self._results: dict[str, dict] = {}
@@ -91,7 +90,7 @@ class FakeCDPServer:
         """Receive a command method but never answer it, to test timeouts/drops."""
         self._hung_methods.add(method)
 
-    async def push_event(self, method: str, params: Optional[dict] = None) -> None:
+    async def push_event(self, method: str, params: dict | None = None) -> None:
         """Send an unsolicited CDP event to every connected client."""
         await self._broadcast(json.dumps({'method': method, 'params': params or {}}))
 

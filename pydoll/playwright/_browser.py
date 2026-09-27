@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 import logging
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Optional, Sequence, Union, cast
+from typing import TYPE_CHECKING, Any, Sequence, cast
 
 from pydoll.browser.chromium import Chrome
 from pydoll.browser.options import ChromiumOptions
@@ -72,7 +72,7 @@ class Browser(EventEmitter):
         self._user_agent_cache = ''
         self._initial_tab: Any = None
         self._callback_ids: list[int] = []
-        self._default_context: Optional[BrowserContext] = None
+        self._default_context: BrowserContext | None = None
 
     def __repr__(self) -> str:
         return f'<Browser type={self._browser_type.name} version={self._version}>'
@@ -105,8 +105,8 @@ class Browser(EventEmitter):
         asyncio.ensure_future(self._adopt_popup(info))
 
     async def _adopt_popup(self, info: dict[str, Any]) -> None:
-        opener: Optional[Page] = None
-        context: Optional[BrowserContext] = None
+        opener: Page | None = None
+        context: BrowserContext | None = None
         for candidate in self._contexts:
             for page in candidate._pages:
                 if page.tab.target_id == info['openerId']:
@@ -177,7 +177,7 @@ class Browser(EventEmitter):
         original_close = page.close
 
         async def close_with_context(
-            run_before_unload: Optional[bool] = None, reason: Optional[str] = None
+            run_before_unload: bool | None = None, reason: str | None = None
         ) -> None:
             await original_close(run_before_unload=run_before_unload, reason=reason)
             await context.close()
@@ -185,7 +185,7 @@ class Browser(EventEmitter):
         page.close = close_with_context  # type: ignore[method-assign]
         return page
 
-    async def close(self, reason: Optional[str] = None) -> None:
+    async def close(self, reason: str | None = None) -> None:
         if not self._connected:
             return
         self._connected = False
@@ -238,13 +238,13 @@ def build_options(
     *,
     headless: bool,
     args: Sequence[str],
-    executable_path: Union[str, Path, None],
-    proxy: Optional[dict[str, Any]],
-    user_data_dir: Union[str, Path, None],
-    ignore_default_args: Union[bool, Sequence[str], None],
-    downloads_path: Union[str, Path, None],
-    chromium_sandbox: Optional[bool],
-    timeout: Optional[float],
+    executable_path: str | Path | None,
+    proxy: dict[str, Any] | None,
+    user_data_dir: str | Path | None,
+    ignore_default_args: bool | Sequence[str] | None,
+    downloads_path: str | Path | None,
+    chromium_sandbox: bool | None,
+    timeout: float | None,
 ) -> ChromiumOptions:
     """Translate Playwright launch options into pydoll ChromiumOptions."""
     options = ChromiumOptions()

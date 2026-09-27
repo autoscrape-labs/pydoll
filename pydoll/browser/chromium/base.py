@@ -8,7 +8,7 @@ import shutil
 from abc import ABC, abstractmethod
 from contextlib import suppress
 from functools import partial
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Optional, overload
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, overload
 from urllib.parse import urlsplit, urlunsplit
 
 from pydoll.browser.managers import (
@@ -88,11 +88,11 @@ class Browser(ABC):  # noqa: PLR0904
     def __init__(
         self,
         options_manager: BrowserOptionsManager,
-        connection_port: Optional[int] = None,
-        proxy_manager: Optional[ProxyManager] = None,
-        browser_process_manager: Optional[BrowserProcessManager] = None,
-        temp_directory_manager: Optional[TempDirectoryManager] = None,
-        connection_handler: Optional[ConnectionHandler] = None,
+        connection_port: int | None = None,
+        proxy_manager: ProxyManager | None = None,
+        browser_process_manager: BrowserProcessManager | None = None,
+        temp_directory_manager: TempDirectoryManager | None = None,
+        connection_handler: ConnectionHandler | None = None,
     ):
         """
         Initialize browser instance with configuration.
@@ -116,14 +116,14 @@ class Browser(ABC):  # noqa: PLR0904
         self._connection_port = connection_port if connection_port else find_free_port()
         self._browser_process_manager = browser_process_manager or BrowserProcessManager()
         self._temp_directory_manager = temp_directory_manager or TempDirectoryManager()
-        self._ws_address: Optional[str] = None
+        self._ws_address: str | None = None
         self._connection_handler = connection_handler or ConnectionHandler(self._connection_port)
         self._backup_preferences_dir = ''
         self._tabs_opened: dict[str, Tab] = {}
         self._context_proxy_auth: dict[str, tuple[str, str]] = {}
-        self._context_fingerprints: dict[Optional[str], 'FingerprintConfig'] = {}
-        self._context_worker_callbacks: dict[Optional[str], int] = {}
-        self._fingerprint_fetch_callback: Optional[int] = None
+        self._context_fingerprints: dict[str | None, 'FingerprintConfig'] = {}
+        self._context_worker_callbacks: dict[str | None, int] = {}
+        self._fingerprint_fetch_callback: int | None = None
         logger.debug(
             'Browser initialized: port=%s, headless=%s',
             self._connection_port,
@@ -238,7 +238,7 @@ class Browser(ABC):  # noqa: PLR0904
         await self._connection_handler.close()
 
     async def create_browser_context(
-        self, proxy_server: Optional[str] = None, proxy_bypass_list: Optional[str] = None
+        self, proxy_server: str | None = None, proxy_bypass_list: str | None = None
     ) -> str:
         """
         Create isolated browser context (like incognito).
@@ -255,7 +255,7 @@ class Browser(ABC):  # noqa: PLR0904
         """
         # If proxy_server contains credentials, strip them and store per-context auth
         sanitized_proxy = proxy_server
-        extracted_auth: Optional[tuple[str, str]] = None
+        extracted_auth: tuple[str, str] | None = None
         if proxy_server:
             sanitized_proxy, extracted_auth = self._sanitize_proxy_and_extract_auth(proxy_server)
             logger.debug(
@@ -304,7 +304,7 @@ class Browser(ABC):  # noqa: PLR0904
         logger.debug('Fetched %s browser contexts', len(response['result']['browserContextIds']))
         return response['result']['browserContextIds']
 
-    async def new_tab(self, url: str = '', browser_context_id: Optional[str] = None) -> Tab:
+    async def new_tab(self, url: str = '', browser_context_id: str | None = None) -> Tab:
         """
         Create new tab for page interaction.
 
@@ -381,7 +381,7 @@ class Browser(ABC):  # noqa: PLR0904
         await self._apply_user_agent_override(tab)
         return tab
 
-    async def set_download_path(self, path: str, browser_context_id: Optional[str] = None):
+    async def set_download_path(self, path: str, browser_context_id: str | None = None):
         """Set download directory path (convenience method for set_download_behavior)."""
         logger.info('Setting download path: %s (context=%s)', path, browser_context_id)
         return await self._execute_command(
@@ -395,8 +395,8 @@ class Browser(ABC):  # noqa: PLR0904
     async def set_download_behavior(
         self,
         behavior: DownloadBehavior,
-        download_path: Optional[str] = None,
-        browser_context_id: Optional[str] = None,
+        download_path: str | None = None,
+        browser_context_id: str | None = None,
         events_enabled: bool = False,
     ):
         """
@@ -424,19 +424,17 @@ class Browser(ABC):  # noqa: PLR0904
             )
         )
 
-    async def delete_all_cookies(self, browser_context_id: Optional[str] = None):
+    async def delete_all_cookies(self, browser_context_id: str | None = None):
         """Delete all cookies (session, persistent, third-party) from browser or context."""
         logger.info('Clearing all cookies (context=%s)', browser_context_id)
         return await self._execute_command(StorageCommands.clear_cookies(browser_context_id))
 
-    async def set_cookies(
-        self, cookies: list[CookieParam], browser_context_id: Optional[str] = None
-    ):
+    async def set_cookies(self, cookies: list[CookieParam], browser_context_id: str | None = None):
         """Set multiple cookies in browser or context."""
         logger.debug('Setting %s cookies (context=%s)', len(cookies), browser_context_id)
         return await self._execute_command(StorageCommands.set_cookies(cookies, browser_context_id))
 
-    async def get_cookies(self, browser_context_id: Optional[str] = None) -> list[Cookie]:
+    async def get_cookies(self, browser_context_id: str | None = None) -> list[Cookie]:
         """Get all cookies from browser or context.
 
         Note:
@@ -513,8 +511,8 @@ class Browser(ABC):  # noqa: PLR0904
     async def grant_permissions(
         self,
         permissions: list[PermissionType],
-        origin: Optional[str] = None,
-        browser_context_id: Optional[str] = None,
+        origin: str | None = None,
+        browser_context_id: str | None = None,
     ):
         """
         Grant browser permissions (geolocation, notifications, camera, etc.).
@@ -536,7 +534,7 @@ class Browser(ABC):  # noqa: PLR0904
             BrowserCommands.grant_permissions(permissions, origin, browser_context_id)
         )
 
-    async def reset_permissions(self, browser_context_id: Optional[str] = None):
+    async def reset_permissions(self, browser_context_id: str | None = None):
         """Reset all permissions to defaults and restore prompting behavior."""
         logger.info('Resetting permissions (context=%s)', browser_context_id)
         return await self._execute_command(BrowserCommands.reset_permissions(browser_context_id))
@@ -592,7 +590,7 @@ class Browser(ABC):  # noqa: PLR0904
     async def enable_fetch_events(
         self,
         handle_auth_requests: bool = False,
-        resource_type: Optional[ResourceType] = None,
+        resource_type: ResourceType | None = None,
     ):
         """
         Enable network request interception via Fetch domain.
@@ -637,11 +635,11 @@ class Browser(ABC):  # noqa: PLR0904
     async def continue_request(
         self,
         request_id: str,
-        url: Optional[str] = None,
-        method: Optional[RequestMethod] = None,
-        post_data: Optional[str] = None,
-        headers: Optional[list[HeaderEntry]] = None,
-        intercept_response: Optional[bool] = None,
+        url: str | None = None,
+        method: RequestMethod | None = None,
+        post_data: str | None = None,
+        headers: list[HeaderEntry] | None = None,
+        intercept_response: bool | None = None,
     ):
         """
         Continue paused request without modifications.
@@ -667,9 +665,9 @@ class Browser(ABC):  # noqa: PLR0904
         self,
         request_id: str,
         response_code: int,
-        response_headers: Optional[list[HeaderEntry]] = None,
-        body: Optional[str] = None,
-        response_phrase: Optional[str] = None,
+        response_headers: list[HeaderEntry] | None = None,
+        body: str | None = None,
+        response_phrase: str | None = None,
     ):
         """Fulfill request with response data."""
         logger.debug(
@@ -690,7 +688,7 @@ class Browser(ABC):  # noqa: PLR0904
         )
 
     @staticmethod
-    def _validate_connection_port(connection_port: Optional[int]):
+    def _validate_connection_port(connection_port: int | None):
         """Validate connection port."""
         if connection_port and connection_port < 0:
             logger.error(f'Invalid connection port: {connection_port}')
@@ -705,8 +703,8 @@ class Browser(ABC):  # noqa: PLR0904
     async def _continue_request_with_auth_callback(
         self,
         event: RequestPausedEvent,
-        proxy_username: Optional[str],
-        proxy_password: Optional[str],
+        proxy_username: str | None,
+        proxy_password: str | None,
     ):
         """Internal callback for proxy authentication."""
         request_id = event['params']['requestId']
@@ -737,8 +735,8 @@ class Browser(ABC):  # noqa: PLR0904
     async def _tab_continue_request_with_auth_callback(
         event: RequestPausedEvent,
         tab: Tab,
-        proxy_username: Optional[str],
-        proxy_password: Optional[str],
+        proxy_username: str | None,
+        proxy_password: str | None,
     ):
         """Internal callback for proxy/server authentication at Tab level."""
         request_id = event['params']['requestId']
@@ -757,7 +755,7 @@ class Browser(ABC):  # noqa: PLR0904
         return response
 
     async def _setup_context_proxy_auth_for_tab(
-        self, tab: Tab, browser_context_id: Optional[str]
+        self, tab: Tab, browser_context_id: str | None
     ) -> None:
         """Enable proxy auth handling for a Tab if its context has credentials stored."""
         if not browser_context_id:
@@ -909,7 +907,7 @@ class Browser(ABC):  # noqa: PLR0904
 
         return on_worker_attached
 
-    def _get_user_agent_from_options(self) -> Optional[str]:
+    def _get_user_agent_from_options(self) -> str | None:
         """Extract User-Agent value from --user-agent= browser argument."""
         for arg in self.options.arguments:
             if arg.startswith('--user-agent='):
@@ -929,7 +927,7 @@ class Browser(ABC):  # noqa: PLR0904
             raise FailedToStartBrowser()
 
     async def _configure_proxy(
-        self, private_proxy: bool, proxy_credentials: tuple[Optional[str], Optional[str]]
+        self, private_proxy: bool, proxy_credentials: tuple[str | None, str | None]
     ):
         """Setup proxy authentication handling if needed."""
         if not private_proxy:
@@ -1088,7 +1086,7 @@ class Browser(ABC):  # noqa: PLR0904
             json.dump(preferences, json_file, indent=2)
         logger.debug('Updated browser preferences in user data dir: %s', preferences_path)
 
-    def _get_user_data_dir(self) -> Optional[str]:
+    def _get_user_data_dir(self) -> str | None:
         for arg in self.options.arguments:
             if arg.startswith('--user-data-dir='):
                 return arg.split('=', 1)[1]
@@ -1115,7 +1113,7 @@ class Browser(ABC):  # noqa: PLR0904
         await self._connection_handler._ensure_active_connection()
         logger.info('WebSocket address set for browser-level connection')
 
-    def _get_tab_kwargs(self, target_id: str, browser_context_id: Optional[str] = None) -> dict:
+    def _get_tab_kwargs(self, target_id: str, browser_context_id: str | None = None) -> dict:
         """
         Get kwargs for creating a tab based on the WebSocket address.
         If the WebSocket address is set, the tab will be created with the WebSocket address.
@@ -1162,7 +1160,7 @@ class Browser(ABC):  # noqa: PLR0904
     @staticmethod
     def _sanitize_proxy_and_extract_auth(
         proxy_server: str,
-    ) -> tuple[str, Optional[tuple[str, str]]]:
+    ) -> tuple[str, tuple[str, str] | None]:
         """Strip credentials from a proxy URL and return sanitized URL plus (user, pass).
 
         Accepts inputs like:
@@ -1176,7 +1174,7 @@ class Browser(ABC):  # noqa: PLR0904
         base = proxy_server if '://' in proxy_server else f'http://{proxy_server}'
         parts = urlsplit(base)
         netloc = parts.netloc
-        creds: Optional[tuple[str, str]] = None
+        creds: tuple[str, str] | None = None
         if '@' in netloc:
             cred_part, host_part = netloc.split('@', 1)
             if ':' in cred_part:

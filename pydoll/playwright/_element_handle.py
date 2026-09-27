@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Optional, Sequence, Union
+from typing import TYPE_CHECKING, Any, Sequence
 
 from pydoll.commands import RuntimeCommands
 from pydoll.elements.web_element import WebElement
@@ -61,7 +61,7 @@ class JSHandle:
             result[entry['name']] = self._frame._handle_from_remote_object(value)
         return result
 
-    def as_element(self) -> Optional[ElementHandle]:
+    def as_element(self) -> ElementHandle | None:
         return None
 
     async def dispose(self) -> None:
@@ -136,7 +136,7 @@ class ElementHandle(JSHandle):
             self._object_id = await self._frame._main_world_object_id(self._element)
         return self._object_id
 
-    def as_element(self) -> Optional[ElementHandle]:
+    def as_element(self) -> ElementHandle | None:
         return self
 
     async def evaluate(self, expression: str, arg: Any = None) -> Any:
@@ -159,18 +159,18 @@ class ElementHandle(JSHandle):
     def page(self) -> Page:
         return self._frame.page
 
-    async def owner_frame(self) -> Optional[Frame]:
+    async def owner_frame(self) -> Frame | None:
         return self._frame
 
-    async def content_frame(self) -> Optional[Frame]:
+    async def content_frame(self) -> Frame | None:
         if not self._element.is_iframe:
             return None
         return await self._frame._child_frame(self._element)._canonical()
 
-    async def get_attribute(self, name: str) -> Optional[str]:
+    async def get_attribute(self, name: str) -> str | None:
         return await self._frame._actions.get_attribute(self._resolver(), name)
 
-    async def text_content(self) -> Optional[str]:
+    async def text_content(self) -> str | None:
         return await self._frame._actions.text_content(self._resolver())
 
     async def inner_text(self) -> str:
@@ -179,7 +179,7 @@ class ElementHandle(JSHandle):
     async def inner_html(self) -> str:
         return await self._frame._actions.inner_html(self._resolver())
 
-    async def input_value(self, timeout: Optional[float] = None) -> str:
+    async def input_value(self, timeout: float | None = None) -> str:
         return await self._frame._actions.input_value(self._resolver(), timeout=timeout)
 
     async def is_checked(self) -> bool:
@@ -200,10 +200,10 @@ class ElementHandle(JSHandle):
     async def is_visible(self) -> bool:
         return await self._frame._actions.element_state(self._resolver(), 'visible')
 
-    async def dispatch_event(self, type: str, event_init: Optional[dict[str, Any]] = None) -> None:
+    async def dispatch_event(self, type: str, event_init: dict[str, Any] | None = None) -> None:
         await self._frame._actions.dispatch_event(self._resolver(), type, event_init)
 
-    async def scroll_into_view_if_needed(self, timeout: Optional[float] = None) -> None:
+    async def scroll_into_view_if_needed(self, timeout: float | None = None) -> None:
         await self._frame._actions.scroll_into_view(self._resolver(), timeout=timeout)
 
     async def hover(self, **kwargs: Any) -> None:
@@ -220,13 +220,13 @@ class ElementHandle(JSHandle):
 
     async def select_option(
         self,
-        value: Union[str, Sequence[str], None] = None,
+        value: str | Sequence[str] | None = None,
         *,
-        index: Union[int, Sequence[int], None] = None,
-        label: Union[str, Sequence[str], None] = None,
-        element: Union[ElementHandle, Sequence[ElementHandle], None] = None,
-        timeout: Optional[float] = None,
-        force: Optional[bool] = None,
+        index: int | Sequence[int] | None = None,
+        label: str | Sequence[str] | None = None,
+        element: ElementHandle | Sequence[ElementHandle] | None = None,
+        timeout: float | None = None,
+        force: bool | None = None,
     ) -> list[str]:
         return await self._frame._actions.select_option(
             self._resolver(),
@@ -239,19 +239,17 @@ class ElementHandle(JSHandle):
         )
 
     async def fill(
-        self, value: str, timeout: Optional[float] = None, force: Optional[bool] = None
+        self, value: str, timeout: float | None = None, force: bool | None = None
     ) -> None:
         await self._frame._actions.fill(self._resolver(), value, timeout=timeout, force=force)
 
-    async def select_text(
-        self, timeout: Optional[float] = None, force: Optional[bool] = None
-    ) -> None:
+    async def select_text(self, timeout: float | None = None, force: bool | None = None) -> None:
         await self._frame._actions.select_text(self._resolver(), timeout=timeout, force=force)
 
     async def set_input_files(
         self,
-        files: Union[str, Path, FilePayload, Sequence[Union[str, Path]], Sequence[FilePayload]],
-        timeout: Optional[float] = None,
+        files: str | Path | FilePayload | Sequence[str | Path] | Sequence[FilePayload],
+        timeout: float | None = None,
     ) -> None:
         await self._frame._actions.set_input_files(self._resolver(), files, timeout=timeout)
 
@@ -259,12 +257,12 @@ class ElementHandle(JSHandle):
         await self._frame._actions.focus(self._resolver())
 
     async def type(
-        self, text: str, delay: Optional[float] = None, timeout: Optional[float] = None
+        self, text: str, delay: float | None = None, timeout: float | None = None
     ) -> None:
         await self._frame._actions.type(self._resolver(), text, delay=delay, timeout=timeout)
 
     async def press(
-        self, key: str, delay: Optional[float] = None, timeout: Optional[float] = None
+        self, key: str, delay: float | None = None, timeout: float | None = None
     ) -> None:
         await self._frame._actions.press(self._resolver(), key, delay=delay, timeout=timeout)
 
@@ -277,13 +275,13 @@ class ElementHandle(JSHandle):
     async def uncheck(self, **kwargs: Any) -> None:
         await self._frame._actions.set_checked(self._resolver(), False, **kwargs)
 
-    async def bounding_box(self) -> Optional[dict[str, float]]:
+    async def bounding_box(self) -> dict[str, float] | None:
         return await self._frame._actions.bounding_box(self._resolver())
 
     async def screenshot(self, **kwargs: Any) -> bytes:
         return await self._frame._actions.screenshot(self._resolver(), **kwargs)
 
-    async def query_selector(self, selector: str) -> Optional[ElementHandle]:
+    async def query_selector(self, selector: str) -> ElementHandle | None:
         element = await self._frame._query_one(selector, strict=False, root=self._element)
         return ElementHandle(self._frame, element) if element else None
 
@@ -301,10 +299,10 @@ class ElementHandle(JSHandle):
         elements = await self._frame._query_all(selector, root=self._element)
         return await self._frame._evaluate_on_elements(elements, expression, arg)
 
-    async def wait_for_element_state(self, state: str, timeout: Optional[float] = None) -> None:
+    async def wait_for_element_state(self, state: str, timeout: float | None = None) -> None:
         await self._frame._actions.wait_for_element_state(self._resolver(), state, timeout=timeout)
 
-    async def wait_for_selector(self, selector: str, **kwargs: Any) -> Optional[ElementHandle]:
+    async def wait_for_selector(self, selector: str, **kwargs: Any) -> ElementHandle | None:
         return await self._frame.wait_for_selector(selector, root=self._element, **kwargs)
 
     def _resolver(self) -> Any:

@@ -4,7 +4,7 @@ import asyncio
 import logging
 import random
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Optional, Protocol, cast
+from typing import TYPE_CHECKING, Any, Protocol, cast
 
 from pydoll.commands import InputCommands
 from pydoll.constants import (
@@ -90,8 +90,8 @@ class Keyboard:
     def __init__(
         self,
         executor: CommandExecutor,
-        timing: Optional[TimingConfig] = None,
-        typo_config: Optional[TypoConfig] = None,
+        timing: TimingConfig | None = None,
+        typo_config: TypoConfig | None = None,
     ):
         """
         Initialize keyboard controller.
@@ -114,7 +114,7 @@ class Keyboard:
     async def press(
         self,
         key: Key,
-        modifiers: Optional[KeyModifier] = None,
+        modifiers: KeyModifier | None = None,
         interval: float = 0,
     ):
         """
@@ -136,7 +136,7 @@ class Keyboard:
             await asyncio.sleep(interval)
         await self.up(key)
 
-    async def down(self, key: Key, modifiers: Optional[KeyModifier] = None):
+    async def down(self, key: Key, modifiers: KeyModifier | None = None):
         """
         Press a key down (without releasing).
 
@@ -172,7 +172,7 @@ class Keyboard:
         )
         await self._executor._execute_command(command)
 
-    async def hotkey(self, key1: Key, key2: Key, key3: Optional[Key] = None):
+    async def hotkey(self, key1: Key, key2: Key, key3: Key | None = None):
         """
         Execute a key combination (hotkey) with up to 3 keys.
 
@@ -268,7 +268,7 @@ class Keyboard:
         )
         return down, up
 
-    async def _type_char(self, char: str, hold: Optional[float] = None):
+    async def _type_char(self, char: str, hold: float | None = None):
         """Type a single character on the humanized path, re-focusing the element first.
 
         ``hold`` is the keydown-to-keyup time: a random human dwell when None,
@@ -309,7 +309,7 @@ class Keyboard:
     async def _process_char_with_typo(
         self,
         current_char: str,
-        next_char: Optional[str],
+        next_char: str | None,
     ) -> bool:
         """Process character, potentially with typo. Returns True if next should be skipped."""
         if not self._should_make_typo():
@@ -322,7 +322,7 @@ class Keyboard:
     async def _handle_typo(
         self,
         current_char: str,
-        next_char: Optional[str],
+        next_char: str | None,
         typo: TypoResult,
     ) -> bool:
         """Handle typo. Returns True if next char should be skipped."""
@@ -429,7 +429,7 @@ class Keyboard:
         """Determine if a typo should occur."""
         return random.random() < DEFAULT_TYPO_PROBABILITY
 
-    def _generate_typo(self, current_char: str, next_char: Optional[str]) -> TypoResult:
+    def _generate_typo(self, current_char: str, next_char: str | None) -> TypoResult:
         """Generate a realistic typo based on QWERTY layout."""
         typo_type = self._select_typo_type()
         return self._create_typo(typo_type, current_char, next_char)
@@ -457,7 +457,7 @@ class Keyboard:
         self,
         typo_type: TypoType,
         current_char: str,
-        next_char: Optional[str],
+        next_char: str | None,
     ) -> TypoResult:
         """Create typo result based on type."""
         typo_handlers = {
@@ -470,7 +470,7 @@ class Keyboard:
         handler = typo_handlers.get(typo_type, typo_handlers[TypoType.SKIP])
         return handler()
 
-    def _create_transpose_typo(self, current_char: str, next_char: Optional[str]) -> TypoResult:
+    def _create_transpose_typo(self, current_char: str, next_char: str | None) -> TypoResult:
         """Create transpose typo, falling back to adjacent if not possible."""
         if next_char and next_char.isalpha():
             return TypoResult(typo_type=TypoType.TRANSPOSE, wrong_char=next_char)
@@ -506,7 +506,7 @@ class Keyboard:
         return modifiers, non_modifiers
 
     @staticmethod
-    def _calculate_modifier_value(modifiers: list[Key]) -> Optional[KeyModifier]:
+    def _calculate_modifier_value(modifiers: list[Key]) -> KeyModifier | None:
         """Calculate KeyModifier value from modifier keys."""
         if not modifiers:
             return None

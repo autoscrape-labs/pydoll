@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json as jsonlib
 import logging
-from typing import TYPE_CHECKING, Any, Optional, Union
+from typing import TYPE_CHECKING, Any
 
 from pydoll.exceptions import HTTPError
 
@@ -40,10 +40,10 @@ class Response:
         status_code: int,
         content: bytes = b'',
         text: str = '',
-        json: Optional[dict[str, Any]] = None,
-        response_headers: Optional[list[HeaderEntry]] = None,
-        request_headers: Optional[list[HeaderEntry]] = None,
-        cookies: Optional[list[CookieParam]] = None,
+        json: dict[str, Any] | None = None,
+        response_headers: list[HeaderEntry] | None = None,
+        request_headers: list[HeaderEntry] | None = None,
+        cookies: list[CookieParam] | None = None,
         url: str = '',
     ):
         """Initialize a new Response instance with browser fetch results.
@@ -180,7 +180,7 @@ class Response:
         """
         return self._url
 
-    def json(self) -> Union[dict[str, Any], list]:
+    def json(self) -> dict[str, Any] | list:
         """Parse and return the response content as JSON data.
 
         Attempts to parse the response text as JSON. Uses caching to avoid
