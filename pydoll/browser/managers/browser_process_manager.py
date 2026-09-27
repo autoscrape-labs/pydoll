@@ -1,8 +1,19 @@
 import logging
 import subprocess
+import threading
 from typing import Callable, Optional
 
 logger = logging.getLogger(__name__)
+
+
+def _forward_stderr(process: subprocess.Popen) -> None:
+    """Drain the browser's stderr into the debug log until the process closes it."""
+    stream = process.stderr
+    if stream is None:
+        return
+    with stream:
+        for line in iter(stream.readline, b''):
+            logger.debug('browser stderr: %s', line.decode(errors='replace').rstrip())
 
 
 class BrowserProcessManager:
@@ -66,9 +77,24 @@ class BrowserProcessManager:
 
     @staticmethod
     def _default_process_creator(command: list[str]) -> subprocess.Popen:
-        """Create browser process with output capture to prevent console clutter."""
+        """Create the browser process, keeping its output off the console.
+
+        Chrome writes warnings to stderr on almost every navigation. A pipe that
+        nobody reads fills after about 64 KB, and from then on Chrome blocks on
+        the write and stops answering CDP entirely, which in practice showed up
+        as a browser that hung after fifty or so tabs. A daemon thread therefore
+        drains stderr into the debug log, and stdout, which Chrome never uses,
+        goes to the null device.
+        """
         logger.debug(f'Creating process: {command}')
-        return subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        process = subprocess.Popen(command, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
+        threading.Thread(
+            target=_forward_stderr,
+            args=(process,),
+            name=f'pydoll-browser-stderr-{process.pid}',
+            daemon=True,
+        ).start()
+        return process
 
     def stop_process(self):
         """

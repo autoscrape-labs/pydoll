@@ -41,7 +41,6 @@ import shutil
 from abc import ABC, abstractmethod
 from contextlib import suppress
 from functools import partial
-from random import randint
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Optional, overload
 from urllib.parse import urlsplit, urlunsplit
 from pydoll.browser.managers import BrowserProcessManager, ProxyManager, TempDirectoryManager
@@ -53,6 +52,7 @@ from pydoll.protocol.fetch.events import FetchEvent
 from pydoll.protocol.fetch.types import AuthChallengeResponseType
 from pydoll.protocol.target.events import TargetEvent
 from pydoll.protocol.target.types import FilterEntry
+from pydoll.utils import find_free_port
 from pydoll.utils.fingerprint_builder import build_fingerprint_worker_js
 from pydoll.utils.user_agent_parser import ParsedUserAgent, UserAgentParser
 from tempfile import TemporaryDirectory
@@ -105,7 +105,6 @@ from pydoll.protocol.network.types import Cookie, CookieParam, ErrorReason, Requ
 from pydoll.protocol.page.events import FileChooserOpenedEvent
 from pydoll.protocol.page.methods import CaptureScreenshotResponse, GetResourceContentResponse, GetResourceTreeResponse, NavigateResponse, PrintToPDFResponse
 from pydoll.protocol.runtime.methods import EvaluateResponse
-from pydoll.protocol.storage.methods import GetCookiesResponse as StorageGetCookiesResponse
 from pydoll.protocol.target.methods import AttachToTargetResponse, GetTargetsResponse
 T = TypeVar('T', bound='ExtractionModel')
 from typing import TYPE_CHECKING, Optional, Union, cast, overload
@@ -1021,7 +1020,13 @@ class Tab(SyncBase):
         return mapping.from_impl(self._run(self._impl.bring_to_front()))
 
     def get_cookies(self) -> list[Cookie]:
-        """Get all cookies accessible from current page."""
+        """Get all cookies of this tab's browser context.
+
+        A tab that lives in a browser context created with
+        ``browser.create_browser_context()`` reads them through the browser
+        connection, because Chrome only accepts ``browserContextId`` on the
+        browser target, not on a page session.
+        """
         return mapping.from_impl(self._run(self._impl.get_cookies()))
 
     def get_network_response_body(self, request_id: str) -> str:

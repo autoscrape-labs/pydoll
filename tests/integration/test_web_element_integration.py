@@ -14,7 +14,6 @@ from pathlib import Path
 import pytest
 import pytest_asyncio
 
-from pydoll.browser.chromium import Chrome
 from pydoll.exceptions import (
     ElementNotFound,
     ElementNotInteractable,
@@ -33,11 +32,9 @@ async def _live(element_or_tab, expression: str):
 
 
 @pytest_asyncio.fixture
-async def element_tab(ci_chrome_options):
-    async with Chrome(options=ci_chrome_options) as browser:
-        tab = await browser.start()
-        await tab.go_to(PAGE_URL)
-        yield tab
+async def element_tab(tab):
+    await tab.go_to(PAGE_URL)
+    return tab
 
 
 @pytest.mark.asyncio

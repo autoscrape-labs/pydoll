@@ -17,12 +17,10 @@ import socket
 import threading
 import zipfile
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from pathlib import Path
 
 import pytest
 import pytest_asyncio
 
-from pydoll.browser.chromium import Chrome
 from pydoll.exceptions import InvalidFileExtension
 
 PNG_1PX = base64.b64decode(
@@ -96,13 +94,11 @@ def _serve(handler_cls):
 
 
 @pytest_asyncio.fixture
-async def served_tab(ci_chrome_options):
+async def served_tab(tab):
     server, thread, base = _serve(_make_handler(absolute_assets=True))
     try:
-        async with Chrome(options=ci_chrome_options) as browser:
-            tab = await browser.start()
-            await tab.go_to(f'{base}/')
-            yield tab, base
+        await tab.go_to(f'{base}/')
+        yield tab, base
     finally:
         server.shutdown()
         server.server_close()
@@ -110,13 +106,11 @@ async def served_tab(ci_chrome_options):
 
 
 @pytest_asyncio.fixture
-async def relative_served_tab(ci_chrome_options):
+async def relative_served_tab(tab):
     server, thread, base = _serve(_make_handler(absolute_assets=False))
     try:
-        async with Chrome(options=ci_chrome_options) as browser:
-            tab = await browser.start()
-            await tab.go_to(f'{base}/')
-            yield tab, base
+        await tab.go_to(f'{base}/')
+        yield tab, base
     finally:
         server.shutdown()
         server.server_close()

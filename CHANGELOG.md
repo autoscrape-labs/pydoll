@@ -13,6 +13,13 @@
 - top-level `pydoll` exports the async API (`Chrome`, `Tab`, `ChromiumOptions`, `Key`, events, extraction models); `pydoll.sync` exports the same names
 - `@retry` works on plain functions as well as coroutines
 
+### Fix
+
+- a browser no longer hangs after opening and closing about fifty tabs: Chrome's stderr was piped and never read, so the pipe filled and Chrome blocked on the write; stderr is now drained into the debug log
+- `browser.start()` no longer waits a full second between readiness checks; the browser is used as soon as it answers (about 0.35 s instead of 1 s)
+- `get_cookies()`, `set_cookies()` and `delete_all_cookies()` work on tabs opened inside a browser context; they used to send `browserContextId` over the page session, which Chrome rejects
+- the remote debugging port is a free port assigned by the OS instead of a random number between 9223 and 9322, so browsers started side by side no longer collide and silently talk to the wrong Chrome
+
 ## 2.26.0 (2026-08-26)
 
 ### Feat

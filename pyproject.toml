@@ -22,7 +22,7 @@ pydantic = "^2.0"
 ruff = "^0.7.1"
 pytest = "^8.3.3"
 taskipy = "^1.14.0"
-pytest-asyncio = "^0.24.0"
+pytest-asyncio = "^1.4.0"
 pytest-cov = "^6.0.0"
 aioresponses = "^0.7.7"
 mkdocs = "^1.6.1"
@@ -31,6 +31,7 @@ pymdown-extensions = "^10.14.3"
 mkdocstrings = {extras = ["python"], version = "^0.29.1"}
 griffe-typingdoc = "^0.2.8"
 mkdocs-static-i18n = "^1.3.0"
+pytest-xdist = "^3.8.0"
 
 [build-system]
 requires = ["poetry-core"]
@@ -63,6 +64,8 @@ exclude = ['tests', 'tests/*']
 [tool.pytest.ini_options]
 pythonpath = "."
 addopts = '-p no:warnings'
+asyncio_default_fixture_loop_scope = "session"
+asyncio_default_test_loop_scope = "session"
 
 [tool.coverage.run]
 # Declarative layers are excluded from the coverage target: protocol event
@@ -87,7 +90,7 @@ lint = 'ruff check .; ruff check . --diff'
 generate-sync = 'python scripts/generate_sync_api.py'
 check-sync = 'python scripts/generate_sync_api.py --check'
 format = 'ruff check . --fix; ruff format .'
-test = 'pytest -s -x --cov=pydoll -vv'
+test = 'pytest -n 4 -x -q --cov=pydoll'
 post_test = 'coverage html'
 
 [tool.mypy]

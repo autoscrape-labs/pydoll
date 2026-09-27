@@ -11,11 +11,14 @@ from __future__ import annotations
 
 import pytest
 
+from pydoll.browser.chromium import Chrome
 from pydoll.browser.requests import Request
+from pydoll.browser.tab import Tab
 from pydoll.exceptions import NetworkEventsNotEnabled, NoDialogPresent
 from pydoll.interactions import KeyboardAPI, MouseAPI, ScrollAPI
 from pydoll.protocol.fetch.types import AuthChallengeResponseType
 from pydoll.protocol.network.types import ErrorReason
+from tests.unit.conftest import FakeConnection
 
 
 @pytest.mark.asyncio
@@ -220,3 +223,24 @@ async def test_enable_cloudflare_turnstile_handling_registers_callback_and_enabl
     await fake_tab.enable_cloudflare_turnstile_handling()
     assert fake_tab.page_events_enabled is True
     assert fake_conn.callbacks_for('Page.loadEventFired')
+
+
+@pytest.mark.asyncio
+async def test_cookie_methods_of_a_context_tab_go_through_the_browser_connection(fake_conn):
+    """Chrome only accepts browserContextId on the browser target, never on a page session."""
+    browser = Chrome()
+    browser_conn = FakeConnection()
+    browser._connection_handler = browser_conn
+    browser_conn.set_response('Storage.getCookies', {'cookies': [{'name': 'a', 'value': '1'}]})
+    tab = Tab(
+        browser=browser, target_id='ctx-tab', browser_context_id='ctx-1', connection_handler=fake_conn
+    )
+
+    await tab.set_cookies([{'name': 'a', 'value': '1'}])
+    cookies = await tab.get_cookies()
+    await tab.delete_all_cookies()
+
+    assert cookies == [{'name': 'a', 'value': '1'}]
+    for method in ('Storage.setCookies', 'Storage.getCookies', 'Storage.clearCookies'):
+        assert browser_conn.last_command(method)['params']['browserContextId'] == 'ctx-1'
+        assert not fake_conn.commands_for(method)

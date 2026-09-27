@@ -8,7 +8,6 @@ import shutil
 from abc import ABC, abstractmethod
 from contextlib import suppress
 from functools import partial
-from random import randint
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Optional, overload
 from urllib.parse import urlsplit, urlunsplit
 
@@ -40,6 +39,7 @@ from pydoll.protocol.fetch.events import FetchEvent
 from pydoll.protocol.fetch.types import AuthChallengeResponseType
 from pydoll.protocol.target.events import TargetEvent
 from pydoll.protocol.target.types import FilterEntry
+from pydoll.utils import find_free_port
 from pydoll.utils.fingerprint_builder import build_fingerprint_worker_js
 from pydoll.utils.user_agent_parser import ParsedUserAgent, UserAgentParser
 
@@ -99,7 +99,7 @@ class Browser(ABC):  # noqa: PLR0904
         Args:
             options_manager: Manages browser options initialization and defaults.
                 Must implement initialize_options() and add_default_arguments().
-            connection_port: CDP WebSocket port. Random port (9223-9322) if None.
+            connection_port: CDP WebSocket port. A free port chosen by the OS if None.
             proxy_manager: Proxy manager; built from options when omitted.
             browser_process_manager: Process manager; default when omitted.
             temp_directory_manager: Temp directory manager; default when omitted.
@@ -112,7 +112,7 @@ class Browser(ABC):  # noqa: PLR0904
         self._validate_connection_port(connection_port)
         self.options = options_manager.initialize_options()
         self._proxy_manager = proxy_manager or ProxyManager(self.options)
-        self._connection_port = connection_port if connection_port else randint(9223, 9322)
+        self._connection_port = connection_port if connection_port else find_free_port()
         self._browser_process_manager = browser_process_manager or BrowserProcessManager()
         self._temp_directory_manager = temp_directory_manager or TempDirectoryManager()
         self._ws_address: Optional[str] = None
@@ -967,14 +967,21 @@ class Browser(ABC):  # noqa: PLR0904
 
         return tab_id
 
-    async def _is_browser_running(self, timeout: int = 10) -> bool:
-        """Check if browser process is running and CDP endpoint is responsive."""
-        for _ in range(timeout):
+    async def _is_browser_running(self, timeout: float = 10) -> bool:
+        """Check if browser process is running and CDP endpoint is responsive.
+
+        Polls the endpoint every 50 ms until it answers or ``timeout`` seconds
+        elapse, so a browser that is up after 300 ms is not made to wait a
+        full second.
+        """
+        loop = asyncio.get_running_loop()
+        deadline = loop.time() + timeout
+        while True:
             if await self._connection_handler.ping():
                 return True
-            await asyncio.sleep(1)
-
-        return False
+            if loop.time() >= deadline:
+                return False
+            await asyncio.sleep(0.05)
 
     async def _execute_command(
         self, command: Command[T_CommandParams, T_CommandResponse], timeout: int = 60

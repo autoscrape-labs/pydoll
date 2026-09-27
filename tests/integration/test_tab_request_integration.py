@@ -17,7 +17,6 @@ from urllib.parse import parse_qs, urlparse
 import pytest
 import pytest_asyncio
 
-from pydoll.browser.chromium import Chrome
 from pydoll.browser.requests.response import Response
 from pydoll.exceptions import HTTPError
 
@@ -168,17 +167,15 @@ class _RequestHandler(BaseHTTPRequestHandler):
 
 
 @pytest_asyncio.fixture
-async def request_tab(ci_chrome_options):
+async def request_tab(tab):
     port = _find_free_port()
     server = ThreadingHTTPServer(('127.0.0.1', port), _RequestHandler)
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
     base = f'http://127.0.0.1:{port}'
     try:
-        async with Chrome(options=ci_chrome_options) as browser:
-            tab = await browser.start()
-            await tab.go_to(f'{base}/')
-            yield tab, base
+        await tab.go_to(f'{base}/')
+        yield tab, base
     finally:
         server.shutdown()
         server.server_close()

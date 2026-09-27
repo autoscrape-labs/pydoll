@@ -115,7 +115,6 @@ if TYPE_CHECKING:
         PrintToPDFResponse,
     )
     from pydoll.protocol.runtime.methods import EvaluateResponse
-    from pydoll.protocol.storage.methods import GetCookiesResponse as StorageGetCookiesResponse
     from pydoll.protocol.target.methods import (
         AttachToTargetResponse,
         GetTargetsResponse,
@@ -798,15 +797,16 @@ class Tab(FindElementsMixin):
         return await self._execute_command(PageCommands.bring_to_front())
 
     async def get_cookies(self) -> list[Cookie]:
-        """Get all cookies accessible from current page."""
+        """Get all cookies of this tab's browser context.
+
+        A tab that lives in a browser context created with
+        ``browser.create_browser_context()`` reads them through the browser
+        connection, because Chrome only accepts ``browserContextId`` on the
+        browser target, not on a page session.
+        """
         logger.debug('Fetching cookies for current page')
         if self._browser_context_id:
-            response_storage: StorageGetCookiesResponse = await self._execute_command(
-                StorageCommands.get_cookies(self._browser_context_id)
-            )
-            cookies = response_storage['result']['cookies']
-            logger.debug(f'Fetched {len(cookies)} cookies')
-            return cookies
+            return await self._browser.get_cookies(self._browser_context_id)
 
         response_network: NetworkGetCookiesResponse = await self._execute_command(
             NetworkCommands.get_cookies()
@@ -872,14 +872,16 @@ class Tab(FindElementsMixin):
             Defaults to current page's domain if not specified.
         """
         logger.info(f'Setting {len(cookies)} cookies on current page')
-        return await self._execute_command(
-            StorageCommands.set_cookies(cookies, self._browser_context_id)
-        )
+        if self._browser_context_id:
+            return await self._browser.set_cookies(cookies, self._browser_context_id)
+        return await self._execute_command(StorageCommands.set_cookies(cookies))
 
     async def delete_all_cookies(self):
         """Delete all cookies from current browser context."""
         logger.info('Clearing all cookies from current browser context')
-        return await self._execute_command(StorageCommands.clear_cookies(self._browser_context_id))
+        if self._browser_context_id:
+            return await self._browser.delete_all_cookies(self._browser_context_id)
+        return await self._execute_command(StorageCommands.clear_cookies())
 
     async def apply_fingerprint(
         self, fingerprint: FingerprintConfig, *, cross_origin_iframes: bool = True
