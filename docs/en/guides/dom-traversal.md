@@ -11,7 +11,7 @@ Once you have an element, you often need the ones around it: its children, its s
 === "Sync"
 
     ```python
-    from pydoll.sync import Chrome
+    from pydoll import Chrome
 
     def main():
         with Chrome() as browser:
@@ -35,7 +35,7 @@ Once you have an element, you often need the ones around it: its children, its s
     ```python
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
+    from pydoll import Chrome
 
 
     async def main():
@@ -121,7 +121,7 @@ From any element you can read its visible text and its HTML attributes:
     book = tab.find(class_name='product_pod')
 
     title = book.find(tag_name='h3')
-    print(title.text)                       # visible text
+    print(title.text())                       # visible text
 
     link = title.find(tag_name='a')
     print(link.get_attribute('href'))             # an attribute value
@@ -134,14 +134,14 @@ From any element you can read its visible text and its HTML attributes:
     book = await tab.find(class_name='product_pod')
 
     title = await book.find(tag_name='h3')
-    print(await title.text)                       # visible text
+    print(await title.text())                       # visible text
 
     link = await title.find(tag_name='a')
     print(link.get_attribute('href'))             # an attribute value
     print(link.get_attribute('title'))
     ```
 
-`text` is a property (awaited in the async API); `get_attribute(name)` returns the attribute string, or `None` when the attribute is absent.
+`text()` returns the element's visible text; `get_attribute(name)` returns the attribute string, or `None` when the attribute is absent.
 
 ## Shadow DOM {#shadow-dom}
 

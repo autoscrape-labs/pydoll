@@ -42,7 +42,7 @@ async def test_humanized_mouse_click_triggers_button(page_tab):
     await page_tab.mouse.click(center_x, center_y, humanize=True)
 
     counter = await page_tab.find(id='clicks')
-    assert (await counter.text) == '1'
+    assert (await counter.text()) == '1'
 
 
 @pytest.mark.asyncio

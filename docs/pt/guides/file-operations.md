@@ -11,7 +11,7 @@ Quando a página tem um `<input type="file">` de verdade, encontre-o e chame `se
     ```python
     from pathlib import Path
 
-    from pydoll.sync import Chrome
+    from pydoll import Chrome
 
     def main():
         with Chrome() as browser:
@@ -25,7 +25,7 @@ Quando a página tem um `<input type="file">` de verdade, encontre-o e chame `se
             submit.click()
 
             result = tab.find(tag_name='h3')
-            print(result.text)   # "File Uploaded!"
+            print(result.text())   # "File Uploaded!"
 
     main()
     ```
@@ -36,7 +36,7 @@ Quando a página tem um `<input type="file">` de verdade, encontre-o e chame `se
     import asyncio
     from pathlib import Path
 
-    from pydoll.browser.chromium import Chrome
+    from pydoll import Chrome
 
 
     async def main():
@@ -51,7 +51,7 @@ Quando a página tem um `<input type="file">` de verdade, encontre-o e chame `se
             await submit.click()
 
             result = await tab.find(tag_name='h3')
-            print(await result.text)   # "File Uploaded!"
+            print(await result.text())   # "File Uploaded!"
 
     asyncio.run(main())
     ```
@@ -111,7 +111,7 @@ Muitos sites escondem o input de arquivo atrás de um botão estilizado ou de um
     ```python
     from pathlib import Path
 
-    from pydoll.sync import Chrome
+    from pydoll import Chrome
 
     def main():
         with Chrome() as browser:
@@ -133,7 +133,7 @@ Muitos sites escondem o input de arquivo atrás de um botão estilizado ou de um
     import asyncio
     from pathlib import Path
 
-    from pydoll.browser.chromium import Chrome
+    from pydoll import Chrome
 
 
     async def main():
@@ -162,7 +162,7 @@ Envolva a ação que inicia um download em `expect_download()`. O Pydoll espera 
 === "Sync"
 
     ```python
-    from pydoll.sync import Chrome
+    from pydoll import Chrome
 
     def main():
         with Chrome() as browser:
@@ -184,7 +184,7 @@ Envolva a ação que inicia um download em `expect_download()`. O Pydoll espera 
     ```python
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
+    from pydoll import Chrome
 
 
     async def main():

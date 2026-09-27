@@ -9,7 +9,7 @@ Decorate a function with `@retry` and list the exceptions worth retrying. If the
 === "Sync"
 
     ```python
-    from pydoll.sync import Chrome
+    from pydoll import Chrome
     from pydoll.decorators import retry
     from pydoll.exceptions import WaitElementTimeout, ConnectionFailed
 
@@ -19,7 +19,7 @@ Decorate a function with `@retry` and list the exceptions worth retrying. If the
             tab = browser.start()
             tab.go_to(url)
             heading = tab.find(id='firstHeading', timeout=5)
-            return heading.text
+            return heading.text()
 
     def main():
         title = scrape_title('https://en.wikipedia.org/wiki/Web_scraping')
@@ -33,7 +33,7 @@ Decorate a function with `@retry` and list the exceptions worth retrying. If the
     ```python
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
+    from pydoll import Chrome
     from pydoll.decorators import retry
     from pydoll.exceptions import WaitElementTimeout, ConnectionFailed
 
@@ -44,7 +44,7 @@ Decorate a function with `@retry` and list the exceptions worth retrying. If the
             tab = await browser.start()
             await tab.go_to(url)
             heading = await tab.find(id='firstHeading', timeout=5)
-            return await heading.text
+            return await heading.text()
 
 
     async def main():
@@ -155,7 +155,7 @@ Run each mode: a fixed delay keeps the same gap between attempts, while exponent
 
     ```python
     import time
-    from pydoll.sync import Chrome
+    from pydoll import Chrome
     from pydoll.decorators import retry
     from pydoll.exceptions import ElementNotFound, WaitElementTimeout
 
@@ -175,7 +175,7 @@ Run each mode: a fixed delay keeps the same gap between attempts, while exponent
         )
         def price(self):
             element = self.tab.find(class_name='price', timeout=5)
-            return element.text
+            return element.text()
     ```
 
 === "Async"
@@ -183,7 +183,7 @@ Run each mode: a fixed delay keeps the same gap between attempts, while exponent
     ```python
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
+    from pydoll import Chrome
     from pydoll.decorators import retry
     from pydoll.exceptions import ElementNotFound, WaitElementTimeout
 
@@ -204,7 +204,7 @@ Run each mode: a fixed delay keeps the same gap between attempts, while exponent
         )
         async def price(self):
             element = await self.tab.find(class_name='price', timeout=5)
-            return await element.text
+            return await element.text()
     ```
 
 Two things to know about `on_retry`:

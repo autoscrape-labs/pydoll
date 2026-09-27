@@ -78,7 +78,7 @@ With the session active, switch from interacting to collecting. Declare what a q
 === "Sync"
 
     ```python
-    from pydoll.extractor import ExtractionModel, Field
+    from pydoll import ExtractionModel, Field
 
     class Quote(ExtractionModel):
         text: str = Field(selector='.text')
@@ -95,7 +95,7 @@ With the session active, switch from interacting to collecting. Declare what a q
 === "Async"
 
     ```python
-    from pydoll.extractor import ExtractionModel, Field
+    from pydoll import ExtractionModel, Field
 
 
     class Quote(ExtractionModel):
@@ -122,8 +122,7 @@ Create `first_automation.py`:
 === "Sync"
 
     ```python
-    from pydoll.sync import Chrome
-    from pydoll.extractor import ExtractionModel, Field
+    from pydoll import Chrome, ExtractionModel, Field
 
     class Quote(ExtractionModel):
         text: str = Field(selector='.text')
@@ -162,8 +161,7 @@ Create `first_automation.py`:
     ```python
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
-    from pydoll.extractor import ExtractionModel, Field
+    from pydoll import Chrome, ExtractionModel, Field
 
 
     class Quote(ExtractionModel):

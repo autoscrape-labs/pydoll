@@ -11,7 +11,7 @@ Pydoll 用两种方式驱动鼠标：通过你找到的元素，这是大多数�
 === "Sync"
 
     ```python
-    from pydoll.sync import Chrome
+    from pydoll import Chrome
 
     def main():
         with Chrome() as browser:
@@ -23,7 +23,7 @@ Pydoll 用两种方式驱动鼠标：通过你找到的元素，这是大多数�
 
             # 这次点击添加了一个 Delete 按钮
             delete = tab.find(class_name='added-manually')
-            print('Added:', delete.text)
+            print('Added:', delete.text())
 
     main()
     ```
@@ -33,7 +33,7 @@ Pydoll 用两种方式驱动鼠标：通过你找到的元素，这是大多数�
     ```python
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
+    from pydoll import Chrome
 
 
     async def main():
@@ -46,7 +46,7 @@ Pydoll 用两种方式驱动鼠标：通过你找到的元素，这是大多数�
 
             # 这次点击添加了一个 Delete 按钮
             delete = await tab.find(class_name='added-manually')
-            print('Added:', await delete.text)
+            print('Added:', await delete.text())
 
     asyncio.run(main())
     ```
@@ -89,7 +89,7 @@ Pydoll 用两种方式驱动鼠标：通过你找到的元素，这是大多数�
 === "Sync"
 
     ```python
-    from pydoll.sync import Chrome
+    from pydoll import Chrome
     from pydoll.protocol.input.types import MouseButton
 
     def main():
@@ -111,7 +111,7 @@ Pydoll 用两种方式驱动鼠标：通过你找到的元素，这是大多数�
     ```python
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
+    from pydoll import Chrome
     from pydoll.protocol.input.types import MouseButton
 
 

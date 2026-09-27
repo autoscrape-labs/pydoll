@@ -23,7 +23,7 @@ When you start a browser, Pydoll launches the Chrome you already have installed 
 === "Sync"
 
     ```python
-    from pydoll.sync import Chrome
+    from pydoll import Chrome
 
     def main():
         with Chrome() as browser:
@@ -38,7 +38,7 @@ When you start a browser, Pydoll launches the Chrome you already have installed 
     ```python
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
+    from pydoll import Chrome
 
 
     async def main():
@@ -79,7 +79,7 @@ Two objects cover most of what you do. The **browser** (`Chrome` or `Edge`) is t
 
 See [Tabs](tabs.md) for managing several tabs at once, and [Browser contexts](browser-contexts.md) for isolating sessions.
 
-## Sync and async
+## Sync and async {#sync-and-async}
 
 Pydoll ships one API in two forms. Import from `pydoll.sync` and every call blocks until the browser answers, so a script reads top to bottom with no event loop to manage. Import from `pydoll.browser.chromium` and the same classes are coroutines: you `await` each call inside an `async def` and start the program with `asyncio.run()`. The sync form is generated from the async one, so the two never differ in methods, arguments, or defaults, and every example in these docs shows both.
 
@@ -95,7 +95,7 @@ Where the async form pays off is concurrency. Navigation and element waits spend
 
     def title_of(browser, url):
         tab = browser.new_tab(url)
-        title = tab.title
+        title = tab.title()
         tab.close()
         return title
 
@@ -120,12 +120,12 @@ Where the async form pays off is concurrency. Navigation and element waits spend
     ```python
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
+    from pydoll import Chrome
 
 
     async def title_of(browser, url):
         tab = await browser.new_tab(url)
-        title = await tab.title
+        title = await tab.title()
         await tab.close()
         return title
 
@@ -181,8 +181,7 @@ Instead of polling the page in a loop, you can subscribe to browser events and r
     import time
     from functools import partial
 
-    from pydoll.sync import Chrome
-    from pydoll.protocol.network.events import NetworkEvent
+    from pydoll import Chrome, NetworkEvent
 
     def on_request(tab, event):
         url = event['params']['request']['url']
@@ -208,8 +207,7 @@ Instead of polling the page in a loop, you can subscribe to browser events and r
     import asyncio
     from functools import partial
 
-    from pydoll.browser.chromium import Chrome
-    from pydoll.protocol.network.events import NetworkEvent
+    from pydoll import Chrome, NetworkEvent
 
 
     async def on_request(tab, event):
@@ -240,8 +238,7 @@ The same API drives any Chromium browser. Chrome is the primary target; Edge has
 === "Sync"
 
     ```python
-    from pydoll.sync import Chrome, Edge
-    from pydoll.browser.options import ChromiumOptions
+    from pydoll import Chrome, ChromiumOptions, Edge
 
     # Chrome
     with Chrome() as browser:
@@ -261,8 +258,7 @@ The same API drives any Chromium browser. Chrome is the primary target; Edge has
 === "Async"
 
     ```python
-    from pydoll.browser.chromium import Chrome, Edge
-    from pydoll.browser.options import ChromiumOptions
+    from pydoll import Chrome, ChromiumOptions, Edge
 
     # Chrome
     async with Chrome() as browser:

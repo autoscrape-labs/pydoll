@@ -11,8 +11,7 @@ Passe `--proxy-server` para `ChromiumOptions` e toda requisição que o navegado
 === "Sync"
 
     ```python
-    from pydoll.sync import Chrome
-    from pydoll.browser.options import ChromiumOptions
+    from pydoll import Chrome, ChromiumOptions
 
     def main():
         options = ChromiumOptions()
@@ -32,8 +31,7 @@ Passe `--proxy-server` para `ChromiumOptions` e toda requisição que o navegado
     ```python
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
-    from pydoll.browser.options import ChromiumOptions
+    from pydoll import Chrome, ChromiumOptions
 
 
     async def main():

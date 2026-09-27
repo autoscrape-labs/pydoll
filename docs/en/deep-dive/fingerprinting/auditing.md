@@ -12,7 +12,7 @@ It is the measuring side of [Fingerprint injection](../../stealth/fingerprint-in
 
     ```python
     import time
-    from pydoll.sync import Chrome
+    from pydoll import Chrome
     from examples.fingerprints import FINGERPRINTS
 
     def scan(profile):
@@ -30,7 +30,7 @@ It is the measuring side of [Fingerprint injection](../../stealth/fingerprint-in
 
     ```python
     import asyncio
-    from pydoll.browser.chromium import Chrome
+    from pydoll import Chrome
     from examples.fingerprints import FINGERPRINTS
 
     async def scan(profile):

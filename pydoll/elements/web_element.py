@@ -3,7 +3,6 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
-import warnings
 from pathlib import Path
 from typing import TYPE_CHECKING, Optional
 
@@ -17,7 +16,6 @@ from pydoll.commands import (
 )
 from pydoll.connection import ConnectionHandler
 from pydoll.constants import (
-    Key,
     Scripts,
 )
 from pydoll.elements.mixins import FindElementsMixin
@@ -39,8 +37,6 @@ from pydoll.interactions.iframe import IFrameContext, IFrameContextResolver
 from pydoll.interactions.keyboard import Keyboard
 from pydoll.protocol.dom.types import ShadowRootType
 from pydoll.protocol.input.types import (
-    KeyEventType,
-    KeyModifier,
     MouseButton,
     MouseEventType,
 )
@@ -178,7 +174,6 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         """Whether element is enabled (not disabled)."""
         return bool('disabled' not in self._attributes.keys())
 
-    @property
     async def text(self) -> str:
         """Visible text content of the element."""
         if self._is_inside_iframe():
@@ -189,12 +184,11 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
             logger.debug(f'Extracted text length (iframe ctx): {len(text_value)}')
             return text_value
 
-        outer_html = await self.inner_html
+        outer_html = await self.inner_html()
         text_value = extract_text_from_html(outer_html, strip=True)
         logger.debug(f'Extracted text length: {len(text_value)}')
         return text_value
 
-    @property
     async def bounds(self) -> Quad:
         """
         Element's bounding box coordinates.
@@ -207,7 +201,6 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         logger.debug(f'Bounds retrieved (points={len(content)})')
         return content
 
-    @property
     async def inner_html(self) -> str:
         if self.is_iframe:
             return await self._get_iframe_inner_html()
@@ -222,7 +215,6 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         response_get_outer_html: GetOuterHTMLResponse = await self._execute_command(command)
         return response_get_outer_html['result']['outerHTML']
 
-    @property
     async def iframe_context(self) -> Optional[IFrameContext]:
         """
         Return the resolved iframe context for this element when it is an ``<iframe>``.
@@ -592,7 +584,7 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
         await self.scroll_into_view()
 
         try:
-            element_bounds = await self.bounds
+            element_bounds = await self.bounds()
             position_to_click = self._calculate_center(element_bounds)
             position_to_click = (
                 position_to_click[0] + x_offset,
@@ -726,100 +718,18 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
             DomCommands.set_file_input_files(files=files_list, object_id=self._object_id)
         )
 
-    async def type_text(
-        self,
-        text: str,
-        humanize: bool = False,
-        interval: Optional[float] = None,
-    ):
+    async def type_text(self, text: str, humanize: bool = False):
         """
         Type text character by character.
 
         Args:
             text: Text to type into the element.
             humanize: When True, simulates human-like typing.
-            interval: Deprecated. Use humanize=True instead.
         """
         logger.info(f'Typing text (length={len(text)}, humanize={humanize})')
         await self.click(humanize=humanize)
         keyboard = self._get_keyboard()
-        await keyboard.type_text(text, humanize=humanize, interval=interval)
-
-    async def key_down(self, key: Key, modifiers: Optional[KeyModifier] = None):
-        """
-        Send key down event.
-
-        .. deprecated::
-            This method is deprecated. Use ``tab.keyboard.down()`` instead.
-
-        Note:
-            Only sends key down without release. Pair with key_up() for complete keypress.
-        """
-        warnings.warn(
-            'WebElement.key_down() is deprecated. '
-            'Use tab.keyboard API instead: await tab.keyboard.down(key, modifiers)',
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        key_name, code = key
-        logger.info(f'Key down: key={key_name} code={code} modifiers={modifiers}')
-        await self._execute_command(
-            InputCommands.dispatch_key_event(
-                type=KeyEventType.KEY_DOWN,
-                key=key_name,
-                windows_virtual_key_code=code,
-                native_virtual_key_code=code,
-                modifiers=modifiers,
-            )
-        )
-
-    async def key_up(self, key: Key):
-        """
-        Send key up event (should follow corresponding key_down()).
-
-        .. deprecated::
-            This method is deprecated. Use ``tab.keyboard.up()`` instead.
-        """
-        warnings.warn(
-            'WebElement.key_up() is deprecated. '
-            'Use tab.keyboard API instead: await tab.keyboard.up(key)',
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        key_name, code = key
-        logger.info(f'Key up: key={key_name} code={code}')
-        await self._execute_command(
-            InputCommands.dispatch_key_event(
-                type=KeyEventType.KEY_UP,
-                key=key_name,
-                windows_virtual_key_code=code,
-                native_virtual_key_code=code,
-            )
-        )
-
-    async def press_keyboard_key(
-        self,
-        key: Key,
-        modifiers: Optional[KeyModifier] = None,
-        interval: float = 0.1,
-    ):
-        """
-        Press and release keyboard key with configurable timing.
-
-        .. deprecated::
-            This method is deprecated. Use ``tab.keyboard.press()`` instead.
-
-        Better for special keys (Enter, Tab, etc.) than type_text().
-        """
-        warnings.warn(
-            'WebElement.press_keyboard_key() is deprecated. '
-            'Use tab.keyboard API instead: await tab.keyboard.press(key, modifiers, interval)',
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        await self.key_down(key, modifiers)
-        await asyncio.sleep(interval)
-        await self.key_up(key)
+        await keyboard.type_text(text, humanize=humanize)
 
     async def is_editable(self) -> bool:
         """
@@ -948,7 +858,7 @@ class WebElement(FindElementsMixin):  # noqa: PLR0904
 
     async def _get_iframe_inner_html(self) -> str:
         """Get inner HTML of an iframe element."""
-        iframe_context = await self.iframe_context
+        iframe_context = await self.iframe_context()
         if iframe_context is None:
             raise InvalidIFrame('Unable to resolve iframe context')
         response: EvaluateResponse = await self._execute_command(

@@ -118,7 +118,7 @@ async def _read_oopif_screen(browser, tab):
     iframe = await tab.find(id='cross-origin-iframe', timeout=10)
     assert iframe.is_iframe
     reporter = await iframe.find(id='screen-info', timeout=10)
-    return json.loads(await reporter.text)
+    return json.loads(await reporter.text())
 
 
 @pytest.mark.asyncio
@@ -231,7 +231,7 @@ async def _read_oopif_identity(browser, tab) -> dict:
     iframe = await tab.find(id='cross-origin-iframe', timeout=10)
     assert iframe.is_iframe
     reporter = await iframe.find(id='identity-info', timeout=10)
-    return json.loads(await reporter.text)
+    return json.loads(await reporter.text())
 
 
 @pytest.mark.asyncio

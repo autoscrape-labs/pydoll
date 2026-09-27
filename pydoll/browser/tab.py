@@ -6,7 +6,6 @@ import contextlib
 import io
 import logging
 import shutil
-import warnings
 import zipfile
 from contextlib import asynccontextmanager
 from functools import partial
@@ -19,7 +18,6 @@ from typing import (
     Awaitable,
     Callable,
     Optional,
-    TypeAlias,
     TypeVar,
     Union,
     cast,
@@ -40,23 +38,20 @@ from pydoll.commands import (
     TargetCommands,
 )
 from pydoll.connection import ConnectionHandler
-from pydoll.constants import By, PageLoadState
+from pydoll.constants import PageLoadState
 from pydoll.elements.mixins import FindElementsMixin
 from pydoll.elements.shadow_root import ShadowRoot
 from pydoll.elements.web_element import WebElement
 from pydoll.exceptions import (
     CommandExecutionTimeout,
     DownloadTimeout,
-    IFrameNotFound,
     InvalidFileExtension,
-    InvalidIFrame,
     InvalidScriptWithElement,
     InvalidTabInitialization,
     MissingScreenshotPath,
     NavigationError,
     NetworkEventsNotEnabled,
     NoDialogPresent,
-    NotAnIFrame,
     PageLoadTimeout,
     TopLevelTargetRequired,
     WaitElementTimeout,
@@ -71,11 +66,9 @@ from pydoll.protocol.network.types import ResourceType
 from pydoll.protocol.page.events import PageEvent
 from pydoll.protocol.page.types import FrameResourceTree, ScreenshotFormat
 from pydoll.protocol.runtime.methods import (
-    CallFunctionOnResponse,
     EvaluateResponse,
     SerializationOptions,
 )
-from pydoll.protocol.runtime.types import CallArgument
 from pydoll.protocol.target.types import TargetInfo
 from pydoll.utils import (
     decode_base64_to_bytes,
@@ -121,7 +114,7 @@ if TYPE_CHECKING:
         NavigateResponse,
         PrintToPDFResponse,
     )
-    from pydoll.protocol.runtime.methods import CallFunctionOnResponse, EvaluateResponse
+    from pydoll.protocol.runtime.methods import EvaluateResponse
     from pydoll.protocol.storage.methods import GetCookiesResponse as StorageGetCookiesResponse
     from pydoll.protocol.target.methods import (
         AttachToTargetResponse,
@@ -130,8 +123,6 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-
-IFrame: TypeAlias = 'Tab'
 
 T = TypeVar('T', bound='ExtractionModel')
 
@@ -330,7 +321,6 @@ class Tab(FindElementsMixin):
         """Whether file chooser dialog interception is active."""
         return self._intercept_file_chooser_dialog_enabled
 
-    @property
     async def current_url(self) -> str:
         """Get current page URL (reflects redirects and client-side navigation)."""
         response: EvaluateResponse = await self._execute_command(
@@ -338,7 +328,6 @@ class Tab(FindElementsMixin):
         )
         return response['result']['result']['value']
 
-    @property
     async def page_source(self) -> str:
         """Get complete HTML source of current page (live DOM state)."""
         response: EvaluateResponse = await self._execute_command(
@@ -346,7 +335,6 @@ class Tab(FindElementsMixin):
         )
         return response['result']['result']['value']
 
-    @property
     async def title(self) -> str:
         """Get current page title."""
         response: EvaluateResponse = await self._execute_command(
@@ -433,36 +421,14 @@ class Tab(FindElementsMixin):
 
     async def enable_auto_solve_cloudflare_captcha(
         self,
-        custom_selector: Optional[tuple[By, str]] = None,
-        time_before_click: Optional[float] = None,
         time_to_wait_captcha: float = 5,
     ):
         """
         Enable automatic Cloudflare Turnstile captcha bypass.
 
         Args:
-            custom_selector: Deprecated — ignored. Cloudflare Turnstile is now
-                detected automatically via shadow root inspection.
-            time_before_click: Deprecated — ignored. The checkbox is now
-                located via shadow root polling and clicked immediately.
             time_to_wait_captcha: Timeout for captcha detection (default 5s).
         """
-        if custom_selector is not None:
-            warnings.warn(
-                'custom_selector is deprecated and ignored. Cloudflare Turnstile is now '
-                'detected automatically via shadow root inspection.',
-                DeprecationWarning,
-                stacklevel=2,
-            )
-
-        if time_before_click is not None:
-            warnings.warn(
-                'time_before_click is deprecated and ignored. The checkbox is now '
-                'located via shadow root polling and clicked immediately.',
-                DeprecationWarning,
-                stacklevel=2,
-            )
-
         logger.info('Enabling Cloudflare captcha auto-solve')
         if not self.page_events_enabled:
             await self.enable_page_events()
@@ -545,55 +511,6 @@ class Tab(FindElementsMixin):
         self._browser._tabs_opened.pop(self._target_id)
         logger.debug('Tab closed and removed from browser registry')
         return result
-
-    async def get_frame(self, frame: 'WebElement') -> IFrame:
-        """
-        .. deprecated:: ?.?.?
-            Use iframe `WebElement` instances directly; this method will be removed in
-            a future version.
-
-        Get Tab object for interacting with iframe content.
-
-        Args:
-            frame: Tab representing the iframe tag.
-
-        Returns:
-            Tab instance configured for iframe interaction.
-
-        Raises:
-            NotAnIFrame: If element is not an iframe.
-            InvalidIFrame: If iframe lacks valid src attribute.
-            IFrameNotFound: If iframe target not found in browser.
-        """
-        warnings.warn(
-            'Tab.get_frame() is deprecated and will be removed in a future version. '
-            'Interact with iframe WebElements directly.',
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        logger.debug(f'Resolving iframe: tag={frame.tag_name}')
-        if not frame.tag_name == 'iframe':
-            raise NotAnIFrame
-
-        frame_url = frame.get_attribute('src')
-        logger.debug(f'Iframe src resolved: {frame_url}')
-        if not frame_url:
-            raise InvalidIFrame('The iframe does not have a valid src attribute')
-
-        targets = await self._browser.get_targets()
-        iframe_target = next((target for target in targets if target['url'] == frame_url), None)
-        if not iframe_target:
-            raise IFrameNotFound('The target for the iframe was not found')
-
-        target_id = iframe_target['targetId']
-        if target_id in self._browser._tabs_opened:
-            logger.debug(f'Iframe tab already tracked: {target_id}')
-            return self._browser._tabs_opened[target_id]
-
-        tab = Tab(self._browser, **self._browser._get_tab_kwargs(target_id))
-        self._browser._tabs_opened[target_id] = tab
-        logger.debug(f'Iframe tab created and registered: {target_id}')
-        return tab
 
     async def find_shadow_roots(self, deep: bool = False, timeout: float = 0) -> list[ShadowRoot]:
         """
@@ -1319,7 +1236,6 @@ class Tab(FindElementsMixin):
             PageCommands.handle_javascript_dialog(accept=accept, prompt_text=prompt_text)
         )
 
-    @overload
     async def execute_script(
         self,
         script: str,
@@ -1339,57 +1255,12 @@ class Tab(FindElementsMixin):
         allow_unsafe_eval_blocked_by_csp: Optional[bool] = None,
         unique_context_id: Optional[str] = None,
         serialization_options: Optional[SerializationOptions] = None,
-    ) -> EvaluateResponse: ...
-
-    @overload
-    async def execute_script(
-        self,
-        script: str,
-        element: WebElement,
-        *,
-        arguments: Optional[list[CallArgument]] = None,
-        silent: Optional[bool] = None,
-        return_by_value: Optional[bool] = None,
-        generate_preview: Optional[bool] = None,
-        user_gesture: Optional[bool] = None,
-        await_promise: Optional[bool] = None,
-        execution_context_id: Optional[int] = None,
-        object_group: Optional[str] = None,
-        throw_on_side_effect: Optional[bool] = None,
-        unique_context_id: Optional[str] = None,
-        serialization_options: Optional[SerializationOptions] = None,
-    ) -> CallFunctionOnResponse: ...
-
-    async def execute_script(
-        self,
-        script: str,
-        element: Optional[WebElement] = None,
-        *,
-        arguments: Optional[list[CallArgument]] = None,
-        object_group: Optional[str] = None,
-        include_command_line_api: Optional[bool] = None,
-        silent: Optional[bool] = None,
-        context_id: Optional[int] = None,
-        return_by_value: Optional[bool] = None,
-        generate_preview: Optional[bool] = None,
-        user_gesture: Optional[bool] = None,
-        await_promise: Optional[bool] = None,
-        execution_context_id: Optional[int] = None,
-        throw_on_side_effect: Optional[bool] = None,
-        timeout: Optional[float] = None,
-        disable_breaks: Optional[bool] = None,
-        repl_mode: Optional[bool] = None,
-        allow_unsafe_eval_blocked_by_csp: Optional[bool] = None,
-        unique_context_id: Optional[str] = None,
-        serialization_options: Optional[SerializationOptions] = None,
-    ) -> Union[EvaluateResponse, CallFunctionOnResponse]:
+    ) -> EvaluateResponse:
         """
         Execute JavaScript in page context.
 
         Args:
             script (str): JavaScript code to execute.
-            element (Optional[WebElement]): Optional WebElement to execute script on.
-            arguments (Optional[list[CallArgument]]): Arguments to pass to the function.
             object_group (Optional[str]): Symbolic group name for the result (Runtime.evaluate).
             include_command_line_api (Optional[bool]): Whether to include command line API
                 (Runtime.evaluate).
@@ -1403,8 +1274,6 @@ class Tab(FindElementsMixin):
             user_gesture (Optional[bool]): Whether to treat evaluation as initiated by user
                 gesture (Runtime.evaluate).
             await_promise (Optional[bool]): Whether to await promise result (Runtime.evaluate).
-            execution_context_id (Optional[int]): ID of the execution context to call the
-                function in.
             throw_on_side_effect (Optional[bool]): Whether to throw if side effect cannot be
                 ruled out (Runtime.evaluate).
             timeout (Optional[float]): Timeout in milliseconds (Runtime.evaluate).
@@ -1419,48 +1288,19 @@ class Tab(FindElementsMixin):
                 the result (Runtime.evaluate).
 
         Returns:
-            Union[EvaluateResponse, CallFunctionOnResponse]: The result of the script execution.
+            EvaluateResponse: The result of the script execution.
 
         Raises:
-            InvalidScriptWithElement: If script uses 'argument' keyword but no element is provided.
+            InvalidScriptWithElement: If the script references ``argument``; run it through
+                ``WebElement.execute_script()`` instead.
 
         Examples:
             # Execute a simple script to log a message
-            await page.execute_script('console.log("Hello World")')
+            await tab.execute_script('console.log("Hello World")')
 
             # Execute a script that returns the page title
-            await page.execute_script('return document.title')
-
-            # Execute a script on an element to click it
-            await page.execute_script('argument.click()', element)
-
-            # Execute a script on an element to set its value
-            await page.execute_script('argument.value = "Hello"', element)
+            await tab.execute_script('return document.title')
         """
-        logger.debug(f'Executing script: with_element={bool(element)}, length={len(script)}')
-        if element is not None:
-            warnings.warn(
-                'Passing a WebElement to Tab.execute_script() is deprecated. '
-                'Use WebElement.execute_script() instead.',
-                DeprecationWarning,
-                stacklevel=2,
-            )
-
-            return await element.execute_script(
-                script,
-                arguments=arguments,
-                silent=silent,
-                return_by_value=return_by_value,
-                generate_preview=generate_preview,
-                user_gesture=user_gesture,
-                await_promise=await_promise,
-                execution_context_id=execution_context_id,
-                object_group=object_group,
-                throw_on_side_effect=throw_on_side_effect,
-                unique_context_id=unique_context_id,
-                serialization_options=serialization_options,
-            )
-
         if has_return_outside_function(script):
             script = f'(function(){{ {script} }})()'
 
@@ -1482,10 +1322,8 @@ class Tab(FindElementsMixin):
             unique_context_id=unique_context_id,
             serialization_options=serialization_options,
         )
-        logger.debug(f'Executing script without element: length={len(script)}')
-        result: Union[EvaluateResponse, CallFunctionOnResponse] = await self._execute_command(
-            command
-        )
+        logger.debug(f'Executing script: length={len(script)}')
+        result: EvaluateResponse = await self._execute_command(command)
         self._validate_argument_error(result)
         return result
 
@@ -1616,36 +1454,14 @@ class Tab(FindElementsMixin):
     @asynccontextmanager
     async def expect_and_bypass_cloudflare_captcha(
         self,
-        custom_selector: Optional[tuple[By, str]] = None,
-        time_before_click: Optional[float] = None,
         time_to_wait_captcha: float = 5,
     ) -> AsyncGenerator[None, None]:
         """
         Context manager for automatic Cloudflare captcha bypass.
 
         Args:
-            custom_selector: Deprecated — ignored. Cloudflare Turnstile is now
-                detected automatically via shadow root inspection.
-            time_before_click: Deprecated — ignored. The checkbox is now
-                located via shadow root polling and clicked immediately.
             time_to_wait_captcha: Timeout for captcha detection (default 5s).
         """
-        if custom_selector is not None:
-            warnings.warn(
-                'custom_selector is deprecated and ignored. Cloudflare Turnstile is now '
-                'detected automatically via shadow root inspection.',
-                DeprecationWarning,
-                stacklevel=2,
-            )
-
-        if time_before_click is not None:
-            warnings.warn(
-                'time_before_click is deprecated and ignored. The checkbox is now '
-                'located via shadow root polling and clicked immediately.',
-                DeprecationWarning,
-                stacklevel=2,
-            )
-
         captcha_processed = asyncio.Event()
 
         async def bypass_cloudflare(_: dict):
@@ -1678,7 +1494,7 @@ class Tab(FindElementsMixin):
         self,
         keep_file_at: Optional[Union[str, Path]] = None,
         timeout: Optional[float] = None,
-    ) -> AsyncGenerator[_DownloadHandle, None]:
+    ) -> AsyncGenerator[DownloadHandle, None]:
         """
         Context manager for handling a file download triggered inside the block.
 
@@ -1692,7 +1508,7 @@ class Tab(FindElementsMixin):
             timeout: Max seconds to wait for download completion. Defaults to 60.
 
         Yields:
-            _DownloadHandle: Handle to read the downloaded file (bytes/base64) and check its path.
+            DownloadHandle: Handle to read the downloaded file (bytes/base64) and check its path.
         """
         download_timeout = 60.0 if timeout is None else float(timeout)
 
@@ -1766,7 +1582,7 @@ class Tab(FindElementsMixin):
             False,
         )
 
-        handle = _DownloadHandle(
+        handle = DownloadHandle(
             state=state,
             will_begin_future=will_begin,
             done_future=done,
@@ -2010,7 +1826,7 @@ class Tab(FindElementsMixin):
         """
         for shadow_root in await self.find_shadow_roots(deep=False):
             with contextlib.suppress(Exception):
-                if _CLOUDFLARE_CHALLENGE_DOMAIN in await shadow_root.inner_html:
+                if _CLOUDFLARE_CHALLENGE_DOMAIN in await shadow_root.inner_html():
                     return shadow_root
         return None
 
@@ -2066,7 +1882,7 @@ class Tab(FindElementsMixin):
             logger.error(f'Error in cloudflare bypass: {last_error}')
 
 
-class _DownloadHandle:
+class DownloadHandle:
     """Handle returned by expect_download to access the downloaded file."""
 
     def __init__(

@@ -11,7 +11,7 @@ Passe `humanize=True` para `type_text()` e o Pydoll varia o intervalo entre as t
 === "Sync"
 
     ```python
-    from pydoll.sync import Chrome
+    from pydoll import Chrome
 
     def main():
         with Chrome() as browser:
@@ -32,7 +32,7 @@ Passe `humanize=True` para `type_text()` e o Pydoll varia o intervalo entre as t
     ```python
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
+    from pydoll import Chrome
 
 
     async def main():
@@ -112,7 +112,7 @@ Usuários reais não se teletransportam para baixo numa página. `tab.scroll` of
 === "Sync"
 
     ```python
-    from pydoll.sync import Chrome
+    from pydoll import Chrome
     from pydoll.constants import ScrollPosition
 
     def main():
@@ -132,7 +132,7 @@ Usuários reais não se teletransportam para baixo numa página. `tab.scroll` of
     ```python
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
+    from pydoll import Chrome
     from pydoll.constants import ScrollPosition
 
 

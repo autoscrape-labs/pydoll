@@ -11,8 +11,7 @@ As preferências do dia a dia têm métodos e propriedades auxiliares, então vo
 === "Sync"
 
     ```python
-    from pydoll.sync import Chrome
-    from pydoll.browser.options import ChromiumOptions
+    from pydoll import Chrome, ChromiumOptions
 
     def main():
         options = ChromiumOptions()
@@ -33,8 +32,7 @@ As preferências do dia a dia têm métodos e propriedades auxiliares, então vo
     ```python
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
-    from pydoll.browser.options import ChromiumOptions
+    from pydoll import Chrome, ChromiumOptions
 
 
     async def main():
@@ -105,8 +103,7 @@ Sistemas anti-bot leem o perfil, não só a página. Um perfil novo e vazio com 
     ```python
     import time
 
-    from pydoll.sync import Chrome
-    from pydoll.browser.options import ChromiumOptions
+    from pydoll import Chrome, ChromiumOptions
 
     def realistic_options() -> ChromiumOptions:
         now = int(time.time())
@@ -154,8 +151,7 @@ Sistemas anti-bot leem o perfil, não só a página. Um perfil novo e vazio com 
     import asyncio
     import time
 
-    from pydoll.browser.chromium import Chrome
-    from pydoll.browser.options import ChromiumOptions
+    from pydoll import Chrome, ChromiumOptions
 
 
     def realistic_options() -> ChromiumOptions:
@@ -692,7 +688,7 @@ Os blocos abaixo listam preferências do Chromium que vale conhecer, agrupadas p
 
     ```python
     import uuid
-    from pydoll.browser.options import ChromiumOptions
+    from pydoll import ChromiumOptions
 
     options = ChromiumOptions()
     options.browser_preferences = {
@@ -827,7 +823,7 @@ Os blocos abaixo listam preferências do Chromium que vale conhecer, agrupadas p
 
     ```python
     import time
-    from pydoll.browser.options import ChromiumOptions
+    from pydoll import ChromiumOptions
 
     options = ChromiumOptions()
     options.browser_preferences = {
@@ -870,7 +866,7 @@ Os blocos abaixo listam preferências do Chromium que vale conhecer, agrupadas p
 
     ```python
     import time
-    from pydoll.browser.options import ChromiumOptions
+    from pydoll import ChromiumOptions
 
     options = ChromiumOptions()
     options.browser_preferences = {
@@ -933,7 +929,7 @@ Os blocos abaixo listam preferências do Chromium que vale conhecer, agrupadas p
 
     ```python
     import time
-    from pydoll.browser.options import ChromiumOptions
+    from pydoll import ChromiumOptions
 
     options = ChromiumOptions()
     options.browser_preferences = {

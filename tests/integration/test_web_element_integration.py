@@ -15,8 +15,6 @@ import pytest
 import pytest_asyncio
 
 from pydoll.browser.chromium import Chrome
-from pydoll.constants import Key
-from pydoll.elements.web_element import WebElement
 from pydoll.exceptions import (
     ElementNotFound,
     ElementNotInteractable,
@@ -47,7 +45,7 @@ async def test_click_triggers_dom_side_effect(element_tab):
     button = await element_tab.find(id='btn')
     await button.click()
     counter = await element_tab.find(id='clicks')
-    assert (await counter.text) == '1'
+    assert (await counter.text()) == '1'
 
 
 @pytest.mark.asyncio
@@ -55,7 +53,7 @@ async def test_click_using_js_triggers_handler(element_tab):
     button = await element_tab.find(id='js-btn')
     await button.click_using_js()
     result = await element_tab.find(id='js-clicks')
-    assert (await result.text) == 'clicked'
+    assert (await result.text()) == 'clicked'
 
 
 @pytest.mark.asyncio
@@ -145,7 +143,7 @@ async def test_clicking_option_selects_it(element_tab):
     option = await element_tab.find(id='opt-b')
     await option.click()
     selected = await element_tab.find(id='select-value')
-    assert (await selected.text) == 'b'
+    assert (await selected.text()) == 'b'
 
 
 @pytest.mark.asyncio
@@ -156,24 +154,15 @@ async def test_set_input_files_attaches_file(element_tab):
 
 
 @pytest.mark.asyncio
-async def test_press_keyboard_key_dispatches_to_focused_element(element_tab):
-    key_input = await element_tab.find(id='key-input')
-    await key_input.click()
-    with pytest.warns(DeprecationWarning):
-        await key_input.press_keyboard_key(Key.ENTER)
-    assert 'Enter' in await _live(element_tab, "document.getElementById('key-log').textContent")
-
-
-@pytest.mark.asyncio
 async def test_text_inner_html_and_bounds(element_tab):
     title = await element_tab.find(id='title')
-    assert (await title.text) == 'WebElement Test Page'
-    assert '<h1' in (await title.inner_html)
+    assert (await title.text()) == 'WebElement Test Page'
+    assert '<h1' in (await title.inner_html())
 
     bounds = await title.get_bounds_using_js()
     assert bounds['width'] > 0
     assert bounds['height'] > 0
-    assert isinstance(await title.bounds, list)
+    assert isinstance(await title.bounds(), list)
 
 
 @pytest.mark.asyncio
@@ -181,7 +170,7 @@ async def test_get_shadow_root_returns_traversable_root(element_tab):
     host = await element_tab.find(id='shadow-host')
     shadow_root = await host.get_shadow_root()
     inner = await shadow_root.query('#shadow-btn')
-    assert (await inner.text) == 'inside shadow'
+    assert (await inner.text()) == 'inside shadow'
 
 
 @pytest.mark.asyncio
@@ -196,7 +185,7 @@ async def test_get_shadow_root_with_timeout_waits_for_late_attachment(element_ta
     host = await element_tab.find(id='shadow-host-late')
     shadow_root = await host.get_shadow_root(timeout=3)
     inner = await shadow_root.query('#late-shadow')
-    assert (await inner.text) == 'late shadow content'
+    assert (await inner.text()) == 'late shadow content'
 
 
 @pytest.mark.asyncio
@@ -218,7 +207,7 @@ async def test_humanized_click_triggers_dom_side_effect(element_tab):
     button = await element_tab.find(id='btn')
     await button.click(humanize=True)
     counter = await element_tab.find(id='clicks')
-    assert (await counter.text) == '1'
+    assert (await counter.text()) == '1'
 
 
 @pytest.mark.asyncio
@@ -322,14 +311,14 @@ async def test_state_flags_false_after_context_invalidated(element_tab):
 @pytest.mark.asyncio
 async def test_iframe_context_is_none_for_non_iframe(element_tab):
     title = await element_tab.find(id='title')
-    assert await title.iframe_context is None
+    assert await title.iframe_context() is None
 
 
 @pytest.mark.asyncio
 async def test_bounds_raises_key_error_for_element_without_box_model(element_tab):
     contents_only = await element_tab.find(id='contents-only')
     with pytest.raises(KeyError):
-        await contents_only.bounds
+        await contents_only.bounds()
 
 
 # --- insert_text on input types where selectionStart/selectionEnd throw ---

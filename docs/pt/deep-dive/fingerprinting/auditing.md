@@ -12,7 +12,7 @@ O [fingerprint-scan.com](https://fingerprint-scan.com/) roda um teste de fingerp
 
     ```python
     import time
-    from pydoll.sync import Chrome
+    from pydoll import Chrome
     from examples.fingerprints import FINGERPRINTS
 
     def scan(profile):
@@ -30,7 +30,7 @@ O [fingerprint-scan.com](https://fingerprint-scan.com/) roda um teste de fingerp
 
     ```python
     import asyncio
-    from pydoll.browser.chromium import Chrome
+    from pydoll import Chrome
     from examples.fingerprints import FINGERPRINTS
 
     async def scan(profile):

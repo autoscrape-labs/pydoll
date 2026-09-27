@@ -9,7 +9,7 @@ A logged-in session lives in the browser's cookies. Read them, set them, or save
 === "Sync"
 
     ```python
-    from pydoll.sync import Chrome
+    from pydoll import Chrome
 
     def main():
         with Chrome() as browser:
@@ -29,7 +29,7 @@ A logged-in session lives in the browser's cookies. Read them, set them, or save
     ```python
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
+    from pydoll import Chrome
 
 
     async def main():
@@ -99,7 +99,7 @@ First run, log in and save:
     import json
     from pathlib import Path
 
-    from pydoll.sync import Chrome
+    from pydoll import Chrome
 
     COOKIE_FILE = Path('session.json')
 
@@ -126,7 +126,7 @@ First run, log in and save:
     import json
     from pathlib import Path
 
-    from pydoll.browser.chromium import Chrome
+    from pydoll import Chrome
 
     COOKIE_FILE = Path('session.json')
 
@@ -155,7 +155,7 @@ Later runs, load the cookies and you are already logged in:
     import json
     from pathlib import Path
 
-    from pydoll.sync import Chrome
+    from pydoll import Chrome
 
     COOKIE_FILE = Path('session.json')
 
@@ -184,7 +184,7 @@ Later runs, load the cookies and you are already logged in:
     import json
     from pathlib import Path
 
-    from pydoll.browser.chromium import Chrome
+    from pydoll import Chrome
 
     COOKIE_FILE = Path('session.json')
 

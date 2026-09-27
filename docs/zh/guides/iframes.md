@@ -9,7 +9,7 @@
 === "Sync"
 
     ```python
-    from pydoll.sync import Chrome
+    from pydoll import Chrome
 
     def main():
         with Chrome() as browser:
@@ -18,7 +18,7 @@
 
             editor = tab.find(tag_name='iframe')   # 嵌入的编辑器框架
             body = editor.find(id='tinymce')        # 框架内部的一个元素
-            print(body.text)
+            print(body.text())
 
     main()
     ```
@@ -28,7 +28,7 @@
     ```python
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
+    from pydoll import Chrome
 
 
     async def main():
@@ -38,7 +38,7 @@
 
             editor = await tab.find(tag_name='iframe')   # 嵌入的编辑器框架
             body = await editor.find(id='tinymce')        # 框架内部的一个元素
-            print(await body.text)
+            print(await body.text())
 
     asyncio.run(main())
     ```
@@ -235,7 +235,7 @@ graph TB
 像 Cloudflare Turnstile 这样的组件存在于跨源 iframe（进程外框架，即 OOPIF）中，并且常常把它们的控件藏在一个封闭的 shadow 根里。`tab.find_shadow_roots(deep=True, timeout=...)` 能触及那些框架。关于 shadow 根 API 参见 [DOM 遍历](dom-traversal.md)，关于端到端处理 Turnstile 参见[验证码绕过](../stealth/captcha-bypass.md)。
 
 !!! note "从 `tab.get_frame()` 迁移"
-    早期版本用 `tab.get_frame()` 把 iframe 转换成一个单独的对象。该方法已弃用，将被移除。请直接使用 iframe 的 `WebElement`，如上所示。
+    早期版本用 `tab.get_frame()` 把 iframe 转换成一个单独的对象。Pydoll 3 已移除该方法。请直接使用 iframe 的 `WebElement`，如上所示。
 
 ## 下一步
 

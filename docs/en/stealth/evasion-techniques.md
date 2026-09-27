@@ -24,8 +24,7 @@ Pydoll fixes this for you. When it sees a `--user-agent=` argument, it applies `
 === "Sync"
 
     ```python
-    from pydoll.sync import Chrome
-    from pydoll.browser.options import ChromiumOptions
+    from pydoll import Chrome, ChromiumOptions
 
     def main():
         options = ChromiumOptions()
@@ -47,8 +46,7 @@ Pydoll fixes this for you. When it sees a `--user-agent=` argument, it applies `
     ```python
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
-    from pydoll.browser.options import ChromiumOptions
+    from pydoll import Chrome, ChromiumOptions
 
 
     async def main():

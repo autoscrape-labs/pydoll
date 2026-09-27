@@ -14,8 +14,7 @@ Habilite os eventos de rede antes de navegar e depois registre um callback. O Py
     import time
     from functools import partial
 
-    from pydoll.sync import Chrome
-    from pydoll.protocol.network.events import NetworkEvent
+    from pydoll import Chrome, NetworkEvent
 
     def on_request(tab, event):
         request = event['params']['request']
@@ -40,8 +39,7 @@ Habilite os eventos de rede antes de navegar e depois registre um callback. O Py
     import asyncio
     from functools import partial
 
-    from pydoll.browser.chromium import Chrome
-    from pydoll.protocol.network.events import NetworkEvent
+    from pydoll import Chrome, NetworkEvent
 
 
     async def on_request(tab, event):
@@ -76,7 +74,7 @@ O corpo da resposta não está no evento; você o busca pelo id da requisição 
 
     ```python
     import time
-    from pydoll.sync import Chrome
+    from pydoll import Chrome
 
     def main():
         with Chrome() as browser:
@@ -101,7 +99,7 @@ O corpo da resposta não está no evento; você o busca pelo id da requisição 
     ```python
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
+    from pydoll import Chrome
 
 
     async def main():
@@ -168,8 +166,7 @@ Assine as respostas para verificar códigos de status e as falhas para capturar 
 
     ```python
     import time
-    from pydoll.sync import Chrome
-    from pydoll.protocol.network.events import NetworkEvent
+    from pydoll import Chrome, NetworkEvent
 
     def on_response(event):
         response = event['params']['response']
@@ -197,8 +194,7 @@ Assine as respostas para verificar códigos de status e as falhas para capturar 
     ```python
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
-    from pydoll.protocol.network.events import NetworkEvent
+    from pydoll import Chrome, NetworkEvent
 
 
     async def on_response(event):

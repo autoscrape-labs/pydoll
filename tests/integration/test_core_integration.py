@@ -55,14 +55,14 @@ class TestCoreFindQuery:
             # XPath absolute
             deep_span = await tab.query('//*[@id="deep-section"]//span[@id="deep-span"]')
             assert deep_span is not None
-            text = await deep_span.text
+            text = await deep_span.text()
             assert 'Deep nested element' in text
 
             # XPath relative from container
             container = await tab.find(id='deep-section')
             rel_span = await container.find(xpath='.//span[@id="deep-span"]')
             assert rel_span is not None
-            text2 = await rel_span.text
+            text2 = await rel_span.text()
             assert 'Deep nested element' in text2
 
 
@@ -77,7 +77,7 @@ class TestCoreClickAndInput:
 
             button = await tab.find(id='btn-1', timeout=5)
             counter = await tab.find(id='btn-1-count')
-            assert (await counter.text).strip() == '0'
+            assert (await counter.text()).strip() == '0'
 
             await button.click()
             await wait_for_element_text(counter, '1')

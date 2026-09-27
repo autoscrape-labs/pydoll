@@ -11,7 +11,7 @@ The common case is clicking an element you already located with `find()` or `que
 === "Sync"
 
     ```python
-    from pydoll.sync import Chrome
+    from pydoll import Chrome
 
     def main():
         with Chrome() as browser:
@@ -23,7 +23,7 @@ The common case is clicking an element you already located with `find()` or `que
 
             # the click added a Delete button
             delete = tab.find(class_name='added-manually')
-            print('Added:', delete.text)
+            print('Added:', delete.text())
 
     main()
     ```
@@ -33,7 +33,7 @@ The common case is clicking an element you already located with `find()` or `que
     ```python
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
+    from pydoll import Chrome
 
 
     async def main():
@@ -46,7 +46,7 @@ The common case is clicking an element you already located with `find()` or `que
 
             # the click added a Delete button
             delete = await tab.find(class_name='added-manually')
-            print('Added:', await delete.text)
+            print('Added:', await delete.text())
 
     asyncio.run(main())
     ```
@@ -89,7 +89,7 @@ The common case is clicking an element you already located with `find()` or `que
 === "Sync"
 
     ```python
-    from pydoll.sync import Chrome
+    from pydoll import Chrome
     from pydoll.protocol.input.types import MouseButton
 
     def main():
@@ -111,7 +111,7 @@ The common case is clicking an element you already located with `find()` or `que
     ```python
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
+    from pydoll import Chrome
     from pydoll.protocol.input.types import MouseButton
 
 

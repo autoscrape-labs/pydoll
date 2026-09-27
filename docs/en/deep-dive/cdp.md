@@ -54,7 +54,7 @@ An **event** is a notification the browser sends on its own, once you enable its
     ```python
     from functools import partial
 
-    from pydoll.protocol.network.events import NetworkEvent
+    from pydoll import NetworkEvent
 
     def on_request(tab, event):
         url = event['params']['request']['url']
@@ -69,7 +69,7 @@ An **event** is a notification the browser sends on its own, once you enable its
     ```python
     from functools import partial
 
-    from pydoll.protocol.network.events import NetworkEvent
+    from pydoll import NetworkEvent
 
 
     async def on_request(tab, event):

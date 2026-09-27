@@ -9,7 +9,7 @@ Chame `take_screenshot()` com um caminho de arquivo. A extensão define o format
 === "Sync"
 
     ```python
-    from pydoll.sync import Chrome
+    from pydoll import Chrome
 
     def main():
         with Chrome() as browser:
@@ -26,7 +26,7 @@ Chame `take_screenshot()` com um caminho de arquivo. A extensão define o format
     ```python
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
+    from pydoll import Chrome
 
 
     async def main():
@@ -163,7 +163,7 @@ Chame `take_screenshot()` em um elemento para capturar apenas esse elemento. O P
     ```python
     from pathlib import Path
 
-    from pydoll.sync import Chrome
+    from pydoll import Chrome
 
     def main():
         with Chrome() as browser:
@@ -181,7 +181,7 @@ Chame `take_screenshot()` em um elemento para capturar apenas esse elemento. O P
     import asyncio
     from pathlib import Path
 
-    from pydoll.browser.chromium import Chrome
+    from pydoll import Chrome
 
 
     async def main():

@@ -6,8 +6,7 @@
 
     ```python
     import time
-    from pydoll.sync import Chrome
-    from pydoll.constants import Key
+    from pydoll import Chrome, Key
 
     def main():
         with Chrome() as browser:
@@ -19,7 +18,7 @@
 
             tab.keyboard.press(Key.ENTER)
             time.sleep(2)
-            print(tab.current_url)
+            print(tab.current_url())
 
     main()
     ```
@@ -29,8 +28,7 @@
     ```python
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
-    from pydoll.constants import Key
+    from pydoll import Chrome, Key
 
 
     async def main():
@@ -43,7 +41,7 @@
 
             await tab.keyboard.press(Key.ENTER)
             await asyncio.sleep(2)
-            print(await tab.current_url)
+            print(await tab.current_url())
 
     asyncio.run(main())
     ```
@@ -94,7 +92,7 @@
 === "Sync"
 
     ```python
-    from pydoll.constants import Key
+    from pydoll import Key
 
     tab.keyboard.press(Key.ENTER)
     tab.keyboard.press(Key.TAB)
@@ -108,7 +106,7 @@
 === "Async"
 
     ```python
-    from pydoll.constants import Key
+    from pydoll import Key
 
     await tab.keyboard.press(Key.ENTER)
     await tab.keyboard.press(Key.TAB)
@@ -128,7 +126,7 @@
 === "Sync"
 
     ```python
-    from pydoll.constants import Key
+    from pydoll import Key
 
     tab.keyboard.hotkey(Key.CONTROL, Key.A)   # 全选
     tab.keyboard.hotkey(Key.CONTROL, Key.C)   # 复制
@@ -138,7 +136,7 @@
 === "Async"
 
     ```python
-    from pydoll.constants import Key
+    from pydoll import Key
 
     await tab.keyboard.hotkey(Key.CONTROL, Key.A)   # 全选
     await tab.keyboard.hotkey(Key.CONTROL, Key.C)   # 复制
@@ -151,7 +149,7 @@ macOS 用 Command（Meta），而 Windows 和 Linux 用 Control，所以要根�
 
     ```python
     import sys
-    from pydoll.constants import Key
+    from pydoll import Key
 
     mod = Key.META if sys.platform == 'darwin' else Key.CONTROL
     tab.keyboard.hotkey(mod, Key.C)
@@ -161,7 +159,7 @@ macOS 用 Command（Meta），而 Windows 和 Linux 用 Control，所以要根�
 
     ```python
     import sys
-    from pydoll.constants import Key
+    from pydoll import Key
 
     mod = Key.META if sys.platform == 'darwin' else Key.CONTROL
     await tab.keyboard.hotkey(mod, Key.C)
@@ -196,7 +194,7 @@ macOS 用 Command（Meta），而 Windows 和 Linux 用 Control，所以要根�
 === "Sync"
 
     ```python
-    from pydoll.constants import Key
+    from pydoll import Key
 
     try:
         tab.keyboard.down(Key.SHIFT)
@@ -209,7 +207,7 @@ macOS 用 Command（Meta），而 Windows 和 Linux 用 Control，所以要根�
 === "Async"
 
     ```python
-    from pydoll.constants import Key
+    from pydoll import Key
 
     try:
         await tab.keyboard.down(Key.SHIFT)

@@ -9,7 +9,7 @@
 === "Sync"
 
     ```python
-    from pydoll.sync import Chrome
+    from pydoll import Chrome
 
     def main():
         with Chrome() as browser:
@@ -18,7 +18,7 @@
 
             # 打开另一个标签页，已经导航好了
             docs = browser.new_tab('https://en.wikipedia.org/wiki/Web_scraping')
-            print(docs.title)
+            print(docs.title())
 
             docs.close()
 
@@ -30,7 +30,7 @@
     ```python
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
+    from pydoll import Chrome
 
 
     async def main():
@@ -40,7 +40,7 @@
 
             # 打开另一个标签页，已经导航好了
             docs = await browser.new_tab('https://en.wikipedia.org/wiki/Web_scraping')
-            print(await docs.title)
+            print(await docs.title())
 
             await docs.close()
 
@@ -63,7 +63,7 @@
 
     def title_of(tab, url):
         tab.go_to(url)
-        return tab.title
+        return tab.title()
 
 
     def main():
@@ -89,12 +89,12 @@
     ```python
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
+    from pydoll import Chrome
 
 
     async def title_of(tab, url):
         await tab.go_to(url)
-        return await tab.title
+        return await tab.title()
 
 
     async def main():
@@ -130,7 +130,7 @@
 
         tabs = browser.get_opened_tabs()
         for tab in tabs:
-            print(tab.current_url)
+            print(tab.current_url())
     ```
 
 === "Async"
@@ -143,7 +143,7 @@
 
         tabs = await browser.get_opened_tabs()
         for tab in tabs:
-            print(await tab.current_url)
+            print(await tab.current_url())
     ```
 
 ## 处理页面打开的标签页
@@ -161,7 +161,7 @@
     tabs = browser.get_opened_tabs()
     if len(tabs) > before:
         new_tab = tabs[-1]
-        print(new_tab.current_url)
+        print(new_tab.current_url())
     ```
 
 === "Async"
@@ -175,7 +175,7 @@
     tabs = await browser.get_opened_tabs()
     if len(tabs) > before:
         new_tab = tabs[-1]
-        print(await new_tab.current_url)
+        print(await new_tab.current_url())
     ```
 
 ## 把标签页带到前台

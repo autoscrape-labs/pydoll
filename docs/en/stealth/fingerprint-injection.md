@@ -24,7 +24,7 @@ Call `apply_fingerprint()` before the first navigation. Only the fields present 
 
     ```python
     import time
-    from pydoll.sync import Chrome
+    from pydoll import Chrome
 
     from examples.fingerprints import FINGERPRINTS
 
@@ -46,7 +46,7 @@ Call `apply_fingerprint()` before the first navigation. Only the fields present 
     ```python
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
+    from pydoll import Chrome
 
     from examples.fingerprints import FINGERPRINTS
 

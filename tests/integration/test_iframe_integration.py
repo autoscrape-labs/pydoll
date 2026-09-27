@@ -34,7 +34,7 @@ class TestSimpleIframeIntegration:
             assert iframe_element.is_iframe
 
             # Get iframe context
-            iframe_context = await iframe_element.iframe_context
+            iframe_context = await iframe_element.iframe_context()
             assert iframe_context is not None
             assert iframe_context.frame_id is not None
             assert iframe_context.execution_context_id is not None
@@ -45,7 +45,7 @@ class TestSimpleIframeIntegration:
             assert isinstance(heading_in_iframe, WebElement)
 
             # Verify the element text
-            text = await heading_in_iframe.text
+            text = await heading_in_iframe.text()
             assert 'Iframe Content' in text
 
     @pytest.mark.asyncio
@@ -105,7 +105,7 @@ class TestSimpleIframeIntegration:
             paragraph = await iframe_element.find(xpath='//p[@id="iframe-paragraph"]', timeout=5)
             assert paragraph is not None
 
-            text = await paragraph.text
+            text = await paragraph.text()
             assert 'content inside the iframe' in text
 
     @pytest.mark.asyncio
@@ -188,7 +188,7 @@ class TestSimpleIframeIntegration:
             iframe_element = await tab.find(id='simple-iframe', timeout=5)
 
             # Get inner HTML of the iframe
-            inner_html = await iframe_element.inner_html
+            inner_html = await iframe_element.inner_html()
             assert inner_html is not None
             assert len(inner_html) > 0
             assert 'iframe-heading' in inner_html
@@ -211,7 +211,7 @@ class TestSimpleIframeIntegration:
             assert container is not None
 
             # Get inner HTML
-            inner_html = await container.inner_html
+            inner_html = await container.inner_html()
             assert inner_html is not None
             assert 'iframe-paragraph' in inner_html
             assert 'iframe-form' in inner_html
@@ -281,7 +281,7 @@ class TestNestedIframeIntegration:
             parent_heading = await parent_iframe.find(id='parent-iframe-heading', timeout=5)
             assert parent_heading is not None
 
-            text = await parent_heading.text
+            text = await parent_heading.text()
             assert 'Parent Iframe Content' in text
 
     @pytest.mark.asyncio
@@ -323,7 +323,7 @@ class TestNestedIframeIntegration:
             nested_heading = await nested_iframe.find(id='nested-iframe-heading', timeout=5)
             assert nested_heading is not None
 
-            text = await nested_heading.text
+            text = await nested_heading.text()
             assert 'Nested Iframe Content' in text
 
     @pytest.mark.asyncio
@@ -486,7 +486,7 @@ class TestIframeElementInteraction:
             deep_span = await iframe_element.find(id='deep-span', timeout=5)
             assert deep_span is not None
 
-            text = await deep_span.text
+            text = await deep_span.text()
             assert 'Deep nested element' in text
 
 
@@ -508,7 +508,7 @@ class TestIframeElementInteraction:
             )
             assert element is not None
 
-            text = await element.text
+            text = await element.text()
             assert 'content inside the iframe' in text
 
     @pytest.mark.asyncio
@@ -561,13 +561,13 @@ class TestIframeElementInteraction:
             # Find main content (not in iframe)
             main_heading = await tab.find(id='main-heading', timeout=5)
             assert main_heading is not None
-            main_text = await main_heading.text
+            main_text = await main_heading.text()
             assert 'Main Page' in main_text
 
             # Find content in iframe
             iframe_element = await tab.find(id='simple-iframe')
             iframe_heading = await iframe_element.find(id='iframe-heading', timeout=5)
-            iframe_text = await iframe_heading.text
+            iframe_text = await iframe_heading.text()
             assert 'Iframe Content' in iframe_text
 
             # Verify they are different
@@ -586,15 +586,15 @@ class TestIframeElementInteraction:
             iframe_element = await tab.find(id='simple-iframe', timeout=5)
 
             # Get context first time
-            context1 = await iframe_element.iframe_context
+            context1 = await iframe_element.iframe_context()
             assert context1 is not None
 
             # Perform some operations
             element1 = await iframe_element.find(id='iframe-heading', timeout=5)
-            await element1.text
+            await element1.text()
 
             # Get context again
-            context2 = await iframe_element.iframe_context
+            context2 = await iframe_element.iframe_context()
             assert context2 is not None
 
             # Verify contexts are consistent
@@ -620,7 +620,7 @@ class TestIframeElementInteraction:
             # Get text from each
             texts = []
             for item in list_items:
-                text = await item.text
+                text = await item.text()
                 texts.append(text)
 
             # Verify texts
@@ -653,7 +653,7 @@ class TestMultipleIframesSelection:
             assert login_iframe.get_attribute('id') == 'login-iframe'
 
             # Verify we can access content in the correct iframe
-            iframe_context = await login_iframe.iframe_context
+            iframe_context = await login_iframe.iframe_context()
             assert iframe_context is not None
             assert iframe_context.frame_id is not None
 
@@ -674,7 +674,7 @@ class TestMultipleIframesSelection:
             heading = await login_iframe.find(id='iframe-heading', timeout=5)
             assert heading is not None
 
-            text = await heading.text
+            text = await heading.text()
             assert 'Iframe Content' in text
 
             # Verify we can find multiple elements
@@ -700,8 +700,8 @@ class TestMultipleIframesSelection:
             assert login_iframe.is_iframe
 
             # Get their contexts
-            cookie_ctx = await cookie_iframe.iframe_context
-            login_ctx = await login_iframe.iframe_context
+            cookie_ctx = await cookie_iframe.iframe_context()
+            login_ctx = await login_iframe.iframe_context()
 
             # Frame IDs should be different (distinct iframe contexts)
             assert cookie_ctx.frame_id != login_ctx.frame_id
@@ -754,7 +754,7 @@ class TestMultipleIframesSelection:
                 assert iframe.is_iframe
 
                 # Get context for each iframe
-                ctx = await iframe.iframe_context
+                ctx = await iframe.iframe_context()
                 assert ctx is not None
                 assert ctx.frame_id is not None
 
@@ -762,7 +762,7 @@ class TestMultipleIframesSelection:
                 heading = await iframe.find(id='iframe-heading', raise_exc=False)
                 # At least the content iframes should have the heading
                 if heading:
-                    text = await heading.text
+                    text = await heading.text()
                     assert len(text) > 0
 
     @pytest.mark.asyncio
@@ -778,12 +778,12 @@ class TestMultipleIframesSelection:
             # First, find element in cookie iframe
             cookie_iframe = await tab.find(id='cookie-iframe', timeout=5)
             cookie_heading = await cookie_iframe.find(id='iframe-heading', timeout=5)
-            cookie_text = await cookie_heading.text
+            cookie_text = await cookie_heading.text()
 
             # Then, find element in login iframe
             login_iframe = await tab.find(id='login-iframe')
             login_heading = await login_iframe.find(id='iframe-heading')
-            login_text = await login_heading.text
+            login_text = await login_heading.text()
 
             # Both should work independently
             assert 'Iframe Content' in cookie_text
@@ -792,7 +792,7 @@ class TestMultipleIframesSelection:
             # Now find in analytics iframe
             analytics_iframe = await tab.find(id='analytics-iframe')
             analytics_heading = await analytics_iframe.find(id='iframe-heading')
-            analytics_text = await analytics_heading.text
+            analytics_text = await analytics_heading.text()
 
             assert 'Iframe Content' in analytics_text
 
@@ -813,7 +813,7 @@ class TestIframeEdgeCases:
             iframe_element = await tab.find(id='simple-iframe', timeout=5)
 
             # Add dynamic content via JavaScript
-            iframe_context = await iframe_element.iframe_context
+            iframe_context = await iframe_element.iframe_context()
             await tab.execute_script(
                 """
                 const div = document.createElement('div');
@@ -828,7 +828,7 @@ class TestIframeEdgeCases:
             dynamic_element = await iframe_element.find(id='dynamic-element', timeout=5)
             assert dynamic_element is not None
 
-            text = await dynamic_element.text
+            text = await dynamic_element.text()
             assert 'Dynamic Content' in text
 
     @pytest.mark.asyncio
@@ -855,7 +855,7 @@ class TestIframeEdgeCases:
             assert element_after is not None
 
             # Verify element is accessible
-            text = await element_after.text
+            text = await element_after.text()
             assert 'Iframe Content' in text
 
 
@@ -964,7 +964,7 @@ class TestFrameElementIntegration:
             heading = await frame_element.find(id='frame-heading', timeout=5)
             assert heading is not None
 
-            text = await heading.text
+            text = await heading.text()
             assert 'Frame Content' in text
 
     @pytest.mark.asyncio
@@ -978,7 +978,7 @@ class TestFrameElementIntegration:
             await tab.go_to(file_url)
 
             frame_element = await tab.find(id='left-frame', timeout=5)
-            ctx = await frame_element.iframe_context
+            ctx = await frame_element.iframe_context()
             assert ctx is not None
             assert ctx.frame_id is not None
             assert ctx.execution_context_id is not None
@@ -994,7 +994,7 @@ class TestFrameElementIntegration:
             await tab.go_to(file_url)
 
             frame_element = await tab.find(id='left-frame', timeout=5)
-            html = await frame_element.inner_html
+            html = await frame_element.inner_html()
             assert 'frame-heading' in html
 
     @pytest.mark.asyncio
@@ -1015,12 +1015,12 @@ class TestFrameElementIntegration:
 
             # Left frame has frame-specific content
             left_heading = await left_frame.find(id='frame-heading', timeout=5)
-            left_text = await left_heading.text
+            left_text = await left_heading.text()
             assert 'Frame Content' in left_text
 
             # Right frame has iframe content (reuses test_iframe_content.html)
             right_heading = await right_frame.find(id='iframe-heading', timeout=5)
-            right_text = await right_heading.text
+            right_text = await right_heading.text()
             assert 'Iframe Content' in right_text
 
     @pytest.mark.asyncio
@@ -1076,7 +1076,7 @@ class TestIframeContextResolutionFailures:
             iframe_element = await tab.find(id='simple-iframe', timeout=5)
 
             # Sanity check: context resolves while the iframe is in the DOM.
-            ctx_before = await iframe_element.iframe_context
+            ctx_before = await iframe_element.iframe_context()
             assert ctx_before is not None
             assert ctx_before.frame_id is not None
 
@@ -1088,7 +1088,7 @@ class TestIframeContextResolutionFailures:
 
             async def context_resolution_fails() -> bool:
                 try:
-                    await iframe_element.iframe_context
+                    await iframe_element.iframe_context()
                     return False
                 except InvalidIFrame:
                     return True
@@ -1100,7 +1100,7 @@ class TestIframeContextResolutionFailures:
             )
 
             with pytest.raises(InvalidIFrame):
-                await iframe_element.iframe_context
+                await iframe_element.iframe_context()
 
     @pytest.mark.asyncio
     async def test_iframe_context_raises_when_remote_object_released(
@@ -1127,7 +1127,7 @@ class TestIframeContextResolutionFailures:
             )
 
             with pytest.raises(InvalidIFrame):
-                await iframe_element.iframe_context
+                await iframe_element.iframe_context()
 
     @pytest.mark.asyncio
     async def test_no_src_iframe_resolves_about_blank_context(self, ci_chrome_options):
@@ -1147,7 +1147,7 @@ class TestIframeContextResolutionFailures:
             iframe_element = await tab.find(id='frame-no-src', timeout=5)
             assert iframe_element.is_iframe
 
-            ctx = await iframe_element.iframe_context
+            ctx = await iframe_element.iframe_context()
             assert ctx is not None
             assert ctx.frame_id is not None
             assert ctx.execution_context_id is not None
@@ -1164,4 +1164,4 @@ class TestIframeContextResolutionFailures:
                 context_id=ctx.execution_context_id,
             )
             marker = await iframe_element.find(id='about-blank-marker', timeout=5)
-            assert 'blank ok' in await marker.text
+            assert 'blank ok' in await marker.text()

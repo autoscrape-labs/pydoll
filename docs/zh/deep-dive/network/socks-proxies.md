@@ -176,8 +176,7 @@ Pydoll 在 `pydoll.utils` 中提供了 `SOCKS5Forwarder`。它是一个纯 Pytho
 === "Sync"
 
     ```python
-    from pydoll.sync import Chrome
-    from pydoll.browser.options import ChromiumOptions
+    from pydoll import Chrome, ChromiumOptions
     from pydoll.utils import SOCKS5Forwarder
 
     def main():
@@ -204,8 +203,7 @@ Pydoll 在 `pydoll.utils` 中提供了 `SOCKS5Forwarder`。它是一个纯 Pytho
     ```python
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
-    from pydoll.browser.options import ChromiumOptions
+    from pydoll import Chrome, ChromiumOptions
     from pydoll.utils import SOCKS5Forwarder
 
 

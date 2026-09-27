@@ -62,7 +62,7 @@ def test_is_iframe_reflects_tag_name(make_element):
 
 
 def test_iframe_context_docstring_escapes_iframe_tag():
-    docstring = WebElement.iframe_context.fget.__doc__
+    docstring = WebElement.iframe_context.__doc__
     assert docstring is not None
     assert '``<iframe>``' in docstring
 
@@ -78,7 +78,7 @@ def test_attributes_returns_a_copy(make_element):
 async def test_inner_html_returns_outer_html(fake_conn, make_element):
     element = make_element(attributes=['tag_name', 'div'])
     fake_conn.set_response('DOM.getOuterHTML', {'outerHTML': '<div>hi</div>'})
-    assert await element.inner_html == '<div>hi</div>'
+    assert await element.inner_html() == '<div>hi</div>'
     assert fake_conn.last_command('DOM.getOuterHTML')['params']['objectId'] == 'el-1'
 
 
@@ -87,7 +87,7 @@ async def test_bounds_returns_box_model_content(fake_conn, make_element):
     element = make_element()
     quad = [0, 0, 100, 0, 100, 50, 0, 50]
     fake_conn.set_response('DOM.getBoxModel', {'model': {'content': quad}})
-    assert await element.bounds == quad
+    assert await element.bounds() == quad
 
 
 @pytest.mark.asyncio

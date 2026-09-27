@@ -5,7 +5,6 @@ import json
 import logging
 import os
 import shutil
-import warnings
 from abc import ABC, abstractmethod
 from contextlib import suppress
 from functools import partial
@@ -174,12 +173,9 @@ class Browser(ABC):  # noqa: PLR0904
             raise NoValidTabFound('No tabs available on remote browser')
         return tabs[0]
 
-    async def start(self, headless: bool = False) -> Tab:
+    async def start(self) -> Tab:
         """
         Start browser process and establish CDP connection.
-
-        Args:
-            headless: Deprecated. Use `options.headless = True` instead.
 
         Returns:
             Initial tab for interaction.
@@ -187,15 +183,6 @@ class Browser(ABC):  # noqa: PLR0904
         Raises:
             FailedToStartBrowser: If the browser fails to start or connect.
         """
-        if headless:
-            warnings.warn(
-                "The 'headless' parameter is deprecated and will be removed in a future version. "
-                'Use `options.headless = True` instead.',
-                DeprecationWarning,
-                stacklevel=2,
-            )
-            self.options.headless = headless
-
         binary_location = self.options.binary_location or self._get_default_binary_location()
         logger.debug('Resolved binary location: %s', binary_location)
 

@@ -23,7 +23,7 @@ Quando você inicia um navegador, o Pydoll lança o Chrome que você já tem ins
 === "Sync"
 
     ```python
-    from pydoll.sync import Chrome
+    from pydoll import Chrome
 
     def main():
         with Chrome() as browser:
@@ -38,7 +38,7 @@ Quando você inicia um navegador, o Pydoll lança o Chrome que você já tem ins
     ```python
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
+    from pydoll import Chrome
 
 
     async def main():
@@ -79,7 +79,7 @@ Dois objetos cobrem a maior parte do que você faz. O **browser** (`Chrome` ou `
 
 Veja [Abas](tabs.md) para gerenciar várias abas ao mesmo tempo, e [Contextos de navegador](browser-contexts.md) para isolar sessões.
 
-## Síncrono e assíncrono
+## Síncrono e assíncrono {#sync-and-async}
 
 O Pydoll oferece uma API em duas formas. Importe de `pydoll.sync` e cada chamada bloqueia até o navegador responder, então o script se lê de cima para baixo sem nenhum event loop para gerenciar. Importe de `pydoll.browser.chromium` e as mesmas classes são corrotinas: você usa `await` em cada chamada dentro de uma função `async def` e inicia o programa com `asyncio.run()`. A forma síncrona é gerada a partir da assíncrona, então as duas nunca diferem em métodos, argumentos ou padrões, e todo exemplo desta documentação mostra as duas.
 
@@ -95,7 +95,7 @@ Onde a forma assíncrona compensa é na concorrência. Navegação e esperas por
 
     def title_of(browser, url):
         tab = browser.new_tab(url)
-        title = tab.title
+        title = tab.title()
         tab.close()
         return title
 
@@ -120,12 +120,12 @@ Onde a forma assíncrona compensa é na concorrência. Navegação e esperas por
     ```python
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
+    from pydoll import Chrome
 
 
     async def title_of(browser, url):
         tab = await browser.new_tab(url)
-        title = await tab.title
+        title = await tab.title()
         await tab.close()
         return title
 
@@ -181,8 +181,7 @@ Em vez de consultar a página em um loop, você pode assinar eventos do navegado
     import time
     from functools import partial
 
-    from pydoll.sync import Chrome
-    from pydoll.protocol.network.events import NetworkEvent
+    from pydoll import Chrome, NetworkEvent
 
     def on_request(tab, event):
         url = event['params']['request']['url']
@@ -208,8 +207,7 @@ Em vez de consultar a página em um loop, você pode assinar eventos do navegado
     import asyncio
     from functools import partial
 
-    from pydoll.browser.chromium import Chrome
-    from pydoll.protocol.network.events import NetworkEvent
+    from pydoll import Chrome, NetworkEvent
 
 
     async def on_request(tab, event):
@@ -240,8 +238,7 @@ A mesma API controla qualquer navegador Chromium. O Chrome é o alvo principal; 
 === "Sync"
 
     ```python
-    from pydoll.sync import Chrome, Edge
-    from pydoll.browser.options import ChromiumOptions
+    from pydoll import Chrome, ChromiumOptions, Edge
 
     # Chrome
     with Chrome() as browser:
@@ -261,8 +258,7 @@ A mesma API controla qualquer navegador Chromium. O Chrome é o alvo principal; 
 === "Async"
 
     ```python
-    from pydoll.browser.chromium import Chrome, Edge
-    from pydoll.browser.options import ChromiumOptions
+    from pydoll import Chrome, ChromiumOptions, Edge
 
     # Chrome
     async with Chrome() as browser:

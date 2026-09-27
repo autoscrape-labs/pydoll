@@ -11,7 +11,7 @@
 === "Sync"
 
     ```python
-    from pydoll.sync import Chrome
+    from pydoll import Chrome
 
     def main():
         with Chrome() as browser:
@@ -35,7 +35,7 @@
     ```python
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
+    from pydoll import Chrome
 
 
     async def main():
@@ -121,7 +121,7 @@
     book = tab.find(class_name='product_pod')
 
     title = book.find(tag_name='h3')
-    print(title.text)                       # 可见文本
+    print(title.text())                       # 可见文本
 
     link = title.find(tag_name='a')
     print(link.get_attribute('href'))             # 某个属性值
@@ -134,14 +134,14 @@
     book = await tab.find(class_name='product_pod')
 
     title = await book.find(tag_name='h3')
-    print(await title.text)                       # 可见文本
+    print(await title.text())                       # 可见文本
 
     link = await title.find(tag_name='a')
     print(link.get_attribute('href'))             # 某个属性值
     print(link.get_attribute('title'))
     ```
 
-`text` 是一个属性（在异步 API 中需要 await）；`get_attribute(name)` 返回属性字符串，属性不存在时返回 `None`。
+`text()` 返回元素的可见文本；`get_attribute(name)` 返回属性字符串，属性不存在时返回 `None`。
 
 ## shadow DOM {#shadow-dom}
 

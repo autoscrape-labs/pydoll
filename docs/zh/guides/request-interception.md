@@ -17,8 +17,7 @@
     ```python
     from functools import partial
 
-    from pydoll.sync import Chrome
-    from pydoll.protocol.fetch.events import FetchEvent
+    from pydoll import Chrome, FetchEvent
 
     def on_request(tab, event):
         request_id = event['params']['requestId']
@@ -45,8 +44,7 @@
     import asyncio
     from functools import partial
 
-    from pydoll.browser.chromium import Chrome
-    from pydoll.protocol.fetch.events import FetchEvent
+    from pydoll import Chrome, FetchEvent
 
 
     async def on_request(tab, event):
@@ -105,8 +103,7 @@
     ```python
     from functools import partial
 
-    from pydoll.sync import Chrome
-    from pydoll.protocol.fetch.events import FetchEvent
+    from pydoll import Chrome, FetchEvent
     from pydoll.protocol.network.types import ErrorReason
 
     def block_heavy(tab, event):
@@ -137,8 +134,7 @@
     import asyncio
     from functools import partial
 
-    from pydoll.browser.chromium import Chrome
-    from pydoll.protocol.fetch.events import FetchEvent
+    from pydoll import Chrome, FetchEvent
     from pydoll.protocol.network.types import ErrorReason
 
 
@@ -176,8 +172,7 @@
     ```python
     from functools import partial
 
-    from pydoll.sync import Chrome
-    from pydoll.protocol.fetch.events import FetchEvent
+    from pydoll import Chrome, FetchEvent
     from pydoll.protocol.network.types import ResourceType
 
     def add_header(tab, event):
@@ -206,8 +201,7 @@
     import asyncio
     from functools import partial
 
-    from pydoll.browser.chromium import Chrome
-    from pydoll.protocol.fetch.events import FetchEvent
+    from pydoll import Chrome, FetchEvent
     from pydoll.protocol.network.types import ResourceType
 
 
@@ -248,8 +242,7 @@
     import json
     from functools import partial
 
-    from pydoll.sync import Chrome
-    from pydoll.protocol.fetch.events import FetchEvent
+    from pydoll import Chrome, FetchEvent
 
     def mock_json(tab, event):
         request_id = event['params']['requestId']
@@ -288,8 +281,7 @@
     import json
     from functools import partial
 
-    from pydoll.browser.chromium import Chrome
-    from pydoll.protocol.fetch.events import FetchEvent
+    from pydoll import Chrome, FetchEvent
 
 
     async def mock_json(tab, event):
@@ -351,8 +343,7 @@
     ```python
     from functools import partial
 
-    from pydoll.sync import Chrome
-    from pydoll.protocol.fetch.events import FetchEvent
+    from pydoll import Chrome, FetchEvent
     from pydoll.protocol.fetch.types import AuthChallengeResponseType
 
     def answer_auth(tab, event):
@@ -383,8 +374,7 @@
     import asyncio
     from functools import partial
 
-    from pydoll.browser.chromium import Chrome
-    from pydoll.protocol.fetch.events import FetchEvent
+    from pydoll import Chrome, FetchEvent
     from pydoll.protocol.fetch.types import AuthChallengeResponseType
 
 

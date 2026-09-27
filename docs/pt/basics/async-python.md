@@ -103,12 +103,12 @@ Troque as tarefas domésticas por páginas reais e nada muda. Carregar três pá
 ```python
 import asyncio
 
-from pydoll.browser.chromium import Chrome
+from pydoll import Chrome
 
 
 async def title_of(browser, url):
     tab = await browser.new_tab(url)
-    title = await tab.title
+    title = await tab.title()
     await tab.close()
     return title
 
@@ -138,11 +138,11 @@ Esses são os tropeços normais quando async é novidade. São rápidos de recon
 **Você esqueceu o `await`.** Sem ele, você obtém o objeto coroutine em vez do resultado dele, e um aviso:
 
 ```python
-title = tab.title
+title = tab.title()
 print(title)   # <coroutine object ...>, e: RuntimeWarning: coroutine was never awaited
 ```
 
-A correção é adicionar `await`: `title = await tab.title`.
+A correção é adicionar `await`: `title = await tab.title()`.
 
 **Você chamou código async sem iniciar o loop.** `await` só funciona dentro de um `async def`, e coroutines só rodam sob `asyncio.run()` (ou outro loop em execução):
 

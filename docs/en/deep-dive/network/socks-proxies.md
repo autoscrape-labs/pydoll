@@ -176,8 +176,7 @@ Pydoll ships `SOCKS5Forwarder` in `pydoll.utils`. It is a pure-Python, zero-depe
 === "Sync"
 
     ```python
-    from pydoll.sync import Chrome
-    from pydoll.browser.options import ChromiumOptions
+    from pydoll import Chrome, ChromiumOptions
     from pydoll.utils import SOCKS5Forwarder
 
     def main():
@@ -204,8 +203,7 @@ Pydoll ships `SOCKS5Forwarder` in `pydoll.utils`. It is a pure-Python, zero-depe
     ```python
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
-    from pydoll.browser.options import ChromiumOptions
+    from pydoll import Chrome, ChromiumOptions
     from pydoll.utils import SOCKS5Forwarder
 
 

@@ -299,22 +299,10 @@ class NoDialogPresent(DialogException):
     message = 'No dialog present on the page'
 
 
-class NotAnIFrame(PydollException):
-    """Raised when an element is not an iframe."""
-
-    message = 'The element is not an iframe'
-
-
 class InvalidIFrame(PydollException):
     """Raised when an iframe is not valid."""
 
     message = 'The iframe is not valid'
-
-
-class IFrameNotFound(PydollException):
-    """Raised when an iframe is not found."""
-
-    message = 'The iframe was not found'
 
 
 class NetworkEventsNotEnabled(PydollException):

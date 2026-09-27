@@ -23,7 +23,7 @@ graph LR
 === "Sync"
 
     ```python
-    from pydoll.sync import Chrome
+    from pydoll import Chrome
 
     def main():
         with Chrome() as browser:
@@ -38,7 +38,7 @@ graph LR
     ```python
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
+    from pydoll import Chrome
 
 
     async def main():
@@ -79,7 +79,7 @@ graph LR
 
 管理多个标签页请看 [标签页](tabs.md)，隔离会话请看 [浏览器上下文](browser-contexts.md)。
 
-## 同步与异步
+## 同步与异步 {#sync-and-async}
 
 Pydoll 以两种形式提供同一套 API。从 `pydoll.sync` 导入，每个调用都会阻塞到浏览器响应为止，脚本从上到下顺序阅读，无需管理事件循环。从 `pydoll.browser.chromium` 导入，同样的类就是协程：你在 `async def` 函数里 `await` 每个调用，并用 `asyncio.run()` 启动程序。同步形式由异步形式生成，所以两者在方法、参数和默认值上永远不会有差异，本文档的每个示例都同时给出两种写法。
 
@@ -95,7 +95,7 @@ Pydoll 以两种形式提供同一套 API。从 `pydoll.sync` 导入，每个调
 
     def title_of(browser, url):
         tab = browser.new_tab(url)
-        title = tab.title
+        title = tab.title()
         tab.close()
         return title
 
@@ -120,12 +120,12 @@ Pydoll 以两种形式提供同一套 API。从 `pydoll.sync` 导入，每个调
     ```python
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
+    from pydoll import Chrome
 
 
     async def title_of(browser, url):
         tab = await browser.new_tab(url)
-        title = await tab.title
+        title = await tab.title()
         await tab.close()
         return title
 
@@ -181,8 +181,7 @@ Pydoll 以两种形式提供同一套 API。从 `pydoll.sync` 导入，每个调
     import time
     from functools import partial
 
-    from pydoll.sync import Chrome
-    from pydoll.protocol.network.events import NetworkEvent
+    from pydoll import Chrome, NetworkEvent
 
     def on_request(tab, event):
         url = event['params']['request']['url']
@@ -208,8 +207,7 @@ Pydoll 以两种形式提供同一套 API。从 `pydoll.sync` 导入，每个调
     import asyncio
     from functools import partial
 
-    from pydoll.browser.chromium import Chrome
-    from pydoll.protocol.network.events import NetworkEvent
+    from pydoll import Chrome, NetworkEvent
 
 
     async def on_request(tab, event):
@@ -240,8 +238,7 @@ Pydoll 以两种形式提供同一套 API。从 `pydoll.sync` 导入，每个调
 === "Sync"
 
     ```python
-    from pydoll.sync import Chrome, Edge
-    from pydoll.browser.options import ChromiumOptions
+    from pydoll import Chrome, ChromiumOptions, Edge
 
     # Chrome
     with Chrome() as browser:
@@ -261,8 +258,7 @@ Pydoll 以两种形式提供同一套 API。从 `pydoll.sync` 导入，每个调
 === "Async"
 
     ```python
-    from pydoll.browser.chromium import Chrome, Edge
-    from pydoll.browser.options import ChromiumOptions
+    from pydoll import Chrome, ChromiumOptions, Edge
 
     # Chrome
     async with Chrome() as browser:

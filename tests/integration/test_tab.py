@@ -52,7 +52,7 @@ async def test_enable_event_domain_sets_flag_and_sends_command(
 @pytest.mark.asyncio
 async def test_current_url_evaluates_location_and_returns_value(cdp_server, fake_tab):
     cdp_server.set_result('Runtime.evaluate', {'result': {'value': 'https://example.com/p'}})
-    url = await fake_tab.current_url
+    url = await fake_tab.current_url()
     assert url == 'https://example.com/p'
     sent = cdp_server.commands_for('Runtime.evaluate')[-1]
     assert sent['params']['expression'] == 'window.location.href'

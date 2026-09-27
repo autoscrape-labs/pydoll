@@ -25,17 +25,17 @@ curl http://localhost:9222/json/version
 === "Sync"
 
     ```python
-    from pydoll.sync import Chrome
+    from pydoll import Chrome
 
     def main():
         browser = Chrome()
         tab = browser.connect('ws://localhost:9222/devtools/browser/<id>')
 
-        print(tab.title)
+        print(tab.title())
 
         tab.go_to('https://news.ycombinator.com')
         headline = tab.find(class_name='titleline')
-        print(headline.text)
+        print(headline.text())
 
         browser.close()
 
@@ -47,18 +47,18 @@ curl http://localhost:9222/json/version
     ```python
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
+    from pydoll import Chrome
 
 
     async def main():
         browser = Chrome()
         tab = await browser.connect('ws://localhost:9222/devtools/browser/<id>')
 
-        print(await tab.title)
+        print(await tab.title())
 
         await tab.go_to('https://news.ycombinator.com')
         headline = await tab.find(class_name='titleline')
-        print(await headline.text)
+        print(await headline.text())
 
         await browser.close()
 
@@ -78,7 +78,7 @@ curl http://localhost:9222/json/version
 
     ```python
     import aiohttp
-    from pydoll.sync import Chrome
+    from pydoll import Chrome
 
     def main():
         with aiohttp.ClientSession() as session:
@@ -87,7 +87,7 @@ curl http://localhost:9222/json/version
 
         browser = Chrome()
         tab = browser.connect(ws_address)
-        print(tab.title)
+        print(tab.title())
         browser.close()
 
     main()
@@ -99,7 +99,7 @@ curl http://localhost:9222/json/version
     import asyncio
 
     import aiohttp
-    from pydoll.browser.chromium import Chrome
+    from pydoll import Chrome
 
 
     async def main():
@@ -109,7 +109,7 @@ curl http://localhost:9222/json/version
 
         browser = Chrome()
         tab = await browser.connect(ws_address)
-        print(await tab.title)
+        print(await tab.title())
         await browser.close()
 
     asyncio.run(main())
@@ -140,7 +140,7 @@ docker run -d --shm-size=2g -p 127.0.0.1:9222:9222 \
 
     ```python
     from pydoll.connection import ConnectionHandler
-    from pydoll.sync import WebElement
+    from pydoll import WebElement
 
     connection = ConnectionHandler(ws_address='ws://localhost:9222/devtools/page/<id>')
 
@@ -159,7 +159,7 @@ docker run -d --shm-size=2g -p 127.0.0.1:9222:9222 \
 
     ```python
     from pydoll.connection import ConnectionHandler
-    from pydoll.elements.web_element import WebElement
+    from pydoll import WebElement
 
     connection = ConnectionHandler(ws_address='ws://localhost:9222/devtools/page/<id>')
 

@@ -37,7 +37,7 @@ Crie um arquivo chamado `first_script.py`:
 === "Sync"
 
     ```python
-    from pydoll.sync import Chrome
+    from pydoll import Chrome
 
     def main():
         with Chrome() as browser:
@@ -45,7 +45,7 @@ Crie um arquivo chamado `first_script.py`:
             tab.go_to('https://quotes.toscrape.com')
 
             first_quote = tab.find(class_name='text')
-            print(first_quote.text)
+            print(first_quote.text())
 
     main()
     ```
@@ -55,7 +55,7 @@ Crie um arquivo chamado `first_script.py`:
     ```python
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
+    from pydoll import Chrome
 
 
     async def main():
@@ -64,7 +64,7 @@ Crie um arquivo chamado `first_script.py`:
             await tab.go_to('https://quotes.toscrape.com')
 
             first_quote = await tab.find(class_name='text')
-            print(await first_quote.text)
+            print(await first_quote.text())
 
     asyncio.run(main())
     ```
@@ -97,8 +97,7 @@ Em um servidor ou em CI não há display, então rode o navegador em headless. P
 === "Sync"
 
     ```python
-    from pydoll.sync import Chrome
-    from pydoll.browser.options import ChromiumOptions
+    from pydoll import Chrome, ChromiumOptions
 
     def main():
         options = ChromiumOptions()
@@ -109,7 +108,7 @@ Em um servidor ou em CI não há display, então rode o navegador em headless. P
             tab.go_to('https://quotes.toscrape.com')
 
             first_quote = tab.find(class_name='text')
-            print(first_quote.text)
+            print(first_quote.text())
 
     main()
     ```
@@ -119,8 +118,7 @@ Em um servidor ou em CI não há display, então rode o navegador em headless. P
     ```python
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
-    from pydoll.browser.options import ChromiumOptions
+    from pydoll import Chrome, ChromiumOptions
 
 
     async def main():
@@ -132,7 +130,7 @@ Em um servidor ou em CI não há display, então rode o navegador em headless. P
             await tab.go_to('https://quotes.toscrape.com')
 
             first_quote = await tab.find(class_name='text')
-            print(await first_quote.text)
+            print(await first_quote.text())
 
     asyncio.run(main())
     ```

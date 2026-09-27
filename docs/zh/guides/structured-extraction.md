@@ -17,7 +17,7 @@ Pydoll 的提取引擎让你用类型化模型来定义你想从页面得到**�
 一个提取模型是继承自 `ExtractionModel` 的类。每个字段用 `Field()` 来声明一个 CSS 或 XPath 选择器。
 
 ```python
-from pydoll.extractor import ExtractionModel, Field
+from pydoll import ExtractionModel, Field
 
 class Quote(ExtractionModel):
     text: str = Field(selector='.text', description='The quote text')
@@ -34,8 +34,7 @@ class Quote(ExtractionModel):
 === "Sync"
 
     ```python
-    from pydoll.sync import Chrome
-    from pydoll.extractor import ExtractionModel, Field
+    from pydoll import Chrome, ExtractionModel, Field
 
     class Quote(ExtractionModel):
         text: str = Field(selector='.text')
@@ -58,8 +57,7 @@ class Quote(ExtractionModel):
     ```python
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
-    from pydoll.extractor import ExtractionModel, Field
+    from pydoll import Chrome, ExtractionModel, Field
 
 
     class Quote(ExtractionModel):
@@ -428,8 +426,7 @@ class SearchResult(ExtractionModel):
 === "Sync"
 
     ```python
-    from pydoll.sync import Chrome
-    from pydoll.extractor import ExtractionModel, Field
+    from pydoll import Chrome, ExtractionModel, Field
 
     class Quote(ExtractionModel):
         text: str = Field(selector='.text', description='The quote text')
@@ -459,8 +456,7 @@ class SearchResult(ExtractionModel):
 
     ```python
     import asyncio
-    from pydoll.browser.chromium import Chrome
-    from pydoll.extractor import ExtractionModel, Field
+    from pydoll import Chrome, ExtractionModel, Field
 
     class Quote(ExtractionModel):
         text: str = Field(selector='.text', description='The quote text')

@@ -11,7 +11,7 @@ O `get_children_elements()` retorna os descendentes de um elemento. `max_depth` 
 === "Sync"
 
     ```python
-    from pydoll.sync import Chrome
+    from pydoll import Chrome
 
     def main():
         with Chrome() as browser:
@@ -35,7 +35,7 @@ O `get_children_elements()` retorna os descendentes de um elemento. `max_depth` 
     ```python
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
+    from pydoll import Chrome
 
 
     async def main():
@@ -121,7 +121,7 @@ De qualquer elemento você pode ler seu texto visível e seus atributos HTML:
     book = tab.find(class_name='product_pod')
 
     title = book.find(tag_name='h3')
-    print(title.text)                       # texto visível
+    print(title.text())                       # texto visível
 
     link = title.find(tag_name='a')
     print(link.get_attribute('href'))             # o valor de um atributo
@@ -134,14 +134,14 @@ De qualquer elemento você pode ler seu texto visível e seus atributos HTML:
     book = await tab.find(class_name='product_pod')
 
     title = await book.find(tag_name='h3')
-    print(await title.text)                       # texto visível
+    print(await title.text())                       # texto visível
 
     link = await title.find(tag_name='a')
     print(link.get_attribute('href'))             # o valor de um atributo
     print(link.get_attribute('title'))
     ```
 
-`text` é uma propriedade (aguardada com `await` na API assíncrona); `get_attribute(name)` retorna a string do atributo, ou `None` quando o atributo está ausente.
+`text()` retorna o texto visível do elemento; `get_attribute(name)` retorna a string do atributo, ou `None` quando o atributo está ausente.
 
 ## Shadow DOM {#shadow-dom}
 

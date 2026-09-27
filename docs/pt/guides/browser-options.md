@@ -9,8 +9,7 @@ Crie um `ChromiumOptions`, defina o que precisar e entregue-o ao navegador:
 === "Sync"
 
     ```python
-    from pydoll.sync import Chrome
-    from pydoll.browser.options import ChromiumOptions
+    from pydoll import Chrome, ChromiumOptions
 
     def main():
         options = ChromiumOptions()
@@ -29,8 +28,7 @@ Crie um `ChromiumOptions`, defina o que precisar e entregue-o ao navegador:
     ```python
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
-    from pydoll.browser.options import ChromiumOptions
+    from pydoll import Chrome, ChromiumOptions
 
 
     async def main():

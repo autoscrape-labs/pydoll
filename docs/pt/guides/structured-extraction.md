@@ -17,7 +17,7 @@ Com a extração estruturada, todos os seus seletores ficam em um só lugar (o m
 Um modelo de extração é uma classe que herda de `ExtractionModel`. Cada campo usa `Field()` para declarar um seletor CSS ou XPath.
 
 ```python
-from pydoll.extractor import ExtractionModel, Field
+from pydoll import ExtractionModel, Field
 
 class Quote(ExtractionModel):
     text: str = Field(selector='.text', description='The quote text')
@@ -34,8 +34,7 @@ Use `tab.extract()` para preencher uma instância de modelo a partir da página.
 === "Sync"
 
     ```python
-    from pydoll.sync import Chrome
-    from pydoll.extractor import ExtractionModel, Field
+    from pydoll import Chrome, ExtractionModel, Field
 
     class Quote(ExtractionModel):
         text: str = Field(selector='.text')
@@ -58,8 +57,7 @@ Use `tab.extract()` para preencher uma instância de modelo a partir da página.
     ```python
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
-    from pydoll.extractor import ExtractionModel, Field
+    from pydoll import Chrome, ExtractionModel, Field
 
 
     class Quote(ExtractionModel):
@@ -428,8 +426,7 @@ Aqui está um exemplo completo e executável que extrai citações de [quotes.to
 === "Sync"
 
     ```python
-    from pydoll.sync import Chrome
-    from pydoll.extractor import ExtractionModel, Field
+    from pydoll import Chrome, ExtractionModel, Field
 
     class Quote(ExtractionModel):
         text: str = Field(selector='.text', description='The quote text')
@@ -459,8 +456,7 @@ Aqui está um exemplo completo e executável que extrai citações de [quotes.to
 
     ```python
     import asyncio
-    from pydoll.browser.chromium import Chrome
-    from pydoll.extractor import ExtractionModel, Field
+    from pydoll import Chrome, ExtractionModel, Field
 
     class Quote(ExtractionModel):
         text: str = Field(selector='.text', description='The quote text')

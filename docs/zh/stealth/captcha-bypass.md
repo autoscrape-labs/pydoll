@@ -11,7 +11,7 @@ Pydoll 可以帮你点击 Cloudflare Turnstile 的复选框，就和真人在这
 === "Sync"
 
     ```python
-    from pydoll.sync import Chrome
+    from pydoll import Chrome
 
     def main():
         with Chrome() as browser:
@@ -21,7 +21,7 @@ Pydoll 可以帮你点击 Cloudflare Turnstile 的复选框，就和真人在这
                 tab.go_to('https://a-site-behind-turnstile.com')
 
             content = tab.find(id='protected-content', timeout=10, raise_exc=False)
-            print(content.text if content else 'Still challenged.')
+            print(content.text() if content else 'Still challenged.')
 
     main()
     ```
@@ -31,7 +31,7 @@ Pydoll 可以帮你点击 Cloudflare Turnstile 的复选框，就和真人在这
     ```python
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
+    from pydoll import Chrome
 
 
     async def main():
@@ -42,7 +42,7 @@ Pydoll 可以帮你点击 Cloudflare Turnstile 的复选框，就和真人在这
                 await tab.go_to('https://a-site-behind-turnstile.com')
 
             content = await tab.find(id='protected-content', timeout=10, raise_exc=False)
-            print(await content.text if content else 'Still challenged.')
+            print(await content.text() if content else 'Still challenged.')
 
     asyncio.run(main())
     ```
@@ -57,7 +57,7 @@ Pydoll 可以帮你点击 Cloudflare Turnstile 的复选框，就和真人在这
 
     ```python
     import time
-    from pydoll.sync import Chrome
+    from pydoll import Chrome
 
     def main():
         with Chrome() as browser:
@@ -77,7 +77,7 @@ Pydoll 可以帮你点击 Cloudflare Turnstile 的复选框，就和真人在这
     ```python
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
+    from pydoll import Chrome
 
 
     async def main():

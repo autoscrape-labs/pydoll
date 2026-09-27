@@ -9,7 +9,7 @@ A browser context is an isolated session inside one browser process: its own coo
 === "Sync"
 
     ```python
-    from pydoll.sync import Chrome
+    from pydoll import Chrome
 
     def main():
         with Chrome() as browser:
@@ -18,7 +18,7 @@ A browser context is an isolated session inside one browser process: its own coo
             context_id = browser.create_browser_context()
             tab = browser.new_tab('https://github.com', browser_context_id=context_id)
 
-            print(tab.title)
+            print(tab.title())
 
             browser.delete_browser_context(context_id)
 
@@ -30,7 +30,7 @@ A browser context is an isolated session inside one browser process: its own coo
     ```python
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
+    from pydoll import Chrome
 
 
     async def main():
@@ -40,7 +40,7 @@ A browser context is an isolated session inside one browser process: its own coo
             context_id = await browser.create_browser_context()
             tab = await browser.new_tab('https://github.com', browser_context_id=context_id)
 
-            print(await tab.title)
+            print(await tab.title())
 
             await browser.delete_browser_context(context_id)
 
@@ -145,7 +145,7 @@ Give each account its own context and they stay logged in independently. Open th
     ```python
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
+    from pydoll import Chrome
 
 
     async def open_session(browser, label):

@@ -35,7 +35,7 @@ def test_host_element_property_reflects_construction(fake_conn):
 @pytest.mark.asyncio
 async def test_inner_html_returns_the_shadow_html(fake_conn):
     fake_conn.set_response('DOM.getOuterHTML', {'outerHTML': '<span>inner</span>'})
-    assert await _shadow(fake_conn).inner_html == '<span>inner</span>'
+    assert await _shadow(fake_conn).inner_html() == '<span>inner</span>'
 
 
 @pytest.mark.asyncio

@@ -13,7 +13,7 @@ Edit the attributes below and watch `find()` locate the element live. Pydoll tur
 === "Sync"
 
     ```python
-    from pydoll.sync import Chrome
+    from pydoll import Chrome
 
     def main():
         with Chrome() as browser:
@@ -23,7 +23,7 @@ Edit the attributes below and watch `find()` locate the element live. Pydoll tur
             quote = tab.find(class_name='quote')
             text = quote.find(class_name='text')
             author = quote.find(class_name='author')
-            print(f'{author.text}: {text.text}')
+            print(f'{author.text()}: {text.text()}')
 
     main()
     ```
@@ -33,7 +33,7 @@ Edit the attributes below and watch `find()` locate the element live. Pydoll tur
     ```python
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
+    from pydoll import Chrome
 
 
     async def main():
@@ -44,7 +44,7 @@ Edit the attributes below and watch `find()` locate the element live. Pydoll tur
             quote = await tab.find(class_name='quote')
             text = await quote.find(class_name='text')
             author = await quote.find(class_name='author')
-            print(f'{await author.text}: {await text.text}')
+            print(f'{await author.text()}: {await text.text()}')
 
     asyncio.run(main())
     ```
@@ -118,7 +118,7 @@ Pass `find_all=True` to get a list of every matching element instead of the firs
     for book in books:
         title = book.find(tag_name='h3')
         price = book.find(class_name='price_color')
-        print(title.text, price.text)
+        print(title.text(), price.text())
     ```
 
 === "Async"
@@ -132,7 +132,7 @@ Pass `find_all=True` to get a list of every matching element instead of the firs
     for book in books:
         title = await book.find(tag_name='h3')
         price = await book.find(class_name='price_color')
-        print(await title.text, await price.text)
+        print(await title.text(), await price.text())
     ```
 
 ## Wait for elements that load late
@@ -301,7 +301,7 @@ This logs in on [quotes.toscrape.com](https://quotes.toscrape.com/login) (which 
 === "Sync"
 
     ```python
-    from pydoll.sync import Chrome
+    from pydoll import Chrome
 
     def main():
         with Chrome() as browser:
@@ -328,7 +328,7 @@ This logs in on [quotes.toscrape.com](https://quotes.toscrape.com/login) (which 
     ```python
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
+    from pydoll import Chrome
 
 
     async def main():

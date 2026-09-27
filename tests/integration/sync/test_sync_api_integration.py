@@ -34,12 +34,12 @@ class TestPydollSync:
             tab = browser.start()
             assert isinstance(tab, Tab)
             tab.go_to(page_url('test_core_simple.html'))
-            assert tab.title == 'Core Test Page'
-            assert tab.current_url.endswith('test_core_simple.html')
+            assert tab.title() == 'Core Test Page'
+            assert tab.current_url().endswith('test_core_simple.html')
             button = tab.find(id='btn-1')
             assert isinstance(button, WebElement)
-            assert button.text == 'Click Me'
-            assert [item.text for item in tab.query('#list li', find_all=True)] == [
+            assert button.text() == 'Click Me'
+            assert [item.text() for item in tab.query('#list li', find_all=True)] == [
                 'Item 1',
                 'Item 2',
                 'Item 3',
@@ -58,7 +58,7 @@ class TestPydollSync:
             )
             assert typed['result']['result']['value'] == 'Ana'
             tab.find(id='btn-1').click()
-            assert tab.find(id='btn-1-count').text == '1'
+            assert tab.find(id='btn-1-count').text() == '1'
             tab.take_screenshot(tmp_path / 'shot.png')
             assert (tmp_path / 'shot.png').stat().st_size > 0
 
@@ -68,7 +68,7 @@ class TestPydollSync:
             seen: list[tuple[str, str]] = []
 
             def on_load(event):
-                seen.append((threading.current_thread().name, tab.title))
+                seen.append((threading.current_thread().name, tab.title()))
 
             tab.enable_page_events()
             tab.on(PageEvent.LOAD_EVENT_FIRED, on_load)
@@ -100,7 +100,7 @@ class TestPydollSync:
 
             def misuse() -> None:
                 try:
-                    tab.title
+                    tab.title()
                 except SyncError as error:
                     outcome.append(error)
 

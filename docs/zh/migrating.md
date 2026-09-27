@@ -23,7 +23,7 @@
 | 点击 | `el.click()` | `await el.click()` |
 | 输入 | `el.send_keys('text')` | `await el.type_text('text')` |
 | 按一个键 | `el.send_keys(Keys.ENTER)` | `await tab.keyboard.press(Key.ENTER)` |
-| 读取文本 | `el.text` | `await el.text` |
+| 读取文本 | `el.text` | `await el.text()` |
 | 读取一个属性 | `el.get_attribute('href')` | `el.get_attribute('href')` |
 | 截图 | `driver.save_screenshot('s.png')` | `await tab.take_screenshot('s.png')` |
 | 运行 JavaScript | `driver.execute_script('return document.title')` | `await tab.execute_script('return document.title')` |
@@ -52,7 +52,7 @@ driver.quit()
     ```python
     # Pydoll
 
-    from pydoll.sync import Chrome
+    from pydoll import Chrome
 
     def main():
         with Chrome() as browser:
@@ -74,7 +74,7 @@ driver.quit()
     # Pydoll
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
+    from pydoll import Chrome
 
 
     async def main():
@@ -92,7 +92,7 @@ driver.quit()
     ```
 
 !!! note "`get_attribute` 是同步的"
-    与 Selenium 不同（在 Selenium 中，元素上的一切都是一次网络往返），Pydoll 从它已经定位到的元素上读取属性，所以 `get_attribute()` 是一个普通方法，无需 `await`。文本仍然需要 await（`await el.text`）。
+    与 Selenium 不同（在 Selenium 中，元素上的一切都是一次网络往返），Pydoll 从它已经定位到的元素上读取属性，所以 `get_attribute()` 是一个普通方法，无需 `await`。文本仍然需要 await（`await el.text()`）。
 
 ## 从 Playwright 迁移
 
@@ -106,7 +106,7 @@ driver.quit()
 | 查找多个 | `page.locator('.item').all()` | `await tab.query('.item', find_all=True)` |
 | 点击 | `await page.locator('.btn').click()` | `await (await tab.find(class_name='btn')).click()` |
 | 填写一个输入框 | `await page.fill('#q', 'text')` | `await (await tab.find(id='q')).type_text('text')` |
-| 读取文本 | `await page.locator('.title').text_content()` | `await (await tab.find(class_name='title')).text` |
+| 读取文本 | `await page.locator('.title').text_content()` | `await (await tab.find(class_name='title')).text()` |
 | 读取一个属性 | `await loc.get_attribute('href')` | `el.get_attribute('href')` |
 | 新建标签页 | `await context.new_page()` | `await browser.new_tab()` |
 | 截图 | `await page.screenshot(path='s.png')` | `await tab.take_screenshot('s.png')` |
@@ -152,7 +152,7 @@ driver.quit()
     ```python
     # Pydoll
 
-    from pydoll.sync import Chrome
+    from pydoll import Chrome
 
     def main():
         with Chrome() as browser:
@@ -160,7 +160,7 @@ driver.quit()
             tab.go_to('https://quotes.toscrape.com')
 
             quote = tab.query('.quote .text')
-            print(quote.text)
+            print(quote.text())
 
     main()
     ```
@@ -171,7 +171,7 @@ driver.quit()
     # Pydoll
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
+    from pydoll import Chrome
 
 
     async def main():
@@ -180,7 +180,7 @@ driver.quit()
             await tab.go_to('https://quotes.toscrape.com')
 
             quote = await tab.query('.quote .text')
-            print(await quote.text)
+            print(await quote.text())
 
     asyncio.run(main())
     ```

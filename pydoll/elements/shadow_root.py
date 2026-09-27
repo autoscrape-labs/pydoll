@@ -74,7 +74,6 @@ class ShadowRoot(FindElementsMixin):
         """Reference to the shadow host element, if available."""
         return self._host_element
 
-    @property
     async def inner_html(self) -> str:
         """HTML content of the shadow root."""
         response: GetOuterHTMLResponse = await self._execute_command(

@@ -23,7 +23,7 @@ Three things change no matter which tool you come from:
 | Click | `el.click()` | `await el.click()` |
 | Type | `el.send_keys('text')` | `await el.type_text('text')` |
 | Press a key | `el.send_keys(Keys.ENTER)` | `await tab.keyboard.press(Key.ENTER)` |
-| Read text | `el.text` | `await el.text` |
+| Read text | `el.text` | `await el.text()` |
 | Read an attribute | `el.get_attribute('href')` | `el.get_attribute('href')` |
 | Screenshot | `driver.save_screenshot('s.png')` | `await tab.take_screenshot('s.png')` |
 | Run JavaScript | `driver.execute_script('return document.title')` | `await tab.execute_script('return document.title')` |
@@ -52,7 +52,7 @@ driver.quit()
     ```python
     # Pydoll
 
-    from pydoll.sync import Chrome
+    from pydoll import Chrome
 
     def main():
         with Chrome() as browser:
@@ -74,7 +74,7 @@ driver.quit()
     # Pydoll
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
+    from pydoll import Chrome
 
 
     async def main():
@@ -92,7 +92,7 @@ driver.quit()
     ```
 
 !!! note "`get_attribute` is synchronous"
-    Unlike Selenium, where everything on the element is a network round-trip, Pydoll reads attributes from the element it already located, so `get_attribute()` is a plain method with no `await`. Text is still awaited (`await el.text`).
+    Unlike Selenium, where everything on the element is a network round-trip, Pydoll reads attributes from the element it already located, so `get_attribute()` is a plain method with no `await`. Text is still awaited (`await el.text()`).
 
 ## From Playwright
 
@@ -106,7 +106,7 @@ driver.quit()
 | Find many | `page.locator('.item').all()` | `await tab.query('.item', find_all=True)` |
 | Click | `await page.locator('.btn').click()` | `await (await tab.find(class_name='btn')).click()` |
 | Fill an input | `await page.fill('#q', 'text')` | `await (await tab.find(id='q')).type_text('text')` |
-| Read text | `await page.locator('.title').text_content()` | `await (await tab.find(class_name='title')).text` |
+| Read text | `await page.locator('.title').text_content()` | `await (await tab.find(class_name='title')).text()` |
 | Read an attribute | `await loc.get_attribute('href')` | `el.get_attribute('href')` |
 | New tab | `await context.new_page()` | `await browser.new_tab()` |
 | Screenshot | `await page.screenshot(path='s.png')` | `await tab.take_screenshot('s.png')` |
@@ -152,7 +152,7 @@ Both are async and both auto-wait, so migration is mostly renaming. The main con
     ```python
     # Pydoll
 
-    from pydoll.sync import Chrome
+    from pydoll import Chrome
 
     def main():
         with Chrome() as browser:
@@ -160,7 +160,7 @@ Both are async and both auto-wait, so migration is mostly renaming. The main con
             tab.go_to('https://quotes.toscrape.com')
 
             quote = tab.query('.quote .text')
-            print(quote.text)
+            print(quote.text())
 
     main()
     ```
@@ -171,7 +171,7 @@ Both are async and both auto-wait, so migration is mostly renaming. The main con
     # Pydoll
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
+    from pydoll import Chrome
 
 
     async def main():
@@ -180,7 +180,7 @@ Both are async and both auto-wait, so migration is mostly renaming. The main con
             await tab.go_to('https://quotes.toscrape.com')
 
             quote = await tab.query('.quote .text')
-            print(await quote.text)
+            print(await quote.text())
 
     asyncio.run(main())
     ```

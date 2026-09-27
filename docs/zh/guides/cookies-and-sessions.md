@@ -9,7 +9,7 @@
 === "Sync"
 
     ```python
-    from pydoll.sync import Chrome
+    from pydoll import Chrome
 
     def main():
         with Chrome() as browser:
@@ -29,7 +29,7 @@
     ```python
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
+    from pydoll import Chrome
 
 
     async def main():
@@ -99,7 +99,7 @@ cookies 作用于整个浏览器上下文，所以该上下文中的每个标签
     import json
     from pathlib import Path
 
-    from pydoll.sync import Chrome
+    from pydoll import Chrome
 
     COOKIE_FILE = Path('session.json')
 
@@ -126,7 +126,7 @@ cookies 作用于整个浏览器上下文，所以该上下文中的每个标签
     import json
     from pathlib import Path
 
-    from pydoll.browser.chromium import Chrome
+    from pydoll import Chrome
 
     COOKIE_FILE = Path('session.json')
 
@@ -155,7 +155,7 @@ cookies 作用于整个浏览器上下文，所以该上下文中的每个标签
     import json
     from pathlib import Path
 
-    from pydoll.sync import Chrome
+    from pydoll import Chrome
 
     COOKIE_FILE = Path('session.json')
 
@@ -184,7 +184,7 @@ cookies 作用于整个浏览器上下文，所以该上下文中的每个标签
     import json
     from pathlib import Path
 
-    from pydoll.browser.chromium import Chrome
+    from pydoll import Chrome
 
     COOKIE_FILE = Path('session.json')
 

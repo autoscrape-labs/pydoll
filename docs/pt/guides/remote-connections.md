@@ -25,17 +25,17 @@ Crie um objeto browser, chame `connect()` com o endereço WebSocket, e use a aba
 === "Sync"
 
     ```python
-    from pydoll.sync import Chrome
+    from pydoll import Chrome
 
     def main():
         browser = Chrome()
         tab = browser.connect('ws://localhost:9222/devtools/browser/<id>')
 
-        print(tab.title)
+        print(tab.title())
 
         tab.go_to('https://news.ycombinator.com')
         headline = tab.find(class_name='titleline')
-        print(headline.text)
+        print(headline.text())
 
         browser.close()
 
@@ -47,18 +47,18 @@ Crie um objeto browser, chame `connect()` com o endereço WebSocket, e use a aba
     ```python
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
+    from pydoll import Chrome
 
 
     async def main():
         browser = Chrome()
         tab = await browser.connect('ws://localhost:9222/devtools/browser/<id>')
 
-        print(await tab.title)
+        print(await tab.title())
 
         await tab.go_to('https://news.ycombinator.com')
         headline = await tab.find(class_name='titleline')
-        print(await headline.text)
+        print(await headline.text())
 
         await browser.close()
 
@@ -78,7 +78,7 @@ Normalmente você descobre o endereço em tempo de execução em vez de embuti-l
 
     ```python
     import aiohttp
-    from pydoll.sync import Chrome
+    from pydoll import Chrome
 
     def main():
         with aiohttp.ClientSession() as session:
@@ -87,7 +87,7 @@ Normalmente você descobre o endereço em tempo de execução em vez de embuti-l
 
         browser = Chrome()
         tab = browser.connect(ws_address)
-        print(tab.title)
+        print(tab.title())
         browser.close()
 
     main()
@@ -99,7 +99,7 @@ Normalmente você descobre o endereço em tempo de execução em vez de embuti-l
     import asyncio
 
     import aiohttp
-    from pydoll.browser.chromium import Chrome
+    from pydoll import Chrome
 
 
     async def main():
@@ -109,7 +109,7 @@ Normalmente você descobre o endereço em tempo de execução em vez de embuti-l
 
         browser = Chrome()
         tab = await browser.connect(ws_address)
-        print(await tab.title)
+        print(await tab.title())
         await browser.close()
 
     asyncio.run(main())
@@ -140,7 +140,7 @@ Se você já tem uma integração CDP e o `objectId` de um elemento, envolva-o e
 
     ```python
     from pydoll.connection import ConnectionHandler
-    from pydoll.sync import WebElement
+    from pydoll import WebElement
 
     connection = ConnectionHandler(ws_address='ws://localhost:9222/devtools/page/<id>')
 
@@ -159,7 +159,7 @@ Se você já tem uma integração CDP e o `objectId` de um elemento, envolva-o e
 
     ```python
     from pydoll.connection import ConnectionHandler
-    from pydoll.elements.web_element import WebElement
+    from pydoll import WebElement
 
     connection = ConnectionHandler(ws_address='ws://localhost:9222/devtools/page/<id>')
 

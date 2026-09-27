@@ -23,9 +23,19 @@ from pydoll.protocol.network.types import ErrorReason
     'enable_method, disable_method, command, flag',
     [
         ('enable_page_events', 'disable_page_events', 'Page.disable', 'page_events_enabled'),
-        ('enable_network_events', 'disable_network_events', 'Network.disable', 'network_events_enabled'),
+        (
+            'enable_network_events',
+            'disable_network_events',
+            'Network.disable',
+            'network_events_enabled',
+        ),
         ('enable_dom_events', 'disable_dom_events', 'DOM.disable', 'dom_events_enabled'),
-        ('enable_runtime_events', 'disable_runtime_events', 'Runtime.disable', 'runtime_events_enabled'),
+        (
+            'enable_runtime_events',
+            'disable_runtime_events',
+            'Runtime.disable',
+            'runtime_events_enabled',
+        ),
         ('enable_fetch_events', 'disable_fetch_events', 'Fetch.disable', 'fetch_events_enabled'),
     ],
 )
@@ -53,7 +63,9 @@ async def test_intercept_file_chooser_toggles_flag_and_carries_enabled(fake_conn
 
     await fake_tab.disable_intercept_file_chooser_dialog()
     assert fake_tab.intercept_file_chooser_dialog_enabled is False
-    assert fake_conn.last_command('Page.setInterceptFileChooserDialog')['params']['enabled'] is False
+    assert (
+        fake_conn.last_command('Page.setInterceptFileChooserDialog')['params']['enabled'] is False
+    )
 
 
 @pytest.mark.asyncio
@@ -65,14 +77,14 @@ async def test_bring_to_front_sends_command(fake_conn, fake_tab):
 @pytest.mark.asyncio
 async def test_title_evaluates_document_title_and_returns_value(fake_conn, fake_tab):
     fake_conn.set_response('Runtime.evaluate', {'result': {'value': 'Hello'}})
-    assert await fake_tab.title == 'Hello'
+    assert await fake_tab.title() == 'Hello'
     assert fake_conn.last_command('Runtime.evaluate')['params']['expression'] == 'document.title'
 
 
 @pytest.mark.asyncio
 async def test_page_source_evaluates_outer_html_and_returns_value(fake_conn, fake_tab):
     fake_conn.set_response('Runtime.evaluate', {'result': {'value': '<html></html>'}})
-    assert await fake_tab.page_source == '<html></html>'
+    assert await fake_tab.page_source() == '<html></html>'
     expression = fake_conn.last_command('Runtime.evaluate')['params']['expression']
     assert expression == 'document.documentElement.outerHTML'
 
@@ -208,9 +220,3 @@ async def test_enable_auto_solve_cloudflare_registers_callback_and_enables_page_
     await fake_tab.enable_auto_solve_cloudflare_captcha()
     assert fake_tab.page_events_enabled is True
     assert fake_conn.callbacks_for('Page.loadEventFired')
-
-
-@pytest.mark.asyncio
-async def test_enable_auto_solve_cloudflare_warns_on_deprecated_args(fake_tab):
-    with pytest.warns(DeprecationWarning):
-        await fake_tab.enable_auto_solve_cloudflare_captcha(time_before_click=1.0)

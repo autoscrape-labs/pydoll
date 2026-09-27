@@ -11,7 +11,7 @@ selector 是你交给 `tab.query()`（以及提取模型中 `selector=`）的字
 === "Sync"
 
     ```python
-    from pydoll.sync import Chrome
+    from pydoll import Chrome
 
     def main():
         with Chrome() as browser:
@@ -20,7 +20,7 @@ selector 是你交给 `tab.query()`（以及提取模型中 `selector=`）的字
 
             # CSS: 通过 id 定位文章标题
             title = tab.query('#firstHeading')
-            print(title.text)
+            print(title.text())
 
             # XPath: 第一个 href 中提到 python.org 的链接
             link = tab.query("//a[contains(@href, 'python.org')]")
@@ -34,7 +34,7 @@ selector 是你交给 `tab.query()`（以及提取模型中 `selector=`）的字
     ```python
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
+    from pydoll import Chrome
 
 
     async def main():
@@ -44,7 +44,7 @@ selector 是你交给 `tab.query()`（以及提取模型中 `selector=`）的字
 
             # CSS: 通过 id 定位文章标题
             title = await tab.query('#firstHeading')
-            print(await title.text)
+            print(await title.text())
 
             # XPath: 第一个 href 中提到 python.org 的链接
             link = await tab.query("//a[contains(@href, 'python.org')]")
@@ -322,14 +322,14 @@ selector 是你交给 `tab.query()`（以及提取模型中 `selector=`）的字
 
     ```python
     label = tab.query("//label[@for='newsletter']")
-    print(label.text)   # "Subscribe to the newsletter"
+    print(label.text())   # "Subscribe to the newsletter"
     ```
 
 === "Async"
 
     ```python
     label = await tab.query("//label[@for='newsletter']")
-    print(await label.text)   # "Subscribe to the newsletter"
+    print(await label.text())   # "Subscribe to the newsletter"
     ```
 
 ### 从一个控件往上走到它所在的行

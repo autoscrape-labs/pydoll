@@ -127,8 +127,7 @@ pc.onicecandidate = (event) => {
 推荐的修复是 Pydoll 内置的选项，它会设置 WebRTC 的 IP 处理策略，从而阻止那些本会跳过 proxy 的 UDP：
 
 ```python
-from pydoll.browser.chromium import Chrome
-from pydoll.browser.options import ChromiumOptions
+from pydoll import Chrome, ChromiumOptions
 
 options = ChromiumOptions()
 options.webrtc_leak_protection = True   # --force-webrtc-ip-handling-policy=disable_non_proxied_udp

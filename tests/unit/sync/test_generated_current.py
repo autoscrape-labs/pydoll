@@ -53,4 +53,5 @@ def test_sync_methods_are_plain_functions() -> None:
 
     assert not inspect.iscoroutinefunction(Tab.go_to)
     assert inspect.signature(Tab.go_to).parameters['timeout'].default == 300
-    assert isinstance(inspect.getattr_static(Tab, 'title'), property)
+    assert not isinstance(inspect.getattr_static(Tab, 'title'), property)
+    assert isinstance(inspect.getattr_static(Tab, 'keyboard'), property)

@@ -11,7 +11,7 @@ O context manager espera o widget do Turnstile aparecer durante o bloqueio, clic
 === "Sync"
 
     ```python
-    from pydoll.sync import Chrome
+    from pydoll import Chrome
 
     def main():
         with Chrome() as browser:
@@ -21,7 +21,7 @@ O context manager espera o widget do Turnstile aparecer durante o bloqueio, clic
                 tab.go_to('https://a-site-behind-turnstile.com')
 
             content = tab.find(id='protected-content', timeout=10, raise_exc=False)
-            print(content.text if content else 'Still challenged.')
+            print(content.text() if content else 'Still challenged.')
 
     main()
     ```
@@ -31,7 +31,7 @@ O context manager espera o widget do Turnstile aparecer durante o bloqueio, clic
     ```python
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
+    from pydoll import Chrome
 
 
     async def main():
@@ -42,7 +42,7 @@ O context manager espera o widget do Turnstile aparecer durante o bloqueio, clic
                 await tab.go_to('https://a-site-behind-turnstile.com')
 
             content = await tab.find(id='protected-content', timeout=10, raise_exc=False)
-            print(await content.text if content else 'Still challenged.')
+            print(await content.text() if content else 'Still challenged.')
 
     asyncio.run(main())
     ```
@@ -57,7 +57,7 @@ Quando você não quer envolver uma navegação específica, ative o tratamento 
 
     ```python
     import time
-    from pydoll.sync import Chrome
+    from pydoll import Chrome
 
     def main():
         with Chrome() as browser:
@@ -77,7 +77,7 @@ Quando você não quer envolver uma navegação específica, ative o tratamento 
     ```python
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
+    from pydoll import Chrome
 
 
     async def main():

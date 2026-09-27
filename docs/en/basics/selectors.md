@@ -11,7 +11,7 @@ Try it: type a selector below and the matching elements light up. It runs the sa
 === "Sync"
 
     ```python
-    from pydoll.sync import Chrome
+    from pydoll import Chrome
 
     def main():
         with Chrome() as browser:
@@ -20,7 +20,7 @@ Try it: type a selector below and the matching elements light up. It runs the sa
 
             # CSS: the article title, by its id
             title = tab.query('#firstHeading')
-            print(title.text)
+            print(title.text())
 
             # XPath: the first link whose href mentions python.org
             link = tab.query("//a[contains(@href, 'python.org')]")
@@ -34,7 +34,7 @@ Try it: type a selector below and the matching elements light up. It runs the sa
     ```python
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
+    from pydoll import Chrome
 
 
     async def main():
@@ -44,7 +44,7 @@ Try it: type a selector below and the matching elements light up. It runs the sa
 
             # CSS: the article title, by its id
             title = await tab.query('#firstHeading')
-            print(await title.text)
+            print(await title.text())
 
             # XPath: the first link whose href mentions python.org
             link = await tab.query("//a[contains(@href, 'python.org')]")
@@ -322,14 +322,14 @@ The `for` attribute ties a label to its control, so you can jump straight to it:
 
     ```python
     label = tab.query("//label[@for='newsletter']")
-    print(label.text)   # "Subscribe to the newsletter"
+    print(label.text())   # "Subscribe to the newsletter"
     ```
 
 === "Async"
 
     ```python
     label = await tab.query("//label[@for='newsletter']")
-    print(await label.text)   # "Subscribe to the newsletter"
+    print(await label.text())   # "Subscribe to the newsletter"
     ```
 
 ### Walk from a control up to its row

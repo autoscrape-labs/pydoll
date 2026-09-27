@@ -255,7 +255,7 @@ async def _extract_value(
     """Read raw string value from a WebElement.
 
     If metadata.attribute is set, reads that HTML attribute.
-    Otherwise reads element.text (innerText).
+    Otherwise reads element.text() (innerText).
 
     Args:
         element: WebElement to read from.
@@ -266,7 +266,7 @@ async def _extract_value(
     """
     if metadata.attribute is not None:
         return element.get_attribute(metadata.attribute) or ''
-    return await element.text
+    return await element.text()
 
 
 def _apply_transform(

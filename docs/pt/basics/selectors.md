@@ -11,7 +11,7 @@ Experimente: digite um seletor abaixo e os elementos correspondentes se acendem.
 === "Sync"
 
     ```python
-    from pydoll.sync import Chrome
+    from pydoll import Chrome
 
     def main():
         with Chrome() as browser:
@@ -20,7 +20,7 @@ Experimente: digite um seletor abaixo e os elementos correspondentes se acendem.
 
             # CSS: o título do artigo, pelo id dele
             title = tab.query('#firstHeading')
-            print(title.text)
+            print(title.text())
 
             # XPath: o primeiro link cujo href menciona python.org
             link = tab.query("//a[contains(@href, 'python.org')]")
@@ -34,7 +34,7 @@ Experimente: digite um seletor abaixo e os elementos correspondentes se acendem.
     ```python
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
+    from pydoll import Chrome
 
 
     async def main():
@@ -44,7 +44,7 @@ Experimente: digite um seletor abaixo e os elementos correspondentes se acendem.
 
             # CSS: o título do artigo, pelo id dele
             title = await tab.query('#firstHeading')
-            print(await title.text)
+            print(await title.text())
 
             # XPath: o primeiro link cujo href menciona python.org
             link = await tab.query("//a[contains(@href, 'python.org')]")
@@ -322,14 +322,14 @@ O atributo `for` amarra um label ao controle dele, então você pode pular diret
 
     ```python
     label = tab.query("//label[@for='newsletter']")
-    print(label.text)   # "Subscribe to the newsletter"
+    print(label.text())   # "Subscribe to the newsletter"
     ```
 
 === "Async"
 
     ```python
     label = await tab.query("//label[@for='newsletter']")
-    print(await label.text)   # "Subscribe to the newsletter"
+    print(await label.text())   # "Subscribe to the newsletter"
     ```
 
 ### Caminhar de um controle até a linha dele

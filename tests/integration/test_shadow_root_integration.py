@@ -40,7 +40,7 @@ class TestOpenShadowRoot:
 
             text_el = await shadow.query('.open-text')
             assert isinstance(text_el, WebElement)
-            text = await text_el.text
+            text = await text_el.text()
             assert text == 'Open shadow content'
 
             btn = await shadow.query('#open-btn')
@@ -79,7 +79,7 @@ class TestOpenShadowRoot:
             host = await tab.find(id='open-host', timeout=5)
             shadow = await host.get_shadow_root()
 
-            html = await shadow.inner_html
+            html = await shadow.inner_html()
             assert 'Open shadow content' in html
 
 
@@ -109,7 +109,7 @@ class TestClosedShadowRoot:
 
             text_el = await shadow.query('.closed-text')
             assert isinstance(text_el, WebElement)
-            text = await text_el.text
+            text = await text_el.text()
             assert text == 'Closed shadow content'
 
     @pytest.mark.asyncio
@@ -136,7 +136,7 @@ class TestClosedShadowRoot:
             host = await tab.find(id='closed-host', timeout=5)
             shadow = await host.get_shadow_root()
 
-            html = await shadow.inner_html
+            html = await shadow.inner_html()
             assert 'Closed shadow content' in html
 
 
@@ -154,7 +154,7 @@ class TestNestedShadowRoots:
             assert outer_shadow.mode == ShadowRootType.OPEN
 
             outer_text = await outer_shadow.query('.outer-text')
-            text = await outer_text.text
+            text = await outer_text.text()
             assert text == 'Outer shadow'
 
             inner_host = await outer_shadow.query('#inner-host')
@@ -162,7 +162,7 @@ class TestNestedShadowRoots:
             assert inner_shadow.mode == ShadowRootType.CLOSED
 
             inner_text = await inner_shadow.query('.inner-text')
-            text = await inner_text.text
+            text = await inner_text.text()
             assert text == 'Inner closed shadow'
 
             deep_btn = await inner_shadow.query('#deep-btn')

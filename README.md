@@ -142,8 +142,7 @@ The imperative API handles the basics: start a browser, navigate, find elements,
 ```python
 import asyncio
 
-from pydoll.browser import Chrome
-from pydoll.constants import Key
+from pydoll import Chrome, Key
 
 async def google_search(query: str):
     async with Chrome() as browser:
@@ -163,7 +162,7 @@ async def google_search(query: str):
         )
         await first_result.click(humanize=True)
         await asyncio.sleep(5)
-        print(f"Page loaded: {await tab.title}")
+        print(f"Page loaded: {await tab.title()}")
 
 asyncio.run(google_search('pydoll site:github.com'))
 ```
@@ -183,7 +182,7 @@ It also neutralizes the **headless** tells, chiefly the SwiftShader WebGL render
 ```python
 import asyncio
 
-from pydoll.browser.chromium import Chrome
+from pydoll import Chrome
 
 from examples.fingerprints import FINGERPRINTS
 
@@ -227,7 +226,7 @@ Pydoll gets you past Cloudflare Turnstile the same way a person does: by placing
 ```python
 import asyncio
 
-from pydoll.browser.chromium import Chrome
+from pydoll import Chrome
 
 async def solve_turnstile():
     async with Chrome() as browser:
@@ -261,7 +260,7 @@ from pydoll.sync import Chrome
 with Chrome() as browser:
     tab = browser.start()
     tab.go_to('https://quotes.toscrape.com/')
-    print(tab.title)
+    print(tab.title())
     print(tab.query('.quote .text').text)
 ```
 
@@ -280,8 +279,7 @@ Define what you want with a [Pydantic](https://docs.pydantic.dev/) model and Pyd
 ```python
 import asyncio
 
-from pydoll.browser.chromium import Chrome
-from pydoll.extractor import ExtractionModel, Field
+from pydoll import Chrome, ExtractionModel, Field
 
 class Quote(ExtractionModel):
     text: str = Field(selector='.text', description='The quote text')
@@ -367,7 +365,7 @@ Highlights:
 Record network activity during a browser session and export as HAR 1.2. Replay recorded requests to reproduce exact API sequences.
 
 ```python
-from pydoll.browser.chromium import Chrome
+from pydoll import Chrome
 
 async with Chrome() as browser:
     tab = await browser.start()
@@ -426,7 +424,7 @@ Monitor traffic for API discovery or intercept requests to block ads, trackers, 
 
 ```python
 import asyncio
-from pydoll.browser.chromium import Chrome
+from pydoll import Chrome
 from pydoll.protocol.fetch.events import FetchEvent, RequestPausedEvent
 from pydoll.protocol.network.types import ErrorReason
 
@@ -492,7 +490,7 @@ Manage [multiple tabs](https://pydoll.tech/docs/guides/tabs/) and [browser conte
 ```python
 async def scrape_page(url, tab):
     await tab.go_to(url)
-    return await tab.title
+    return await tab.title()
 
 async def concurrent_scraping():
     async with Chrome() as browser:

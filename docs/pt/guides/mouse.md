@@ -11,7 +11,7 @@ O caso comum é clicar em um elemento que você já localizou com `find()` ou `q
 === "Sync"
 
     ```python
-    from pydoll.sync import Chrome
+    from pydoll import Chrome
 
     def main():
         with Chrome() as browser:
@@ -23,7 +23,7 @@ O caso comum é clicar em um elemento que você já localizou com `find()` ou `q
 
             # o clique adicionou um botão Delete
             delete = tab.find(class_name='added-manually')
-            print('Added:', delete.text)
+            print('Added:', delete.text())
 
     main()
     ```
@@ -33,7 +33,7 @@ O caso comum é clicar em um elemento que você já localizou com `find()` ou `q
     ```python
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
+    from pydoll import Chrome
 
 
     async def main():
@@ -46,7 +46,7 @@ O caso comum é clicar em um elemento que você já localizou com `find()` ou `q
 
             # o clique adicionou um botão Delete
             delete = await tab.find(class_name='added-manually')
-            print('Added:', await delete.text)
+            print('Added:', await delete.text())
 
     asyncio.run(main())
     ```
@@ -89,7 +89,7 @@ O `click()` recebe algumas opções:
 === "Sync"
 
     ```python
-    from pydoll.sync import Chrome
+    from pydoll import Chrome
     from pydoll.protocol.input.types import MouseButton
 
     def main():
@@ -111,7 +111,7 @@ O `click()` recebe algumas opções:
     ```python
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
+    from pydoll import Chrome
     from pydoll.protocol.input.types import MouseButton
 
 

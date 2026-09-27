@@ -10,8 +10,7 @@ Working with events is always the same three steps: enable the domain you care a
 
     ```python
     import time
-    from pydoll.sync import Chrome
-    from pydoll.protocol.page.events import PageEvent
+    from pydoll import Chrome, PageEvent
 
     def main():
         with Chrome() as browser:
@@ -34,8 +33,7 @@ Working with events is always the same three steps: enable the domain you care a
     ```python
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
-    from pydoll.protocol.page.events import PageEvent
+    from pydoll import Chrome, PageEvent
 
 
     async def main():
@@ -103,7 +101,7 @@ Enable the network domain to see every request go out and every response come ba
 === "Sync"
 
     ```python
-    from pydoll.protocol.network.events import NetworkEvent
+    from pydoll import NetworkEvent
 
     def on_request(event):
         print(f"→ {event['params']['request']['url']}")
@@ -122,7 +120,7 @@ Enable the network domain to see every request go out and every response come ba
 === "Async"
 
     ```python
-    from pydoll.protocol.network.events import NetworkEvent
+    from pydoll import NetworkEvent
 
 
     async def on_request(event):
@@ -150,7 +148,7 @@ Pass `temporary=True` and the callback removes itself after it fires the first t
 === "Sync"
 
     ```python
-    from pydoll.protocol.page.events import PageEvent
+    from pydoll import PageEvent
 
     tab.on(PageEvent.LOAD_EVENT_FIRED, on_load, temporary=True)
 
@@ -161,7 +159,7 @@ Pass `temporary=True` and the callback removes itself after it fires the first t
 === "Async"
 
     ```python
-    from pydoll.protocol.page.events import PageEvent
+    from pydoll import PageEvent
 
     await tab.on(PageEvent.LOAD_EVENT_FIRED, on_load, temporary=True)
 
@@ -178,7 +176,7 @@ Events pair naturally with an event flag when you need to pause until something 
     ```python
     import threading
 
-    from pydoll.protocol.page.events import PageEvent
+    from pydoll import PageEvent
 
 
     def click_and_wait_for_navigation(tab):
@@ -202,7 +200,7 @@ Events pair naturally with an event flag when you need to pause until something 
     ```python
     import asyncio
 
-    from pydoll.protocol.page.events import PageEvent
+    from pydoll import PageEvent
 
 
     async def click_and_wait_for_navigation(tab):
@@ -230,7 +228,7 @@ Events pair naturally with an event flag when you need to pause until something 
     ```python
     from functools import partial
 
-    from pydoll.protocol.network.events import NetworkEvent
+    from pydoll import NetworkEvent
 
     def capture_json(tab, event):
         url = event['params']['response']['url']
@@ -249,7 +247,7 @@ Events pair naturally with an event flag when you need to pause until something 
     ```python
     from functools import partial
 
-    from pydoll.protocol.network.events import NetworkEvent
+    from pydoll import NetworkEvent
 
 
     async def capture_json(tab, event):
@@ -274,7 +272,7 @@ Subscribe to dialog events to answer `alert`, `confirm`, and `prompt` boxes auto
 === "Sync"
 
     ```python
-    from pydoll.protocol.page.events import PageEvent
+    from pydoll import PageEvent
 
     def on_dialog(event):
         if tab.has_dialog():
@@ -288,7 +286,7 @@ Subscribe to dialog events to answer `alert`, `confirm`, and `prompt` boxes auto
 === "Async"
 
     ```python
-    from pydoll.protocol.page.events import PageEvent
+    from pydoll import PageEvent
 
 
     async def on_dialog(event):

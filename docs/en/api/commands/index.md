@@ -56,7 +56,7 @@ Commands are typically accessed through the browser or tab instances:
 === "Sync"
 
     ```python
-    from pydoll.sync import Chrome
+    from pydoll import Chrome
 
     # Initialize browser
     browser = Chrome()
@@ -74,7 +74,7 @@ Commands are typically accessed through the browser or tab instances:
 === "Async"
 
     ```python
-    from pydoll.browser.chromium import Chrome
+    from pydoll import Chrome
 
     # Initialize browser
     browser = Chrome()

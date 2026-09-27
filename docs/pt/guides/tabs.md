@@ -9,7 +9,7 @@ Uma aba é o objeto que você controla: navegação, busca de elementos e tudo e
 === "Sync"
 
     ```python
-    from pydoll.sync import Chrome
+    from pydoll import Chrome
 
     def main():
         with Chrome() as browser:
@@ -18,7 +18,7 @@ Uma aba é o objeto que você controla: navegação, busca de elementos e tudo e
 
             # abre outra aba, já navegada
             docs = browser.new_tab('https://en.wikipedia.org/wiki/Web_scraping')
-            print(docs.title)
+            print(docs.title())
 
             docs.close()
 
@@ -30,7 +30,7 @@ Uma aba é o objeto que você controla: navegação, busca de elementos e tudo e
     ```python
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
+    from pydoll import Chrome
 
 
     async def main():
@@ -40,7 +40,7 @@ Uma aba é o objeto que você controla: navegação, busca de elementos e tudo e
 
             # abre outra aba, já navegada
             docs = await browser.new_tab('https://en.wikipedia.org/wiki/Web_scraping')
-            print(await docs.title)
+            print(await docs.title())
 
             await docs.close()
 
@@ -63,7 +63,7 @@ Dê a cada página sua própria aba e carregue todas ao mesmo tempo, para que os
 
     def title_of(tab, url):
         tab.go_to(url)
-        return tab.title
+        return tab.title()
 
 
     def main():
@@ -89,12 +89,12 @@ Dê a cada página sua própria aba e carregue todas ao mesmo tempo, para que os
     ```python
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
+    from pydoll import Chrome
 
 
     async def title_of(tab, url):
         await tab.go_to(url)
-        return await tab.title
+        return await tab.title()
 
 
     async def main():
@@ -130,7 +130,7 @@ As três páginas carregam de forma concorrente, então a execução leva mais o
 
         tabs = browser.get_opened_tabs()
         for tab in tabs:
-            print(tab.current_url)
+            print(tab.current_url())
     ```
 
 === "Async"
@@ -143,7 +143,7 @@ As três páginas carregam de forma concorrente, então a execução leva mais o
 
         tabs = await browser.get_opened_tabs()
         for tab in tabs:
-            print(await tab.current_url)
+            print(await tab.current_url())
     ```
 
 ## Lidar com uma aba que a página abriu
@@ -161,7 +161,7 @@ Quando um clique abre uma aba (um link com `target="_blank"`), ela aparece em `g
     tabs = browser.get_opened_tabs()
     if len(tabs) > before:
         new_tab = tabs[-1]
-        print(new_tab.current_url)
+        print(new_tab.current_url())
     ```
 
 === "Async"
@@ -175,7 +175,7 @@ Quando um clique abre uma aba (um link com `target="_blank"`), ela aparece em `g
     tabs = await browser.get_opened_tabs()
     if len(tabs) > before:
         new_tab = tabs[-1]
-        print(await new_tab.current_url)
+        print(await new_tab.current_url())
     ```
 
 ## Trazer uma aba para frente

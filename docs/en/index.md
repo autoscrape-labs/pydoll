@@ -28,7 +28,7 @@ Open a page, find elements by how you'd describe them to a person, and interact 
 
     ```python
     import time
-    from pydoll.sync import Chrome
+    from pydoll import Chrome
 
     def main():
         with Chrome() as browser:
@@ -55,7 +55,7 @@ Open a page, find elements by how you'd describe them to a person, and interact 
     ```python
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
+    from pydoll import Chrome
 
 
     async def main():
@@ -83,8 +83,7 @@ When the goal is data rather than interaction, define a model and let Pydoll ext
 === "Sync"
 
     ```python
-    from pydoll.sync import Chrome
-    from pydoll.extractor import ExtractionModel, Field
+    from pydoll import Chrome, ExtractionModel, Field
 
     class Quote(ExtractionModel):
         text: str = Field(selector='.text')
@@ -108,8 +107,7 @@ When the goal is data rather than interaction, define a model and let Pydoll ext
     ```python
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
-    from pydoll.extractor import ExtractionModel, Field
+    from pydoll import Chrome, ExtractionModel, Field
 
 
     class Quote(ExtractionModel):

@@ -66,7 +66,7 @@ TARGETS = [
             ('pydoll.browser.chromium.chrome', 'Chrome'),
             ('pydoll.browser.chromium.edge', 'Edge'),
             ('pydoll.browser.tab', 'Tab'),
-            ('pydoll.browser.tab', '_DownloadHandle'),
+            ('pydoll.browser.tab', 'DownloadHandle'),
             ('pydoll.elements.web_element', 'WebElement'),
             ('pydoll.elements.shadow_root', 'ShadowRoot'),
             ('pydoll.interactions.keyboard', 'Keyboard'),
@@ -76,7 +76,7 @@ TARGETS = [
             ('pydoll.browser.requests.response', 'Response'),
         ],
         constructible={'Chrome', 'Edge'},
-        renames={'_DownloadHandle': 'DownloadHandle'},
+        renames={},
     ),
 ]
 

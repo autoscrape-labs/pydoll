@@ -469,7 +469,7 @@ class FindElementsMixin:
         iframe_context = None
         if getattr(self, 'is_iframe', False):
             element_self = cast('WebElement', self)
-            iframe_context = await element_self.iframe_context
+            iframe_context = await element_self.iframe_context()
 
         if iframe_context:
             command = self._get_find_element_command(
@@ -532,7 +532,7 @@ class FindElementsMixin:
         iframe_context = None
         if getattr(self, 'is_iframe', False):
             element_self = cast('WebElement', self)
-            iframe_context = await element_self.iframe_context
+            iframe_context = await element_self.iframe_context()
 
         if iframe_context:
             command = self._get_find_elements_command(

@@ -9,7 +9,7 @@ A tab is the object you drive: navigation, element finding, and everything on a 
 === "Sync"
 
     ```python
-    from pydoll.sync import Chrome
+    from pydoll import Chrome
 
     def main():
         with Chrome() as browser:
@@ -18,7 +18,7 @@ A tab is the object you drive: navigation, element finding, and everything on a 
 
             # open another tab, already navigated
             docs = browser.new_tab('https://en.wikipedia.org/wiki/Web_scraping')
-            print(docs.title)
+            print(docs.title())
 
             docs.close()
 
@@ -30,7 +30,7 @@ A tab is the object you drive: navigation, element finding, and everything on a 
     ```python
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
+    from pydoll import Chrome
 
 
     async def main():
@@ -40,7 +40,7 @@ A tab is the object you drive: navigation, element finding, and everything on a 
 
             # open another tab, already navigated
             docs = await browser.new_tab('https://en.wikipedia.org/wiki/Web_scraping')
-            print(await docs.title)
+            print(await docs.title())
 
             await docs.close()
 
@@ -63,7 +63,7 @@ Give each page its own tab and load them at the same time, so their load times o
 
     def title_of(tab, url):
         tab.go_to(url)
-        return tab.title
+        return tab.title()
 
 
     def main():
@@ -89,12 +89,12 @@ Give each page its own tab and load them at the same time, so their load times o
     ```python
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
+    from pydoll import Chrome
 
 
     async def title_of(tab, url):
         await tab.go_to(url)
-        return await tab.title
+        return await tab.title()
 
 
     async def main():
@@ -130,7 +130,7 @@ The three pages load concurrently, so the run takes about as long as the slowest
 
         tabs = browser.get_opened_tabs()
         for tab in tabs:
-            print(tab.current_url)
+            print(tab.current_url())
     ```
 
 === "Async"
@@ -143,7 +143,7 @@ The three pages load concurrently, so the run takes about as long as the slowest
 
         tabs = await browser.get_opened_tabs()
         for tab in tabs:
-            print(await tab.current_url)
+            print(await tab.current_url())
     ```
 
 ## Handle a tab the page opened
@@ -161,7 +161,7 @@ When a click opens a tab (a link with `target="_blank"`), it shows up in `get_op
     tabs = browser.get_opened_tabs()
     if len(tabs) > before:
         new_tab = tabs[-1]
-        print(new_tab.current_url)
+        print(new_tab.current_url())
     ```
 
 === "Async"
@@ -175,7 +175,7 @@ When a click opens a tab (a link with `target="_blank"`), it shows up in `get_op
     tabs = await browser.get_opened_tabs()
     if len(tabs) > before:
         new_tab = tabs[-1]
-        print(await new_tab.current_url)
+        print(await new_tab.current_url())
     ```
 
 ## Bring a tab to the front

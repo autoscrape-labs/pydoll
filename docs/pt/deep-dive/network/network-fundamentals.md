@@ -127,8 +127,7 @@ pc.onicecandidate = (event) => {
 A correção recomendada é a opção embutida do Pydoll, que define a política de tratamento de IP do WebRTC para que o UDP que pularia o proxy seja bloqueado:
 
 ```python
-from pydoll.browser.chromium import Chrome
-from pydoll.browser.options import ChromiumOptions
+from pydoll import Chrome, ChromiumOptions
 
 options = ChromiumOptions()
 options.webrtc_leak_protection = True   # --force-webrtc-ip-handling-policy=disable_non_proxied_udp

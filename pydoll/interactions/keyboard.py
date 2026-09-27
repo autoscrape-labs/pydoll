@@ -3,7 +3,6 @@ from __future__ import annotations
 import asyncio
 import logging
 import random
-import warnings
 from dataclasses import dataclass
 from typing import Any, Optional, Protocol, cast
 
@@ -193,12 +192,7 @@ class Keyboard:
             await self.up(key)
             await asyncio.sleep(0.05)
 
-    async def type_text(
-        self,
-        text: str,
-        humanize: bool = False,
-        interval: Optional[float] = None,
-    ):
+    async def type_text(self, text: str, humanize: bool = False):
         """
         Type text character by character.
 
@@ -206,20 +200,11 @@ class Keyboard:
             text: Text to type.
             humanize: When True, simulates human-like typing with
                 variable delays and occasional typos (~2%).
-            interval: Deprecated. Use humanize=True instead.
 
         Example:
             await tab.keyboard.type_text("Hello World", humanize=True)
             await tab.keyboard.type_text("Hello World")
         """
-        if interval is not None:
-            warnings.warn(
-                'The "interval" parameter is deprecated and will be removed '
-                'in a future version. Use "humanize=True" for realistic typing.',
-                DeprecationWarning,
-                stacklevel=2,
-            )
-
         if humanize:
             await self._type_text_humanized(text)
             return

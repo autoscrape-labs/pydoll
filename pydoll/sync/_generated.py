@@ -15,7 +15,7 @@ from pydoll.sync._runtime import SyncBase, mapping, run_sync
 from pydoll.browser.chromium.chrome import Chrome as _ChromeImpl
 from pydoll.browser.chromium.edge import Edge as _EdgeImpl
 from pydoll.browser.tab import Tab as _TabImpl
-from pydoll.browser.tab import _DownloadHandle as _DownloadHandleImpl
+from pydoll.browser.tab import DownloadHandle as _DownloadHandleImpl
 from pydoll.elements.web_element import WebElement as _WebElementImpl
 from pydoll.elements.shadow_root import ShadowRoot as _ShadowRootImpl
 from pydoll.interactions.keyboard import Keyboard as _KeyboardImpl
@@ -38,7 +38,6 @@ import asyncio
 import json
 import os
 import shutil
-import warnings
 from abc import ABC, abstractmethod
 from contextlib import suppress
 from functools import partial
@@ -76,13 +75,13 @@ import zipfile
 from contextlib import asynccontextmanager
 from pathlib import Path
 from tempfile import mkdtemp
-from typing import TYPE_CHECKING, Any, AsyncGenerator, Awaitable, Callable, Optional, TypeAlias, TypeVar, Union, cast, overload
+from typing import TYPE_CHECKING, Any, AsyncGenerator, Awaitable, Callable, Optional, TypeVar, Union, cast, overload
 import aiofiles
 from pydoll.browser.fingerprint_applier import FingerprintApplier
 from pydoll.commands import DomCommands, FetchCommands, NetworkCommands, PageCommands, RuntimeCommands, StorageCommands, TargetCommands
-from pydoll.constants import By, PageLoadState
+from pydoll.constants import PageLoadState
 from pydoll.elements.mixins import FindElementsMixin
-from pydoll.exceptions import CommandExecutionTimeout, DownloadTimeout, IFrameNotFound, InvalidFileExtension, InvalidIFrame, InvalidScriptWithElement, InvalidTabInitialization, MissingScreenshotPath, NavigationError, NetworkEventsNotEnabled, NoDialogPresent, NotAnIFrame, PageLoadTimeout, TopLevelTargetRequired, WaitElementTimeout, WebSocketConnectionClosed
+from pydoll.exceptions import CommandExecutionTimeout, DownloadTimeout, InvalidFileExtension, InvalidScriptWithElement, InvalidTabInitialization, MissingScreenshotPath, NavigationError, NetworkEventsNotEnabled, NoDialogPresent, PageLoadTimeout, TopLevelTargetRequired, WaitElementTimeout, WebSocketConnectionClosed
 from pydoll.extractor.engine import ExtractionEngine
 from pydoll.interactions import KeyboardAPI, MouseAPI, ScrollAPI
 from pydoll.interactions.iframe import IFrameContext
@@ -91,8 +90,7 @@ from pydoll.protocol.dom.types import Node, ShadowRootType
 from pydoll.protocol.network.types import ResourceType
 from pydoll.protocol.page.events import PageEvent
 from pydoll.protocol.page.types import FrameResourceTree, ScreenshotFormat
-from pydoll.protocol.runtime.methods import CallFunctionOnResponse, EvaluateResponse, SerializationOptions
-from pydoll.protocol.runtime.types import CallArgument
+from pydoll.protocol.runtime.methods import EvaluateResponse, SerializationOptions
 from pydoll.utils import decode_base64_to_bytes, has_return_outside_function
 from pydoll.utils.bundle import build_asset_filename, collect_frame_resources, filter_fetchable_resources, inline_all_assets, rewrite_html_urls
 from pydoll.extractor.model import ExtractionModel
@@ -106,10 +104,9 @@ from pydoll.protocol.network.methods import GetResponseBodyResponse
 from pydoll.protocol.network.types import Cookie, CookieParam, ErrorReason, RequestMethod
 from pydoll.protocol.page.events import FileChooserOpenedEvent
 from pydoll.protocol.page.methods import CaptureScreenshotResponse, GetResourceContentResponse, GetResourceTreeResponse, NavigateResponse, PrintToPDFResponse
-from pydoll.protocol.runtime.methods import CallFunctionOnResponse, EvaluateResponse
+from pydoll.protocol.runtime.methods import EvaluateResponse
 from pydoll.protocol.storage.methods import GetCookiesResponse as StorageGetCookiesResponse
 from pydoll.protocol.target.methods import AttachToTargetResponse, GetTargetsResponse
-IFrame: TypeAlias = 'Tab'
 T = TypeVar('T', bound='ExtractionModel')
 from typing import TYPE_CHECKING, Optional, Union, cast, overload
 from pydoll.commands import DomCommands, RuntimeCommands
@@ -123,13 +120,14 @@ from pydoll.protocol.dom.types import Node
 from pydoll.protocol.runtime.methods import CallFunctionOnParams, CallFunctionOnResponse, EvaluateParams, EvaluateResponse, GetPropertiesResponse
 from pydoll.elements.mixins.find_elements_mixin import FindElementsMixin
 from pydoll.commands import DomCommands, InputCommands, PageCommands, RuntimeCommands
-from pydoll.constants import Key, Scripts
+from pydoll.constants import Scripts
 from pydoll.exceptions import CommandExecutionTimeout, ElementNotAFileInput, ElementNotFound, ElementNotInteractable, ElementNotVisible, InvalidFileExtension, InvalidIFrame, MissingScreenshotPath, ShadowRootNotFound, WaitElementTimeout, WebSocketConnectionClosed
 from pydoll.interactions.iframe import IFrameContext, IFrameContextResolver
 from pydoll.protocol.dom.types import ShadowRootType
-from pydoll.protocol.input.types import KeyEventType, KeyModifier, MouseButton, MouseEventType
+from pydoll.protocol.input.types import MouseButton, MouseEventType
 from pydoll.protocol.page.types import ScreenshotFormat, Viewport
 from pydoll.protocol.runtime.methods import CallFunctionOnResponse, EvaluateResponse, GetPropertiesResponse, SerializationOptions
+from pydoll.protocol.runtime.types import CallArgument
 from pydoll.utils import decode_base64_to_bytes, extract_text_from_html, is_script_already_function
 from pydoll.interactions.mouse import Mouse as MouseType
 from pydoll.protocol.dom.methods import DescribeNodeResponse, GetBoxModelResponse, GetOuterHTMLResponse, ResolveNodeResponse
@@ -152,12 +150,10 @@ from pydoll.interactions.keyboard import TypoConfig
 import math
 from pydoll.commands import InputCommands, RuntimeCommands
 from pydoll.interactions.utils import bezier_2d, fitts_duration, minimum_jerk, random_control_points
-from pydoll.protocol.input.types import MouseButton, MouseEventType
 from pydoll.interactions.mouse import MouseTimingConfig
 from pydoll.constants import Scripts, ScrollPosition
 from pydoll.interactions.utils import CubicBezier
 from pydoll.protocol.input.types import MouseEventType
-from pydoll.protocol.runtime.methods import EvaluateResponse
 from pydoll.interactions.scroll import ScrollTimingConfig
 import json as jsonlib
 from collections.abc import AsyncIterator
@@ -165,7 +161,6 @@ from typing import TYPE_CHECKING, Any, Callable, Optional, Union, cast
 from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 from pydoll.browser.requests.har_recorder import HarCapture, HarRecorder
 from pydoll.commands.runtime_commands import RuntimeCommands
-from pydoll.constants import Scripts
 from pydoll.exceptions import HTTPError
 from pydoll.protocol.network.events import NetworkEvent, RequestWillBeSentEvent, RequestWillBeSentExtraInfoEvent, ResponseReceivedEvent, ResponseReceivedExtraInfoEvent, ResponseReceivedExtraInfoEventParams
 from pydoll.protocol.network.types import CookieParam, ResourceType
@@ -219,12 +214,9 @@ class Chrome(SyncBase):
         """
         return mapping.from_impl(self._run(self._impl.connect(ws_address=mapping.to_impl(ws_address))))
 
-    def start(self, headless: bool=False) -> Tab:
+    def start(self) -> Tab:
         """
         Start browser process and establish CDP connection.
-
-        Args:
-            headless: Deprecated. Use `options.headless = True` instead.
 
         Returns:
             Initial tab for interaction.
@@ -232,7 +224,7 @@ class Chrome(SyncBase):
         Raises:
             FailedToStartBrowser: If the browser fails to start or connect.
         """
-        return mapping.from_impl(self._run(self._impl.start(headless=mapping.to_impl(headless))))
+        return mapping.from_impl(self._run(self._impl.start()))
 
     def stop(self):
         """
@@ -523,12 +515,9 @@ class Edge(SyncBase):
         """
         return mapping.from_impl(self._run(self._impl.connect(ws_address=mapping.to_impl(ws_address))))
 
-    def start(self, headless: bool=False) -> Tab:
+    def start(self) -> Tab:
         """
         Start browser process and establish CDP connection.
-
-        Args:
-            headless: Deprecated. Use `options.headless = True` instead.
 
         Returns:
             Initial tab for interaction.
@@ -536,7 +525,7 @@ class Edge(SyncBase):
         Raises:
             FailedToStartBrowser: If the browser fails to start or connect.
         """
-        return mapping.from_impl(self._run(self._impl.start(headless=mapping.to_impl(headless))))
+        return mapping.from_impl(self._run(self._impl.start()))
 
     def stop(self):
         """
@@ -899,20 +888,17 @@ class Tab(SyncBase):
         """Whether file chooser dialog interception is active."""
         return mapping.from_impl(self._impl.intercept_file_chooser_dialog_enabled)
 
-    @property
     def current_url(self) -> str:
         """Get current page URL (reflects redirects and client-side navigation)."""
-        return mapping.from_impl(self._run(self._impl.current_url))
+        return mapping.from_impl(self._run(self._impl.current_url()))
 
-    @property
     def page_source(self) -> str:
         """Get complete HTML source of current page (live DOM state)."""
-        return mapping.from_impl(self._run(self._impl.page_source))
+        return mapping.from_impl(self._run(self._impl.page_source()))
 
-    @property
     def title(self) -> str:
         """Get current page title."""
-        return mapping.from_impl(self._run(self._impl.title))
+        return mapping.from_impl(self._run(self._impl.title()))
 
     def enable_page_events(self):
         """Enable CDP Page domain events (load, navigation, dialogs, etc.)."""
@@ -953,18 +939,14 @@ class Tab(SyncBase):
         """
         return mapping.from_impl(self._run(self._impl.enable_intercept_file_chooser_dialog()))
 
-    def enable_auto_solve_cloudflare_captcha(self, custom_selector: Optional[tuple[By, str]]=None, time_before_click: Optional[float]=None, time_to_wait_captcha: float=5):
+    def enable_auto_solve_cloudflare_captcha(self, time_to_wait_captcha: float=5):
         """
         Enable automatic Cloudflare Turnstile captcha bypass.
 
         Args:
-            custom_selector: Deprecated — ignored. Cloudflare Turnstile is now
-                detected automatically via shadow root inspection.
-            time_before_click: Deprecated — ignored. The checkbox is now
-                located via shadow root polling and clicked immediately.
             time_to_wait_captcha: Timeout for captcha detection (default 5s).
         """
-        return mapping.from_impl(self._run(self._impl.enable_auto_solve_cloudflare_captcha(custom_selector=mapping.to_impl(custom_selector), time_before_click=mapping.to_impl(time_before_click), time_to_wait_captcha=mapping.to_impl(time_to_wait_captcha))))
+        return mapping.from_impl(self._run(self._impl.enable_auto_solve_cloudflare_captcha(time_to_wait_captcha=mapping.to_impl(time_to_wait_captcha))))
 
     def disable_fetch_events(self):
         """Disable CDP Fetch domain and release paused requests."""
@@ -1002,27 +984,6 @@ class Tab(SyncBase):
             Tab instance becomes invalid after calling this method.
         """
         return mapping.from_impl(self._run(self._impl.close()))
-
-    def get_frame(self, frame: 'WebElement') -> IFrame:
-        """
-        .. deprecated:: ?.?.?
-            Use iframe `WebElement` instances directly; this method will be removed in
-            a future version.
-
-        Get Tab object for interacting with iframe content.
-
-        Args:
-            frame: Tab representing the iframe tag.
-
-        Returns:
-            Tab instance configured for iframe interaction.
-
-        Raises:
-            NotAnIFrame: If element is not an iframe.
-            InvalidIFrame: If iframe lacks valid src attribute.
-            IFrameNotFound: If iframe target not found in browser.
-        """
-        return mapping.from_impl(self._run(self._impl.get_frame(frame=mapping.to_impl(frame))))
 
     def find_shadow_roots(self, deep: bool=False, timeout: float=0) -> list[ShadowRoot]:
         """
@@ -1247,18 +1208,12 @@ class Tab(SyncBase):
         """
         return mapping.from_impl(self._run(self._impl.handle_dialog(accept=mapping.to_impl(accept), prompt_text=mapping.to_impl(prompt_text))))
 
-    @overload
-    def execute_script(self, script: str, *, object_group: Optional[str]=None, include_command_line_api: Optional[bool]=None, silent: Optional[bool]=None, context_id: Optional[int]=None, return_by_value: Optional[bool]=None, generate_preview: Optional[bool]=None, user_gesture: Optional[bool]=None, await_promise: Optional[bool]=None, throw_on_side_effect: Optional[bool]=None, timeout: Optional[float]=None, disable_breaks: Optional[bool]=None, repl_mode: Optional[bool]=None, allow_unsafe_eval_blocked_by_csp: Optional[bool]=None, unique_context_id: Optional[str]=None, serialization_options: Optional[SerializationOptions]=None) -> EvaluateResponse: ...
-    @overload
-    def execute_script(self, script: str, element: WebElement, *, arguments: Optional[list[CallArgument]]=None, silent: Optional[bool]=None, return_by_value: Optional[bool]=None, generate_preview: Optional[bool]=None, user_gesture: Optional[bool]=None, await_promise: Optional[bool]=None, execution_context_id: Optional[int]=None, object_group: Optional[str]=None, throw_on_side_effect: Optional[bool]=None, unique_context_id: Optional[str]=None, serialization_options: Optional[SerializationOptions]=None) -> CallFunctionOnResponse: ...
-    def execute_script(self, script: str, element: Optional[WebElement]=None, *, arguments: Optional[list[CallArgument]]=None, object_group: Optional[str]=None, include_command_line_api: Optional[bool]=None, silent: Optional[bool]=None, context_id: Optional[int]=None, return_by_value: Optional[bool]=None, generate_preview: Optional[bool]=None, user_gesture: Optional[bool]=None, await_promise: Optional[bool]=None, execution_context_id: Optional[int]=None, throw_on_side_effect: Optional[bool]=None, timeout: Optional[float]=None, disable_breaks: Optional[bool]=None, repl_mode: Optional[bool]=None, allow_unsafe_eval_blocked_by_csp: Optional[bool]=None, unique_context_id: Optional[str]=None, serialization_options: Optional[SerializationOptions]=None) -> Union[EvaluateResponse, CallFunctionOnResponse]:
+    def execute_script(self, script: str, *, object_group: Optional[str]=None, include_command_line_api: Optional[bool]=None, silent: Optional[bool]=None, context_id: Optional[int]=None, return_by_value: Optional[bool]=None, generate_preview: Optional[bool]=None, user_gesture: Optional[bool]=None, await_promise: Optional[bool]=None, throw_on_side_effect: Optional[bool]=None, timeout: Optional[float]=None, disable_breaks: Optional[bool]=None, repl_mode: Optional[bool]=None, allow_unsafe_eval_blocked_by_csp: Optional[bool]=None, unique_context_id: Optional[str]=None, serialization_options: Optional[SerializationOptions]=None) -> EvaluateResponse:
         """
         Execute JavaScript in page context.
 
         Args:
             script (str): JavaScript code to execute.
-            element (Optional[WebElement]): Optional WebElement to execute script on.
-            arguments (Optional[list[CallArgument]]): Arguments to pass to the function.
             object_group (Optional[str]): Symbolic group name for the result (Runtime.evaluate).
             include_command_line_api (Optional[bool]): Whether to include command line API
                 (Runtime.evaluate).
@@ -1272,8 +1227,6 @@ class Tab(SyncBase):
             user_gesture (Optional[bool]): Whether to treat evaluation as initiated by user
                 gesture (Runtime.evaluate).
             await_promise (Optional[bool]): Whether to await promise result (Runtime.evaluate).
-            execution_context_id (Optional[int]): ID of the execution context to call the
-                function in.
             throw_on_side_effect (Optional[bool]): Whether to throw if side effect cannot be
                 ruled out (Runtime.evaluate).
             timeout (Optional[float]): Timeout in milliseconds (Runtime.evaluate).
@@ -1288,25 +1241,20 @@ class Tab(SyncBase):
                 the result (Runtime.evaluate).
 
         Returns:
-            Union[EvaluateResponse, CallFunctionOnResponse]: The result of the script execution.
+            EvaluateResponse: The result of the script execution.
 
         Raises:
-            InvalidScriptWithElement: If script uses 'argument' keyword but no element is provided.
+            InvalidScriptWithElement: If the script references ``argument``; run it through
+                ``WebElement.execute_script()`` instead.
 
         Examples:
             # Execute a simple script to log a message
-            await page.execute_script('console.log("Hello World")')
+            await tab.execute_script('console.log("Hello World")')
 
             # Execute a script that returns the page title
-            await page.execute_script('return document.title')
-
-            # Execute a script on an element to click it
-            await page.execute_script('argument.click()', element)
-
-            # Execute a script on an element to set its value
-            await page.execute_script('argument.value = "Hello"', element)
+            await tab.execute_script('return document.title')
         """
-        return mapping.from_impl(self._run(cast('Any', self._impl).execute_script(script=mapping.to_impl(script), element=mapping.to_impl(element), arguments=mapping.to_impl(arguments), object_group=mapping.to_impl(object_group), include_command_line_api=mapping.to_impl(include_command_line_api), silent=mapping.to_impl(silent), context_id=mapping.to_impl(context_id), return_by_value=mapping.to_impl(return_by_value), generate_preview=mapping.to_impl(generate_preview), user_gesture=mapping.to_impl(user_gesture), await_promise=mapping.to_impl(await_promise), execution_context_id=mapping.to_impl(execution_context_id), throw_on_side_effect=mapping.to_impl(throw_on_side_effect), timeout=mapping.to_impl(timeout), disable_breaks=mapping.to_impl(disable_breaks), repl_mode=mapping.to_impl(repl_mode), allow_unsafe_eval_blocked_by_csp=mapping.to_impl(allow_unsafe_eval_blocked_by_csp), unique_context_id=mapping.to_impl(unique_context_id), serialization_options=mapping.to_impl(serialization_options))))
+        return mapping.from_impl(self._run(self._impl.execute_script(script=mapping.to_impl(script), object_group=mapping.to_impl(object_group), include_command_line_api=mapping.to_impl(include_command_line_api), silent=mapping.to_impl(silent), context_id=mapping.to_impl(context_id), return_by_value=mapping.to_impl(return_by_value), generate_preview=mapping.to_impl(generate_preview), user_gesture=mapping.to_impl(user_gesture), await_promise=mapping.to_impl(await_promise), throw_on_side_effect=mapping.to_impl(throw_on_side_effect), timeout=mapping.to_impl(timeout), disable_breaks=mapping.to_impl(disable_breaks), repl_mode=mapping.to_impl(repl_mode), allow_unsafe_eval_blocked_by_csp=mapping.to_impl(allow_unsafe_eval_blocked_by_csp), unique_context_id=mapping.to_impl(unique_context_id), serialization_options=mapping.to_impl(serialization_options))))
 
     def continue_request(self, request_id: str, url: Optional[str]=None, method: Optional[RequestMethod]=None, post_data: Optional[str]=None, headers: Optional[list[HeaderEntry]]=None, intercept_response: Optional[bool]=None):
         """
@@ -1339,18 +1287,14 @@ class Tab(SyncBase):
         """
         return mapping.from_impl(self._impl.expect_file_chooser(files=mapping.to_impl(files)))
 
-    def expect_and_bypass_cloudflare_captcha(self, custom_selector: Optional[tuple[By, str]]=None, time_before_click: Optional[float]=None, time_to_wait_captcha: float=5) -> AbstractContextManager[None]:
+    def expect_and_bypass_cloudflare_captcha(self, time_to_wait_captcha: float=5) -> AbstractContextManager[None]:
         """
         Context manager for automatic Cloudflare captcha bypass.
 
         Args:
-            custom_selector: Deprecated — ignored. Cloudflare Turnstile is now
-                detected automatically via shadow root inspection.
-            time_before_click: Deprecated — ignored. The checkbox is now
-                located via shadow root polling and clicked immediately.
             time_to_wait_captcha: Timeout for captcha detection (default 5s).
         """
-        return mapping.from_impl(self._impl.expect_and_bypass_cloudflare_captcha(custom_selector=mapping.to_impl(custom_selector), time_before_click=mapping.to_impl(time_before_click), time_to_wait_captcha=mapping.to_impl(time_to_wait_captcha)))
+        return mapping.from_impl(self._impl.expect_and_bypass_cloudflare_captcha(time_to_wait_captcha=mapping.to_impl(time_to_wait_captcha)))
 
     def expect_download(self, keep_file_at: Optional[Union[str, Path]]=None, timeout: Optional[float]=None) -> AbstractContextManager[DownloadHandle]:
         """
@@ -1366,7 +1310,7 @@ class Tab(SyncBase):
             timeout: Max seconds to wait for download completion. Defaults to 60.
 
         Yields:
-            _DownloadHandle: Handle to read the downloaded file (bytes/base64) and check its path.
+            DownloadHandle: Handle to read the downloaded file (bytes/base64) and check its path.
         """
         return mapping.from_impl(self._impl.expect_download(keep_file_at=mapping.to_impl(keep_file_at), timeout=mapping.to_impl(timeout)))
 
@@ -1561,25 +1505,21 @@ class WebElement(SyncBase):
         """Whether element is enabled (not disabled)."""
         return mapping.from_impl(self._impl.is_enabled)
 
-    @property
     def text(self) -> str:
         """Visible text content of the element."""
-        return mapping.from_impl(self._run(self._impl.text))
+        return mapping.from_impl(self._run(self._impl.text()))
 
-    @property
     def bounds(self) -> Quad:
         """
         Element's bounding box coordinates.
 
         Returns coordinates in CSS pixels relative to document origin.
         """
-        return mapping.from_impl(self._run(self._impl.bounds))
+        return mapping.from_impl(self._run(self._impl.bounds()))
 
-    @property
     def inner_html(self) -> str:
-        return mapping.from_impl(self._run(self._impl.inner_html))
+        return mapping.from_impl(self._run(self._impl.inner_html()))
 
-    @property
     def iframe_context(self) -> Optional[IFrameContext]:
         """
         Return the resolved iframe context for this element when it is an ``<iframe>``.
@@ -1593,7 +1533,7 @@ class WebElement(SyncBase):
         Returns:
             IFrameContext | None: Resolved iframe context or None for non-iframes.
         """
-        return mapping.from_impl(self._run(self._impl.iframe_context))
+        return mapping.from_impl(self._run(self._impl.iframe_context()))
 
     def get_attribute(self, name: str) -> Optional[str]:
         """
@@ -1789,48 +1729,15 @@ class WebElement(SyncBase):
         """
         return mapping.from_impl(self._run(self._impl.set_input_files(files=mapping.to_impl(files))))
 
-    def type_text(self, text: str, humanize: bool=False, interval: Optional[float]=None):
+    def type_text(self, text: str, humanize: bool=False):
         """
         Type text character by character.
 
         Args:
             text: Text to type into the element.
             humanize: When True, simulates human-like typing.
-            interval: Deprecated. Use humanize=True instead.
         """
-        return mapping.from_impl(self._run(self._impl.type_text(text=mapping.to_impl(text), humanize=mapping.to_impl(humanize), interval=mapping.to_impl(interval))))
-
-    def key_down(self, key: Key, modifiers: Optional[KeyModifier]=None):
-        """
-        Send key down event.
-
-        .. deprecated::
-            This method is deprecated. Use ``tab.keyboard.down()`` instead.
-
-        Note:
-            Only sends key down without release. Pair with key_up() for complete keypress.
-        """
-        return mapping.from_impl(self._run(self._impl.key_down(key=mapping.to_impl(key), modifiers=mapping.to_impl(modifiers))))
-
-    def key_up(self, key: Key):
-        """
-        Send key up event (should follow corresponding key_down()).
-
-        .. deprecated::
-            This method is deprecated. Use ``tab.keyboard.up()`` instead.
-        """
-        return mapping.from_impl(self._run(self._impl.key_up(key=mapping.to_impl(key))))
-
-    def press_keyboard_key(self, key: Key, modifiers: Optional[KeyModifier]=None, interval: float=0.1):
-        """
-        Press and release keyboard key with configurable timing.
-
-        .. deprecated::
-            This method is deprecated. Use ``tab.keyboard.press()`` instead.
-
-        Better for special keys (Enter, Tab, etc.) than type_text().
-        """
-        return mapping.from_impl(self._run(self._impl.press_keyboard_key(key=mapping.to_impl(key), modifiers=mapping.to_impl(modifiers), interval=mapping.to_impl(interval))))
+        return mapping.from_impl(self._run(self._impl.type_text(text=mapping.to_impl(text), humanize=mapping.to_impl(humanize))))
 
     def is_editable(self) -> bool:
         """
@@ -2021,10 +1928,9 @@ class ShadowRoot(SyncBase):
         """Reference to the shadow host element, if available."""
         return mapping.from_impl(self._impl.host_element)
 
-    @property
     def inner_html(self) -> str:
         """HTML content of the shadow root."""
-        return mapping.from_impl(self._run(self._impl.inner_html))
+        return mapping.from_impl(self._run(self._impl.inner_html()))
 
     @overload
     def find(self, id: Optional[str]=..., class_name: Optional[str]=..., name: Optional[str]=..., tag_name: Optional[str]=..., text: Optional[str]=..., timeout: int=..., find_all: Literal[False]=False, raise_exc: Literal[True]=True, **attributes) -> WebElement: ...
@@ -2180,7 +2086,7 @@ class Keyboard(SyncBase):
         """
         return mapping.from_impl(self._run(self._impl.hotkey(key1=mapping.to_impl(key1), key2=mapping.to_impl(key2), key3=mapping.to_impl(key3))))
 
-    def type_text(self, text: str, humanize: bool=False, interval: Optional[float]=None):
+    def type_text(self, text: str, humanize: bool=False):
         """
         Type text character by character.
 
@@ -2188,13 +2094,12 @@ class Keyboard(SyncBase):
             text: Text to type.
             humanize: When True, simulates human-like typing with
                 variable delays and occasional typos (~2%).
-            interval: Deprecated. Use humanize=True instead.
 
         Example:
             await tab.keyboard.type_text("Hello World", humanize=True)
             await tab.keyboard.type_text("Hello World")
         """
-        return mapping.from_impl(self._run(self._impl.type_text(text=mapping.to_impl(text), humanize=mapping.to_impl(humanize), interval=mapping.to_impl(interval))))
+        return mapping.from_impl(self._run(self._impl.type_text(text=mapping.to_impl(text), humanize=mapping.to_impl(humanize))))
 
 class Mouse(SyncBase):
     """

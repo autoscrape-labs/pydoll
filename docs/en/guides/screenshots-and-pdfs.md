@@ -9,7 +9,7 @@ Call `take_screenshot()` with a file path. The extension sets the format.
 === "Sync"
 
     ```python
-    from pydoll.sync import Chrome
+    from pydoll import Chrome
 
     def main():
         with Chrome() as browser:
@@ -26,7 +26,7 @@ Call `take_screenshot()` with a file path. The extension sets the format.
     ```python
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
+    from pydoll import Chrome
 
 
     async def main():
@@ -163,7 +163,7 @@ This is also how you capture content inside an iframe: `tab.take_screenshot()` o
     ```python
     from pathlib import Path
 
-    from pydoll.sync import Chrome
+    from pydoll import Chrome
 
     def main():
         with Chrome() as browser:
@@ -181,7 +181,7 @@ This is also how you capture content inside an iframe: `tab.take_screenshot()` o
     import asyncio
     from pathlib import Path
 
-    from pydoll.browser.chromium import Chrome
+    from pydoll import Chrome
 
 
     async def main():

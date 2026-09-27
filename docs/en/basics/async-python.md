@@ -103,12 +103,12 @@ Swap the chores for real pages and nothing changes. Loading three pages one at a
 ```python
 import asyncio
 
-from pydoll.browser.chromium import Chrome
+from pydoll import Chrome
 
 
 async def title_of(browser, url):
     tab = await browser.new_tab(url)
-    title = await tab.title
+    title = await tab.title()
     await tab.close()
     return title
 
@@ -138,11 +138,11 @@ These are the normal stumbles when async is new. They are quick to recognize onc
 **You forgot `await`.** Without it, you get the coroutine object instead of its result, and a warning:
 
 ```python
-title = tab.title
+title = tab.title()
 print(title)   # <coroutine object ...>, and: RuntimeWarning: coroutine was never awaited
 ```
 
-The fix is to add `await`: `title = await tab.title`.
+The fix is to add `await`: `title = await tab.title()`.
 
 **You called async code without starting the loop.** `await` only works inside an `async def`, and coroutines only run under `asyncio.run()` (or another running loop):
 

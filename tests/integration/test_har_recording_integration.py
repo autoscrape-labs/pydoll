@@ -207,7 +207,7 @@ async def _wait_for_requests_done(tab, timeout=15):
     deadline = loop.time() + timeout
     while True:
         status_el = await tab.find(id='status', timeout=5)
-        text = await status_el.text
+        text = await status_el.text()
         if text == 'done':
             return True
         if loop.time() >= deadline:

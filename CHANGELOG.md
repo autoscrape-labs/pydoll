@@ -1,3 +1,17 @@
+## 3.0.0 (unreleased)
+
+### BREAKING CHANGE
+
+- async properties are now methods: `tab.title()`, `tab.current_url()`, `tab.page_source()`, `element.text()`, `element.inner_html()`, `element.bounds()`, `element.iframe_context()`, `shadow_root.inner_html()`
+- removed deprecated APIs: `Tab.get_frame()`, the `element` argument of `Tab.execute_script()`, `WebElement.key_down()/key_up()/press_keyboard_key()`, the `interval` argument of `type_text()`, the `headless` argument of `Browser.start()`, `custom_selector`/`time_before_click` on the Cloudflare helpers, and the `NotAnIFrame`/`IFrameNotFound` exceptions
+- `_DownloadHandle` is now the public `DownloadHandle`
+
+### Feat
+
+- **sync**: synchronous API generated from the async one, exported from `pydoll.sync`
+- top-level `pydoll` exports the async API (`Chrome`, `Tab`, `ChromiumOptions`, `Key`, events, extraction models); `pydoll.sync` exports the same names
+- `@retry` works on plain functions as well as coroutines
+
 ## 2.26.0 (2026-08-26)
 
 ### Feat

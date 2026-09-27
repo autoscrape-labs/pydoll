@@ -9,7 +9,7 @@ Encontre o `<iframe>` como qualquer elemento, depois chame `find()` ou `query()`
 === "Sync"
 
     ```python
-    from pydoll.sync import Chrome
+    from pydoll import Chrome
 
     def main():
         with Chrome() as browser:
@@ -18,7 +18,7 @@ Encontre o `<iframe>` como qualquer elemento, depois chame `find()` ou `query()`
 
             editor = tab.find(tag_name='iframe')   # o frame do editor embutido
             body = editor.find(id='tinymce')        # um elemento dentro do frame
-            print(body.text)
+            print(body.text())
 
     main()
     ```
@@ -28,7 +28,7 @@ Encontre o `<iframe>` como qualquer elemento, depois chame `find()` ou `query()`
     ```python
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
+    from pydoll import Chrome
 
 
     async def main():
@@ -38,7 +38,7 @@ Encontre o `<iframe>` como qualquer elemento, depois chame `find()` ou `query()`
 
             editor = await tab.find(tag_name='iframe')   # o frame do editor embutido
             body = await editor.find(id='tinymce')        # um elemento dentro do frame
-            print(await body.text)
+            print(await body.text())
 
     asyncio.run(main())
     ```
@@ -235,7 +235,7 @@ O último segmento respeita `find_all=True`, retornando toda correspondência de
 Widgets como o Cloudflare Turnstile vivem em iframes de origem cruzada (frames fora do processo, ou OOPIFs) e muitas vezes escondem seus controles em um shadow root fechado. `tab.find_shadow_roots(deep=True, timeout=...)` alcança esses frames. Veja [Percorrer o DOM](dom-traversal.md) para a API de shadow root e [Contornar captcha](../stealth/captcha-bypass.md) para lidar com o Turnstile de ponta a ponta.
 
 !!! note "Migrando de `tab.get_frame()`"
-    Versões anteriores convertiam um iframe em um objeto separado com `tab.get_frame()`. Esse método está obsoleto e será removido. Trabalhe diretamente com o `WebElement` do iframe, como mostrado acima.
+    Versões anteriores convertiam um iframe em um objeto separado com `tab.get_frame()`. O Pydoll 3 removeu esse método. Trabalhe diretamente com o `WebElement` do iframe, como mostrado acima.
 
 ## Próximos passos
 

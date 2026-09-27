@@ -103,12 +103,12 @@ asyncio.run(main())
 ```python
 import asyncio
 
-from pydoll.browser.chromium import Chrome
+from pydoll import Chrome
 
 
 async def title_of(browser, url):
     tab = await browser.new_tab(url)
-    title = await tab.title
+    title = await tab.title()
     await tab.close()
     return title
 
@@ -138,11 +138,11 @@ asyncio.run(main())
 **你忘了写 `await`。** 没有它，你拿到的是 coroutine 对象而不是它的结果，还会附带一条警告：
 
 ```python
-title = tab.title
+title = tab.title()
 print(title)   # <coroutine object ...>, and: RuntimeWarning: coroutine was never awaited
 ```
 
-修复方法是加上 `await`：`title = await tab.title`。
+修复方法是加上 `await`：`title = await tab.title()`。
 
 **你调用了异步代码，却没有启动事件循环。** `await` 只在 `async def` 内部有效，而 coroutine 只有在 `asyncio.run()`（或另一个正在运行的循环）下才会运行：
 

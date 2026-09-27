@@ -23,13 +23,13 @@ class TestClickRegularElement:
             btn = await tab.find(id='regular-btn', timeout=5)
             counter = await tab.find(id='regular-btn-count')
 
-            text_before = await counter.text
+            text_before = await counter.text()
             assert text_before == '0'
 
             await btn.click()
             await wait_for_element_text(counter, '1')
 
-            text_after = await counter.text
+            text_after = await counter.text()
             assert text_after == '1'
 
     @pytest.mark.asyncio
@@ -46,7 +46,7 @@ class TestClickRegularElement:
 
             await wait_for_element_text(counter, '3')
 
-            text = await counter.text
+            text = await counter.text()
             assert text == '3'
 
 
@@ -65,13 +65,13 @@ class TestClickInShadowRoot:
             btn = await shadow.query('#shadow-btn')
             counter = await shadow.query('#shadow-btn-count')
 
-            text_before = await counter.text
+            text_before = await counter.text()
             assert text_before == '0'
 
             await btn.click()
             await wait_for_element_text(counter, '1')
 
-            text_after = await counter.text
+            text_after = await counter.text()
             assert text_after == '1'
 
     @pytest.mark.asyncio
@@ -85,7 +85,7 @@ class TestClickInShadowRoot:
 
             text_el = await shadow.query('.shadow-text')
             assert isinstance(text_el, WebElement)
-            text = await text_el.text
+            text = await text_el.text()
             assert text == 'Content inside shadow root'
 
 
@@ -107,13 +107,13 @@ class TestClickInNestedShadowRoots:
             btn = await inner_shadow.query('#deep-btn')
             counter = await inner_shadow.query('#deep-btn-count')
 
-            text_before = await counter.text
+            text_before = await counter.text()
             assert text_before == '0'
 
             await btn.click()
             await wait_for_element_text(counter, '1')
 
-            text_after = await counter.text
+            text_after = await counter.text()
             assert text_after == '1'
 
     @pytest.mark.asyncio
@@ -126,13 +126,13 @@ class TestClickInNestedShadowRoots:
             outer_shadow = await outer_host.get_shadow_root()
 
             outer_text = await outer_shadow.query('.outer-text')
-            assert 'Outer shadow content' == await outer_text.text
+            assert 'Outer shadow content' == await outer_text.text()
 
             inner_host = await outer_shadow.query('#inner-shadow-host')
             inner_shadow = await inner_host.get_shadow_root()
 
             inner_text = await inner_shadow.query('.inner-text')
-            assert 'Inner shadow content' == await inner_text.text
+            assert 'Inner shadow content' == await inner_text.text()
 
 
 class TestClickInIframe:
@@ -150,13 +150,13 @@ class TestClickInIframe:
             btn = await iframe.find(id='iframe-btn', timeout=5)
             counter = await iframe.find(id='iframe-btn-count')
 
-            text_before = await counter.text
+            text_before = await counter.text()
             assert text_before == '0'
 
             await btn.click()
             await wait_for_element_text(counter, '1')
 
-            text_after = await counter.text
+            text_after = await counter.text()
             assert text_after == '1'
 
 
@@ -176,13 +176,13 @@ class TestClickInShadowRootInsideIframe:
             btn = await shadow.query('#shadow-btn-in-iframe')
             counter = await shadow.query('#shadow-btn-count')
 
-            text_before = await counter.text
+            text_before = await counter.text()
             assert text_before == '0'
 
             await btn.click()
             await wait_for_element_text(counter, '1')
 
-            text_after = await counter.text
+            text_after = await counter.text()
             assert text_after == '1'
 
     @pytest.mark.asyncio
@@ -196,5 +196,5 @@ class TestClickInShadowRootInsideIframe:
             shadow = await shadow_host.get_shadow_root()
 
             text_el = await shadow.query('.shadow-text')
-            text = await text_el.text
+            text = await text_el.text()
             assert text == 'Shadow content inside iframe'

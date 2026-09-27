@@ -9,7 +9,7 @@ Envolva a navegação que você quer capturar em `tab.request.record()`. Tudo o 
 === "Sync"
 
     ```python
-    from pydoll.sync import Chrome
+    from pydoll import Chrome
 
     def main():
         with Chrome() as browser:
@@ -28,7 +28,7 @@ Envolva a navegação que você quer capturar em `tab.request.record()`. Tudo o 
     ```python
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
+    from pydoll import Chrome
 
 
     async def main():

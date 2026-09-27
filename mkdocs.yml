@@ -12,6 +12,7 @@ nav:
       - Installation: getting-started.md
       - Your first automation: first-automation.md
       - Migrating from Selenium & Playwright: migrating.md
+      - Upgrading to Pydoll 3: upgrading.md
   - Basics:
       - Async Python in practice: basics/async-python.md
       - Selectors, CSS and XPath: basics/selectors.md
@@ -136,6 +137,7 @@ plugins:
             Installation: 安装
             Your first automation: 你的第一个自动化
             Migrating from Selenium & Playwright: 从 Selenium 和 Playwright 迁移
+            Upgrading to Pydoll 3: 升级到 Pydoll 3
             Basics: 基础
             Async Python in practice: 异步 Python 实践
             Selectors, CSS and XPath: 选择器、CSS 和 XPath
@@ -203,6 +205,7 @@ plugins:
             Installation: Instalação
             Your first automation: Sua primeira automação
             Migrating from Selenium & Playwright: Migrando do Selenium e Playwright
+            Upgrading to Pydoll 3: Atualizando para o Pydoll 3
             Basics: Fundamentos
             Async Python in practice: Python assíncrono na prática
             Selectors, CSS and XPath: Seletores, CSS e XPath

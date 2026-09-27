@@ -9,7 +9,7 @@ Find the `<iframe>` like any element, then call `find()` or `query()` on it. Tho
 === "Sync"
 
     ```python
-    from pydoll.sync import Chrome
+    from pydoll import Chrome
 
     def main():
         with Chrome() as browser:
@@ -18,7 +18,7 @@ Find the `<iframe>` like any element, then call `find()` or `query()` on it. Tho
 
             editor = tab.find(tag_name='iframe')   # the embedded editor frame
             body = editor.find(id='tinymce')        # an element inside the frame
-            print(body.text)
+            print(body.text())
 
     main()
     ```
@@ -28,7 +28,7 @@ Find the `<iframe>` like any element, then call `find()` or `query()` on it. Tho
     ```python
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
+    from pydoll import Chrome
 
 
     async def main():
@@ -38,7 +38,7 @@ Find the `<iframe>` like any element, then call `find()` or `query()` on it. Tho
 
             editor = await tab.find(tag_name='iframe')   # the embedded editor frame
             body = await editor.find(id='tinymce')        # an element inside the frame
-            print(await body.text)
+            print(await body.text())
 
     asyncio.run(main())
     ```
@@ -235,7 +235,7 @@ The last segment honors `find_all=True`, returning every match inside the final 
 Widgets like Cloudflare Turnstile live in cross-origin iframes (out-of-process frames, or OOPIFs) and often hide their controls in a closed shadow root. `tab.find_shadow_roots(deep=True, timeout=...)` reaches into those frames. See [DOM traversal](dom-traversal.md) for the shadow-root API and [Captcha bypass](../stealth/captcha-bypass.md) for handling Turnstile end to end.
 
 !!! note "Migrating from `tab.get_frame()`"
-    Earlier versions converted an iframe into a separate object with `tab.get_frame()`. That method is deprecated and will be removed. Work with the iframe `WebElement` directly, as shown above.
+    Pydoll 2 converted an iframe into a separate object with `tab.get_frame()`. Pydoll 3 removed that method; work with the iframe `WebElement` directly, as shown above.
 
 ## What's next
 

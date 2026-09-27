@@ -28,7 +28,7 @@ Pydoll 驱动你机器上已安装的 Chrome 或 Edge。你无需下载 webdrive
 
     ```python
     import time
-    from pydoll.sync import Chrome
+    from pydoll import Chrome
 
     def main():
         with Chrome() as browser:
@@ -55,7 +55,7 @@ Pydoll 驱动你机器上已安装的 Chrome 或 Edge。你无需下载 webdrive
     ```python
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
+    from pydoll import Chrome
 
 
     async def main():
@@ -83,8 +83,7 @@ Pydoll 驱动你机器上已安装的 Chrome 或 Edge。你无需下载 webdrive
 === "Sync"
 
     ```python
-    from pydoll.sync import Chrome
-    from pydoll.extractor import ExtractionModel, Field
+    from pydoll import Chrome, ExtractionModel, Field
 
     class Quote(ExtractionModel):
         text: str = Field(selector='.text')
@@ -108,8 +107,7 @@ Pydoll 驱动你机器上已安装的 Chrome 或 Edge。你无需下载 webdrive
     ```python
     import asyncio
 
-    from pydoll.browser.chromium import Chrome
-    from pydoll.extractor import ExtractionModel, Field
+    from pydoll import Chrome, ExtractionModel, Field
 
 
     class Quote(ExtractionModel):
