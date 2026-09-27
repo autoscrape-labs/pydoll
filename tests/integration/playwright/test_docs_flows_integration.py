@@ -64,10 +64,8 @@ class TestBringYourPlaywrightScript:
 
     @pytest.mark.asyncio
     async def test_turnstile_handling_is_reachable_through_page_tab(self, page):
-        await page.tab.enable_cloudflare_turnstile_handling()
-        assert page.tab.page_events_enabled
-        await page.tab.disable_cloudflare_turnstile_handling()
-        await page.goto(LOGIN_URL)
+        async with page.tab.expect_cloudflare_turnstile(time_to_wait_captcha=0.5):
+            await page.goto(LOGIN_URL)
         assert await page.title() == 'Login fixture'
 
     @pytest.mark.asyncio

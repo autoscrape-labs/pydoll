@@ -9,7 +9,6 @@ import logging
 import shutil
 import zipfile
 from contextlib import asynccontextmanager
-from functools import partial
 from pathlib import Path
 from tempfile import mkdtemp
 from typing import (
@@ -182,7 +181,6 @@ class Tab(FindElementsMixin):
         self._dom_events_enabled = False
         self._runtime_events_enabled = False
         self._intercept_file_chooser_dialog_enabled = False
-        self._cloudflare_captcha_callback_id: int | None = None
         self._fingerprint_applier: FingerprintApplier | None = None
         self._request: Request | None = None
         self._scroll: ScrollAPI | None = None
@@ -437,32 +435,6 @@ class Tab(FindElementsMixin):
         logger.debug('File chooser interception enabled')
         return response
 
-    async def enable_cloudflare_turnstile_handling(
-        self,
-        time_to_wait_captcha: float = 5,
-    ):
-        """
-        Handle the Cloudflare Turnstile widget automatically.
-
-        When a page finishes loading with the widget present, its checkbox is clicked.
-
-        Args:
-            time_to_wait_captcha: Timeout for captcha detection (default 5s).
-        """
-        logger.info('Enabling Cloudflare captcha auto-solve')
-        if not self.page_events_enabled:
-            await self.enable_page_events()
-
-        callback = partial(
-            self._handle_cloudflare_turnstile,
-            time_to_wait_captcha=time_to_wait_captcha,
-        )
-
-        self._cloudflare_captcha_callback_id = await self.on(PageEvent.LOAD_EVENT_FIRED, callback)
-        logger.debug(
-            'Cloudflare auto-solve callback registered: id=%s', self._cloudflare_captcha_callback_id
-        )
-
     async def disable_fetch_events(self):
         """Disable CDP Fetch domain and release paused requests."""
         logger.debug('Disabling Fetch events')
@@ -512,12 +484,6 @@ class Tab(FindElementsMixin):
         self._intercept_file_chooser_dialog_enabled = False
         logger.debug('File chooser interception disabled')
         return response
-
-    async def disable_cloudflare_turnstile_handling(self):
-        """Stop handling the Cloudflare Turnstile widget on page load."""
-        logger.info('Disabling Cloudflare captcha auto-solve')
-        await self._connection_handler.remove_callback(self._cloudflare_captcha_callback_id)
-        self._cloudflare_captcha_callback_id = None
 
     async def close(self):
         """

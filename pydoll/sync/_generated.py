@@ -996,17 +996,6 @@ class Tab(SyncBase):
         """
         return mapping.from_impl(self._run(self._impl.enable_intercept_file_chooser_dialog()))
 
-    def enable_cloudflare_turnstile_handling(self, time_to_wait_captcha: float=5):
-        """
-        Handle the Cloudflare Turnstile widget automatically.
-
-        When a page finishes loading with the widget present, its checkbox is clicked.
-
-        Args:
-            time_to_wait_captcha: Timeout for captcha detection (default 5s).
-        """
-        return mapping.from_impl(self._run(self._impl.enable_cloudflare_turnstile_handling(time_to_wait_captcha=mapping.to_impl(time_to_wait_captcha))))
-
     def disable_fetch_events(self):
         """Disable CDP Fetch domain and release paused requests."""
         return mapping.from_impl(self._run(self._impl.disable_fetch_events()))
@@ -1030,10 +1019,6 @@ class Tab(SyncBase):
     def disable_intercept_file_chooser_dialog(self):
         """Disable file chooser dialog interception."""
         return mapping.from_impl(self._run(self._impl.disable_intercept_file_chooser_dialog()))
-
-    def disable_cloudflare_turnstile_handling(self):
-        """Stop handling the Cloudflare Turnstile widget on page load."""
-        return mapping.from_impl(self._run(self._impl.disable_cloudflare_turnstile_handling()))
 
     def close(self):
         """

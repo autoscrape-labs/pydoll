@@ -217,12 +217,14 @@ async def test_lazy_api_properties_are_typed_and_cached(fake_tab):
 
 
 @pytest.mark.asyncio
-async def test_enable_cloudflare_turnstile_handling_registers_callback_and_enables_page_events(
-    fake_conn, fake_tab
-):
-    await fake_tab.enable_cloudflare_turnstile_handling()
-    assert fake_tab.page_events_enabled is True
-    assert fake_conn.callbacks_for('Page.loadEventFired')
+async def test_expect_cloudflare_turnstile_listens_only_while_its_block_runs(fake_conn, fake_tab):
+    async with fake_tab.expect_cloudflare_turnstile(time_to_wait_captcha=0.05):
+        assert fake_tab.page_events_enabled is True
+        callbacks = fake_conn.callbacks_for('Page.loadEventFired')
+        assert len(callbacks) == 1
+        await callbacks[0]({'method': 'Page.loadEventFired', 'params': {}})
+    assert fake_conn.callbacks_for('Page.loadEventFired') == []
+    assert fake_tab.page_events_enabled is False
 
 
 @pytest.mark.asyncio

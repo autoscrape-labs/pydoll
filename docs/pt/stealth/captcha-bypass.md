@@ -49,50 +49,6 @@ O context manager espera o widget do Turnstile aparecer durante o bloqueio, clic
 
 Substitua a URL pelo site que você está automatizando. Não existe uma página pública e estável do Turnstile para apontar.
 
-## Lide com o Turnstile em segundo plano
-
-Quando você não quer envolver uma navegação específica, ative o tratamento em segundo plano: o Pydoll clica no widget sempre que ele aparece, até você desativar.
-
-=== "Sync"
-
-    ```python
-    import time
-    from pydoll.sync import Chrome
-
-    def main():
-        with Chrome() as browser:
-            tab = browser.start()
-
-            tab.enable_cloudflare_turnstile_handling()
-            tab.go_to('https://a-site-behind-turnstile.com')
-            time.sleep(5)   # dá tempo para o widget aparecer e ser clicado
-
-            tab.disable_cloudflare_turnstile_handling()
-
-    main()
-    ```
-
-=== "Async"
-
-    ```python
-    import asyncio
-
-    from pydoll import Chrome
-
-
-    async def main():
-        async with Chrome() as browser:
-            tab = await browser.start()
-
-            await tab.enable_cloudflare_turnstile_handling()
-            await tab.go_to('https://a-site-behind-turnstile.com')
-            await asyncio.sleep(5)   # dá tempo para o widget aparecer e ser clicado
-
-            await tab.disable_cloudflare_turnstile_handling()
-
-    asyncio.run(main())
-    ```
-
 ## Como ele encontra o checkbox
 
 O Pydoll detecta o Turnstile fazendo polling no shadow DOM da página em busca do widget do Cloudflare: ele procura o shadow root que hospeda `challenges.cloudflare.com`, entra no seu iframe cross-origin, encontra o shadow root interno e clica no checkbox assim que ele aparece. Você não configura um seletor, e não há delay de clique para ajustar.

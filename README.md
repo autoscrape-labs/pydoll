@@ -229,8 +229,8 @@ with sync_playwright() as p:
 `pydoll.playwright.async_api` is the async flavor. The layer covers the browser automation surface: `Playwright`, `Browser`, `BrowserContext`, `Page`, `Frame`, `Locator`, `ElementHandle`, `Keyboard`, `Mouse`, routes, dialogs and downloads. `expect()` assertions, fixtures, tracing and the test runner are out of scope. When you need what Playwright can't do, `page.tab` is the Pydoll `Tab` underneath:
 
 ```python
-page.tab.enable_cloudflare_turnstile_handling()
-page.goto('https://site-with-turnstile.com')
+with page.tab.expect_cloudflare_turnstile():
+    page.goto('https://site-with-turnstile.com')
 ```
 
 [Bring your Playwright script](https://pydoll.tech/docs/playwright/) is the walkthrough; [Playwright API](https://pydoll.tech/docs/guides/playwright-api/) is the full compatibility matrix.

@@ -86,7 +86,7 @@ Tudo que emitia `DeprecationWarning` no Pydoll 2 foi removido. Cada linha lista 
 | `type_text(text, interval=...)` | `type_text(text, humanize=True)` |
 | `browser.start(headless=True)` | `options.headless = True` antes de criar o navegador |
 | `expect_and_bypass_cloudflare_captcha()` | `expect_cloudflare_turnstile()` |
-| `enable_auto_solve_cloudflare_captcha()`, `disable_auto_solve_cloudflare_captcha()` | `enable_cloudflare_turnstile_handling()`, `disable_cloudflare_turnstile_handling()` |
+| `enable_auto_solve_cloudflare_captcha()`, `disable_auto_solve_cloudflare_captcha()` | `expect_cloudflare_turnstile()` em volta da navegação; não há mais modo em segundo plano |
 | `custom_selector` e `time_before_click` nesses métodos | Remova-os; o widget Turnstile é localizado automaticamente |
 | Exceções `NotAnIFrame` e `IFrameNotFound` | Nada mais as lança |
 

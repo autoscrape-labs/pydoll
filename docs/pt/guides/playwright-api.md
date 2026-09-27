@@ -135,8 +135,8 @@ Vêm dos padrões de stealth do Pydoll e ficam por baixo da superfície Playwrig
 === "Sync"
 
     ```python
-    page.tab.enable_cloudflare_turnstile_handling()
-    page.goto('https://example.com/protected')
+    with page.tab.expect_cloudflare_turnstile():
+        page.goto('https://example.com/protected')
 
     button = page.get_by_role('button', name='Continue').element_handle().web_element
     button.click(humanize=True)
@@ -145,8 +145,8 @@ Vêm dos padrões de stealth do Pydoll e ficam por baixo da superfície Playwrig
 === "Async"
 
     ```python
-    await page.tab.enable_cloudflare_turnstile_handling()
-    await page.goto('https://example.com/protected')
+    async with page.tab.expect_cloudflare_turnstile():
+        await page.goto('https://example.com/protected')
 
     button = (await page.get_by_role('button', name='Continue').element_handle()).web_element
     await button.click(humanize=True)

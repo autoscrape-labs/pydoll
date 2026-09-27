@@ -81,8 +81,8 @@ Pydoll 没有可打补丁的驱动。改一行导入，同一个脚本就跑在 
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=False)
         page = browser.new_page()
-        page.tab.enable_cloudflare_turnstile_handling()
-        page.goto('https://site-protected-by-cloudflare.com')
+        with page.tab.expect_cloudflare_turnstile():
+            page.goto('https://site-protected-by-cloudflare.com')
     ```
 
 === "Async"
@@ -93,8 +93,8 @@ Pydoll 没有可打补丁的驱动。改一行导入，同一个脚本就跑在 
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=False)
         page = await browser.new_page()
-        await page.tab.enable_cloudflare_turnstile_handling()
-        await page.goto('https://site-protected-by-cloudflare.com')
+        async with page.tab.expect_cloudflare_turnstile():
+            await page.goto('https://site-protected-by-cloudflare.com')
     ```
 
 上面三层对这个脚本依然适用：身份、行为和挑战都需要你通过 `page.tab` 来配置。[带上你的 Playwright 脚本](../playwright.md) 会带你走一遍。

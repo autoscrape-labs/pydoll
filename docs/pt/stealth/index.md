@@ -81,8 +81,8 @@ O Pydoll não tem driver para patchear. Troque um import e o mesmo script roda p
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=False)
         page = browser.new_page()
-        page.tab.enable_cloudflare_turnstile_handling()
-        page.goto('https://site-protected-by-cloudflare.com')
+        with page.tab.expect_cloudflare_turnstile():
+            page.goto('https://site-protected-by-cloudflare.com')
     ```
 
 === "Async"
@@ -93,8 +93,8 @@ O Pydoll não tem driver para patchear. Troque um import e o mesmo script roda p
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=False)
         page = await browser.new_page()
-        await page.tab.enable_cloudflare_turnstile_handling()
-        await page.goto('https://site-protected-by-cloudflare.com')
+        async with page.tab.expect_cloudflare_turnstile():
+            await page.goto('https://site-protected-by-cloudflare.com')
     ```
 
 As três camadas acima continuam valendo para esse script: identidade, comportamento e desafios são seus para configurar, por `page.tab`. [Traga seu script Playwright](../playwright.md) percorre isso.

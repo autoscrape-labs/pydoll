@@ -107,8 +107,8 @@ Três coisas que um script bloqueado costuma precisar em seguida, cada uma em um
         page = browser.new_page()
 
         page.tab.apply_fingerprint(FINGERPRINTS['macos_m3_new_york'])
-        page.tab.enable_cloudflare_turnstile_handling()
-        page.goto('https://quotes.toscrape.com')
+        with page.tab.expect_cloudflare_turnstile():
+            page.goto('https://quotes.toscrape.com')
 
         quotes = page.tab.extract_all(Quote, scope='.quote')
         submit = page.get_by_role('link', name='Login').element_handle().web_element
@@ -134,15 +134,15 @@ Três coisas que um script bloqueado costuma precisar em seguida, cada uma em um
         page = await browser.new_page()
 
         await page.tab.apply_fingerprint(FINGERPRINTS['macos_m3_new_york'])
-        await page.tab.enable_cloudflare_turnstile_handling()
-        await page.goto('https://quotes.toscrape.com')
+        async with page.tab.expect_cloudflare_turnstile():
+            await page.goto('https://quotes.toscrape.com')
 
         quotes = await page.tab.extract_all(Quote, scope='.quote')
         submit = (await page.get_by_role('link', name='Login').element_handle()).web_element
         await submit.click(humanize=True)
     ```
 
-`apply_fingerprint` define uma identidade coerente em todas as camadas ([Injeção de fingerprint](stealth/fingerprint-injection.md)), `enable_cloudflare_turnstile_handling` clica no widget Turnstile quando uma página carrega com um ([Cloudflare Turnstile](stealth/captcha-bypass.md)), `extract_all` retorna objetos tipados e validados ([Extração estruturada](guides/structured-extraction.md)), e `humanize=True` move o mouse por um caminho curvo com tempo humano ([Interações humanizadas](stealth/human-like-interactions.md)). CDP cru também está a uma chamada de distância: `page.tab.execute_command(...)`.
+`apply_fingerprint` define uma identidade coerente em todas as camadas ([Injeção de fingerprint](stealth/fingerprint-injection.md)), `expect_cloudflare_turnstile` clica no widget Turnstile se a navegação dentro do bloco encontrar um ([Cloudflare Turnstile](stealth/captcha-bypass.md)), `extract_all` retorna objetos tipados e validados ([Extração estruturada](guides/structured-extraction.md)), e `humanize=True` move o mouse por um caminho curvo com tempo humano ([Interações humanizadas](stealth/human-like-interactions.md)). CDP cru também está a uma chamada de distância: `page.tab.execute_command(...)`.
 
 ## O que isso não muda {#what-this-does-not-change}
 

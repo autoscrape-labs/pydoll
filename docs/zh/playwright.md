@@ -107,8 +107,8 @@ Pydoll 没有驱动。你的 `page.goto` 变成了直接从 Python 发出的 CDP
         page = browser.new_page()
 
         page.tab.apply_fingerprint(FINGERPRINTS['macos_m3_new_york'])
-        page.tab.enable_cloudflare_turnstile_handling()
-        page.goto('https://quotes.toscrape.com')
+        with page.tab.expect_cloudflare_turnstile():
+            page.goto('https://quotes.toscrape.com')
 
         quotes = page.tab.extract_all(Quote, scope='.quote')
         submit = page.get_by_role('link', name='Login').element_handle().web_element
@@ -134,15 +134,15 @@ Pydoll 没有驱动。你的 `page.goto` 变成了直接从 Python 发出的 CDP
         page = await browser.new_page()
 
         await page.tab.apply_fingerprint(FINGERPRINTS['macos_m3_new_york'])
-        await page.tab.enable_cloudflare_turnstile_handling()
-        await page.goto('https://quotes.toscrape.com')
+        async with page.tab.expect_cloudflare_turnstile():
+            await page.goto('https://quotes.toscrape.com')
 
         quotes = await page.tab.extract_all(Quote, scope='.quote')
         submit = (await page.get_by_role('link', name='Login').element_handle()).web_element
         await submit.click(humanize=True)
     ```
 
-`apply_fingerprint` 在每一层设置一致的身份（[Fingerprint 注入](stealth/fingerprint-injection.md)），`enable_cloudflare_turnstile_handling` 在页面带着 Turnstile 组件加载时点击它（[Cloudflare Turnstile](stealth/captcha-bypass.md)），`extract_all` 返回类型化且经过校验的对象（[结构化提取](guides/structured-extraction.md)），`humanize=True` 让鼠标沿曲线路径以真人的节奏移动（[拟人化交互](stealth/human-like-interactions.md)）。原始 CDP 也只隔着一次调用：`page.tab.execute_command(...)`。
+`apply_fingerprint` 在每一层设置一致的身份（[Fingerprint 注入](stealth/fingerprint-injection.md)），`expect_cloudflare_turnstile` 会在块内的导航遇到 Turnstile 组件时点击它（[Cloudflare Turnstile](stealth/captcha-bypass.md)），`extract_all` 返回类型化且经过校验的对象（[结构化提取](guides/structured-extraction.md)），`humanize=True` 让鼠标沿曲线路径以真人的节奏移动（[拟人化交互](stealth/human-like-interactions.md)）。原始 CDP 也只隔着一次调用：`page.tab.execute_command(...)`。
 
 ## 这不会改变什么 {#what-this-does-not-change}
 

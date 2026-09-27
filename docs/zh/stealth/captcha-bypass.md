@@ -49,50 +49,6 @@ Pydoll 可以帮你点击 Cloudflare Turnstile 的复选框，就和真人在这
 
 把 URL 替换成你正在自动化的网站。目前没有公开、稳定的 Turnstile 页面可供指向。
 
-## 在后台处理 Turnstile
-
-当你不想包裹某一次具体的导航时，可以启用后台处理：Pydoll 会在控件每次出现时点击它，直到你将其禁用。
-
-=== "Sync"
-
-    ```python
-    import time
-    from pydoll.sync import Chrome
-
-    def main():
-        with Chrome() as browser:
-            tab = browser.start()
-
-            tab.enable_cloudflare_turnstile_handling()
-            tab.go_to('https://a-site-behind-turnstile.com')
-            time.sleep(5)   # 给控件出现并被点击的时间
-
-            tab.disable_cloudflare_turnstile_handling()
-
-    main()
-    ```
-
-=== "Async"
-
-    ```python
-    import asyncio
-
-    from pydoll import Chrome
-
-
-    async def main():
-        async with Chrome() as browser:
-            tab = await browser.start()
-
-            await tab.enable_cloudflare_turnstile_handling()
-            await tab.go_to('https://a-site-behind-turnstile.com')
-            await asyncio.sleep(5)   # 给控件出现并被点击的时间
-
-            await tab.disable_cloudflare_turnstile_handling()
-
-    asyncio.run(main())
-    ```
-
 ## 它如何找到复选框
 
 Pydoll 通过轮询页面的 shadow DOM 来检测 Cloudflare 控件：它会查找承载 `challenges.cloudflare.com` 的 shadow root，进入其跨源 iframe，找到内部的 shadow root，并在复选框一出现就点击它。你不需要配置选择器，也没有需要调整的点击延迟。

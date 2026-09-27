@@ -107,8 +107,8 @@ Three things a blocked script usually needs next, each one line:
         page = browser.new_page()
 
         page.tab.apply_fingerprint(FINGERPRINTS['macos_m3_new_york'])
-        page.tab.enable_cloudflare_turnstile_handling()
-        page.goto('https://quotes.toscrape.com')
+        with page.tab.expect_cloudflare_turnstile():
+            page.goto('https://quotes.toscrape.com')
 
         quotes = page.tab.extract_all(Quote, scope='.quote')
         submit = page.get_by_role('link', name='Login').element_handle().web_element
@@ -134,15 +134,15 @@ Three things a blocked script usually needs next, each one line:
         page = await browser.new_page()
 
         await page.tab.apply_fingerprint(FINGERPRINTS['macos_m3_new_york'])
-        await page.tab.enable_cloudflare_turnstile_handling()
-        await page.goto('https://quotes.toscrape.com')
+        async with page.tab.expect_cloudflare_turnstile():
+            await page.goto('https://quotes.toscrape.com')
 
         quotes = await page.tab.extract_all(Quote, scope='.quote')
         submit = (await page.get_by_role('link', name='Login').element_handle()).web_element
         await submit.click(humanize=True)
     ```
 
-`apply_fingerprint` sets a coherent identity across every layer ([Fingerprint injection](stealth/fingerprint-injection.md)), `enable_cloudflare_turnstile_handling` clicks the Turnstile widget when a page loads with one ([Captcha bypass](stealth/captcha-bypass.md)), `extract_all` returns typed, validated objects ([Structured extraction](guides/structured-extraction.md)), and `humanize=True` moves the mouse along a curved path with human timing ([Human-like interactions](stealth/human-like-interactions.md)). Raw CDP is one call away as well: `page.tab.execute_command(...)`.
+`apply_fingerprint` sets a coherent identity across every layer ([Fingerprint injection](stealth/fingerprint-injection.md)), `expect_cloudflare_turnstile` clicks the Turnstile widget if the navigation inside its block meets one ([Captcha bypass](stealth/captcha-bypass.md)), `extract_all` returns typed, validated objects ([Structured extraction](guides/structured-extraction.md)), and `humanize=True` moves the mouse along a curved path with human timing ([Human-like interactions](stealth/human-like-interactions.md)). Raw CDP is one call away as well: `page.tab.execute_command(...)`.
 
 ## What this does not change {#what-this-does-not-change}
 
