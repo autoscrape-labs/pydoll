@@ -124,12 +124,21 @@ class EventInfo(Generic[T]):
 
 
 class EventContextManager(Generic[T]):
-    """``async with page.expect_event(...) as info`` support."""
+    """``async with page.expect_event(...) as info`` support.
 
-    def __init__(self, future: asyncio.Future[T]) -> None:
+    ``ready`` is the enabling of the event's source (the CDP domain and the
+    listeners behind it) when the event has one; entering the block waits for
+    it, so the action inside the block cannot fire the event before anyone
+    can hear it.
+    """
+
+    def __init__(self, future: asyncio.Future[T], ready: Awaitable[None] | None = None) -> None:
         self._info = EventInfo(future)
+        self._ready = ready
 
     async def __aenter__(self) -> EventInfo[T]:
+        if self._ready is not None:
+            await self._ready
         return self._info
 
     async def __aexit__(self, exc_type: Any, exc: Any, tb: Any) -> None:

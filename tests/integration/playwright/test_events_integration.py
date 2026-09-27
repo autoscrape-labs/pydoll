@@ -65,6 +65,15 @@ class TestConsoleAndErrors:
         assert await log.args[1].json_value() == 1
 
     @pytest.mark.asyncio
+    async def test_first_console_expectation_hears_a_message_logged_at_once(self, page):
+        """The very first console listener enables the Runtime domain; the block
+        must not start before that, or a message logged right away is lost."""
+        await page.goto(page_url('test_core_simple.html'))
+        async with page.expect_console_message() as info:
+            await page.evaluate('() => console.log("immediate")')
+        assert (await info.value).text == 'immediate'
+
+    @pytest.mark.asyncio
     async def test_console_text_renders_primitives_like_javascript(self, page):
         await page.goto(page_url('test_core_simple.html'))
         async with page.expect_console_message() as info:

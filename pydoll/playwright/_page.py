@@ -114,8 +114,8 @@ class Page(EventEmitter):
         self._world_name = f'w{secrets.token_hex(4)}'
         self._fetch_enabled = False
         self._fetch_handles_auth = False
-        self._runtime_enabled = False
-        self._file_chooser_enabled = False
+        self._runtime_ready: asyncio.Future[None] | None = None
+        self._file_chooser_ready: asyncio.Future[None] | None = None
         self._bindings: dict[str, tuple[Callable[..., Any], bool]] = {}
         self._downloads: dict[str, Download] = {}
         self._callback_ids: list[int] = []
@@ -411,24 +411,45 @@ class Page(EventEmitter):
         self._ensure_event_source(event)
 
     def _ensure_event_source(self, event: str) -> None:
+        self._event_source_ready(event)
+
+    def _event_source_ready(self, event: str) -> asyncio.Future[None] | None:
+        """Start enabling what ``event`` needs, once, and return that work to await.
+
+        The Runtime domain behind ``console`` and ``pageerror`` and the file
+        chooser interception are enabled on the first listener; every later
+        listener and every ``expect_*`` block shares the same future, so an
+        action taken right after registering cannot outrun the enabling.
+        """
         if event in {'console', 'pageerror'}:
-            schedule(self._loop, self._enable_runtime())
-        elif event == 'filechooser':
-            schedule(self._loop, self._enable_file_chooser())
+            if self._runtime_ready is None:
+                self._runtime_ready = asyncio.ensure_future(self._enable_runtime(), loop=self._loop)
+            return self._runtime_ready
+        if event == 'filechooser':
+            if self._file_chooser_ready is None:
+                self._file_chooser_ready = asyncio.ensure_future(
+                    self._enable_file_chooser(), loop=self._loop
+                )
+            return self._file_chooser_ready
+        return None
+
+    async def _runtime_events(self) -> None:
+        """Wait until the Runtime domain and its listeners are on."""
+        ready = self._event_source_ready('console')
+        if ready is not None:
+            await ready
 
     async def _enable_runtime(self) -> None:
-        if self._runtime_enabled or self._closed:
+        if self._closed:
             return
-        self._runtime_enabled = True
         await self._guard(self._tab.enable_runtime_events)
         await self._listen(RuntimeEvent.CONSOLE_API_CALLED, self._on_console)
         await self._listen(RuntimeEvent.EXCEPTION_THROWN, self._on_exception)
         await self._listen(RuntimeEvent.BINDING_CALLED, self._on_binding_called)
 
     async def _enable_file_chooser(self) -> None:
-        if self._file_chooser_enabled or self._closed:
+        if self._closed:
             return
-        self._file_chooser_enabled = True
         await self._guard(self._tab.enable_intercept_file_chooser_dialog)
 
     def _on_console(self, event: dict[str, Any]) -> None:
@@ -589,7 +610,7 @@ class Page(EventEmitter):
                 self.remove_listener(event, listener)
 
         schedule(self._loop, guard())
-        return EventContextManager(future)
+        return EventContextManager(future, ready=self._event_source_ready(event))
 
     def expect_console_message(
         self,
@@ -800,7 +821,7 @@ class Page(EventEmitter):
         if name in self._bindings:
             raise Error(f'Function "{name}" has been already registered')
         self._bindings[name] = (callback, with_source)
-        await self._enable_runtime()
+        await self._runtime_events()
         await self._send(RuntimeCommands.add_binding(name=f'{name}__binding__'))
         source = _EXPOSE_SOURCE % json.dumps(name)
         await self._send(PageCommands.add_script_to_evaluate_on_new_document(source=source))
