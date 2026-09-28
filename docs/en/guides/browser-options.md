@@ -88,7 +88,7 @@ options.binary_location = '/Applications/Google Chrome Canary.app/Contents/MacOS
 
 ## Wait longer for startup
 
-`start_timeout` is how many seconds Pydoll waits for the browser to come up before giving up. Raise it on slow machines or heavy profiles:
+`start_timeout` is how many seconds Pydoll waits for the browser to come up before giving up. When it gives up, the `FailedToStartBrowser` error says whether the process exited, with its exit code, or never answered on its port, and carries the last lines the browser wrote to stderr, which is where Chrome explains a locked profile or a missing library. Raise the timeout on slow machines or heavy profiles:
 
 ```python
 options = ChromiumOptions()

@@ -88,7 +88,7 @@ options.binary_location = '/Applications/Google Chrome Canary.app/Contents/MacOS
 
 ## 为启动预留更长等待时间
 
-`start_timeout` 是 Pydoll 在放弃之前等待浏览器启动的秒数。在慢机器或重型配置文件上把它调高：
+`start_timeout` 是 Pydoll 在放弃之前等待浏览器启动的秒数。放弃时，`FailedToStartBrowser` 错误会说明进程是已经退出（附带退出码）还是一直没有在端口上应答，并带上浏览器写到 stderr 的最后几行，Chrome 正是在那里解释配置文件被锁或缺少库之类的问题。在慢机器或重型配置文件上把超时调高：
 
 ```python
 options = ChromiumOptions()

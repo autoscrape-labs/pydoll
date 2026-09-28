@@ -231,7 +231,10 @@ class Chrome(SyncBase):
             Initial tab for interaction.
 
         Raises:
-            FailedToStartBrowser: If the browser fails to start or connect.
+            FailedToStartBrowser: If the executable cannot be launched, exits before
+                answering, or does not answer within ``options.start_timeout``. The
+                message carries the exit code and the last lines the browser wrote
+                to stderr, which is where Chrome explains what went wrong.
         """
         return mapping.from_impl(self._run(self._impl.start()))
 
@@ -553,7 +556,10 @@ class Edge(SyncBase):
             Initial tab for interaction.
 
         Raises:
-            FailedToStartBrowser: If the browser fails to start or connect.
+            FailedToStartBrowser: If the executable cannot be launched, exits before
+                answering, or does not answer within ``options.start_timeout``. The
+                message carries the exit code and the last lines the browser wrote
+                to stderr, which is where Chrome explains what went wrong.
         """
         return mapping.from_impl(self._run(self._impl.start()))
 

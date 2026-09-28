@@ -88,7 +88,7 @@ options.binary_location = '/Applications/Google Chrome Canary.app/Contents/MacOS
 
 ## Esperar mais pela inicialização
 
-`start_timeout` é quantos segundos o Pydoll espera o navegador subir antes de desistir. Aumente-o em máquinas lentas ou perfis pesados:
+`start_timeout` é quantos segundos o Pydoll espera o navegador subir antes de desistir. Quando desiste, o erro `FailedToStartBrowser` diz se o processo saiu, com o código de saída, ou se nunca respondeu na porta, e traz as últimas linhas que o navegador escreveu no stderr, que é onde o Chrome explica um perfil travado ou uma biblioteca ausente. Aumente o timeout em máquinas lentas ou perfis pesados:
 
 ```python
 options = ChromiumOptions()

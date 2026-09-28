@@ -183,7 +183,10 @@ class Browser(ABC):  # noqa: PLR0904
             Initial tab for interaction.
 
         Raises:
-            FailedToStartBrowser: If the browser fails to start or connect.
+            FailedToStartBrowser: If the executable cannot be launched, exits before
+                answering, or does not answer within ``options.start_timeout``. The
+                message carries the exit code and the last lines the browser wrote
+                to stderr, which is where Chrome explains what went wrong.
         """
         binary_location = self.options.binary_location or self._get_default_binary_location()
         logger.debug('Resolved binary location: %s', binary_location)
@@ -193,10 +196,14 @@ class Browser(ABC):  # noqa: PLR0904
         proxy_config = self._proxy_manager.get_proxy_credentials()
 
         logger.info('Starting browser process on port %s', self._connection_port)
-        self._browser_process_manager.start_browser_process(
-            binary_location, self._connection_port, self.options.arguments
-        )
-        await self._verify_browser_running()
+        try:
+            self._browser_process_manager.start_browser_process(
+                binary_location, self._connection_port, self.options.arguments
+            )
+            await self._verify_browser_running()
+        except FailedToStartBrowser:
+            await self._abandon_start()
+            raise
         logger.info('Browser process started and responsive')
         await self._configure_proxy(proxy_config[0], proxy_config[1])
 
@@ -916,15 +923,58 @@ class Browser(ABC):  # noqa: PLR0904
 
     async def _verify_browser_running(self):
         """
-        Verify browser started successfully.
+        Wait until the browser answers on its port, or explain why it did not.
+
+        Polls the endpoint until it answers or ``options.start_timeout`` elapses,
+        and gives up at once when the process has already exited. The error
+        names the exit code or the timeout, the port, and the last lines the
+        browser wrote to stderr.
 
         Raises:
-            FailedToStartBrowser: If the browser failed to start.
+            FailedToStartBrowser: If the process exited or never answered.
         """
-        logger.debug('Verifying browser is running (timeout=%s)', self.options.start_timeout)
-        if not await self._is_browser_running(self.options.start_timeout):
-            logger.error('Browser failed to start within timeout')
-            raise FailedToStartBrowser()
+        timeout = self.options.start_timeout
+        logger.debug('Verifying browser is running (timeout=%s)', timeout)
+        loop = asyncio.get_running_loop()
+        deadline = loop.time() + timeout
+        interval = PollInterval(cap=1.0)
+        while True:
+            if await self._connection_handler.ping():
+                return
+            exit_code = self._browser_process_manager.exit_code()
+            if exit_code is not None:
+                raise FailedToStartBrowser(
+                    self._start_failure(
+                        f'The browser exited with code {exit_code} before answering on port '
+                        f'{self._connection_port}'
+                    )
+                )
+            if loop.time() >= deadline:
+                raise FailedToStartBrowser(
+                    self._start_failure(
+                        f'The browser did not answer on port {self._connection_port} within '
+                        f'{timeout}s'
+                    )
+                )
+            await interval.wait()
+
+    def _start_failure(self, reason: str) -> str:
+        """Compose and log the start failure message, with the browser's last output."""
+        output = self._browser_process_manager.recent_stderr()
+        if output:
+            indented = '\n'.join(f'  {line}' for line in output.splitlines())
+            message = f'{reason}. Last output from the browser:\n{indented}'
+        else:
+            message = f'{reason}. The browser wrote nothing to stderr'
+        logger.error(message)
+        return message
+
+    async def _abandon_start(self) -> None:
+        """Tear down what a failed start left behind: the process and the temp profile."""
+        loop = asyncio.get_running_loop()
+        if self._browser_process_manager.exit_code() is None:
+            await loop.run_in_executor(None, self._browser_process_manager.stop_process)
+        await loop.run_in_executor(None, self._temp_directory_manager.cleanup)
 
     async def _configure_proxy(
         self, private_proxy: bool, proxy_credentials: tuple[str | None, str | None]
