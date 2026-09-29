@@ -3902,7 +3902,7 @@
 <h3 id="combine-o-os-do-perfil-com-o-os-do-host">Combine o OS do perfil com o OS do host</h3>
 <p>O kernel e a renderização de texto do OS expõem o OS real em camadas que nenhum override alcança. Rode um perfil macOS no macOS, um perfil Windows no Windows. Um proxy de encaminhamento re-origina a conexão a partir do kernel do proxy, então um perfil Windows passa a exigir um proxy rodando em Windows.</p>
 <h3 id="combine-a-versao-do-chrome-com-o-seu-binario">Combine a versão do Chrome com o seu binário</h3>
-<p>O handshake TLS e o motor JavaScript reportam a versão real do binário; o User-Agent é a única parte que <code>apply_fingerprint()</code> muda. Leia a versão do binário e mantenha o major do perfil igual a ela, atualizando a cada upgrade do Chrome.</p>
+<p>O User-Agent e os Client Hints são os únicos lugares onde a versão está escrita, e são o que <code>apply_fingerprint()</code> muda; o motor JavaScript e a plataforma web do binário mantêm o conjunto real de recursos, e um detector que sonda APIs descobre o major real por eles (<a href="../evasion-techniques/#keep-the-major-equal-to-the-binary">como vaza</a>). Leia a versão do binário e mantenha o major do perfil igual a ela, atualizando a cada upgrade do Chrome.</p>
 <div class="tabbed-set tabbed-alternate" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">Sync</label><label for="__tabbed_2_2">Async</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">

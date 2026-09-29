@@ -2161,6 +2161,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#keep-the-major-equal-to-the-binary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mantenha o major igual ao binário
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#combine-idioma-fuso-horario-e-geolocalizacao-com-o-ip" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3604,6 +3615,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#keep-the-major-equal-to-the-binary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mantenha o major igual ao binário
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#combine-idioma-fuso-horario-e-geolocalizacao-com-o-ip" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3813,7 +3835,7 @@
 <p>O resto desta página são as camadas que você de fato controla.</p>
 <h2 id="mantenha-o-user-agent-consistente">Mantenha o User-Agent consistente</h2>
 <p>O indício de automação mais comum é um User-Agent que discorda de si mesmo: o header HTTP <code>User-Agent</code> dizendo uma coisa enquanto <code>navigator.userAgent</code>, <code>navigator.platform</code> e os Client Hints (<code>Sec-CH-UA</code>, <code>Sec-CH-UA-Platform</code>) dizem outra. Definir <code>--user-agent=</code> como uma flag simples do Chrome muda apenas o header HTTP e deixa o JavaScript e os Client Hints intocados, o que é uma incompatibilidade que um detector lê imediatamente.</p>
-<p>O Pydoll corrige isso para você. Quando ele vê um argumento <code>--user-agent=</code>, ele aplica <code>Emulation.setUserAgentOverride</code> com o <code>platform</code> correspondente e os metadados completos de Client Hints (brand greased e ordem das brands calculadas do jeito que o Chromium calcula para aquele major), e expõe a forma reduzida <code>Chrome/MAJOR.0.0.0</code> que o Chrome real reporta, de modo que todas as camadas concordem, inclusive em novas abas e workers. Nada é injetado na página: <code>navigator.userAgent</code>, <code>platform</code>, <code>vendor</code> e <code>appVersion</code> vêm todos do próprio override.</p>
+<p>O Pydoll corrige isso para você. Quando ele vê um argumento <code>--user-agent=</code>, ele aplica <code>Emulation.setUserAgentOverride</code> com o <code>platform</code> correspondente e os metadados completos de Client Hints (brand greased e ordem das brands calculadas do jeito que o Chromium calcula para aquele major), e expõe a forma reduzida <code>Chrome/MAJOR.0.0.0</code> que o Chrome real reporta. Todas as camadas passam a concordar: o header na rede, <code>navigator.userAgent</code>, <code>platform</code>, <code>vendor</code> e <code>appVersion</code>, os hints de baixa e alta entropia (<code>Sec-CH-UA</code>, <code>brands</code>, <code>fullVersionList</code>), na primeira aba, em toda aba aberta depois e dentro de workers. A página não recebe script injetado; esses valores vêm do próprio override. Workers são o único lugar onde um script roda: o override do CDP não alcança <code>WorkerNavigator.platform</code>, nem o User-Agent de shared e service workers, então o Pydoll se anexa a cada worker antes do código dele começar e define esses dois ali.</p>
 <div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Sync</label><label for="__tabbed_1_2">Async</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
@@ -3824,7 +3846,7 @@
 </span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span class="n">options</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
 </span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>        <span class="s1">'--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) '</span>
 </span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>        <span class="s1">'AppleWebKit/537.36 (KHTML, like Gecko) '</span>
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>        <span class="s1">'Chrome/130.0.0.0 Safari/537.36'</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>        <span class="s1">'Chrome/154.0.0.0 Safari/537.36'</span>
 </span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    <span class="p">)</span>
 </span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>
 </span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>    <span class="k">with</span> <span class="n">Chrome</span><span class="p">(</span><span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">)</span> <span class="k">as</span> <span class="n">browser</span><span class="p">:</span>
@@ -3845,7 +3867,7 @@
 </span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    <span class="n">options</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
 </span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>        <span class="s1">'--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) '</span>
 </span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>        <span class="s1">'AppleWebKit/537.36 (KHTML, like Gecko) '</span>
-</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>        <span class="s1">'Chrome/130.0.0.0 Safari/537.36'</span>
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>        <span class="s1">'Chrome/154.0.0.0 Safari/537.36'</span>
 </span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>    <span class="p">)</span>
 </span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>
 </span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>    <span class="k">async</span> <span class="k">with</span> <span class="n">Chrome</span><span class="p">(</span><span class="n">options</span><span class="o">=</span><span class="n">options</span><span class="p">)</span> <span class="k">as</span> <span class="n">browser</span><span class="p">:</span>
@@ -3857,34 +3879,76 @@
 </div>
 </div>
 </div>
-<p>Mantenha o <code>Chrome/&lt;version&gt;</code> na string igual ao Chrome que você realmente executa; uma versão que você não está rodando é, por si só, uma incompatibilidade. O override se aplica à primeira aba, às abas de <code>browser.new_tab()</code> e às abas encontradas via <code>browser.get_opened_tabs()</code>.</p>
+<p><code>154</code> é o major do Chrome instalado na máquina em que esta página foi escrita; coloque o seu. A próxima seção explica por que esse número é a única parte da string que você não escolhe. O override se aplica à primeira aba, às abas de <code>browser.new_tab()</code> e às abas encontradas via <code>browser.get_opened_tabs()</code>.</p>
+<h2 id="keep-the-major-equal-to-the-binary">Mantenha o major igual ao binário</h2>
+<p>O override reescreve tudo o que o browser <em>diz</em> sobre a sua versão. Ele não reescreve o que o browser <em>é</em>: o motor JavaScript e a plataforma web do binário que você lançou. Cada major do Chrome traz APIs novas, e um detector que extrai o major do User-Agent e depois sonda funções que não existiam naquele major lê o major real. É assim que o Chrome 154 responde quando lançado com um User-Agent que declara 130:</p>
+<table>
+<thead>
+<tr>
+<th>Superfície</th>
+<th>Reporta</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Header <code>User-Agent</code>, <code>navigator.userAgent</code>, <code>navigator.appVersion</code></td>
+<td>Chrome 130</td>
+</tr>
+<tr>
+<td><code>Sec-CH-UA</code>, <code>navigator.userAgentData.brands</code>, <code>fullVersionList</code></td>
+<td>130, com a brand GREASE <code>Not?A_Brand</code> que o Chrome 130 usava</td>
+</tr>
+<tr>
+<td><code>RegExp.escape</code> (lançada no 136), <code>Float16Array</code> (135), <code>Error.isError</code> (134), <code>Uint8Array.fromBase64</code> (140), <code>Math.sumPrecise</code> (146)</td>
+<td>todas presentes</td>
+</tr>
+</tbody>
+</table>
+<p>Cinco funções que não existiam no Chrome 130 estão lá, então a página é um Chrome 146 ou mais novo com um crachá de 130. Uma checagem tão barata é comum: detectores de código aberto como o BotD do FingerprintJS e o CreepJS carregam tabelas de quais APIs e propriedades CSS cada major do Chromium adicionou ou removeu, delimitam o motor a partir delas e marcam um User-Agent fora da faixa; alguns também buscam o número da release Stable atual e marcam um User-Agent que declara uma mais nova. O reCAPTCHA do Google trata uma versão desatualizada do motor no User-Agent como suspeita desde pelo menos 2016 (Sivakorn, Polakis e Keromytis, <em>I am Robot</em>, EuroS&amp;P 2016). Declarar um major mais novo que o binário falha do mesmo jeito, ao contrário: as APIs prometidas não existem. O motor também se entrega de formas mais silenciosas, porque o texto das mensagens de erro, os últimos bits de alguns resultados de <code>Math</code> e a sintaxe aceita mudam entre releases do V8. Por baixo de tudo isso, o ClientHello TLS e as configurações HTTP/2 identificam a família do motor e, aproximadamente, a sua época, então declarar Firefox ou Safari falha antes de qualquer JavaScript rodar.</p>
+<p>O resto da string é seu para definir. O próprio Chrome reporta a forma reduzida <code>Chrome/MAJOR.0.0.0</code> no User-Agent e guarda o build completo só nos hints de alta entropia, que o override preenche de forma coerente a partir do valor que você passa. Então o build é a única parte que você pode variar, e só quando a plataforma tem de fato mais de um build para aquele major. Rotacionar identidades é rotacionar o binário (marca, build), não a string, e um binário que para de atualizar enquanto o canal Stable avança vira, sozinho, uma população pequena. Mantenha o major igual a <code>browser.get_version()</code>, tire o OS e o dispositivo do perfil, e deixe o build em <code>0.0.0</code>. Uma checagem de uma linha pega a divergência no próximo upgrade do Chrome:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">Sync</label><label for="__tabbed_2_2">Async</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">declarado</span> <span class="o">=</span> <span class="mi">154</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="n">versao</span> <span class="o">=</span> <span class="n">browser</span><span class="o">.</span><span class="n">get_version</span><span class="p">()[</span><span class="s1">'product'</span><span class="p">]</span>     <span class="c1"># 'Chrome/154.0.8037.58'</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="k">assert</span> <span class="nb">int</span><span class="p">(</span><span class="n">versao</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">'/'</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">'.'</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span> <span class="o">==</span> <span class="n">declarado</span><span class="p">,</span> <span class="n">versao</span>
+</span></code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">declarado</span> <span class="o">=</span> <span class="mi">154</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">versao</span> <span class="o">=</span> <span class="p">(</span><span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">get_version</span><span class="p">())[</span><span class="s1">'product'</span><span class="p">]</span>     <span class="c1"># 'Chrome/154.0.8037.58'</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="k">assert</span> <span class="nb">int</span><span class="p">(</span><span class="n">versao</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">'/'</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">'.'</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span> <span class="o">==</span> <span class="n">declarado</span><span class="p">,</span> <span class="n">versao</span>
+</span></code></pre></div>
+</div>
+</div>
+</div>
 <h2 id="combine-idioma-fuso-horario-e-geolocalizacao-com-o-ip">Combine idioma, fuso horário e geolocalização com o IP</h2>
 <p>Por trás de um proxy, o idioma, o fuso horário e a localização do navegador devem concordar com o país do IP. Um IP em Tóquio com <code>Accept-Language: en-US</code> e um fuso <code>America/New_York</code> é uma contradição.</p>
 <p>O idioma é uma opção independente:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">options</span> <span class="o">=</span> <span class="n">ChromiumOptions</span><span class="p">()</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="n">options</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">'--lang=ja-JP'</span><span class="p">)</span>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="n">options</span><span class="o">.</span><span class="n">set_accept_languages</span><span class="p">(</span><span class="s1">'ja-JP,ja;q=0.9,en;q=0.8'</span><span class="p">)</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">options</span> <span class="o">=</span> <span class="n">ChromiumOptions</span><span class="p">()</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="n">options</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">'--lang=ja-JP'</span><span class="p">)</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="n">options</span><span class="o">.</span><span class="n">set_accept_languages</span><span class="p">(</span><span class="s1">'ja-JP,ja;q=0.9,en;q=0.8'</span><span class="p">)</span>
 </span></code></pre></div>
 <p>Isso define tanto o header <code>Accept-Language</code> quanto <code>navigator.language</code> / <code>navigator.languages</code>. O fuso horário e a geolocalização também têm que combinar, e precisam permanecer consistentes com o sistema operacional do User-Agent e com o IP, tudo ao mesmo tempo. Defini-los de forma coerente a partir de um único perfil é para isso que serve <code>apply_fingerprint()</code>; veja <a href="../fingerprint-injection/">Injeção de fingerprint</a>.</p>
 <h2 id="impeca-o-webrtc-de-vazar-o-seu-ip">Impeça o WebRTC de vazar o seu IP</h2>
 <p>O WebRTC pode revelar o IP real mesmo por trás de um proxy, através de requisições STUN que pulam o túnel do proxy. Ative a proteção embutida sempre que usar um proxy para stealth:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">options</span> <span class="o">=</span> <span class="n">ChromiumOptions</span><span class="p">()</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">options</span><span class="o">.</span><span class="n">webrtc_leak_protection</span> <span class="o">=</span> <span class="kc">True</span>   <span class="c1"># --force-webrtc-ip-handling-policy=disable_non_proxied_udp</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">options</span> <span class="o">=</span> <span class="n">ChromiumOptions</span><span class="p">()</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="n">options</span><span class="o">.</span><span class="n">webrtc_leak_protection</span> <span class="o">=</span> <span class="kc">True</span>   <span class="c1"># --force-webrtc-ip-handling-policy=disable_non_proxied_udp</span>
 </span></code></pre></div>
 <h2 id="comporte-se-como-uma-pessoa">Comporte-se como uma pessoa</h2>
 <p>Cliques instantâneos e teclas perfeitamente regulares são um fingerprint comportamental. Passe <code>humanize=True</code> para mover o cursor por um caminho curvo, com tempo humano, e digitar com ritmo variável e erros de digitação ocasionais que são corrigidos:</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">Sync</label><label for="__tabbed_2_2">Async</label></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="3:2"><input checked="checked" id="__tabbed_3_1" name="__tabbed_3" type="radio" /><input id="__tabbed_3_2" name="__tabbed_3" type="radio" /><div class="tabbed-labels"><label for="__tabbed_3_1">Sync</label><label for="__tabbed_3_2">Async</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
-<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">field</span> <span class="o">=</span> <span class="n">tab</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s1">'search'</span><span class="p">)</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="n">field</span><span class="o">.</span><span class="n">type_text</span><span class="p">(</span><span class="s1">'browser automation'</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="n">field</span><span class="o">.</span><span class="n">click</span><span class="p">(</span><span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">field</span> <span class="o">=</span> <span class="n">tab</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s1">'search'</span><span class="p">)</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="n">field</span><span class="o">.</span><span class="n">type_text</span><span class="p">(</span><span class="s1">'browser automation'</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="n">field</span><span class="o">.</span><span class="n">click</span><span class="p">(</span><span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span></code></pre></div>
 </div>
 <div class="tabbed-block">
-<div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">field</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s1">'search'</span><span class="p">)</span>
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="k">await</span> <span class="n">field</span><span class="o">.</span><span class="n">type_text</span><span class="p">(</span><span class="s1">'browser automation'</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="k">await</span> <span class="n">field</span><span class="o">.</span><span class="n">click</span><span class="p">(</span><span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">field</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s1">'search'</span><span class="p">)</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="k">await</span> <span class="n">field</span><span class="o">.</span><span class="n">type_text</span><span class="p">(</span><span class="s1">'browser automation'</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="k">await</span> <span class="n">field</span><span class="o">.</span><span class="n">click</span><span class="p">(</span><span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span></code></pre></div>
 </div>
 </div>
@@ -3898,7 +3962,7 @@
 <h3 id="injetar-ruido-no-canvas">Injetar ruído no canvas</h3>
 <p>Adicionar ruído à saída do canvas sai pela culatra: os detectores amostram o fingerprint repetidamente, e um valor que muda entre leituras é, por si só, um sinal de automação. O canvas do Pydoll é autêntico e estável; deixe-o quieto.</p>
 <h3 id="user-agents-desatualizados">User-Agents desatualizados</h3>
-<p>Um UA de uma release do Chrome de seis meses atrás carece de recursos e Client Hints que a versão atual tem. Fique dentro das últimas duas ou três versões principais, e combine com o binário que você executa.</p>
+<p>Um UA de uma release do Chrome de seis meses atrás declara um major que o binário já não é, e o conjunto de recursos do motor entrega isso; veja <a href="#keep-the-major-equal-to-the-binary">Mantenha o major igual ao binário</a>. O Chrome se atualiza sozinho para usuários reais, então um major atual é também a cara da maior parte do tráfego.</p>
 <h3 id="ignorar-o-comportamento-da-sessao">Ignorar o comportamento da sessão</h3>
 <p>Mesmo com um fingerprint limpo, carregar 100 páginas num minuto, nunca rolar a página e nunca ficar ocioso são anomalias. Adicione delays de leitura, varie o ritmo e inclua pausas naturais.</p>
 <h2 id="verifique-a-sua-configuracao">Verifique a sua configuração</h2>
@@ -3935,38 +3999,38 @@
 </tbody>
 </table>
 <p>Uma verificação rápida com o Pydoll:</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="3:2"><input checked="checked" id="__tabbed_3_1" name="__tabbed_3" type="radio" /><input id="__tabbed_3_2" name="__tabbed_3" type="radio" /><div class="tabbed-labels"><label for="__tabbed_3_1">Sync</label><label for="__tabbed_3_2">Async</label></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="4:2"><input checked="checked" id="__tabbed_4_1" name="__tabbed_4" type="radio" /><input id="__tabbed_4_2" name="__tabbed_4" type="radio" /><div class="tabbed-labels"><label for="__tabbed_4_1">Sync</label><label for="__tabbed_4_2">Async</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
-<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">tab</span><span class="o">.</span><span class="n">execute_script</span><span class="p">(</span><span class="s1">'''</span>
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="s1">    return {</span>
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="s1">        userAgent: navigator.userAgent,</span>
-</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="s1">        webdriver: navigator.webdriver,</span>
-</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="s1">        languages: navigator.languages,</span>
-</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="s1">        plugins: navigator.plugins.length,</span>
-</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="s1">        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,</span>
-</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="s1">    };</span>
-</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="s1">'''</span><span class="p">)</span>
-</span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="n">fp</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="s1">'result'</span><span class="p">][</span><span class="s1">'result'</span><span class="p">][</span><span class="s1">'value'</span><span class="p">]</span>
-</span><span id="__span-6-11"><a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>
-</span><span id="__span-6-12"><a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a><span class="k">assert</span> <span class="n">fp</span><span class="p">[</span><span class="s1">'webdriver'</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">'navigator.webdriver should be false'</span>
-</span><span id="__span-6-13"><a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a><span class="k">assert</span> <span class="s1">'HeadlessChrome'</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">fp</span><span class="p">[</span><span class="s1">'userAgent'</span><span class="p">],</span> <span class="s1">'headless leaking in the UA'</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">result</span> <span class="o">=</span> <span class="n">tab</span><span class="o">.</span><span class="n">execute_script</span><span class="p">(</span><span class="s1">'''</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="s1">    return {</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="s1">        userAgent: navigator.userAgent,</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="s1">        webdriver: navigator.webdriver,</span>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="s1">        languages: navigator.languages,</span>
+</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="s1">        plugins: navigator.plugins.length,</span>
+</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="s1">        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,</span>
+</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span class="s1">    };</span>
+</span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a><span class="s1">'''</span><span class="p">)</span>
+</span><span id="__span-8-10"><a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a><span class="n">fp</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="s1">'result'</span><span class="p">][</span><span class="s1">'result'</span><span class="p">][</span><span class="s1">'value'</span><span class="p">]</span>
+</span><span id="__span-8-11"><a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a>
+</span><span id="__span-8-12"><a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a><span class="k">assert</span> <span class="n">fp</span><span class="p">[</span><span class="s1">'webdriver'</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">'navigator.webdriver should be false'</span>
+</span><span id="__span-8-13"><a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a><span class="k">assert</span> <span class="s1">'HeadlessChrome'</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">fp</span><span class="p">[</span><span class="s1">'userAgent'</span><span class="p">],</span> <span class="s1">'headless leaking in the UA'</span>
 </span></code></pre></div>
 </div>
 <div class="tabbed-block">
-<div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">execute_script</span><span class="p">(</span><span class="s1">'''</span>
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="s1">    return {</span>
-</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="s1">        userAgent: navigator.userAgent,</span>
-</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="s1">        webdriver: navigator.webdriver,</span>
-</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="s1">        languages: navigator.languages,</span>
-</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="s1">        plugins: navigator.plugins.length,</span>
-</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="s1">        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,</span>
-</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="s1">    };</span>
-</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="s1">'''</span><span class="p">)</span>
-</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span class="n">fp</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="s1">'result'</span><span class="p">][</span><span class="s1">'result'</span><span class="p">][</span><span class="s1">'value'</span><span class="p">]</span>
-</span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a>
-</span><span id="__span-7-12"><a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a><span class="k">assert</span> <span class="n">fp</span><span class="p">[</span><span class="s1">'webdriver'</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">'navigator.webdriver should be false'</span>
-</span><span id="__span-7-13"><a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a><span class="k">assert</span> <span class="s1">'HeadlessChrome'</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">fp</span><span class="p">[</span><span class="s1">'userAgent'</span><span class="p">],</span> <span class="s1">'headless leaking in the UA'</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">execute_script</span><span class="p">(</span><span class="s1">'''</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="s1">    return {</span>
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="s1">        userAgent: navigator.userAgent,</span>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="s1">        webdriver: navigator.webdriver,</span>
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="s1">        languages: navigator.languages,</span>
+</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="s1">        plugins: navigator.plugins.length,</span>
+</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="s1">        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,</span>
+</span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="s1">    };</span>
+</span><span id="__span-9-9"><a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a><span class="s1">'''</span><span class="p">)</span>
+</span><span id="__span-9-10"><a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a><span class="n">fp</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="s1">'result'</span><span class="p">][</span><span class="s1">'result'</span><span class="p">][</span><span class="s1">'value'</span><span class="p">]</span>
+</span><span id="__span-9-11"><a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a>
+</span><span id="__span-9-12"><a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a><span class="k">assert</span> <span class="n">fp</span><span class="p">[</span><span class="s1">'webdriver'</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">'navigator.webdriver should be false'</span>
+</span><span id="__span-9-13"><a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a><span class="k">assert</span> <span class="s1">'HeadlessChrome'</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">fp</span><span class="p">[</span><span class="s1">'userAgent'</span><span class="p">],</span> <span class="s1">'headless leaking in the UA'</span>
 </span></code></pre></div>
 </div>
 </div>

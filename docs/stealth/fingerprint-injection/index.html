@@ -3898,7 +3898,7 @@
 <h3 id="match-the-profile-os-to-your-host-os">Match the profile OS to your host OS</h3>
 <p>The kernel and the OS text rendering expose the real OS in layers no override reaches. Run a macOS profile on macOS, a Windows profile on Windows. A forwarding proxy re-originates the connection from the proxy's kernel, so a Windows profile then needs a proxy running on Windows.</p>
 <h3 id="match-the-chrome-version-to-your-binary">Match the Chrome version to your binary</h3>
-<p>The TLS handshake and the JavaScript engine report the real binary version; the User-Agent is the only part <code>apply_fingerprint()</code> changes. Read the binary version and keep the profile's major equal to it, updating on every Chrome upgrade.</p>
+<p>The User-Agent and the Client Hints are the only places the version is written, and they are what <code>apply_fingerprint()</code> changes; the JavaScript engine and the web platform of the binary keep their real feature set, and a detector that probes for APIs learns the real major from them (<a href="../evasion-techniques/#keep-the-major-equal-to-the-binary">how it leaks</a>). Read the binary version and keep the profile's major equal to it, updating on every Chrome upgrade.</p>
 <div class="tabbed-set tabbed-alternate" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">Sync</label><label for="__tabbed_2_2">Async</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">

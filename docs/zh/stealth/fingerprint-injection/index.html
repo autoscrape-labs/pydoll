@@ -3900,7 +3900,7 @@
 <h3 id="profile-os-host-os">让 profile 的 OS 匹配你的 host OS</h3>
 <p>内核和 OS 的文本渲染，会在任何 override 都触及不到的层里暴露真实的 OS。在 macOS 上跑 macOS profile，在 Windows 上跑 Windows profile。转发代理会从代理的内核重新发起连接，所以 Windows profile 这时就需要一个跑在 Windows 上的代理。</p>
 <h3 id="chrome">让 Chrome 版本匹配你的二进制</h3>
-<p>TLS 握手和 JavaScript 引擎会报告二进制的真实版本；User-Agent 是 <code>apply_fingerprint()</code> 唯一改动的部分。读出二进制的版本，把 profile 的主版本号与之保持一致，并在每次 Chrome 升级时更新。</p>
+<p>User-Agent 和 Client Hints 是版本号唯一被写下的地方，也正是 <code>apply_fingerprint()</code> 改动的部分；二进制的 JavaScript 引擎和 web 平台保留着真实的功能集合，探测 API 的检测器会从中得知真实的主版本号（<a href="../evasion-techniques/#keep-the-major-equal-to-the-binary">它是怎么泄露的</a>）。读出二进制的版本，把 profile 的主版本号与之保持一致，并在每次 Chrome 升级时更新。</p>
 <div class="tabbed-set tabbed-alternate" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">Sync</label><label for="__tabbed_2_2">Async</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
