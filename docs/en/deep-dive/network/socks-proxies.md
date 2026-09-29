@@ -176,8 +176,7 @@ Pydoll ships `SOCKS5Forwarder` in `pydoll.utils`. It is a pure-Python, zero-depe
 ```python
 import asyncio
 
-from pydoll.browser.chromium import Chrome
-from pydoll.browser.options import ChromiumOptions
+from pydoll import Chrome, ChromiumOptions
 from pydoll.utils import SOCKS5Forwarder
 
 
@@ -200,7 +199,7 @@ async def main():
 asyncio.run(main())
 ```
 
-The forwarder binds to `127.0.0.1`, so it is reachable only from your machine. Do not bind it to `0.0.0.0`, which would expose an unauthenticated SOCKS5 proxy to the network. Because everything runs over the loopback interface, it adds sub-millisecond latency.
+The forwarder binds to `127.0.0.1`, so it is reachable only from your machine. Do not bind it to `0.0.0.0`, which would expose an unauthenticated SOCKS5 proxy to the network. Because everything runs over the loopback interface, it adds sub-millisecond latency. `SOCKS5Forwarder` is an asyncio server with no facade in `pydoll.sync`, so this recipe is async only.
 
 !!! tip "Restricted environments"
     Some environments (containers, serverless, hardened VMs) restrict binding to local ports. Use `local_port=0` to let the OS assign one. If local binding is blocked entirely, use an HTTP CONNECT proxy instead, which Chrome supports natively with authentication handled for you (see [Proxies](../../guides/proxies.md)).

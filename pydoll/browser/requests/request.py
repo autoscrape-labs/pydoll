@@ -9,7 +9,7 @@ import json as jsonlib
 import logging
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-from typing import TYPE_CHECKING, Any, Callable, Optional, Union, cast
+from typing import TYPE_CHECKING, Any, Callable, cast
 from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 
 from pydoll.browser.requests.har_recorder import HarCapture, HarRecorder
@@ -30,14 +30,8 @@ from pydoll.protocol.network.types import CookieParam, ResourceType
 
 logger = logging.getLogger(__name__)
 
-RequestReceivedEvent = Union[
-    ResponseReceivedEvent,
-    ResponseReceivedExtraInfoEvent,
-]
-RequestSentEvent = Union[
-    RequestWillBeSentEvent,
-    RequestWillBeSentExtraInfoEvent,
-]
+RequestReceivedEvent = ResponseReceivedEvent | ResponseReceivedExtraInfoEvent
+RequestSentEvent = RequestWillBeSentEvent | RequestWillBeSentExtraInfoEvent
 
 if TYPE_CHECKING:
     from pydoll.browser.tab import Tab
@@ -48,14 +42,8 @@ if TYPE_CHECKING:
     )
     from pydoll.protocol.runtime.methods import EvaluateResponse
 
-    RequestReceivedEventParams = Union[
-        ResponseReceivedEventParams,
-        ResponseReceivedExtraInfoEventParams,
-    ]
-    RequestSentEventParams = Union[
-        RequestWillBeSentEventParams,
-        RequestWillBeSentExtraInfoEventParams,
-    ]
+    RequestReceivedEventParams = ResponseReceivedEventParams | ResponseReceivedExtraInfoEventParams
+    RequestSentEventParams = RequestWillBeSentEventParams | RequestWillBeSentExtraInfoEventParams
 
 
 class Request:
@@ -99,10 +87,10 @@ class Request:
         self,
         method: str,
         url: str,
-        params: Optional[dict[str, str]] = None,
-        data: Optional[Union[dict, list, tuple, str, bytes]] = None,
-        json: Optional[dict[str, Any]] = None,
-        headers: Optional[list[HeaderEntry]] = None,
+        params: dict[str, str] | None = None,
+        data: dict | list | tuple | str | bytes | None = None,
+        json: dict[str, Any] | None = None,
+        headers: list[HeaderEntry] | None = None,
         **kwargs,
     ) -> Response:
         """Execute an HTTP request in the browser's JavaScript context.
@@ -165,7 +153,7 @@ class Request:
     async def get(
         self,
         url: str,
-        params: Optional[dict[str, str]] = None,
+        params: dict[str, str] | None = None,
         **kwargs,
     ) -> Response:
         """Execute a GET request for retrieving data.
@@ -183,8 +171,8 @@ class Request:
     async def post(
         self,
         url: str,
-        data: Optional[Union[dict, list, tuple, str, bytes]] = None,
-        json: Optional[dict[str, Any]] = None,
+        data: dict | list | tuple | str | bytes | None = None,
+        json: dict[str, Any] | None = None,
         **kwargs,
     ) -> Response:
         """Execute a POST request for creating or submitting data.
@@ -203,8 +191,8 @@ class Request:
     async def put(
         self,
         url: str,
-        data: Optional[Union[dict, list, tuple, str, bytes]] = None,
-        json: Optional[dict[str, Any]] = None,
+        data: dict | list | tuple | str | bytes | None = None,
+        json: dict[str, Any] | None = None,
         **kwargs,
     ) -> Response:
         """Execute a PUT request for updating/replacing resources.
@@ -223,8 +211,8 @@ class Request:
     async def patch(
         self,
         url: str,
-        data: Optional[Union[dict, list, tuple, str, bytes]] = None,
-        json: Optional[dict[str, Any]] = None,
+        data: dict | list | tuple | str | bytes | None = None,
+        json: dict[str, Any] | None = None,
         **kwargs,
     ) -> Response:
         """Execute a PATCH request for partial resource updates.
@@ -322,7 +310,7 @@ class Request:
             await recorder.stop()
 
     @staticmethod
-    def _build_url_with_params(url: str, params: Optional[dict[str, str]]) -> str:
+    def _build_url_with_params(url: str, params: dict[str, str] | None) -> str:
         """Build final URL with query parameters."""
         logger.debug(f'Building URL with params: url={url}, params={params}')
         if not params:
@@ -338,9 +326,9 @@ class Request:
     def _build_request_options(
         self,
         method: str,
-        headers: Optional[list[HeaderEntry]],
-        json: Optional[dict[str, Any]],
-        data: Optional[Union[dict, list, tuple, str, bytes]],
+        headers: list[HeaderEntry] | None,
+        json: dict[str, Any] | None,
+        data: dict | list | tuple | str | bytes | None,
         **kwargs,
     ) -> dict[str, Any]:
         """Build request options dictionary."""
@@ -357,8 +345,8 @@ class Request:
     def _add_request_body(
         self,
         options: dict[str, Any],
-        json: Optional[dict[str, Any]],
-        data: Optional[Union[dict, list, tuple, str, bytes]],
+        json: dict[str, Any] | None,
+        data: dict | list | tuple | str | bytes | None,
     ) -> None:
         """Add request body and appropriate Content-Type header."""
         if json is not None:
@@ -367,7 +355,7 @@ class Request:
             self._handle_data_options(options, data)
 
     @staticmethod
-    def _handle_json_options(options: dict[str, Any], json: Optional[dict[str, Any]]) -> None:
+    def _handle_json_options(options: dict[str, Any], json: dict[str, Any] | None) -> None:
         """Handle JSON options."""
         options['body'] = jsonlib.dumps(json)
         options['headers'].setdefault('Content-Type', 'application/json')
@@ -375,7 +363,7 @@ class Request:
 
     @staticmethod
     def _handle_data_options(
-        options: dict[str, Any], data: Optional[Union[dict, list, tuple, str, bytes]]
+        options: dict[str, Any], data: dict | list | tuple | str | bytes | None
     ) -> None:
         """Handle data options."""
         if isinstance(data, (dict, list, tuple)):
@@ -506,7 +494,7 @@ class Request:
 
     @staticmethod
     def _extract_headers_from_events(
-        events: Union[list[RequestSentEvent], list[RequestReceivedEvent]],
+        events: list[RequestSentEvent] | list[RequestReceivedEvent],
         event_extractors: dict[str, Callable[[Any], list[HeaderEntry]]],
     ) -> list[HeaderEntry]:
         """Extract headers from network events using appropriate extractors.
@@ -693,7 +681,7 @@ class Request:
         return cookies
 
     @staticmethod
-    def _parse_cookie_line(line: str) -> Optional[CookieParam]:
+    def _parse_cookie_line(line: str) -> CookieParam | None:
         """Parse a single cookie line to extract name and value.
 
         Extracts only the cookie name and value, ignoring all cookie attributes

@@ -60,9 +60,18 @@ Detectability notes:
 from __future__ import annotations
 
 import json
+import logging
 import re
 from collections.abc import Callable
 from typing import TYPE_CHECKING
+
+from pydoll.utils.webgl_extensions import (
+    EXTENSION_METHOD_RETURNS,
+    EXTENSION_PARAMETER_DEFAULTS,
+    WEBGL1_ORDER,
+    WEBGL2_ORDER,
+    WEBGL_EXTENSIONS,
+)
 
 if TYPE_CHECKING:
     from pydoll.protocol.fingerprint.types import (
@@ -87,6 +96,8 @@ if TYPE_CHECKING:
 _CDP_HANDLED_NAV_PROPS = frozenset({'platform', 'vendor', 'app_version'})
 
 # WebGL parameters that return Int32Array (not Float32Array).
+logger = logging.getLogger(__name__)
+
 _WEBGL_INT32_PARAMS = frozenset({'max_viewport_dims'})
 
 # Shared bootstrap injected once before every section. Replaces
@@ -103,6 +114,7 @@ _WEBGL_INT32_PARAMS = frozenset({'max_viewport_dims'})
 # and worker (WorkerNavigator.prototype) realms.
 _BOOTSTRAP = r"""
 const _ORIG = Function.prototype.toString;
+const _apply = Reflect.apply;
 // Cross-realm native-toString hook WITHOUT shared state. Page + workers + nested
 // iframes all receive this byte-identical script, so each realm independently
 // records the SAME set of faked-function source strings. Recognition is by
@@ -110,10 +122,10 @@ const _ORIG = Function.prototype.toString;
 // Function.prototype.toString (e.g. CreepJS's same-origin phantom iframe) still
 // resolves our functions to a native string. No window/Symbol slot to scan.
 const _FAKED = new Set();
-const _mark = (fn) => { try { _FAKED.add(_ORIG.call(fn)); } catch (e) {} return fn; };
+const _mark = (fn) => { try { _FAKED.add(_apply(_ORIG, fn, [])); } catch (e) {} return fn; };
 const _nativeStr = (fn) => 'function ' + fn.name + '() { [native code] }';
 const _hook = Object.getOwnPropertyDescriptor({
-  toString() { const s = _ORIG.call(this); return _FAKED.has(s) ? _nativeStr(this) : s; }
+  toString() { const s = _apply(_ORIG, this, []); return _FAKED.has(s) ? _nativeStr(this) : s; }
 }, 'toString').value;
 _mark(_hook);
 try {
@@ -137,7 +149,7 @@ const _nativeGetter = (target, prop) => {
 const _defG = (target, prop, value) => {
   try {
     const _og = _nativeGetter(target, prop);
-    const _h = { get [prop]() { if (_og) _og.call(this); return value; } };
+    const _h = { get [prop]() { if (_og) _apply(_og, this, []); return value; } };
     _install(target, prop, Object.getOwnPropertyDescriptor(_h, prop).get);
   } catch (e) {}
 };
@@ -146,7 +158,7 @@ const _defG = (target, prop, value) => {
 const _defGf = (target, prop, compute) => {
   try {
     const _og = _nativeGetter(target, prop);
-    const _h = { get [prop]() { return compute(this, _og ? _og.call(this) : undefined); } };
+    const _h = { get [prop]() { return compute(this, _og ? _apply(_og, this, []) : undefined); } };
     _install(target, prop, Object.getOwnPropertyDescriptor(_h, prop).get);
   } catch (e) {}
 };
@@ -154,7 +166,7 @@ const _patchM = (obj, prop, fn) => {
   try {
     const orig = obj[prop];
     const arity = typeof orig === 'function' ? orig.length : fn.length;
-    const wrapper = { [prop](...args) { return fn.apply(this, args); } }[prop];
+    const wrapper = { [prop](...args) { return _apply(fn, this, args); } }[prop];
     try { Object.defineProperty(wrapper, 'length', {value: arity, configurable: true}); }
     catch (e) {}
     _mark(wrapper);
@@ -172,7 +184,7 @@ const _defF = (proto, prop) => {
     const _og = _nativeGetter(proto, prop);
     const _h = { get [prop]() {
       const f = _FAKES.get(this);
-      return f !== undefined && prop in f ? f[prop] : (_og ? _og.call(this) : undefined);
+      return f !== undefined && prop in f ? f[prop] : (_og ? _apply(_og, this, []) : undefined);
     } };
     _install(proto, prop, Object.getOwnPropertyDescriptor(_h, prop).get);
   } catch (e) {}
@@ -194,7 +206,7 @@ const _wrapCtor = (owner, name, onConstruct, onCreated) => {
         throw new TypeError("Failed to construct '" + name + "': Please use the 'new' operator, "
           + 'this DOM object constructor cannot be called as a function.');
       }
-      const args = Array.prototype.slice.call(arguments);
+      const args = _apply(Array.prototype.slice, arguments, []);
       const finalArgs = onConstruct ? onConstruct(args) : args;
       const proto = new.target === Patched ? Orig : new.target;
       const instance = Reflect.construct(Orig, finalArgs, proto);
@@ -232,7 +244,7 @@ const _markedProto = (proto) => {
   try {
     for (const key of Object.getOwnPropertyNames(proto)) {
       const d = Object.getOwnPropertyDescriptor(proto, key);
-      if (d && d.get && _FAKED.has(_ORIG.call(d.get))) { marked = true; break; }
+      if (d && d.get && _FAKED.has(_apply(_ORIG, d.get, []))) { marked = true; break; }
     }
   } catch (e) {}
   _MARKED.set(proto, marked);
@@ -278,7 +290,7 @@ const _guardClone = (target, method, owner) => {
     _patchM(target, method, function (value) {
       const fake = _findFake(value, new Set(), 5000);
       if (fake !== null) throw _cloneError(context, fake);
-      return orig.apply(this, arguments);
+      return _apply(orig, this, arguments);
     });
   } catch (e) {}
 };
@@ -527,20 +539,79 @@ def _build_screen_js(scr: ScreenFingerprint) -> str:
 _WEBGL_JS_TEMPLATE = """\
 const VENDOR = 0x9245;
 const RENDERER = 0x9246;
+const GL_VENDOR = 0x1F00;
 const COMPRESSED_FORMATS = 0x86A3;
 const spoofVendor = %s;
 const spoofRenderer = %s;
 const paramOverrides = %s;
 const ext1 = %s;
 const ext2 = %s;
+const ext1Order = %s;
+const ext2Order = %s;
+const declared1 = %s;
+const declared2 = %s;
 const precisionOverrides = %s;
 const formatsByExtension = %s;
+const extensionOwnedParams = new Set(%s);
 const HIDDEN_EXT = 'WEBGL_debug_shaders';
+const _hasOwn = (obj, key) => _apply(Object.prototype.hasOwnProperty, obj, [key]);
 
-function patchContext(proto, extOverrides) {
-  const allowed = (name) => (extOverrides === null
-    ? name !== HIDDEN_EXT
-    : extOverrides.includes(name));
+function patchContext(proto, extOverrides, extOrder, declared) {
+  const allowed = (name) => name !== HIDDEN_EXT
+    && (extOverrides === null || extOverrides.includes(name));
+  const fakeable = (name) => extOverrides !== null && _hasOwn(declared, name);
+  const fakes = new WeakMap();
+  const enabledFakes = new WeakMap();
+  const fakeParams = new WeakMap();
+  const interfaces = new Map();
+  const origIsContextLost = proto.isContextLost;
+  const lost = (ctx) => _apply(origIsContextLost, ctx, []);
+  const buildInterface = (name) => {
+    const spec = declared[name];
+    const iface = Object.create(Object.prototype);
+    for (const key in spec.constants) {
+      Object.defineProperty(iface, key,
+        {value: spec.constants[key], writable: false, enumerable: true, configurable: false});
+    }
+    for (const [method, arity] of spec.methods) {
+      const ret = _hasOwn(spec.returns, method) ? spec.returns[method] : undefined;
+      const fn = { [method]() { return Array.isArray(ret) ? ret.slice() : ret; } }[method];
+      try { Object.defineProperty(fn, 'length', {value: arity, configurable: true}); } catch (e) {}
+      _mark(fn);
+      Object.defineProperty(iface, method,
+        {value: fn, writable: true, enumerable: true, configurable: true});
+    }
+    Object.defineProperty(iface, Symbol.toStringTag,
+      {value: spec.interface, writable: false, enumerable: false, configurable: true});
+    return iface;
+  };
+  const buildFake = (name) => {
+    if (!interfaces.has(name)) interfaces.set(name, buildInterface(name));
+    return Object.create(interfaces.get(name));
+  };
+  const fakeFor = (ctx, name) => {
+    let byName = fakes.get(ctx);
+    if (byName === undefined) {
+      byName = new Map();
+      fakes.set(ctx, byName);
+      enabledFakes.set(ctx, []);
+      fakeParams.set(ctx, new Map());
+    }
+    if (!byName.has(name)) {
+      byName.set(name, buildFake(name));
+      enabledFakes.get(ctx).push(name);
+      const params = declared[name].params;
+      for (const pname in params) fakeParams.get(ctx).set(Number(pname), params[pname]);
+    }
+    return byName.get(name);
+  };
+  const fakeFormats = (ctx) => {
+    let codes = [];
+    for (const name of enabledFakes.get(ctx) || []) {
+      codes = _apply(Array.prototype.concat, codes, [declared[name].formats]);
+    }
+    return codes;
+  };
   const formatAllowed = (code) => {
     let owned = false;
     for (const name in formatsByExtension) {
@@ -552,14 +623,22 @@ function patchContext(proto, extOverrides) {
   };
   const origGetParameter = proto.getParameter;
   _patchM(proto, 'getParameter', function getParameter(pname) {
-    const real = origGetParameter.call(this, pname);
+    const fp = fakeParams.get(this);
+    if (fp !== undefined && fp.has(pname) && !lost(this)) {
+      _apply(origGetParameter, this, [GL_VENDOR]);
+      return fp.get(pname);
+    }
+    const real = _apply(origGetParameter, this, [pname]);
+    if (lost(this)) return real;
     if (pname === VENDOR) return spoofVendor;
     if (pname === RENDERER) return spoofRenderer;
     if (pname === COMPRESSED_FORMATS && ArrayBuffer.isView(real)) {
-      return new Uint32Array(Array.prototype.filter.call(real, formatAllowed));
+      const kept = _apply(Array.prototype.filter, real, [formatAllowed]);
+      return new Uint32Array(_apply(Array.prototype.concat, kept, [fakeFormats(this)]));
     }
     const override = paramOverrides[pname];
     if (override === undefined) return real;
+    if (real === null && extensionOwnedParams.has(pname)) return real;
     return ArrayBuffer.isView(override) ? override.slice() : override;
   });
 
@@ -568,7 +647,7 @@ function patchContext(proto, extOverrides) {
     const origGetShaderPrecisionFormat = proto.getShaderPrecisionFormat;
     _patchM(proto, 'getShaderPrecisionFormat',
       function getShaderPrecisionFormat(shaderType, precisionType) {
-        const real = origGetShaderPrecisionFormat.call(this, shaderType, precisionType);
+        const real = _apply(origGetShaderPrecisionFormat, this, [shaderType, precisionType]);
         const p = precisionOverrides[shaderType + ':' + precisionType];
         if (!p || real === null) return real;
         return _fake(WebGLShaderPrecisionFormat.prototype,
@@ -579,12 +658,24 @@ function patchContext(proto, extOverrides) {
   const origGetExtension = proto.getExtension;
   const origGetSupportedExtensions = proto.getSupportedExtensions;
   _patchM(proto, 'getExtension', function getExtension(name) {
-    const real = origGetExtension.call(this, name);
-    return allowed(name) ? real : null;
+    if (!allowed(name)) {
+      _apply(origGetSupportedExtensions, this, []);
+      return null;
+    }
+    const real = _apply(origGetExtension, this, [name]);
+    if (real !== null || lost(this)) return real;
+    return fakeable(name) ? fakeFor(this, name) : null;
   });
   _patchM(proto, 'getSupportedExtensions', function getSupportedExtensions() {
-    const real = origGetSupportedExtensions.call(this);
-    return real === null ? real : real.filter(allowed);
+    const real = _apply(origGetSupportedExtensions, this, []);
+    if (real === null) return real;
+    if (extOverrides === null) return _apply(Array.prototype.filter, real, [allowed]);
+    const have = new Set(real);
+    const out = [];
+    for (const name of extOrder) {
+      if (allowed(name) && (have.has(name) || fakeable(name))) out.push(name);
+    }
+    return out;
   });
 }
 
@@ -595,10 +686,10 @@ if (typeof WebGLShaderPrecisionFormat !== 'undefined'
   }
 }
 if (typeof WebGLRenderingContext !== 'undefined') {
-  patchContext(WebGLRenderingContext.prototype, ext1);
+  patchContext(WebGLRenderingContext.prototype, ext1, ext1Order, declared1);
 }
 if (typeof WebGL2RenderingContext !== 'undefined') {
-  patchContext(WebGL2RenderingContext.prototype, ext2);
+  patchContext(WebGL2RenderingContext.prototype, ext2, ext2Order, declared2);
 }"""
 
 # Maps python key -> WebGL parameter constant (WebGL1 and WebGL2 limits).
@@ -609,6 +700,7 @@ _WEBGL_PARAM_MAP: dict[str, int] = {
     'max_transform_feedback_interleaved_components': 0x8C8A,
     'max_transform_feedback_separate_components': 0x8C80,
     'max_texture_size': 0x0D33,
+    'max_texture_max_anisotropy': 0x84FF,
     'max_renderbuffer_size': 0x84E8,
     'max_viewport_dims': 0x0D3A,
     'max_vertex_attribs': 0x8869,
@@ -650,10 +742,6 @@ _SHADER_TYPE_MAP: dict[str, int] = {
     'fragment': 0x8B30,
 }
 
-# Chrome enables an extension the moment getExtension asks for it, even when the
-# profile hides the extension from the context, and an enabled extension adds
-# its formats to that list: without filtering, a claimed D3D11 GPU still reports
-# the ASTC/ETC/PVRTC formats of the host's real GPU.
 _COMPRESSED_TEXTURE_FORMATS: dict[str, tuple[tuple[int, int], ...]] = {
     'WEBGL_compressed_texture_s3tc': ((0x83F0, 0x83F3),),
     'WEBKIT_WEBGL_compressed_texture_s3tc': ((0x83F0, 0x83F3),),
@@ -677,8 +765,8 @@ _PRECISION_TYPE_MAP: dict[str, int] = {
 }
 
 
-def _build_webgl_param_js(webgl: WebGLProfile) -> str:
-    """Build the JS object literal for WebGL parameter overrides."""
+def _webgl_param_overrides(webgl: WebGLProfile) -> dict[int, object]:
+    """Map every overridden WebGL parameter to its value (typed arrays as JS source)."""
     items: dict[str, object] = dict(webgl)
     param_overrides: dict[int, object] = {}
     for py_key, gl_const in _WEBGL_PARAM_MAP.items():
@@ -689,7 +777,12 @@ def _build_webgl_param_js(webgl: WebGLProfile) -> str:
                 param_overrides[gl_const] = f'new {array_type}({json.dumps(val)})'
             else:
                 param_overrides[gl_const] = val
+    return param_overrides
 
+
+def _build_webgl_param_js(webgl: WebGLProfile) -> str:
+    """Build the JS object literal for WebGL parameter overrides."""
+    param_overrides = _webgl_param_overrides(webgl)
     if not param_overrides:
         return '{}'
 
@@ -702,8 +795,80 @@ def _build_webgl_param_js(webgl: WebGLProfile) -> str:
     return '{' + ', '.join(entries) + '}'
 
 
+def _compressed_format_codes(name: str) -> list[int]:
+    ranges = _COMPRESSED_TEXTURE_FORMATS.get(name, ())
+    return [code for low, high in ranges for code in range(low, high + 1)]
+
+
+def _build_webgl_extension_js(
+    names: list[str] | None, context: int, param_overrides: dict[int, object]
+) -> tuple[str, str]:
+    """Build the ordered extension list and the specs the context may need to construct.
+
+    The list follows Chrome's registration order for the names the registry
+    knows, with unknown names after them in profile order: those are only
+    reported when the real context exposes them, and are logged so a typo does
+    not pass silently. An extension registered on the other context only is
+    dropped for this one the same way, without a warning, because a profile
+    that gives one list for both contexts legitimately carries WebGL1-only
+    names into WebGL2. ``WEBGL_debug_shaders`` never enters the list, even
+    when a capture from a real machine carries it. The specs carry a profile
+    limit over the registry default when the profile sets one
+    (``max_texture_max_anisotropy``), and list an interface's methods by name,
+    the order Chrome installs an interface's operations in (the registry keeps
+    IDL order).
+    """
+    if names is None:
+        return 'null', '{}'
+    order = WEBGL1_ORDER if context == 1 else WEBGL2_ORDER
+    known = [name for name in order if name in names and name != 'WEBGL_debug_shaders']
+    unknown = [name for name in names if name not in WEBGL_EXTENSIONS]
+    if unknown:
+        logger.warning(
+            'WebGL profile lists extensions Chromium does not register, kept only when the real '
+            'context has them: %s',
+            unknown,
+        )
+    declared: dict[str, dict[str, object]] = {}
+    for name in known:
+        spec = WEBGL_EXTENSIONS[name]
+        params = {
+            str(pname): param_overrides.get(pname, default)
+            for pname, default in EXTENSION_PARAMETER_DEFAULTS.get(name, {}).items()
+            if not isinstance(param_overrides.get(pname), str)
+        }
+        declared[name] = {
+            'interface': spec['interface'],
+            'constants': spec['constants'],
+            'methods': [list(method) for method in sorted(spec['methods'])],
+            'returns': {
+                method: EXTENSION_METHOD_RETURNS[method]
+                for method, _ in spec['methods']
+                if method in EXTENSION_METHOD_RETURNS
+            },
+            'params': params,
+            'formats': _compressed_format_codes(name),
+        }
+    return json.dumps(known + unknown), json.dumps(declared)
+
+
+def _extension_owned_params_js() -> str:
+    """Build the JS array of the ``getParameter`` names an extension unlocks."""
+    return json.dumps(
+        sorted({pname for params in EXTENSION_PARAMETER_DEFAULTS.values() for pname in params})
+    )
+
+
 def _build_compressed_formats_js() -> str:
-    """Build the JS map of extension name to the format enums it advertises."""
+    """Build the JS map of extension name to the format enums it advertises.
+
+    Chrome enables an extension the moment ``getExtension`` asks for it, and
+    an enabled extension adds its formats to ``COMPRESSED_TEXTURE_FORMATS``.
+    The override never asks Chrome for a hidden extension, but a context
+    created before the override ran (or a ``WEBKIT_``-prefixed alias) can
+    still carry them: without this map to filter by, a claimed D3D11 GPU
+    reports the ASTC, ETC or PVRTC formats of the host's real GPU.
+    """
     expanded = {
         name: [code for low, high in ranges for code in range(low, high + 1)]
         for name, ranges in _COMPRESSED_TEXTURE_FORMATS.items()
@@ -737,31 +902,38 @@ def _build_webgl_js(webgl: WebGLProfile) -> str:
     """Build the WebGL override block.
 
     Every patched method calls the native one first, so the receiver brand
-    check and the real value come from Chrome. Extension lists are an
-    allow-list intersected with what the GPU really exposes: a claimed
-    extension the GPU lacks is dropped rather than faked (a fake ``{}`` has
-    none of the extension's constants and is an instant tell), and
+    check and the real value come from Chrome. The extension lists are what
+    the page sees, in Chrome's registration order: an extension the real
+    context has is passed through, one it lacks is constructed from the
+    Chromium interface definition in ``pydoll.utils.webgl_extensions`` when
+    ``getExtension`` asks for it (constants, methods, ``Symbol.toStringTag``,
+    the compressed formats it adds and the ``getParameter`` limits it
+    unlocks). Constructed objects of one extension share one interface
+    prototype per realm, as Chrome's do, so their methods are the same
+    functions across contexts. Before an extension is enabled, its parameters
+    answer like real Chrome, ``null`` and an ``INVALID_ENUM``; a profile limit
+    for such a parameter (``max_texture_max_anisotropy``) only applies once
+    the real context answers it. A hidden extension is never requested from
+    Chrome, which would enable it and unlock its parameters, so the receiver
+    check goes through ``getSupportedExtensions`` instead. A lost context
+    answers ``null`` everywhere, the way the real one does.
     ``WEBGL_debug_shaders`` is always hidden because its translated shader
     source names the real backend.
 
-    ``COMPRESSED_TEXTURE_FORMATS`` follows the same allow-list: the native
-    ``getExtension`` call the override makes before hiding an extension still
-    enables it inside Chrome, which appends the extension's formats to that
-    parameter, so the array is filtered back to the formats of the extensions
-    the context advertises (an ASTC or ETC format under a D3D11 renderer names
-    the host GPU on its own).
+    ``COMPRESSED_TEXTURE_FORMATS`` follows the same lists: the array is
+    filtered back to the formats of the extensions the context advertises, and
+    the formats of the constructed extensions are appended in the order they
+    were enabled, as Chrome does.
     """
+    param_overrides = _webgl_param_overrides(webgl)
     param_js = _build_webgl_param_js(webgl)
 
-    if 'supported_extensions' in webgl:
-        ext1_js = json.dumps(webgl.get('supported_extensions'))
-    else:
-        ext1_js = 'null'
-
-    if 'webgl2_extensions' in webgl:
-        ext2_js = json.dumps(webgl['webgl2_extensions'])
-    else:
-        ext2_js = ext1_js
+    ext1 = webgl.get('supported_extensions')
+    ext2 = webgl.get('webgl2_extensions', ext1)
+    ext1_js = json.dumps(ext1) if ext1 is not None else 'null'
+    ext2_js = json.dumps(ext2) if ext2 is not None else 'null'
+    ext1_order_js, declared1_js = _build_webgl_extension_js(ext1, 1, param_overrides)
+    ext2_order_js, declared2_js = _build_webgl_extension_js(ext2, 2, param_overrides)
 
     precision_js = _build_webgl_precision_js(webgl)
 
@@ -771,8 +943,13 @@ def _build_webgl_js(webgl: WebGLProfile) -> str:
         param_js,
         ext1_js,
         ext2_js,
+        ext1_order_js,
+        ext2_order_js,
+        declared1_js,
+        declared2_js,
         precision_js,
         _build_compressed_formats_js(),
+        _extension_owned_params_js(),
     )
 
 
@@ -791,7 +968,7 @@ if (typeof GPU !== 'undefined' && navigator.gpu && typeof GPUAdapterInfo !== 'un
     const FP = GPUSupportedFeatures.prototype;
     const origHas = FP.has;
     _patchM(FP, 'has', function has(value) {
-      const real = origHas.call(this, value);
+      const real = _apply(origHas, this, [value]);
       return _FAKES.has(this) ? featureSet.has(String(value)) : real;
     });
     _defGf(FP, 'size', (self, real) => (_FAKES.has(self) ? featureSet.size : real));
@@ -803,8 +980,8 @@ if (typeof GPU !== 'undefined' && navigator.gpu && typeof GPUAdapterInfo !== 'un
     for (const method of ['keys', 'values', 'entries']) {
       const orig = FP[method];
       _patchM(FP, method, function () {
-        const real = orig.call(this);
-        if (!_FAKES.has(this) || sameAsReal(new Set(orig.call(this)))) return real;
+        const real = _apply(orig, this, []);
+        if (!_FAKES.has(this) || sameAsReal(new Set(_apply(orig, this, [])))) return real;
         const it = new Set(featureSet)[method]();
         try {
           Object.defineProperty(it, Symbol.toStringTag,
@@ -815,10 +992,10 @@ if (typeof GPU !== 'undefined' && navigator.gpu && typeof GPUAdapterInfo !== 'un
     }
     const origForEach = FP.forEach;
     _patchM(FP, 'forEach', function forEach(callback, thisArg) {
-      if (!_FAKES.has(this)) return origForEach.apply(this, arguments);
-      origForEach.call(this, () => {});
+      if (!_FAKES.has(this)) return _apply(origForEach, this, arguments);
+      _apply(origForEach, this, [() => {}]);
       const self = this;
-      new Set(featureSet).forEach((value, key) => callback.call(thisArg, value, key, self));
+      new Set(featureSet).forEach((value, key) => _apply(callback, thisArg, [value, key, self]));
     });
     try {
       Object.defineProperty(FP, Symbol.iterator,
@@ -838,7 +1015,7 @@ if (typeof GPU !== 'undefined' && navigator.gpu && typeof GPUAdapterInfo !== 'un
   if (typeof GPUAdapter !== 'undefined' && GPUAdapter.prototype.requestDevice) {
     const origRequestDevice = GPUAdapter.prototype.requestDevice;
     _patchM(GPUAdapter.prototype, 'requestDevice', function requestDevice() {
-      return origRequestDevice.apply(this, arguments).then((device) => {
+      return _apply(origRequestDevice, this, arguments).then((device) => {
         try { _FAKES.set(device.adapterInfo, info); } catch (e) {}
         return device;
       });
@@ -897,7 +1074,7 @@ if (typeof MediaDeviceInfo !== 'undefined' && typeof MediaDevices !== 'undefined
   const origToJSON = MediaDeviceInfo.prototype.toJSON;
   _patchM(MediaDeviceInfo.prototype, 'toJSON', function toJSON() {{
     const f = _FAKES.get(this);
-    return f !== undefined ? Object.assign({{}}, f) : origToJSON.call(this);
+    return f !== undefined ? Object.assign({{}}, f) : _apply(origToJSON, this, []);
   }});
   const makeDevices = () => {{
     const devices = [];
@@ -909,12 +1086,12 @@ if (typeof MediaDeviceInfo !== 'undefined' && typeof MediaDevices !== 'undefined
   if (typeof InputDeviceInfo !== 'undefined' && InputDeviceInfo.prototype.getCapabilities) {{
     const origCapabilities = InputDeviceInfo.prototype.getCapabilities;
     _patchM(InputDeviceInfo.prototype, 'getCapabilities', function getCapabilities() {{
-      return _FAKES.has(this) ? {{}} : origCapabilities.call(this);
+      return _FAKES.has(this) ? {{}} : _apply(origCapabilities, this, []);
     }});
   }}
   const origEnumerate = MediaDevices.prototype.enumerateDevices;
   _patchM(MediaDevices.prototype, 'enumerateDevices', function enumerateDevices() {{
-    return origEnumerate.call(this).then(() => makeDevices());
+    return _apply(origEnumerate, this, []).then(() => makeDevices());
   }});
 }}"""
 
@@ -961,7 +1138,7 @@ def _build_audio_js(audio: AudioFingerprint) -> str:
             '    if (!_nativeGetter(AudioContext.prototype, _prop)) continue;\n'
             '    _defGf(AudioContext.prototype, _prop, (self, real) =>\n'
             '      (!real || _truthful.has(self))\n'
-            f'        ? real : Math.round(real * _deviceRate.call(self)) / {val});\n'
+            f'        ? real : Math.round(real * _apply(_deviceRate, self, [])) / {val});\n'
             '  }\n'
             '}'
         )
@@ -998,7 +1175,7 @@ if (typeof SpeechSynthesisVoice !== 'undefined' && typeof SpeechSynthesis !== 'u
   }}));
   const origGetVoices = SpeechSynthesis.prototype.getVoices;
   _patchM(SpeechSynthesis.prototype, 'getVoices', function getVoices() {{
-    origGetVoices.call(this);
+    _apply(origGetVoices, this, []);
     return fakeVoices.slice();
   }});
 }}"""
@@ -1045,7 +1222,7 @@ _FONTS_JS_TEMPLATE = r"""if (typeof FontFace !== 'undefined' && FontFace.prototy
   _patchM(FontFace.prototype, 'load', function load() {
     const source = sources.get(this);
     const local = typeof source === 'string' && LOCAL.test(source) && !REMOTE.test(source);
-    const real = _realLoad.apply(this, arguments);
+    const real = _apply(_realLoad, this, arguments);
     if (!local) return real;
     const wanted = named(source);
     if (wanted.length > 0 && wanted.every((f) => allow.has(f))) return real;
@@ -1100,7 +1277,7 @@ _MEDIA_CODECS_JS_TEMPLATE = """\
   if (typeof HTMLMediaElement !== 'undefined' && HTMLMediaElement.prototype.canPlayType) {
     const _native = HTMLMediaElement.prototype.canPlayType;
     _patchM(HTMLMediaElement.prototype, 'canPlayType', function canPlayType(type) {
-      const real = _native.apply(this, arguments);
+      const real = _apply(_native, this, arguments);
       const answer = CPT[_norm(type)];
       return answer === undefined ? real : answer;
     });
@@ -1108,7 +1285,7 @@ _MEDIA_CODECS_JS_TEMPLATE = """\
   if (typeof MediaSource !== 'undefined' && MediaSource.isTypeSupported) {
     const _nativeMS = MediaSource.isTypeSupported;
     _patchM(MediaSource, 'isTypeSupported', function isTypeSupported(type) {
-      const real = _nativeMS.apply(this, arguments);
+      const real = _apply(_nativeMS, this, arguments);
       const answer = MS[_norm(type)];
       return answer === undefined ? real : answer;
     });
@@ -1201,7 +1378,7 @@ if (typeof Plugin !== 'undefined' && typeof PluginArray !== 'undefined'
     if (typeof orig === 'function') {
       _patchM(proto, 'item', function item(i) {
         const f = _FAKES.get(this);
-        if (!f || !f.__items) return orig.apply(this, arguments);
+        if (!f || !f.__items) return _apply(orig, this, arguments);
         const n = Number(i) | 0;
         return n >= 0 && n < f.__items.length ? f.__items[n] : null;
       });
@@ -1210,7 +1387,7 @@ if (typeof Plugin !== 'undefined' && typeof PluginArray !== 'undefined'
     if (typeof origNamed === 'function') {
       _patchM(proto, 'namedItem', function namedItem(name) {
         const f = _FAKES.get(this);
-        if (!f || !f.__items) return origNamed.apply(this, arguments);
+        if (!f || !f.__items) return _apply(origNamed, this, arguments);
         const wanted = String(name);
         for (const it of f.__items) if (_FAKES.get(it)[key] === wanted) return it;
         return null;
@@ -1224,7 +1401,7 @@ if (typeof Plugin !== 'undefined' && typeof PluginArray !== 'undefined'
   const origRefresh = PluginArray.prototype.refresh;
   if (typeof origRefresh === 'function') {
     _patchM(PluginArray.prototype, 'refresh', function refresh() {
-      return _FAKES.has(this) ? undefined : origRefresh.apply(this, arguments);
+      return _FAKES.has(this) ? undefined : _apply(origRefresh, this, arguments);
     });
   }
   _defG(NP, 'plugins', pluginArray);
@@ -1276,7 +1453,7 @@ def _build_webrtc_js(policy: str) -> str:
         "  const Patched = _wrapCtor(window, 'RTCPeerConnection', (args) => {\n"
         '    const config = Object.assign({}, args[0] || {});\n'
         f'    config.iceTransportPolicy = {json.dumps(policy)};\n'
-        '    return [config].concat(Array.prototype.slice.call(args, 1));\n'
+        '    return [config].concat(_apply(Array.prototype.slice, args, [1]));\n'
         '  }, null);\n'
         "  if (Patched && 'webkitRTCPeerConnection' in window) {\n"
         '    window.webkitRTCPeerConnection = Patched;\n'
@@ -1294,7 +1471,7 @@ for (const path of %s) {
     for (const part of parts) owner = owner && owner[part];
     if (owner === undefined || owner === null) continue;
     let target = owner;
-    while (target && !Object.prototype.hasOwnProperty.call(target, prop)) {
+    while (target && !_apply(Object.prototype.hasOwnProperty, target, [prop])) {
       target = Object.getPrototypeOf(target);
     }
     if (target) delete target[prop];

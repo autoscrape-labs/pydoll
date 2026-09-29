@@ -8,26 +8,46 @@ Preferências não são o mesmo que [argumentos de linha de comando](browser-opt
 
 As preferências do dia a dia têm métodos e propriedades auxiliares, então você as define sem memorizar as chaves internas do Chromium ou números mágicos.
 
-```python
-import asyncio
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
-from pydoll.browser.options import ChromiumOptions
+    ```python
+    from pydoll.sync import Chrome, ChromiumOptions
+
+    def main():
+        options = ChromiumOptions()
+        options.set_default_download_directory('/tmp/downloads')
+        options.set_accept_languages('en-US,en')
+        options.block_notifications = True
+        options.block_popups = True
+
+        with Chrome(options=options) as browser:
+            tab = browser.start()
+            tab.go_to('https://news.ycombinator.com')
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+
+    from pydoll import Chrome, ChromiumOptions
 
 
-async def main():
-    options = ChromiumOptions()
-    options.set_default_download_directory('/tmp/downloads')
-    options.set_accept_languages('en-US,en')
-    options.block_notifications = True
-    options.block_popups = True
+    async def main():
+        options = ChromiumOptions()
+        options.set_default_download_directory('/tmp/downloads')
+        options.set_accept_languages('en-US,en')
+        options.block_notifications = True
+        options.block_popups = True
 
-    async with Chrome(options=options) as browser:
-        tab = await browser.start()
-        await tab.go_to('https://news.ycombinator.com')
+        async with Chrome(options=options) as browser:
+            tab = await browser.start()
+            await tab.go_to('https://news.ycombinator.com')
 
-asyncio.run(main())
-```
+    asyncio.run(main())
+    ```
 
 Os helpers disponíveis:
 
@@ -78,54 +98,102 @@ Sistemas anti-bot leem o perfil, não só a página. Um perfil novo e vazio com 
 - **Envelheça o perfil.** Um perfil criado segundos atrás é um alerta. Retroaja os timestamps de uso para que ele pareça ter semanas ou meses.
 - **Combine com o seu Chrome real.** Qualquer string de versão que você definir (em `profile` ou `extensions`) precisa combinar com o binário do Chrome que você realmente está rodando, ou a inconsistência te entrega.
 
-```python
-import asyncio
-import time
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
-from pydoll.browser.options import ChromiumOptions
+    ```python
+    import time
 
+    from pydoll.sync import Chrome, ChromiumOptions
 
-def realistic_options() -> ChromiumOptions:
-    now = int(time.time())
-    installed = now - (90 * 24 * 60 * 60)   # 90 dias atrás
-    last_used = now - (3 * 60 * 60)         # 3 horas atrás
+    def realistic_options() -> ChromiumOptions:
+        now = int(time.time())
+        installed = now - (90 * 24 * 60 * 60)   # 90 dias atrás
+        last_used = now - (3 * 60 * 60)         # 3 horas atrás
 
-    options = ChromiumOptions()
-    options.browser_preferences = {
-        'profile': {
-            'created_by_version': '130.0.6723.91',   # combine com seu Chrome real
-            'creation_time': str(installed),
-            'last_engagement_time': str(last_used),
-            'exit_type': 'Normal',
-            'name': 'Person 1',
-            'default_content_setting_values': {
-                'cookies': 1, 'images': 1, 'javascript': 1,
-                'notifications': 2, 'geolocation': 0, 'media_stream': 0,
+        options = ChromiumOptions()
+        options.browser_preferences = {
+            'profile': {
+                'created_by_version': '130.0.6723.91',   # combine com seu Chrome real
+                'creation_time': str(installed),
+                'last_engagement_time': str(last_used),
+                'exit_type': 'Normal',
+                'name': 'Person 1',
+                'default_content_setting_values': {
+                    'cookies': 1, 'images': 1, 'javascript': 1,
+                    'notifications': 2, 'geolocation': 0, 'media_stream': 0,
+                },
             },
-        },
-        'extensions': {'last_chrome_version': '130.0.6723.91'},
-        'intl': {'selected_languages': 'en-US,en'},
-        'spellcheck': {'dictionaries': ['en-US']},
-        'session': {'restore_on_startup': 1, 'startup_urls': ['https://www.google.com']},
-        'homepage': 'https://www.google.com',
-        'safebrowsing': {'enabled': True},
-        'autofill': {'enabled': True},
-        'search': {'suggest_enabled': True},
-        'dns_prefetching': {'enabled': True},
-        'enable_do_not_track': False,
-        'webrtc': {'ip_handling_policy': 'default', 'multiple_routes_enabled': True},
-    }
-    return options
+            'extensions': {'last_chrome_version': '130.0.6723.91'},
+            'intl': {'selected_languages': 'en-US,en'},
+            'spellcheck': {'dictionaries': ['en-US']},
+            'session': {'restore_on_startup': 1, 'startup_urls': ['https://www.google.com']},
+            'homepage': 'https://www.google.com',
+            'safebrowsing': {'enabled': True},
+            'autofill': {'enabled': True},
+            'search': {'suggest_enabled': True},
+            'dns_prefetching': {'enabled': True},
+            'enable_do_not_track': False,
+            'webrtc': {'ip_handling_policy': 'default', 'multiple_routes_enabled': True},
+        }
+        return options
+
+    def main():
+        with Chrome(options=realistic_options()) as browser:
+            tab = browser.start()
+            tab.go_to('https://news.ycombinator.com')
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+    import time
+
+    from pydoll import Chrome, ChromiumOptions
 
 
-async def main():
-    async with Chrome(options=realistic_options()) as browser:
-        tab = await browser.start()
-        await tab.go_to('https://news.ycombinator.com')
+    def realistic_options() -> ChromiumOptions:
+        now = int(time.time())
+        installed = now - (90 * 24 * 60 * 60)   # 90 dias atrás
+        last_used = now - (3 * 60 * 60)         # 3 horas atrás
 
-asyncio.run(main())
-```
+        options = ChromiumOptions()
+        options.browser_preferences = {
+            'profile': {
+                'created_by_version': '130.0.6723.91',   # combine com seu Chrome real
+                'creation_time': str(installed),
+                'last_engagement_time': str(last_used),
+                'exit_type': 'Normal',
+                'name': 'Person 1',
+                'default_content_setting_values': {
+                    'cookies': 1, 'images': 1, 'javascript': 1,
+                    'notifications': 2, 'geolocation': 0, 'media_stream': 0,
+                },
+            },
+            'extensions': {'last_chrome_version': '130.0.6723.91'},
+            'intl': {'selected_languages': 'en-US,en'},
+            'spellcheck': {'dictionaries': ['en-US']},
+            'session': {'restore_on_startup': 1, 'startup_urls': ['https://www.google.com']},
+            'homepage': 'https://www.google.com',
+            'safebrowsing': {'enabled': True},
+            'autofill': {'enabled': True},
+            'search': {'suggest_enabled': True},
+            'dns_prefetching': {'enabled': True},
+            'enable_do_not_track': False,
+            'webrtc': {'ip_handling_policy': 'default', 'multiple_routes_enabled': True},
+        }
+        return options
+
+
+    async def main():
+        async with Chrome(options=realistic_options()) as browser:
+            tab = await browser.start()
+            await tab.go_to('https://news.ycombinator.com')
+
+    asyncio.run(main())
+    ```
 
 !!! note "Preferências são uma camada, não o fingerprint inteiro"
     Preferências moldam a identidade do perfil (histórico de uso, recursos habilitados, idiomas). Elas não mudam o User-Agent, o WebGL, o canvas nem o fingerprint de camada de rede. Para esses, e para manter cada camada consistente, veja [Injeção de fingerprint](../stealth/fingerprint-injection.md).
@@ -620,7 +688,7 @@ Os blocos abaixo listam preferências do Chromium que vale conhecer, agrupadas p
 
     ```python
     import uuid
-    from pydoll.browser.options import ChromiumOptions
+    from pydoll import ChromiumOptions
 
     options = ChromiumOptions()
     options.browser_preferences = {
@@ -755,7 +823,7 @@ Os blocos abaixo listam preferências do Chromium que vale conhecer, agrupadas p
 
     ```python
     import time
-    from pydoll.browser.options import ChromiumOptions
+    from pydoll import ChromiumOptions
 
     options = ChromiumOptions()
     options.browser_preferences = {
@@ -798,7 +866,7 @@ Os blocos abaixo listam preferências do Chromium que vale conhecer, agrupadas p
 
     ```python
     import time
-    from pydoll.browser.options import ChromiumOptions
+    from pydoll import ChromiumOptions
 
     options = ChromiumOptions()
     options.browser_preferences = {
@@ -861,7 +929,7 @@ Os blocos abaixo listam preferências do Chromium que vale conhecer, agrupadas p
 
     ```python
     import time
-    from pydoll.browser.options import ChromiumOptions
+    from pydoll import ChromiumOptions
 
     options = ChromiumOptions()
     options.browser_preferences = {

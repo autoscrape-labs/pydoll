@@ -11,7 +11,6 @@ from __future__ import annotations
 
 import logging
 import re
-from typing import Optional
 
 from pydoll.constants import By, Scripts
 from pydoll.utils import normalize_synthetic_xpath
@@ -69,11 +68,11 @@ class SelectorParser:
 
     @staticmethod
     def build_xpath(
-        id: Optional[str] = None,
-        class_name: Optional[str] = None,
-        name: Optional[str] = None,
-        tag_name: Optional[str] = None,
-        text: Optional[str] = None,
+        id: str | None = None,
+        class_name: str | None = None,
+        name: str | None = None,
+        tag_name: str | None = None,
+        text: str | None = None,
         **attributes: str,
     ) -> str:
         """
@@ -128,7 +127,7 @@ class SelectorParser:
     # ------------------------------------------------------------------
 
     @staticmethod
-    def build_text_expression(selector: str, method: str) -> Optional[str]:
+    def build_text_expression(selector: str, method: str) -> str | None:
         """
         Build JS expression using ``Scripts`` to extract ``textContent``
         based on selector type.

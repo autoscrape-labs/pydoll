@@ -11,11 +11,14 @@ from __future__ import annotations
 
 import pytest
 
+from pydoll.browser.chromium import Chrome
 from pydoll.browser.requests import Request
+from pydoll.browser.tab import Tab
 from pydoll.exceptions import NetworkEventsNotEnabled, NoDialogPresent
 from pydoll.interactions import KeyboardAPI, MouseAPI, ScrollAPI
 from pydoll.protocol.fetch.types import AuthChallengeResponseType
 from pydoll.protocol.network.types import ErrorReason
+from tests.unit.conftest import FakeConnection
 
 
 @pytest.mark.asyncio
@@ -23,9 +26,19 @@ from pydoll.protocol.network.types import ErrorReason
     'enable_method, disable_method, command, flag',
     [
         ('enable_page_events', 'disable_page_events', 'Page.disable', 'page_events_enabled'),
-        ('enable_network_events', 'disable_network_events', 'Network.disable', 'network_events_enabled'),
+        (
+            'enable_network_events',
+            'disable_network_events',
+            'Network.disable',
+            'network_events_enabled',
+        ),
         ('enable_dom_events', 'disable_dom_events', 'DOM.disable', 'dom_events_enabled'),
-        ('enable_runtime_events', 'disable_runtime_events', 'Runtime.disable', 'runtime_events_enabled'),
+        (
+            'enable_runtime_events',
+            'disable_runtime_events',
+            'Runtime.disable',
+            'runtime_events_enabled',
+        ),
         ('enable_fetch_events', 'disable_fetch_events', 'Fetch.disable', 'fetch_events_enabled'),
     ],
 )
@@ -53,7 +66,9 @@ async def test_intercept_file_chooser_toggles_flag_and_carries_enabled(fake_conn
 
     await fake_tab.disable_intercept_file_chooser_dialog()
     assert fake_tab.intercept_file_chooser_dialog_enabled is False
-    assert fake_conn.last_command('Page.setInterceptFileChooserDialog')['params']['enabled'] is False
+    assert (
+        fake_conn.last_command('Page.setInterceptFileChooserDialog')['params']['enabled'] is False
+    )
 
 
 @pytest.mark.asyncio
@@ -65,14 +80,14 @@ async def test_bring_to_front_sends_command(fake_conn, fake_tab):
 @pytest.mark.asyncio
 async def test_title_evaluates_document_title_and_returns_value(fake_conn, fake_tab):
     fake_conn.set_response('Runtime.evaluate', {'result': {'value': 'Hello'}})
-    assert await fake_tab.title == 'Hello'
+    assert await fake_tab.title() == 'Hello'
     assert fake_conn.last_command('Runtime.evaluate')['params']['expression'] == 'document.title'
 
 
 @pytest.mark.asyncio
 async def test_page_source_evaluates_outer_html_and_returns_value(fake_conn, fake_tab):
     fake_conn.set_response('Runtime.evaluate', {'result': {'value': '<html></html>'}})
-    assert await fake_tab.page_source == '<html></html>'
+    assert await fake_tab.page_source() == '<html></html>'
     expression = fake_conn.last_command('Runtime.evaluate')['params']['expression']
     assert expression == 'document.documentElement.outerHTML'
 
@@ -202,15 +217,32 @@ async def test_lazy_api_properties_are_typed_and_cached(fake_tab):
 
 
 @pytest.mark.asyncio
-async def test_enable_auto_solve_cloudflare_registers_callback_and_enables_page_events(
-    fake_conn, fake_tab
-):
-    await fake_tab.enable_auto_solve_cloudflare_captcha()
-    assert fake_tab.page_events_enabled is True
-    assert fake_conn.callbacks_for('Page.loadEventFired')
+async def test_expect_cloudflare_turnstile_listens_only_while_its_block_runs(fake_conn, fake_tab):
+    async with fake_tab.expect_cloudflare_turnstile(time_to_wait_captcha=0.05):
+        assert fake_tab.page_events_enabled is True
+        callbacks = fake_conn.callbacks_for('Page.loadEventFired')
+        assert len(callbacks) == 1
+        await callbacks[0]({'method': 'Page.loadEventFired', 'params': {}})
+    assert fake_conn.callbacks_for('Page.loadEventFired') == []
+    assert fake_tab.page_events_enabled is False
 
 
 @pytest.mark.asyncio
-async def test_enable_auto_solve_cloudflare_warns_on_deprecated_args(fake_tab):
-    with pytest.warns(DeprecationWarning):
-        await fake_tab.enable_auto_solve_cloudflare_captcha(time_before_click=1.0)
+async def test_cookie_methods_of_a_context_tab_go_through_the_browser_connection(fake_conn):
+    """Chrome only accepts browserContextId on the browser target, never on a page session."""
+    browser = Chrome()
+    browser_conn = FakeConnection()
+    browser._connection_handler = browser_conn
+    browser_conn.set_response('Storage.getCookies', {'cookies': [{'name': 'a', 'value': '1'}]})
+    tab = Tab(
+        browser=browser, target_id='ctx-tab', browser_context_id='ctx-1', connection_handler=fake_conn
+    )
+
+    await tab.set_cookies([{'name': 'a', 'value': '1'}])
+    cookies = await tab.get_cookies()
+    await tab.delete_all_cookies()
+
+    assert cookies == [{'name': 'a', 'value': '1'}]
+    for method in ('Storage.setCookies', 'Storage.getCookies', 'Storage.clearCookies'):
+        assert browser_conn.last_command(method)['params']['browserContextId'] == 'ctx-1'
+        assert not fake_conn.commands_for(method)

@@ -49,20 +49,37 @@ Pydoll 把这些 domain 映射为一套更友好的 API，所以 `tab.go_to(...)
 
 **事件（event）** 是浏览器在你启用其 domain 之后主动发送的一个通知。`Page.loadEventFired`、`Network.requestWillBeSent` 和 `Fetch.requestPaused` 都是事件。你用一个回调来订阅它，并在它触发时作出反应：
 
-```python
-from functools import partial
+=== "Sync"
 
-from pydoll.protocol.network.events import NetworkEvent
+    ```python
+    from functools import partial
+
+    from pydoll.sync import NetworkEvent
+
+    def on_request(tab, event):
+        url = event['params']['request']['url']
+        print(f'request to: {url}')
+
+    tab.enable_network_events()
+    tab.on(NetworkEvent.REQUEST_WILL_BE_SENT, partial(on_request, tab))
+    ```
+
+=== "Async"
+
+    ```python
+    from functools import partial
+
+    from pydoll import NetworkEvent
 
 
-async def on_request(tab, event):
-    url = event['params']['request']['url']
-    print(f'request to: {url}')
+    async def on_request(tab, event):
+        url = event['params']['request']['url']
+        print(f'request to: {url}')
 
 
-await tab.enable_network_events()
-await tab.on(NetworkEvent.REQUEST_WILL_BE_SENT, partial(on_request, tab))
-```
+    await tab.enable_network_events()
+    await tab.on(NetworkEvent.REQUEST_WILL_BE_SENT, partial(on_request, tab))
+    ```
 
 正是事件让基于 CDP 的自动化能在浏览器状态改变的那一刻作出反应，而不是靠睡眠等待再碰运气。可用的工作指南见 [事件](../guides/events.md)。
 

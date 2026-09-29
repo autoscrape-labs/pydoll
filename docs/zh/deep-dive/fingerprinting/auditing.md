@@ -8,21 +8,41 @@
 
 [fingerprint-scan.com](https://fingerprint-scan.com/) 会在页面内运行一项 fingerprinting 和机器人检测测试，并给出一个从 0 到 100 的得分，越低意味着越像人类。用 Pydoll 驱动它，并对结果截图：
 
-```python
-import asyncio
-from pydoll.browser.chromium import Chrome
-from examples.fingerprints import FINGERPRINTS
+=== "Sync"
 
-async def scan(profile):
-    async with Chrome() as browser:
-        tab = await browser.start()
-        await tab.apply_fingerprint(FINGERPRINTS[profile])
-        await tab.go_to('https://fingerprint-scan.com/')
-        await asyncio.sleep(15)          # let the score finish computing
-        await tab.take_screenshot(f'{profile}.png')
+    ```python
+    import time
+    from pydoll.sync import Chrome
+    from examples.fingerprints import FINGERPRINTS
 
-asyncio.run(scan('macos_m3_new_york'))
-```
+    def scan(profile):
+        with Chrome() as browser:
+            tab = browser.start()
+            tab.apply_fingerprint(FINGERPRINTS[profile])
+            tab.go_to('https://fingerprint-scan.com/')
+            time.sleep(15)          # let the score finish computing
+            tab.take_screenshot(f'{profile}.png')
+
+    scan('macos_m3_new_york')
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+    from pydoll import Chrome
+    from examples.fingerprints import FINGERPRINTS
+
+    async def scan(profile):
+        async with Chrome() as browser:
+            tab = await browser.start()
+            await tab.apply_fingerprint(FINGERPRINTS[profile])
+            await tab.go_to('https://fingerprint-scan.com/')
+            await asyncio.sleep(15)          # let the score finish computing
+            await tab.take_screenshot(f'{profile}.png')
+
+    asyncio.run(scan('macos_m3_new_york'))
+    ```
 
 这个数字本身意义不大。它的价值在于比较：在同一台机器上，分别在应用和不应用 profile 的情况下运行，以及用一个匹配的 profile 对比一个故意不匹配的 profile 来运行，然后对这些得分做差。这就是你如何把一次变化归因到某个具体信号，而不是靠猜。
 
@@ -57,19 +77,37 @@ asyncio.run(scan('macos_m3_new_york'))
 
 最强的审计并不需要第三方网站。对于任何信号，用两种方式读取它并检查它们是否一致，因为一个不一致通常就是你自己的覆盖所制造出来的一处泄露：
 
-```python
-result = await tab.execute_script('''
-    document.head.insertAdjacentHTML('beforeend',
-        '<style>.probe{--g: srgb} @media (color-gamut: p3){.probe{--g: p3}}</style>');
-    const probe = document.createElement('div');
-    probe.className = 'probe';
-    document.body.appendChild(probe);
-    return {
-        matchMedia: matchMedia('(color-gamut: p3)').matches ? 'p3' : 'srgb',
-        css: getComputedStyle(probe).getPropertyValue('--g').trim(),
-    };
-''', return_by_value=True)
-```
+=== "Sync"
+
+    ```python
+    result = tab.execute_script('''
+        document.head.insertAdjacentHTML('beforeend',
+            '<style>.probe{--g: srgb} @media (color-gamut: p3){.probe{--g: p3}}</style>');
+        const probe = document.createElement('div');
+        probe.className = 'probe';
+        document.body.appendChild(probe);
+        return {
+            matchMedia: matchMedia('(color-gamut: p3)').matches ? 'p3' : 'srgb',
+            css: getComputedStyle(probe).getPropertyValue('--g').trim(),
+        };
+    ''', return_by_value=True)
+    ```
+
+=== "Async"
+
+    ```python
+    result = await tab.execute_script('''
+        document.head.insertAdjacentHTML('beforeend',
+            '<style>.probe{--g: srgb} @media (color-gamut: p3){.probe{--g: p3}}</style>');
+        const probe = document.createElement('div');
+        probe.className = 'probe';
+        document.body.appendChild(probe);
+        return {
+            matchMedia: matchMedia('(color-gamut: p3)').matches ? 'p3' : 'srgb',
+            css: getComputedStyle(probe).getPropertyValue('--g').trim(),
+        };
+    ''', return_by_value=True)
+    ```
 
 如果 `matchMedia` 和 CSS 路径不一致，那就是有一个覆盖只在一条路径上撒谎。同样的测试也适用于跨 realm（页面对比 worker）以及跨 API（WebGL 字符串对比 WebGPU adapter）。一个连贯的 profile 会通过所有这些测试；而一个矛盾就是一个由你引入的信号。
 

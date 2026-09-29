@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from pydoll.protocol.base import Command
 from pydoll.protocol.target.methods import (
@@ -68,7 +68,7 @@ class TargetCommands:
         return Command(method=TargetMethod.ACTIVATE_TARGET, params=params)
 
     @staticmethod
-    def attach_to_target(target_id: str, flatten: Optional[bool] = None) -> AttachToTargetCommand:
+    def attach_to_target(target_id: str, flatten: bool | None = None) -> AttachToTargetCommand:
         """
         Generates a command to attach to a target with the given ID.
 
@@ -108,10 +108,10 @@ class TargetCommands:
 
     @staticmethod
     def create_browser_context(
-        dispose_on_detach: Optional[bool] = None,
-        proxy_server: Optional[str] = None,
-        proxy_bypass_list: Optional[str] = None,
-        origins_with_universal_network_access: Optional[list[str]] = None,
+        dispose_on_detach: bool | None = None,
+        proxy_server: str | None = None,
+        proxy_bypass_list: str | None = None,
+        origins_with_universal_network_access: list[str] | None = None,
     ) -> CreateBrowserContextCommand:
         """
         Generates a command to create a new empty browser context.
@@ -151,17 +151,17 @@ class TargetCommands:
     @staticmethod
     def create_target(
         url: str = 'about:blank',
-        left: Optional[int] = None,
-        top: Optional[int] = None,
-        width: Optional[int] = None,
-        height: Optional[int] = None,
-        window_state: Optional[WindowState] = None,
-        browser_context_id: Optional[str] = None,
-        enable_begin_frame_control: Optional[bool] = None,
-        new_window: Optional[bool] = None,
-        background: Optional[bool] = None,
-        for_tab: Optional[bool] = None,
-        hidden: Optional[bool] = None,
+        left: int | None = None,
+        top: int | None = None,
+        width: int | None = None,
+        height: int | None = None,
+        window_state: WindowState | None = None,
+        browser_context_id: str | None = None,
+        enable_begin_frame_control: bool | None = None,
+        new_window: bool | None = None,
+        background: bool | None = None,
+        for_tab: bool | None = None,
+        hidden: bool | None = None,
     ) -> CreateTargetCommand:
         """
         Generates a command to create a new page (target).
@@ -223,7 +223,7 @@ class TargetCommands:
         return Command(method=TargetMethod.CREATE_TARGET, params=params)
 
     @staticmethod
-    def detach_from_target(session_id: Optional[str] = None) -> DetachFromTargetCommand:
+    def detach_from_target(session_id: str | None = None) -> DetachFromTargetCommand:
         """
         Generates a command to detach a session from its target.
 
@@ -273,7 +273,7 @@ class TargetCommands:
         return Command(method=TargetMethod.GET_BROWSER_CONTEXTS, params={})
 
     @staticmethod
-    def get_targets(filter: Optional[list] = None) -> GetTargetsCommand:
+    def get_targets(filter: list | None = None) -> GetTargetsCommand:
         """
         Generates a command to retrieve a list of available targets.
 
@@ -299,8 +299,8 @@ class TargetCommands:
     def set_auto_attach(
         auto_attach: bool,
         wait_for_debugger_on_start: bool = False,
-        flatten: Optional[bool] = None,
-        filter: Optional[list] = None,
+        flatten: bool | None = None,
+        filter: list | None = None,
     ) -> SetAutoAttachCommand:
         """
         Generates a command to control whether to automatically attach to new targets.
@@ -333,7 +333,7 @@ class TargetCommands:
 
     @staticmethod
     def set_discover_targets(
-        discover: bool, filter: Optional[list] = None
+        discover: bool, filter: list | None = None
     ) -> SetDiscoverTargetsCommand:
         """
         Generates a command to control target discovery.

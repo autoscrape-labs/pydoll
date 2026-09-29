@@ -1,8 +1,8 @@
 # Async Python in practice
 
-Every Pydoll call has `await` in front of it. If that keyword is new to you, this page is the one to read first. You don't need to master asyncio; you need only enough to be comfortable, and to see why Pydoll is built on it. Each example here runs on its own, so paste them into a file and watch what happens.
+Everything that talks to the browser in Pydoll's async API has `await` in front of it; only plain attribute reads on objects you already hold, like `get_attribute()`, do not. If that keyword is new to you, this page is the one to read first. If you use the sync API from `pydoll.sync`, nothing here is required, but the concurrency section shows what you would gain by switching. You don't need to master asyncio; you need only enough to be comfortable, and to see why Pydoll is built on it. Each example here runs on its own, so paste them into a file and watch what happens.
 
-## Why every Pydoll call is awaited
+## Why the async API awaits every call
 
 Browser automation spends most of its time waiting: for a page to load, for an element to appear, for a network request to come back. Regular Python code sits idle during those waits. Async code doesn't: while one task waits, another can run.
 
@@ -103,12 +103,12 @@ Swap the chores for real pages and nothing changes. Loading three pages one at a
 ```python
 import asyncio
 
-from pydoll.browser.chromium import Chrome
+from pydoll import Chrome
 
 
 async def title_of(browser, url):
     tab = await browser.new_tab(url)
-    title = await tab.title
+    title = await tab.title()
     await tab.close()
     return title
 
@@ -138,11 +138,11 @@ These are the normal stumbles when async is new. They are quick to recognize onc
 **You forgot `await`.** Without it, you get the coroutine object instead of its result, and a warning:
 
 ```python
-title = tab.title
+title = tab.title()
 print(title)   # <coroutine object ...>, and: RuntimeWarning: coroutine was never awaited
 ```
 
-The fix is to add `await`: `title = await tab.title`.
+The fix is to add `await`: `title = await tab.title()`.
 
 **You called async code without starting the loop.** `await` only works inside an `async def`, and coroutines only run under `asyncio.run()` (or another running loop):
 

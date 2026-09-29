@@ -1,7 +1,7 @@
 <p align="center">
     <img src="https://github.com/user-attachments/assets/2c380638-b04a-4b04-b1c8-2958e4237a94" alt="Pydoll Logo" /> <br>
 </p>
-<p align="center">The stealth-first browser automation library for Python.<br>No WebDriver, no <code>navigator.webdriver</code> flag, humanized clicks and typing.</p>
+<p align="center">Browser automation for Python over raw CDP.<br>No WebDriver, no driver process, sync or async, and your Playwright scripts run on it with one import.</p>
 
 <p align="center">
     <a href="https://github.com/autoscrape-labs/pydoll/stargazers"><img src="https://img.shields.io/github/stars/autoscrape-labs/pydoll?style=social"></a>
@@ -17,29 +17,11 @@
 
 <p align="center">
     <a href="https://pydoll.tech/">Documentation</a> &middot;
-    <a href="#getting-started">Getting Started</a> &middot;
+    <a href="#quick-start">Quick start</a> &middot;
+    <a href="#already-on-playwright">Playwright</a> &middot;
     <a href="#features">Features</a> &middot;
     <a href="#support">Support</a>
 </p>
-
-
-
-You have probably watched a scraper work on your machine, then hit a wall of captchas and Cloudflare challenges the moment it ran for real. That wall is what Pydoll is built around. It drives Chrome directly over the DevTools Protocol, so there is no WebDriver binary and no `navigator.webdriver` flag to give you away, and it clicks, types, and scrolls like a real person. That is often enough to get past the bot protection that stops ordinary automation, all behind an async, fully typed API.
-
-### Why Pydoll?
-
-- **Fingerprint injection**: Make the browser report a fully consistent identity with [`tab.apply_fingerprint()`](#2-fingerprint-injection): User-Agent, Client Hints, `navigator`, WebGL, canvas, screen, fonts, timezone and locale, all aligned. The injected overrides survive `toString` and prototype introspection and propagate into Web Workers, so lie-detection checks like CreepJS's don't flag them.
-- **Humanized interactions**: [Mouse movement](https://pydoll.tech/docs/guides/mouse/) along Bezier curves, realistic typing, and scroll physics. Often enough to pass behavioral challenges like Cloudflare Turnstile or reCAPTCHA v3, depending on your browser and IP reputation.
-- **Zero WebDrivers**: A direct CDP connection over WebSocket. No driver binary, no `navigator.webdriver` flag, no version-matching headaches.
-- **Async and typed**: Built on `asyncio`, type-checked with `mypy`. Full IDE autocompletion and static error checking.
-- **Network control**: [Intercept](https://pydoll.tech/docs/guides/request-interception/) requests to block ads/trackers, [monitor](https://pydoll.tech/docs/guides/network-monitoring/) traffic for API discovery, and make [authenticated HTTP requests](https://pydoll.tech/docs/guides/http-requests/) that inherit the browser session.
-- **Shadow DOM and iframes**: Full support for [shadow roots](https://pydoll.tech/docs/guides/dom-traversal/#shadow-dom) (including closed) and cross-origin iframes. Discover, query, and interact with elements inside them using the same API.
-- **Structured extraction**: Define a [Pydantic](https://docs.pydantic.dev/) model, call `tab.extract()`, and get typed, validated data back. No manual element-by-element querying.
-
-> [!NOTE]
-> **A word from the maintainer.** Pydoll is currently maintained by a single person, and I'm a bit stretched at the moment, so new releases and replies to issues may take a little longer than usual. To be clear: **the project is not dead, and it is not going anywhere.** Development continues; it's just moving at a calmer pace for now.
->
-> **A goal to aim for:** once the project reaches **10k stars**, I plan to ship **Firefox support**, a big step that opens up a whole new range of possibilities for the library. Momentum like that is exactly the kind of incentive that makes a feature this large worth taking on, so if you'd like to see it happen, that's the push it needs.
 
 ### Top Sponsors
 
@@ -125,45 +107,55 @@ You have probably watched a scraper work on your machine, then hit a wall of cap
 
 <sub>[Learn more about our sponsors](SPONSORS.md) &middot; [Become a sponsor](https://github.com/sponsors/thalissonvs)</sub>
 
+Pydoll drives the Chrome or Edge already on your machine over the DevTools Protocol. There is no WebDriver binary and no driver process between your code and the browser, so the usual automation markers (`navigator.webdriver`, `--enable-automation`, `Runtime.enable`) are never there to begin with. It clicks, types and scrolls like a person, applies coherent fingerprint profiles, handles Cloudflare Turnstile, and extracts typed data from the page. The API comes in a synchronous and an asynchronous form, and an existing Playwright script runs on it by changing one import.
+
+### Why Pydoll?
+
+- **Nothing to patch**: a direct CDP connection over WebSocket. No driver binary, no `navigator.webdriver` flag, no version-matching, and no stealth fork to keep up to date.
+- **Fingerprint injection**: make the browser report a fully consistent identity with [`tab.apply_fingerprint()`](#fingerprint-injection): User-Agent, Client Hints, `navigator`, WebGL, canvas, screen, fonts, timezone and locale, all aligned. The overrides survive `toString` and prototype introspection and propagate into Web Workers, so lie-detection checks like CreepJS's don't flag them.
+- **Humanized interactions**: [mouse movement](https://pydoll.tech/docs/guides/mouse/) along Bezier curves, realistic typing, and scroll physics. Often enough to pass behavioral challenges like Cloudflare Turnstile or reCAPTCHA v3, depending on your browser and IP reputation.
+- **Sync or async, fully typed**: `from pydoll import Chrome` gives you the `asyncio` API, `from pydoll.sync import Chrome` the blocking one, with the same names, methods and defaults. Type-checked with `mypy`, full IDE autocompletion.
+- **Playwright-compatible**: keep your Playwright script and [change one import](#already-on-playwright). Locators, `get_by_role`, auto-waiting, routes, dialogs and downloads keep their semantics, on Pydoll's connection.
+- **Network control**: [intercept](https://pydoll.tech/docs/guides/request-interception/) requests to block ads and trackers, [monitor](https://pydoll.tech/docs/guides/network-monitoring/) traffic for API discovery, and make [authenticated HTTP requests](https://pydoll.tech/docs/guides/http-requests/) that inherit the browser session.
+- **Shadow DOM and iframes**: full support for [shadow roots](https://pydoll.tech/docs/guides/dom-traversal/#shadow-dom) (including closed) and cross-origin iframes, with the same `find()`, `query()` and `click()` inside them.
+- **Structured extraction**: define a [Pydantic](https://docs.pydantic.dev/) model, call `tab.extract_all()`, and get typed, validated objects back.
+
+> [!NOTE]
+> A word from the maintainer. Pydoll is maintained by one person, and I'm a bit stretched at the moment, so new releases and replies to issues may take longer than usual. The project is not dead and it is not going anywhere; development continues at a calmer pace for now.
+>
+> A goal to aim for: once the project reaches 10k stars, I plan to ship Firefox support, a large piece of work that opens up a whole new range of possibilities. If you'd like to see it happen, that's the push it needs.
+
 ## Installation
 
 ```bash
 pip install pydoll-python
 ```
 
-No WebDriver binaries or external dependencies required.
+Python 3.10 or newer, and Google Chrome or Microsoft Edge installed. No WebDriver, no browser download, no Node.
 
-## Getting Started
+## Quick start
 
-### 1. Stealthy Automation
-
-The imperative API handles the basics: start a browser, navigate, find elements, and interact with them. Pass `humanize=True` to add human-like timing for anti-bot evasion.
+Open a page, find elements by how you'd describe them to a person, and interact with humanized timing:
 
 ```python
 import asyncio
 
-from pydoll.browser import Chrome
-from pydoll.constants import Key
+from pydoll import Chrome, Key
 
 async def google_search(query: str):
     async with Chrome() as browser:
         tab = await browser.start()
         await browser.set_window_maximized()
-        tab.mouse.debug = True
         await tab.go_to('https://www.google.com')
-        # Find elements and interact with human-like timing
+
         search_box = await tab.find(tag_name='textarea', name='q')
         await search_box.type_text(query, humanize=True)
         await tab.keyboard.press(Key.ENTER)
 
-        first_result = await tab.find(
-            tag_name='h3',
-            text='autoscrape-labs/pydoll',
-            timeout=10,
-        )
+        first_result = await tab.find(tag_name='h3', text='autoscrape-labs/pydoll', timeout=10)
         await first_result.click(humanize=True)
         await asyncio.sleep(5)
-        print(f"Page loaded: {await tab.title}")
+        print(f"Page loaded: {await tab.title()}")
 
 asyncio.run(google_search('pydoll site:github.com'))
 ```
@@ -172,18 +164,91 @@ asyncio.run(google_search('pydoll site:github.com'))
   <img width="100%" alt="Pydoll running a humanized Google search: mouse curves to the box, types, and clicks the result" src="public/images/humanized-google-search.gif" />
 </p>
 
-### 2. Fingerprint Injection
+The same script without `async`: import from `pydoll.sync` and drop the `await`s. The sync API is generated from the async one, so it never lags behind, and callbacks still work.
+
+```python
+from pydoll.sync import Chrome, Key
+
+with Chrome() as browser:
+    tab = browser.start()
+    tab.go_to('https://www.google.com')
+
+    tab.find(tag_name='textarea', name='q').type_text('pydoll site:github.com', humanize=True)
+    tab.keyboard.press(Key.ENTER)
+
+    tab.find(tag_name='h3', text='autoscrape-labs/pydoll', timeout=10).click(humanize=True)
+    print(f"Page loaded: {tab.title()}")
+```
+
+When the goal is data rather than interaction, define a model and let Pydoll extract it, typed and validated:
+
+```python
+import asyncio
+
+from pydoll import Chrome, ExtractionModel, Field
+
+class Quote(ExtractionModel):
+    text: str = Field(selector='.text')
+    author: str = Field(selector='.author')
+    tags: list[str] = Field(selector='.tag')
+
+async def main():
+    async with Chrome() as browser:
+        tab = await browser.start()
+        await tab.go_to('https://quotes.toscrape.com')
+
+        quotes = await tab.extract_all(Quote, scope='.quote', timeout=5)
+        for quote in quotes:
+            print(f'{quote.author}: {quote.text}')
+
+asyncio.run(main())
+```
+
+[Getting started](https://pydoll.tech/docs/getting-started/) takes you from an empty folder to a working script; every example in the docs has a Sync and an Async tab.
+
+## Already on Playwright?
+
+Keep your script. Change one import and it runs on Pydoll's CDP connection, with Pydoll's stealth underneath.
+
+```python
+from pydoll.playwright.sync_api import sync_playwright  # was: from playwright.sync_api import sync_playwright
+
+with sync_playwright() as p:
+    browser = p.chromium.launch()
+    page = browser.new_page()
+    page.goto('https://quotes.toscrape.com/login')
+
+    page.get_by_label('Username').fill('john')
+    page.locator('#password').fill('SecretPass123')
+    page.get_by_role('button', name='Login').click()
+    page.wait_for_url('**/')
+    print(page.get_by_role('link', name='Logout').is_visible())
+    browser.close()
+```
+
+`pydoll.playwright.async_api` is the async flavor. The layer covers the browser automation surface: `Playwright`, `Browser`, `BrowserContext`, `Page`, `Frame`, `Locator`, `ElementHandle`, `Keyboard`, `Mouse`, routes, dialogs and downloads. `expect()` assertions, fixtures, tracing and the test runner are out of scope. When you need what Playwright can't do, `page.tab` is the Pydoll `Tab` underneath:
+
+```python
+with page.tab.expect_cloudflare_turnstile():
+    page.goto('https://site-with-turnstile.com')
+```
+
+[Bring your Playwright script](https://pydoll.tech/docs/playwright/) is the walkthrough; [Playwright API](https://pydoll.tech/docs/guides/playwright-api/) is the full compatibility matrix.
+
+## Staying undetected
+
+### Fingerprint injection
 
 Pydoll can also make the browser *report* a different identity. `tab.apply_fingerprint()` overrides the surface that fingerprinting scripts read (User-Agent and Client Hints, `navigator`, WebGL, canvas, screen, fonts, timezone and locale) and keeps those values consistent with each other.
 
 Spoofing a fingerprint is less about changing the values than about not getting caught changing them. Modern anti-bot scripts inspect *how* a property was defined: a naive `Object.defineProperty` leaves a fake `toString`, an own-property where a prototype getter should be, or an override that a phantom `iframe` or a Web Worker can see straight through. Pydoll handles this: injected getters read as native under `toString` and prototype introspection, and the same identity is replayed inside dedicated, shared and service workers.
 
-It also neutralizes the **headless** tells, chiefly the SwiftShader WebGL renderer that gives away a GPU-less browser, so `headless=True` is no longer an automatic giveaway. That is what lets a plain Google search run in headless mode. (Cloudflare Turnstile in headless is still under study.)
+It also neutralizes the headless tells, chiefly the SwiftShader WebGL renderer that gives away a GPU-less browser, so `headless=True` is no longer an automatic giveaway. That is what lets a plain Google search run in headless mode. (Cloudflare Turnstile in headless is still under study.)
 
 ```python
 import asyncio
 
-from pydoll.browser.chromium import Chrome
+from pydoll import Chrome
 
 from examples.fingerprints import FINGERPRINTS
 
@@ -213,21 +278,21 @@ In our testing it passed each of these fingerprint and bot-detection suites with
 | [BrowserLeaks Canvas](https://browserleaks.com/canvas) | Canvas fingerprint | No detection |
 | [BrowserLeaks WebRTC](https://browserleaks.com/webrtc) | WebRTC IP leak | No detection |
 
-**A fingerprint is only as strong as its weakest layer.** Anti-bot systems correlate signals across all of them. A browser that renders as macOS while its `Accept-Language` says Brazilian Portuguese, its timezone says Tokyo, and its IP geolocates to Germany is *more* suspicious than a browser you never touched. `apply_fingerprint()` keeps the layers it controls consistent, but you own the rest: the profile must match the real Chrome binary you drive (the network-layer TLS / HTTP2 fingerprint is authentic and cannot be spoofed) and the geography of your egress IP or proxy. The deep dive on [browser fingerprinting](https://pydoll.tech/docs/deep-dive/fingerprinting/) and the [Timezone and Locale Consistency](https://pydoll.tech/docs/stealth/evasion-techniques/) section explain why a locale that contradicts the IP gets you blocked.
+A fingerprint is only as strong as its weakest layer. Anti-bot systems correlate signals across all of them. A browser that renders as macOS while its `Accept-Language` says Brazilian Portuguese, its timezone says Tokyo, and its IP geolocates to Germany is *more* suspicious than a browser you never touched. `apply_fingerprint()` keeps the layers it controls consistent, but you own the rest: the profile must match the real Chrome binary you drive (the network-layer TLS / HTTP2 fingerprint is authentic and cannot be spoofed) and the geography of your egress IP or proxy. The deep dive on [browser fingerprinting](https://pydoll.tech/docs/deep-dive/fingerprinting/) and the [Timezone and Locale Consistency](https://pydoll.tech/docs/stealth/evasion-techniques/) section explain why a locale that contradicts the IP gets you blocked.
 
 > [!IMPORTANT]
-> **Pydoll does not generate or ship fingerprints.** The profiles in [`examples/fingerprints.py`](examples/fingerprints.py) exist only as a reference for how coherent a profile has to be and the shape of the [`FingerprintConfig`](pydoll/protocol/fingerprint/types.py) you inject. Bring your own.
+> Pydoll does not generate or ship fingerprints. The profiles in [`examples/fingerprints.py`](examples/fingerprints.py) exist only as a reference for how coherent a profile has to be and the shape of the [`FingerprintConfig`](pydoll/protocol/fingerprint/types.py) you inject. Bring your own.
 
 [Fingerprint Injection Docs](https://pydoll.tech/docs/stealth/fingerprint-injection/)
 
-### 3. Getting past Cloudflare Turnstile
+### Cloudflare Turnstile
 
-Pydoll gets you past Cloudflare Turnstile the same way a person does: by placing a realistic, humanized click on the widget. It simulates a real user (humanized clicks and movements) and works to make the browser look genuine, so Turnstile assigns a high enough trust score to accept the click. Whether it succeeds depends on your browser and IP reputation.
+Pydoll handles Cloudflare Turnstile the same way a person does: it finds the widget and places a realistic, humanized click on it. Whether Turnstile accepts the click depends on your browser fingerprint and IP reputation, which is why the two sections above come first.
 
 ```python
 import asyncio
 
-from pydoll.browser.chromium import Chrome
+from pydoll import Chrome
 
 async def solve_turnstile():
     async with Chrome() as browser:
@@ -235,7 +300,7 @@ async def solve_turnstile():
 
         # Waits for the Turnstile widget, performs a realistic click,
         # and continues once it settles.
-        async with tab.expect_and_bypass_cloudflare_captcha():
+        async with tab.expect_cloudflare_turnstile():
             await tab.go_to('https://site-with-turnstile.com')
 
         print('Turnstile handled, continuing...')
@@ -249,11 +314,11 @@ asyncio.run(solve_turnstile())
 <p align="center"><sub>Pydoll getting past a Cloudflare Turnstile challenge with a realistic, humanized click.</sub></p>
 
 > [!NOTE]
-> Despite the method name, this isn't a magic bypass. Pydoll performs the same click a real user would; whether it passes depends on your environment (browser fingerprint and IP reputation). See the [Turnstile docs](https://pydoll.tech/docs/stealth/captcha-bypass/) for details.
+> This isn't a bypass. Pydoll performs the same click a real user would; whether it passes depends on your environment (browser fingerprint and IP reputation). See the [Turnstile docs](https://pydoll.tech/docs/stealth/captcha-bypass/) for details.
 
 ## Features
 
-The section above covers the three flows most people start with. The rest of what Pydoll does is below: click any item to expand a short explanation, a runnable example, and a link to its full guide.
+The sections above cover the flows most people start with. The rest is below: click any item to expand a short explanation, a runnable example, and a link to its full guide.
 
 <details>
 <summary><b>Structured Data Extraction (Pydantic)</b></summary>
@@ -264,14 +329,12 @@ Define what you want with a [Pydantic](https://docs.pydantic.dev/) model and Pyd
 ```python
 import asyncio
 
-from pydoll.browser.chromium import Chrome
-from pydoll.extractor import ExtractionModel, Field
+from pydoll import Chrome, ExtractionModel, Field
 
 class Quote(ExtractionModel):
     text: str = Field(selector='.text', description='The quote text')
     author: str = Field(selector='.author', description='Who said it')
     tags: list[str] = Field(selector='.tag', description='Tags')
-
 
 async def extract_quotes():
     async with Chrome() as browser:
@@ -294,11 +357,11 @@ asyncio.run(extract_quotes())
 
 Mouse operations can produce human-like cursor movement when you pass `humanize=True`:
 
-- **Bezier curve paths** with asymmetric control points
-- **Fitts's Law timing**: duration scales with distance
-- **Minimum-jerk velocity**: bell-shaped speed profile
-- **Physiological tremor**: Gaussian noise scaled with velocity
-- **Overshoot correction**: ~70% chance on fast movements, then corrects back
+- Bezier curve paths with asymmetric control points
+- Fitts's Law timing, so duration scales with distance
+- Minimum-jerk velocity, a bell-shaped speed profile
+- Physiological tremor, Gaussian noise scaled with velocity
+- Overshoot correction, about 70% of fast movements overshoot and correct back
 
 ```python
 await tab.mouse.move(500, 300, humanize=True)
@@ -348,10 +411,10 @@ Highlights:
 <summary><b>HAR Network Recording</b></summary>
 <br>
 
-Record network activity during a browser session and export as HAR 1.2. Replay recorded requests to reproduce exact API sequences.
+Record network activity during a browser session and export it as HAR 1.2. Every entry keeps its request, response, headers, body and timings, ready for DevTools or any HAR viewer.
 
 ```python
-from pydoll.browser.chromium import Chrome
+from pydoll import Chrome
 
 async with Chrome() as browser:
     tab = await browser.start()
@@ -361,8 +424,6 @@ async with Chrome() as browser:
 
     capture.save('flow.har')
     print(f'Captured {len(capture.entries)} requests')
-
-    responses = await tab.request.replay('flow.har')
 ```
 
 [HAR Recording Docs](https://pydoll.tech/docs/guides/network-recording/)
@@ -410,8 +471,9 @@ Monitor traffic for API discovery or intercept requests to block ads, trackers, 
 
 ```python
 import asyncio
-from pydoll.browser.chromium import Chrome
-from pydoll.protocol.fetch.events import FetchEvent, RequestPausedEvent
+
+from pydoll import Chrome, FetchEvent
+from pydoll.protocol.fetch.events import RequestPausedEvent
 from pydoll.protocol.network.types import ErrorReason
 
 async def block_images():
@@ -446,6 +508,8 @@ asyncio.run(block_images())
 Granular control over [browser preferences](https://pydoll.tech/docs/guides/browser-preferences/): hundreds of internal Chrome settings for building consistent fingerprints.
 
 ```python
+from pydoll import ChromiumOptions
+
 options = ChromiumOptions()
 
 options.browser_preferences = {
@@ -474,9 +538,13 @@ options.browser_preferences = {
 Manage [multiple tabs](https://pydoll.tech/docs/guides/tabs/) and [browser contexts](https://pydoll.tech/docs/guides/browser-contexts/) (isolated sessions) concurrently. Connect to browsers running in Docker or remote servers.
 
 ```python
+import asyncio
+
+from pydoll import Chrome
+
 async def scrape_page(url, tab):
     await tab.go_to(url)
-    return await tab.title
+    return await tab.title()
 
 async def concurrent_scraping():
     async with Chrome() as browser:

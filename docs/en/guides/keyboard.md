@@ -2,36 +2,67 @@
 
 Drive keyboard input through `tab.keyboard`: type into fields, press special keys like Enter and Tab, and run shortcuts such as Ctrl+A. Reach for it when a form needs keyboard navigation or a web app responds to key combinations that a click can't trigger.
 
-```python
-import asyncio
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
-from pydoll.constants import Key
+    ```python
+    import time
+    from pydoll.sync import Chrome, Key
+
+    def main():
+        with Chrome() as browser:
+            tab = browser.start()
+            tab.go_to('https://www.wikipedia.org')
+
+            search = tab.find(id='searchInput')
+            search.type_text('web scraping', humanize=True)
+
+            tab.keyboard.press(Key.ENTER)
+            time.sleep(2)
+            print(tab.current_url())
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+
+    from pydoll import Chrome, Key
 
 
-async def main():
-    async with Chrome() as browser:
-        tab = await browser.start()
-        await tab.go_to('https://www.wikipedia.org')
+    async def main():
+        async with Chrome() as browser:
+            tab = await browser.start()
+            await tab.go_to('https://www.wikipedia.org')
 
-        search = await tab.find(id='searchInput')
-        await search.type_text('web scraping', humanize=True)
+            search = await tab.find(id='searchInput')
+            await search.type_text('web scraping', humanize=True)
 
-        await tab.keyboard.press(Key.ENTER)
-        await asyncio.sleep(2)
-        print(await tab.current_url)
+            await tab.keyboard.press(Key.ENTER)
+            await asyncio.sleep(2)
+            print(await tab.current_url())
 
-asyncio.run(main())
-```
+    asyncio.run(main())
+    ```
 
 ## Type into a field
 
 To type character by character into the focused element, use `type_text` on the element. Pass `humanize=True` for variable timing with the occasional corrected typo; leave it off for a fixed, faster rhythm.
 
-```python
-field = await tab.find(id='searchInput')
-await field.type_text('search query', humanize=True)
-```
+=== "Sync"
+
+    ```python
+    field = tab.find(id='searchInput')
+    field.type_text('search query', humanize=True)
+    ```
+
+=== "Async"
+
+    ```python
+    field = await tab.find(id='searchInput')
+    await field.type_text('search query', humanize=True)
+    ```
 
 Type your own text below and run it both ways. With `humanize=True` the rhythm varies and the occasional typo is corrected, so every run differs; without it, every gap is a flat 50ms.
 
@@ -39,62 +70,120 @@ Type your own text below and run it both ways. With `humanize=True` the rhythm v
 
 If you only need the text to appear and don't care about per-key events, `insert_text` pastes the whole string at once:
 
-```python
-await field.insert_text('search query')   # instant, no keystroke events
-```
+=== "Sync"
+
+    ```python
+    field.insert_text('search query')   # instant, no keystroke events
+    ```
+
+=== "Async"
+
+    ```python
+    await field.insert_text('search query')   # instant, no keystroke events
+    ```
 
 !!! note "`tab.keyboard` types wherever focus already is"
     `type_text` and `insert_text` on an element focus that element for you, so the text lands in the right place. The lower-level `tab.keyboard` methods (below) do not: they send keystrokes to whatever the page currently has focused. Focus the field first (clicking it focuses it) before typing through `tab.keyboard`.
 
 ## Press a key
 
-`press()` runs a full key press (down, brief hold, up). Use it for keys that trigger behavior rather than text: Enter to submit, Tab to move between fields, Escape to dismiss.
+`press()` runs a full key press (down, then up). Use it for keys that trigger behavior rather than text: Enter to submit, Tab to move between fields, Escape to dismiss.
 
-```python
-from pydoll.constants import Key
+=== "Sync"
 
-await tab.keyboard.press(Key.ENTER)
-await tab.keyboard.press(Key.TAB)
-await tab.keyboard.press(Key.ESCAPE)
+    ```python
+    from pydoll.sync import Key
 
-# arrow and navigation keys
-await tab.keyboard.press(Key.ARROWDOWN)
-await tab.keyboard.press(Key.END)
-```
+    tab.keyboard.press(Key.ENTER)
+    tab.keyboard.press(Key.TAB)
+    tab.keyboard.press(Key.ESCAPE)
 
-`press(key, interval=0.1)` holds the key for `interval` seconds before releasing; raise it to simulate a longer hold.
+    # arrow and navigation keys
+    tab.keyboard.press(Key.ARROWDOWN)
+    tab.keyboard.press(Key.END)
+    ```
+
+=== "Async"
+
+    ```python
+    from pydoll import Key
+
+    await tab.keyboard.press(Key.ENTER)
+    await tab.keyboard.press(Key.TAB)
+    await tab.keyboard.press(Key.ESCAPE)
+
+    # arrow and navigation keys
+    await tab.keyboard.press(Key.ARROWDOWN)
+    await tab.keyboard.press(Key.END)
+    ```
+
+`press(key)` releases the key right after pressing it; pass `interval=0.1` to keep it down for a tenth of a second, or longer to simulate a long hold.
 
 ## Run a keyboard shortcut
 
 `hotkey()` presses a combination and releases it in the right order, so you don't compute modifier bitmasks yourself. Pass the modifier first.
 
-```python
-from pydoll.constants import Key
+=== "Sync"
 
-await tab.keyboard.hotkey(Key.CONTROL, Key.A)   # select all
-await tab.keyboard.hotkey(Key.CONTROL, Key.C)   # copy
-await tab.keyboard.hotkey(Key.CONTROL, Key.SHIFT, Key.ARROWLEFT)  # select word left
-```
+    ```python
+    from pydoll.sync import Key
+
+    tab.keyboard.hotkey(Key.CONTROL, Key.A)   # select all
+    tab.keyboard.hotkey(Key.CONTROL, Key.C)   # copy
+    tab.keyboard.hotkey(Key.CONTROL, Key.SHIFT, Key.ARROWLEFT)  # select word left
+    ```
+
+=== "Async"
+
+    ```python
+    from pydoll import Key
+
+    await tab.keyboard.hotkey(Key.CONTROL, Key.A)   # select all
+    await tab.keyboard.hotkey(Key.CONTROL, Key.C)   # copy
+    await tab.keyboard.hotkey(Key.CONTROL, Key.SHIFT, Key.ARROWLEFT)  # select word left
+    ```
 
 macOS uses Command (Meta) where Windows and Linux use Control, so pick the modifier from the platform:
 
-```python
-import sys
-from pydoll.constants import Key
+=== "Sync"
 
-mod = Key.META if sys.platform == 'darwin' else Key.CONTROL
-await tab.keyboard.hotkey(mod, Key.C)
-```
+    ```python
+    import sys
+    from pydoll.sync import Key
+
+    mod = Key.META if sys.platform == 'darwin' else Key.CONTROL
+    tab.keyboard.hotkey(mod, Key.C)
+    ```
+
+=== "Async"
+
+    ```python
+    import sys
+    from pydoll import Key
+
+    mod = Key.META if sys.platform == 'darwin' else Key.CONTROL
+    await tab.keyboard.hotkey(mod, Key.C)
+    ```
 
 ## Apply a modifier to a single key
 
 `press()` and `down()` take a `modifiers` argument from the `KeyModifier` enum:
 
-```python
-from pydoll.protocol.input.types import KeyModifier
+=== "Sync"
 
-await tab.keyboard.press(Key.S, modifiers=KeyModifier.CTRL)   # Ctrl+S
-```
+    ```python
+    from pydoll.protocol.input.types import KeyModifier
+
+    tab.keyboard.press(Key.S, modifiers=KeyModifier.CTRL)   # Ctrl+S
+    ```
+
+=== "Async"
+
+    ```python
+    from pydoll.protocol.input.types import KeyModifier
+
+    await tab.keyboard.press(Key.S, modifiers=KeyModifier.CTRL)   # Ctrl+S
+    ```
 
 The members are `KeyModifier.ALT`, `.CTRL`, `.META`, and `.SHIFT`. `hotkey()` already applies modifiers for you, so reach for `modifiers` only when you press or hold a single key manually.
 
@@ -102,16 +191,31 @@ The members are `KeyModifier.ALT`, `.CTRL`, `.META`, and `.SHIFT`. `hotkey()` al
 
 For sequences where a modifier stays down across several presses, drive `down()` and `up()` yourself. Release in a `finally` block so an error mid-sequence doesn't leave a key stuck.
 
-```python
-from pydoll.constants import Key
+=== "Sync"
 
-try:
-    await tab.keyboard.down(Key.SHIFT)
-    await tab.keyboard.press(Key.ARROWRIGHT)   # extend selection
-    await tab.keyboard.press(Key.ARROWRIGHT)
-finally:
-    await tab.keyboard.up(Key.SHIFT)
-```
+    ```python
+    from pydoll.sync import Key
+
+    try:
+        tab.keyboard.down(Key.SHIFT)
+        tab.keyboard.press(Key.ARROWRIGHT)   # extend selection
+        tab.keyboard.press(Key.ARROWRIGHT)
+    finally:
+        tab.keyboard.up(Key.SHIFT)
+    ```
+
+=== "Async"
+
+    ```python
+    from pydoll import Key
+
+    try:
+        await tab.keyboard.down(Key.SHIFT)
+        await tab.keyboard.press(Key.ARROWRIGHT)   # extend selection
+        await tab.keyboard.press(Key.ARROWRIGHT)
+    finally:
+        await tab.keyboard.up(Key.SHIFT)
+    ```
 
 ## Browser UI shortcuts do not work
 

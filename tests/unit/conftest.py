@@ -10,7 +10,7 @@ the real handler and FakeCDPServer in the integration suite instead.
 
 from __future__ import annotations
 
-from typing import Awaitable, Callable, Optional
+from typing import Awaitable, Callable
 
 import pytest
 
@@ -50,7 +50,7 @@ class FakeConnection:
         """Every recorded command matching a CDP method, in arrival order."""
         return [command for command in self.commands if command.get('method') == method]
 
-    def last_command(self, method: Optional[str] = None) -> dict:
+    def last_command(self, method: str | None = None) -> dict:
         """The most recent recorded command, optionally filtered by method."""
         commands = self.commands_for(method) if method is not None else self.commands
         if not commands:
@@ -74,6 +74,14 @@ class FakeConnection:
         if method in self._failures:
             raise self._failures[method]
         return {'id': self._command_id, 'result': self._results.get(method, {})}
+
+    async def execute_commands(self, commands: list[dict], timeout: int = 60) -> list[dict]:
+        """Mirror ConnectionHandler.execute_commands: every command, in order."""
+        return [await self.execute_command(command, timeout) for command in commands]
+
+    async def execute_command_nowait(self, command: dict) -> None:
+        """Mirror ConnectionHandler.execute_command_nowait: recorded, answer discarded."""
+        await self.execute_command(command)
 
     async def register_callback(
         self,

@@ -6,23 +6,42 @@ Grave cada requisição que uma página faz durante uma sessão e exporte como u
 
 Envolva a navegação que você quer capturar em `tab.request.record()`. Tudo o que a página requisitar dentro do bloco é gravado, e o objeto `capture` fica pronto assim que o bloco termina.
 
-```python
-import asyncio
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
+    ```python
+    from pydoll.sync import Chrome
+
+    def main():
+        with Chrome() as browser:
+            tab = browser.start()
+
+            with tab.request.record() as capture:
+                tab.go_to('https://news.ycombinator.com')
+
+            print(f'captured {len(capture.entries)} requests')
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+
+    from pydoll import Chrome
 
 
-async def main():
-    async with Chrome() as browser:
-        tab = await browser.start()
+    async def main():
+        async with Chrome() as browser:
+            tab = await browser.start()
 
-        async with tab.request.record() as capture:
-            await tab.go_to('https://news.ycombinator.com')
+            async with tab.request.record() as capture:
+                await tab.go_to('https://news.ycombinator.com')
 
-        print(f'captured {len(capture.entries)} requests')
+            print(f'captured {len(capture.entries)} requests')
 
-asyncio.run(main())
-```
+    asyncio.run(main())
+    ```
 
 ## Salve a gravação
 
@@ -37,35 +56,69 @@ capture.save('recordings/session-1/flow.har')
 
 `capture.entries` é uma lista de entradas HAR. Cada entrada tem uma `request` e uma `response` que você pode ler diretamente, o que é útil para fazer asserções sobre o tráfego em um teste ou extrair chamadas específicas.
 
-```python
-async with tab.request.record() as capture:
-    await tab.go_to('https://github.com/autoscrape-labs/pydoll')
+=== "Sync"
 
-for entry in capture.entries:
-    request = entry['request']
-    response = entry['response']
-    print(f"{request['method']} {request['url']} -> {response['status']}")
+    ```python
+    with tab.request.record() as capture:
+        tab.go_to('https://github.com/autoscrape-labs/pydoll')
 
-# mantém apenas as chamadas de API que falharam
-failed_api = [
-    entry for entry in capture.entries
-    if '/api/' in entry['request']['url'] and entry['response']['status'] >= 400
-]
-```
+    for entry in capture.entries:
+        request = entry['request']
+        response = entry['response']
+        print(f"{request['method']} {request['url']} -> {response['status']}")
+
+    # mantém apenas as chamadas de API que falharam
+    failed_api = [
+        entry for entry in capture.entries
+        if '/api/' in entry['request']['url'] and entry['response']['status'] >= 400
+    ]
+    ```
+
+=== "Async"
+
+    ```python
+    async with tab.request.record() as capture:
+        await tab.go_to('https://github.com/autoscrape-labs/pydoll')
+
+    for entry in capture.entries:
+        request = entry['request']
+        response = entry['response']
+        print(f"{request['method']} {request['url']} -> {response['status']}")
+
+    # mantém apenas as chamadas de API que falharam
+    failed_api = [
+        entry for entry in capture.entries
+        if '/api/' in entry['request']['url'] and entry['response']['status'] >= 400
+    ]
+    ```
 
 ## Grave apenas alguns tipos de recurso
 
 Gravar cada imagem, fonte e folha de estilo produz um arquivo grande. Passe `resource_types` para manter apenas os tipos que te interessam, que é a forma usual de capturar só o tráfego de API de uma página.
 
-```python
-from pydoll.protocol.network.types import ResourceType
+=== "Sync"
 
-# apenas as chamadas fetch/XHR, ignorando documentos, imagens e estilos
-async with tab.request.record(
-    resource_types=[ResourceType.FETCH, ResourceType.XHR]
-) as capture:
-    await tab.go_to('https://github.com/autoscrape-labs/pydoll')
-```
+    ```python
+    from pydoll.protocol.network.types import ResourceType
+
+    # apenas as chamadas fetch/XHR, ignorando documentos, imagens e estilos
+    with tab.request.record(
+        resource_types=[ResourceType.FETCH, ResourceType.XHR]
+    ) as capture:
+        tab.go_to('https://github.com/autoscrape-labs/pydoll')
+    ```
+
+=== "Async"
+
+    ```python
+    from pydoll.protocol.network.types import ResourceType
+
+    # apenas as chamadas fetch/XHR, ignorando documentos, imagens e estilos
+    async with tab.request.record(
+        resource_types=[ResourceType.FETCH, ResourceType.XHR]
+    ) as capture:
+        await tab.go_to('https://github.com/autoscrape-labs/pydoll')
+    ```
 
 Os valores comuns de `ResourceType` são `DOCUMENT`, `STYLESHEET`, `SCRIPT`, `IMAGE`, `FONT`, `MEDIA`, `FETCH`, `XHR` e `WEB_SOCKET`. Veja o enum `ResourceType` em `pydoll.protocol.network.types` para a lista completa.
 

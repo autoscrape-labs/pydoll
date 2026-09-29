@@ -4,7 +4,7 @@ Um guia por recurso, cada um com exemplos executáveis. Comece por [Conceitos ce
 
 ## Conceitos centrais
 
-- [Conceitos centrais](core-concepts.md): os objetos tab e browser, o modelo assíncrono, e o que "sem webdriver" significa na prática.
+- [Conceitos centrais](core-concepts.md): os objetos tab e browser, as APIs síncrona e assíncrona, e o que "sem webdriver" significa na prática.
 
 ## Encontrando e extraindo
 
@@ -39,6 +39,7 @@ Um guia por recurso, cada um com exemplos executáveis. Comece por [Conceitos ce
 
 ## Reagindo a eventos
 
+- [Esperas](waiting.md): aguarde estados de elementos, URLs, rede ociosa e a requisição ou resposta que um clique dispara.
 - [Eventos](events.md): execute callbacks quando eventos de página e de rede disparam.
 - [Repetição](retrying.md): repita passos instáveis com o decorador `retry`.
 

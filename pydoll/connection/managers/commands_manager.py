@@ -39,7 +39,7 @@ class CommandsManager:
         self._pending_commands[self._id] = future
         self._id += 1
         logger.debug(
-            f'Created future for command id={command["id"]} method={command.get("method")}'
+            'Created future for command id=%s method=%s', command['id'], command.get('method')
         )
         return future
 
@@ -53,13 +53,13 @@ class CommandsManager:
         future = self._pending_commands.pop(response_id, None)
         if future is not None and not future.done():
             future.set_result(result)
-            logger.debug(f'Resolved command future id={response_id}')
+            logger.debug('Resolved command future id=%s', response_id)
 
     def remove_pending_command(self, command_id: int):
         """Remove pending command without resolving (for timeouts/cancellations)."""
         if command_id in self._pending_commands:
             del self._pending_commands[command_id]
-            logger.debug(f'Removed pending command id={command_id}')
+            logger.debug('Removed pending command id=%s', command_id)
 
     def fail_all_pending(self, exc: BaseException):
         """Fail every pending command future with the given exception and clear them.
@@ -74,4 +74,4 @@ class CommandsManager:
         for command_id, future in pending:
             if not future.done():
                 future.set_exception(exc)
-        logger.debug(f'Failed {len(pending)} pending command(s): {type(exc).__name__}')
+        logger.debug('Failed %s pending command(s): %s', len(pending), type(exc).__name__)

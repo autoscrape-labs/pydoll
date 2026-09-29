@@ -49,20 +49,37 @@ A **command** is a request you send: a domain method with parameters. The browse
 
 An **event** is a notification the browser sends on its own, once you enable its domain. `Page.loadEventFired`, `Network.requestWillBeSent`, and `Fetch.requestPaused` are events. You subscribe with a callback and react when it fires:
 
-```python
-from functools import partial
+=== "Sync"
 
-from pydoll.protocol.network.events import NetworkEvent
+    ```python
+    from functools import partial
+
+    from pydoll.sync import NetworkEvent
+
+    def on_request(tab, event):
+        url = event['params']['request']['url']
+        print(f'request to: {url}')
+
+    tab.enable_network_events()
+    tab.on(NetworkEvent.REQUEST_WILL_BE_SENT, partial(on_request, tab))
+    ```
+
+=== "Async"
+
+    ```python
+    from functools import partial
+
+    from pydoll import NetworkEvent
 
 
-async def on_request(tab, event):
-    url = event['params']['request']['url']
-    print(f'request to: {url}')
+    async def on_request(tab, event):
+        url = event['params']['request']['url']
+        print(f'request to: {url}')
 
 
-await tab.enable_network_events()
-await tab.on(NetworkEvent.REQUEST_WILL_BE_SENT, partial(on_request, tab))
-```
+    await tab.enable_network_events()
+    await tab.on(NetworkEvent.REQUEST_WILL_BE_SENT, partial(on_request, tab))
+    ```
 
 Events are why automation over CDP can react the instant the browser changes state, instead of sleeping and hoping. See [Events](../guides/events.md) for the working guide.
 

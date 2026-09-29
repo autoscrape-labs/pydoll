@@ -8,25 +8,44 @@ Route the browser's traffic through a proxy to change your egress IP, spread req
 
 Pass `--proxy-server` to `ChromiumOptions` and every request the browser makes goes through it. HTTP, HTTPS, and SOCKS5 URLs all work:
 
-```python
-import asyncio
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
-from pydoll.browser.options import ChromiumOptions
+    ```python
+    from pydoll.sync import Chrome, ChromiumOptions
+
+    def main():
+        options = ChromiumOptions()
+        options.add_argument('--proxy-server=http://proxy.example.com:8080')
+
+        with Chrome(options=options) as browser:
+            tab = browser.start()
+
+            response = tab.request.get('https://httpbin.org/ip')
+            print(response.json())   # {'origin': '<the proxy IP>'}
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+
+    from pydoll import Chrome, ChromiumOptions
 
 
-async def main():
-    options = ChromiumOptions()
-    options.add_argument('--proxy-server=http://proxy.example.com:8080')
+    async def main():
+        options = ChromiumOptions()
+        options.add_argument('--proxy-server=http://proxy.example.com:8080')
 
-    async with Chrome(options=options) as browser:
-        tab = await browser.start()
+        async with Chrome(options=options) as browser:
+            tab = await browser.start()
 
-        response = await tab.request.get('https://httpbin.org/ip')
-        print(response.json())   # {'origin': '<the proxy IP>'}
+            response = await tab.request.get('https://httpbin.org/ip')
+            print(response.json())   # {'origin': '<the proxy IP>'}
 
-asyncio.run(main())
-```
+    asyncio.run(main())
+    ```
 
 `tab.request.get` runs in the browser context, so it goes through the same proxy as the page. See [HTTP requests](http-requests.md).
 
@@ -41,18 +60,34 @@ options.add_argument('--proxy-server=http://user:pass@proxy.example.com:8080')
 
 You don't write any auth code. Under the hood Pydoll enables Chrome's Fetch domain at the browser level; when the proxy returns a 407 challenge, Chrome pauses the request and Pydoll replies with the credentials from your URL. The equivalent handler built on the public API looks like this:
 
-```python
-from pydoll.protocol.fetch.types import AuthChallengeResponseType
+=== "Sync"
+
+    ```python
+    from pydoll.protocol.fetch.types import AuthChallengeResponseType
+
+    def on_auth_required(event):
+        tab.continue_with_auth(
+            request_id=event['params']['requestId'],
+            auth_challenge_response=AuthChallengeResponseType.PROVIDE_CREDENTIALS,
+            proxy_username='user',
+            proxy_password='pass',
+        )
+    ```
+
+=== "Async"
+
+    ```python
+    from pydoll.protocol.fetch.types import AuthChallengeResponseType
 
 
-async def on_auth_required(event):
-    await tab.continue_with_auth(
-        request_id=event['params']['requestId'],
-        auth_challenge_response=AuthChallengeResponseType.PROVIDE_CREDENTIALS,
-        proxy_username='user',
-        proxy_password='pass',
-    )
-```
+    async def on_auth_required(event):
+        await tab.continue_with_auth(
+            request_id=event['params']['requestId'],
+            auth_challenge_response=AuthChallengeResponseType.PROVIDE_CREDENTIALS,
+            proxy_username='user',
+            proxy_password='pass',
+        )
+    ```
 
 !!! warning "SOCKS5 authentication is not supported by Chrome"
     Chrome ignores credentials in a `socks5://user:pass@host:port` URL ([Chromium issue 40323993](https://issues.chromium.org/issues/40323993)): it never sends them and never issues the 407 challenge Pydoll would answer. Run a local unauthenticated SOCKS5 forwarder that handles the credentials for you, and point Chrome at it:
@@ -60,9 +95,8 @@ async def on_auth_required(event):
     ```python
     import asyncio
 
+    from pydoll import Chrome, ChromiumOptions
     from pydoll.utils import SOCKS5Forwarder
-    from pydoll.browser.chromium import Chrome
-    from pydoll.browser.options import ChromiumOptions
 
 
     async def main():
@@ -84,25 +118,43 @@ async def on_auth_required(event):
     asyncio.run(main())
     ```
 
-    Chrome connects to `127.0.0.1` with no auth; the forwarder does the username/password handshake with the remote proxy.
+    Chrome connects to `127.0.0.1` with no auth; the forwarder does the username/password handshake with the remote proxy. `SOCKS5Forwarder` is an asyncio server with no facade in `pydoll.sync`, so this recipe is async only.
 
 ## Use a different proxy per context
 
 A [browser context](browser-contexts.md) can carry its own proxy, so one browser run can send different tabs through different proxies. Pass `proxy_server` when you create the context:
 
-```python
-async with Chrome() as browser:
-    await browser.start()
+=== "Sync"
 
-    us_ctx = await browser.create_browser_context(proxy_server='http://user:pass@us.proxy.com:8080')
-    de_ctx = await browser.create_browser_context(proxy_server='http://user:pass@de.proxy.com:8080')
+    ```python
+    with Chrome() as browser:
+        browser.start()
 
-    us_tab = await browser.new_tab(browser_context_id=us_ctx)
-    de_tab = await browser.new_tab(browser_context_id=de_ctx)
+        us_ctx = browser.create_browser_context(proxy_server='http://user:pass@us.proxy.com:8080')
+        de_ctx = browser.create_browser_context(proxy_server='http://user:pass@de.proxy.com:8080')
 
-    print((await us_tab.request.get('https://httpbin.org/ip')).json())
-    print((await de_tab.request.get('https://httpbin.org/ip')).json())
-```
+        us_tab = browser.new_tab(browser_context_id=us_ctx)
+        de_tab = browser.new_tab(browser_context_id=de_ctx)
+
+        print(us_tab.request.get('https://httpbin.org/ip').json())
+        print(de_tab.request.get('https://httpbin.org/ip').json())
+    ```
+
+=== "Async"
+
+    ```python
+    async with Chrome() as browser:
+        await browser.start()
+
+        us_ctx = await browser.create_browser_context(proxy_server='http://user:pass@us.proxy.com:8080')
+        de_ctx = await browser.create_browser_context(proxy_server='http://user:pass@de.proxy.com:8080')
+
+        us_tab = await browser.new_tab(browser_context_id=us_ctx)
+        de_tab = await browser.new_tab(browser_context_id=de_ctx)
+
+        print((await us_tab.request.get('https://httpbin.org/ip')).json())
+        print((await de_tab.request.get('https://httpbin.org/ip')).json())
+    ```
 
 ## Skip the proxy for some hosts
 
@@ -117,12 +169,23 @@ options.add_argument('--proxy-bypass-list=localhost,127.0.0.1,*.local')
 
 Before a long run, confirm the traffic actually leaves through the proxy:
 
-```python
-async with Chrome(options=options) as browser:
-    tab = await browser.start()
-    ip = (await tab.request.get('https://httpbin.org/ip')).json()['origin']
-    print(f'Egress IP: {ip}')
-```
+=== "Sync"
+
+    ```python
+    with Chrome(options=options) as browser:
+        tab = browser.start()
+        ip = tab.request.get('https://httpbin.org/ip').json()['origin']
+        print(f'Egress IP: {ip}')
+    ```
+
+=== "Async"
+
+    ```python
+    async with Chrome(options=options) as browser:
+        tab = await browser.start()
+        ip = (await tab.request.get('https://httpbin.org/ip')).json()['origin']
+        print(f'Egress IP: {ip}')
+    ```
 
 !!! note "The proxy is only one detection signal"
     Changing your IP does not make automation undetectable, and the wrong IP makes things worse. Anti-bot systems weigh IP reputation (residential addresses look far more legitimate than datacenter ranges) and cross-check the IP's country against the browser's timezone and languages. Matching the proxy's geography to the rest of your setup is part of a coherent fingerprint, covered in [Fingerprint injection](../stealth/fingerprint-injection.md).

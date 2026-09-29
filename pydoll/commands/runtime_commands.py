@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from pydoll.protocol.base import Command
 from pydoll.protocol.runtime.methods import (
@@ -64,13 +64,13 @@ class RuntimeCommands:
     """
 
     @staticmethod
-    def add_binding(name: str, execution_context_name: Optional[str] = None) -> AddBindingCommand:
+    def add_binding(name: str, execution_context_name: str | None = None) -> AddBindingCommand:
         """
         Creates a command to add a JavaScript binding.
 
         Args:
             name (str): Name of the binding to add.
-            execution_context_name (Optional[str]): Name of the execution context to bind to.
+            execution_context_name (str | None): Name of the execution context to bind to.
 
         Returns:
             AddBindingCommand: Command object to add a JavaScript binding.
@@ -84,17 +84,17 @@ class RuntimeCommands:
     @staticmethod
     def await_promise(
         promise_object_id: str,
-        return_by_value: Optional[bool] = None,
-        generate_preview: Optional[bool] = None,
+        return_by_value: bool | None = None,
+        generate_preview: bool | None = None,
     ) -> AwaitPromiseCommand:
         """
         Creates a command to await a JavaScript promise and return its result.
 
         Args:
             promise_object_id (str): ID of the promise to await.
-            return_by_value (Optional[bool]): Whether to return the result by value instead
+            return_by_value (bool | None): Whether to return the result by value instead
                 of reference.
-            generate_preview (Optional[bool]): Whether to generate a preview for the result.
+            generate_preview (bool | None): Whether to generate a preview for the result.
 
         Returns:
             AwaitPromiseCommand: Command object to await a promise.
@@ -110,39 +110,39 @@ class RuntimeCommands:
     @staticmethod
     def call_function_on(
         function_declaration: str,
-        object_id: Optional[str] = None,
-        arguments: Optional[list[CallArgument]] = None,
-        silent: Optional[bool] = None,
-        return_by_value: Optional[bool] = None,
-        generate_preview: Optional[bool] = None,
-        user_gesture: Optional[bool] = None,
-        await_promise: Optional[bool] = None,
-        execution_context_id: Optional[int] = None,
-        object_group: Optional[str] = None,
-        throw_on_side_effect: Optional[bool] = None,
-        unique_context_id: Optional[str] = None,
-        serialization_options: Optional[SerializationOptions] = None,
+        object_id: str | None = None,
+        arguments: list[CallArgument] | None = None,
+        silent: bool | None = None,
+        return_by_value: bool | None = None,
+        generate_preview: bool | None = None,
+        user_gesture: bool | None = None,
+        await_promise: bool | None = None,
+        execution_context_id: int | None = None,
+        object_group: str | None = None,
+        throw_on_side_effect: bool | None = None,
+        unique_context_id: str | None = None,
+        serialization_options: SerializationOptions | None = None,
     ) -> CallFunctionOnCommand:
         """
         Creates a command to call a function with a given declaration on a specific object.
 
         Args:
             function_declaration (str): Declaration of the function to call.
-            object_id (Optional[str]): ID of the object to call the function on.
-            arguments (Optional[list[CallArgument]]): Arguments to pass to the function.
-            silent (Optional[bool]): Whether to silence exceptions.
-            return_by_value (Optional[bool]): Whether to return the result by value instead
+            object_id (str | None): ID of the object to call the function on.
+            arguments (list[CallArgument] | None): Arguments to pass to the function.
+            silent (bool | None): Whether to silence exceptions.
+            return_by_value (bool | None): Whether to return the result by value instead
                 of reference.
-            generate_preview (Optional[bool]): Whether to generate a preview for the result.
-            user_gesture (Optional[bool]): Whether to treat the call as initiated by user gesture.
-            await_promise (Optional[bool]): Whether to await promise result.
-            execution_context_id (Optional[int]): ID of the execution context to call the
+            generate_preview (bool | None): Whether to generate a preview for the result.
+            user_gesture (bool | None): Whether to treat the call as initiated by user gesture.
+            await_promise (bool | None): Whether to await promise result.
+            execution_context_id (int | None): ID of the execution context to call the
                 function in.
-            object_group (Optional[str]): Symbolic group name for the result.
-            throw_on_side_effect (Optional[bool]): Whether to throw if side effect cannot be
+            object_group (str | None): Symbolic group name for the result.
+            throw_on_side_effect (bool | None): Whether to throw if side effect cannot be
                 ruled out.
-            unique_context_id (Optional[str]): Unique context ID for the function call.
-            serialization_options (Optional[SerializationOptions]): Serialization options for
+            unique_context_id (str | None): Unique context ID for the function call.
+            serialization_options (SerializationOptions | None): Serialization options for
                 the result.
 
         Returns:
@@ -181,7 +181,7 @@ class RuntimeCommands:
         expression: str,
         source_url: str,
         persist_script: bool = False,
-        execution_context_id: Optional[int] = None,
+        execution_context_id: int | None = None,
     ) -> CompileScriptCommand:
         """
         Creates a command to compile a JavaScript expression.
@@ -190,7 +190,7 @@ class RuntimeCommands:
             expression (str): JavaScript expression to compile.
             source_url (str): URL of the source file for the script.
             persist_script (bool): Whether to persist the compiled script.
-            execution_context_id (Optional[int]): ID of the execution context to compile
+            execution_context_id (int | None): ID of the execution context to compile
                 the script in.
 
         Returns:
@@ -240,44 +240,44 @@ class RuntimeCommands:
     @staticmethod
     def evaluate(  # noqa: PLR0912
         expression: str,
-        object_group: Optional[str] = None,
-        include_command_line_api: Optional[bool] = None,
-        silent: Optional[bool] = None,
-        context_id: Optional[int] = None,
-        return_by_value: Optional[bool] = None,
-        generate_preview: Optional[bool] = None,
-        user_gesture: Optional[bool] = None,
-        await_promise: Optional[bool] = None,
-        throw_on_side_effect: Optional[bool] = None,
-        timeout: Optional[float] = None,
-        disable_breaks: Optional[bool] = None,
-        repl_mode: Optional[bool] = None,
-        allow_unsafe_eval_blocked_by_csp: Optional[bool] = None,
-        unique_context_id: Optional[str] = None,
-        serialization_options: Optional[SerializationOptions] = None,
+        object_group: str | None = None,
+        include_command_line_api: bool | None = None,
+        silent: bool | None = None,
+        context_id: int | None = None,
+        return_by_value: bool | None = None,
+        generate_preview: bool | None = None,
+        user_gesture: bool | None = None,
+        await_promise: bool | None = None,
+        throw_on_side_effect: bool | None = None,
+        timeout: float | None = None,
+        disable_breaks: bool | None = None,
+        repl_mode: bool | None = None,
+        allow_unsafe_eval_blocked_by_csp: bool | None = None,
+        unique_context_id: str | None = None,
+        serialization_options: SerializationOptions | None = None,
     ) -> EvaluateCommand:
         """
         Creates a command to evaluate a JavaScript expression in the global context.
 
         Args:
             expression (str): JavaScript expression to evaluate.
-            object_group (Optional[str]): Symbolic group name for the result.
-            include_command_line_api (Optional[bool]): Whether to include command line API.
-            silent (Optional[bool]): Whether to silence exceptions.
-            context_id (Optional[int]): ID of the execution context to evaluate in.
-            return_by_value (Optional[bool]): Whether to return the result by value instead
+            object_group (str | None): Symbolic group name for the result.
+            include_command_line_api (bool | None): Whether to include command line API.
+            silent (bool | None): Whether to silence exceptions.
+            context_id (int | None): ID of the execution context to evaluate in.
+            return_by_value (bool | None): Whether to return the result by value instead
                 of reference.
-            generate_preview (Optional[bool]): Whether to generate a preview for the result.
-            user_gesture (Optional[bool]): Whether to treat evaluation as initiated by user gesture.
-            await_promise (Optional[bool]): Whether to await promise result.
-            throw_on_side_effect (Optional[bool]): Whether to throw if side effect cannot be
+            generate_preview (bool | None): Whether to generate a preview for the result.
+            user_gesture (bool | None): Whether to treat evaluation as initiated by user gesture.
+            await_promise (bool | None): Whether to await promise result.
+            throw_on_side_effect (bool | None): Whether to throw if side effect cannot be
                 ruled out.
-            timeout (Optional[float]): Timeout in milliseconds.
-            disable_breaks (Optional[bool]): Whether to disable breakpoints during evaluation.
-            repl_mode (Optional[bool]): Whether to execute in REPL mode.
-            allow_unsafe_eval_blocked_by_csp (Optional[bool]): Allow unsafe evaluation.
-            unique_context_id (Optional[str]): Unique context ID for evaluation.
-            serialization_options (Optional[SerializationOptions]): Serialization
+            timeout (float | None): Timeout in milliseconds.
+            disable_breaks (bool | None): Whether to disable breakpoints during evaluation.
+            repl_mode (bool | None): Whether to execute in REPL mode.
+            allow_unsafe_eval_blocked_by_csp (bool | None): Allow unsafe evaluation.
+            unique_context_id (str | None): Unique context ID for evaluation.
+            serialization_options (SerializationOptions | None): Serialization
                 for the result.
 
         Returns:
@@ -320,20 +320,20 @@ class RuntimeCommands:
     @staticmethod
     def get_properties(
         object_id: str,
-        own_properties: Optional[bool] = None,
-        accessor_properties_only: Optional[bool] = None,
-        generate_preview: Optional[bool] = None,
-        non_indexed_properties_only: Optional[bool] = None,
+        own_properties: bool | None = None,
+        accessor_properties_only: bool | None = None,
+        generate_preview: bool | None = None,
+        non_indexed_properties_only: bool | None = None,
     ) -> GetPropertiesCommand:
         """
         Creates a command to get properties of a JavaScript object.
 
         Args:
             object_id (str): ID of the object to get properties for.
-            own_properties (Optional[bool]): Whether to return only own properties.
-            accessor_properties_only (Optional[bool]): Whether to return only accessor properties.
-            generate_preview (Optional[bool]): Whether to generate previews for property values.
-            non_indexed_properties_only (Optional[bool]): Whether to return only non-indexed
+            own_properties (bool | None): Whether to return only own properties.
+            accessor_properties_only (bool | None): Whether to return only accessor properties.
+            generate_preview (bool | None): Whether to generate previews for property values.
+            non_indexed_properties_only (bool | None): Whether to return only non-indexed
                 properties.
 
         Returns:
@@ -353,13 +353,13 @@ class RuntimeCommands:
 
     @staticmethod
     def global_lexical_scope_names(
-        execution_context_id: Optional[int] = None,
+        execution_context_id: int | None = None,
     ) -> GlobalLexicalScopeNamesCommand:
         """
         Creates a command to retrieve names of variables from global lexical scope.
 
         Args:
-            execution_context_id (Optional[int]): ID of the execution context to get scope
+            execution_context_id (int | None): ID of the execution context to get scope
                 names from.
 
         Returns:
@@ -375,14 +375,14 @@ class RuntimeCommands:
     @staticmethod
     def query_objects(
         prototype_object_id: str,
-        object_group: Optional[str] = None,
+        object_group: str | None = None,
     ) -> QueryObjectsCommand:
         """
         Creates a command to query objects with a given prototype.
 
         Args:
             prototype_object_id (str): ID of the prototype object.
-            object_group (Optional[str]): Symbolic group name for the results.
+            object_group (str | None): Symbolic group name for the results.
 
         Returns:
             QueryObjectsCommand: Command object to query objects.
@@ -445,27 +445,27 @@ class RuntimeCommands:
     @staticmethod
     def run_script(
         script_id: str,
-        execution_context_id: Optional[int] = None,
-        object_group: Optional[str] = None,
-        silent: Optional[bool] = None,
-        include_command_line_api: Optional[bool] = None,
-        return_by_value: Optional[bool] = None,
-        generate_preview: Optional[bool] = None,
-        await_promise: Optional[bool] = None,
+        execution_context_id: int | None = None,
+        object_group: str | None = None,
+        silent: bool | None = None,
+        include_command_line_api: bool | None = None,
+        return_by_value: bool | None = None,
+        generate_preview: bool | None = None,
+        await_promise: bool | None = None,
     ) -> RunScriptCommand:
         """
         Creates a command to run a compiled script.
 
         Args:
             script_id (str): ID of the compiled script to run.
-            execution_context_id (Optional[int]): ID of the execution context to run the script in.
-            object_group (Optional[str]): Symbolic group name for the result.
-            silent (Optional[bool]): Whether to silence exceptions.
-            include_command_line_api (Optional[bool]): Whether to include command line API.
-            return_by_value (Optional[bool]): Whether to return the result by value instead
+            execution_context_id (int | None): ID of the execution context to run the script in.
+            object_group (str | None): Symbolic group name for the result.
+            silent (bool | None): Whether to silence exceptions.
+            include_command_line_api (bool | None): Whether to include command line API.
+            return_by_value (bool | None): Whether to return the result by value instead
                 of reference.
-            generate_preview (Optional[bool]): Whether to generate a preview for the result.
-            await_promise (Optional[bool]): Whether to await promise result.
+            generate_preview (bool | None): Whether to generate a preview for the result.
+            await_promise (bool | None): Whether to await promise result.
 
         Returns:
             RunScriptCommand: Command object to run a script.

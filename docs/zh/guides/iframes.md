@@ -6,23 +6,42 @@
 
 像找任何元素那样找到 `<iframe>`，然后在它上面调用 `find()` 或 `query()`。这些调用会自动在框架内部运行。
 
-```python
-import asyncio
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
+    ```python
+    from pydoll.sync import Chrome
+
+    def main():
+        with Chrome() as browser:
+            tab = browser.start()
+            tab.go_to('https://the-internet.herokuapp.com/iframe')
+
+            editor = tab.find(tag_name='iframe')   # 嵌入的编辑器框架
+            body = editor.find(id='tinymce')        # 框架内部的一个元素
+            print(body.text())
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+
+    from pydoll import Chrome
 
 
-async def main():
-    async with Chrome() as browser:
-        tab = await browser.start()
-        await tab.go_to('https://the-internet.herokuapp.com/iframe')
+    async def main():
+        async with Chrome() as browser:
+            tab = await browser.start()
+            await tab.go_to('https://the-internet.herokuapp.com/iframe')
 
-        editor = await tab.find(tag_name='iframe')   # 嵌入的编辑器框架
-        body = await editor.find(id='tinymce')        # 框架内部的一个元素
-        print(await body.text)
+            editor = await tab.find(tag_name='iframe')   # 嵌入的编辑器框架
+            body = await editor.find(id='tinymce')        # 框架内部的一个元素
+            print(await body.text())
 
-asyncio.run(main())
-```
+    asyncio.run(main())
+    ```
 
 `tab.find()` 和 `tab.query()` 只能看到顶层文档。要触及框架内部的内容，从 iframe 元素开始，而不是从 tab 开始。
 
@@ -38,13 +57,25 @@ graph TB
 ```
 
 
-```python
-outer = await tab.find(id='outer-frame')
-inner = await outer.find(tag_name='iframe')
+=== "Sync"
 
-submit = await inner.find(id='submit')
-await submit.click()
-```
+    ```python
+    outer = tab.find(id='outer-frame')
+    inner = outer.find(tag_name='iframe')
+
+    submit = inner.find(id='submit')
+    submit.click()
+    ```
+
+=== "Async"
+
+    ```python
+    outer = await tab.find(id='outer-frame')
+    inner = await outer.find(tag_name='iframe')
+
+    submit = await inner.find(id='submit')
+    await submit.click()
+    ```
 
 模式始终一样：找到 iframe 元素，用那个元素继续搜索，对更深的层级重复这一过程。你永远不用缓存框架目标或打开额外的标签页。
 
@@ -52,21 +83,41 @@ await submit.click()
 
 在 iframe 元素上调用 `execute_script()` 会在框架自己的执行上下文中运行，同源和跨源框架都一样。
 
-```python
-iframe = await tab.find(tag_name='iframe')
-result = await iframe.execute_script('return document.title', return_by_value=True)
-print(result['result']['result']['value'])
-```
+=== "Sync"
+
+    ```python
+    iframe = tab.find(tag_name='iframe')
+    result = iframe.execute_script('return document.title', return_by_value=True)
+    print(result['result']['result']['value'])
+    ```
+
+=== "Async"
+
+    ```python
+    iframe = await tab.find(tag_name='iframe')
+    result = await iframe.execute_script('return document.title', return_by_value=True)
+    print(result['result']['result']['value'])
+    ```
 
 ## 捕获一个框架的内容
 
 `tab.take_screenshot()` 只捕获顶层页面。要捕获框架内部的东西，对框架内的一个元素截图：
 
-```python
-iframe = await tab.find(tag_name='iframe')
-chart = await iframe.find(id='sales-chart')
-await chart.take_screenshot('chart.png')
-```
+=== "Sync"
+
+    ```python
+    iframe = tab.find(tag_name='iframe')
+    chart = iframe.find(id='sales-chart')
+    chart.take_screenshot('chart.png')
+    ```
+
+=== "Async"
+
+    ```python
+    iframe = await tab.find(tag_name='iframe')
+    chart = await iframe.find(id='sales-chart')
+    await chart.take_screenshot('chart.png')
+    ```
 
 ## 在一个选择器里跨越框架边界
 
@@ -76,51 +127,105 @@ await chart.take_screenshot('chart.png')
 
 在一个 `iframe` 复合选择器之后使用组合器（`>` 或空格）：
 
-```python
-# 跨越一个 iframe
-button = await tab.query('iframe > .submit-btn')
+=== "Sync"
 
-# 按属性匹配 iframe
-pay = await tab.query('iframe[src*="checkout"] > #pay-button')
+    ```python
+    # 跨越一个 iframe
+    button = tab.query('iframe > .submit-btn')
 
-# 嵌套的 iframe
-content = await tab.query('iframe.outer > iframe.inner > div.content')
+    # 按属性匹配 iframe
+    pay = tab.query('iframe[src*="checkout"] > #pay-button')
 
-# iframe 位于根之下，而非就在根处
-submit = await tab.query('div > iframe > button.submit')
-```
+    # 嵌套的 iframe
+    content = tab.query('iframe.outer > iframe.inner > div.content')
+
+    # iframe 位于根之下，而非就在根处
+    submit = tab.query('div > iframe > button.submit')
+    ```
+
+=== "Async"
+
+    ```python
+    # 跨越一个 iframe
+    button = await tab.query('iframe > .submit-btn')
+
+    # 按属性匹配 iframe
+    pay = await tab.query('iframe[src*="checkout"] > #pay-button')
+
+    # 嵌套的 iframe
+    content = await tab.query('iframe.outer > iframe.inner > div.content')
+
+    # iframe 位于根之下，而非就在根处
+    submit = await tab.query('div > iframe > button.submit')
+    ```
 
 ### 用 XPath
 
 在一个 `iframe` 步进之后使用 `/`：
 
-```python
-# 跨越一个 iframe
-button = await tab.query('//iframe/body/button[@id="submit"]')
+=== "Sync"
 
-# 对 iframe 加谓词
-heading = await tab.query('//iframe[@src*="cloudflare"]//h1')
+    ```python
+    # 跨越一个 iframe
+    button = tab.query('//iframe/body/button[@id="submit"]')
 
-# 嵌套的 iframe
-element = await tab.query('//iframe[@id="outer"]//iframe[@id="inner"]//div')
-```
+    # 对 iframe 加谓词
+    heading = tab.query('//iframe[contains(@src, "cloudflare")]//h1')
+
+    # 嵌套的 iframe
+    element = tab.query('//iframe[@id="outer"]//iframe[@id="inner"]//div')
+    ```
+
+=== "Async"
+
+    ```python
+    # 跨越一个 iframe
+    button = await tab.query('//iframe/body/button[@id="submit"]')
+
+    # 对 iframe 加谓词
+    heading = await tab.query('//iframe[contains(@src, "cloudflare")]//h1')
+
+    # 嵌套的 iframe
+    element = await tab.query('//iframe[@id="outer"]//iframe[@id="inner"]//div')
+    ```
 
 一个跨越式选择器在一次调用中所做的，正是手动版本所做的：
 
-```python
-# 一次调用跨越框架边界
-button = await tab.query('iframe[src*="checkout"] > form > button')
+=== "Sync"
 
-# 同样的事情，逐步写出来
-iframe = await tab.find(tag_name='iframe', src='*checkout*')
-button = await iframe.query('form > button')
-```
+    ```python
+    # 一次调用跨越框架边界
+    button = tab.query('iframe[src*="checkout"] > form > button')
+
+    # 同样的事情，逐步写出来
+    iframe = tab.find(tag_name='iframe', src='*checkout*')
+    button = iframe.query('form > button')
+    ```
+
+=== "Async"
+
+    ```python
+    # 一次调用跨越框架边界
+    button = await tab.query('iframe[src*="checkout"] > form > button')
+
+    # 同样的事情，逐步写出来
+    iframe = await tab.find(tag_name='iframe', src='*checkout*')
+    button = await iframe.query('form > button')
+    ```
 
 最后一段遵循 `find_all=True`，返回最终框架内部的每一个匹配项：
 
-```python
-links = await tab.query('iframe > a', find_all=True)
-```
+=== "Sync"
+
+    ```python
+    links = tab.query('iframe > a', find_all=True)
+    ```
+
+=== "Async"
+
+    ```python
+    links = await tab.query('iframe > a', find_all=True)
+    ```
 
 !!! note "选择器何时不会被拆分"
     只有当 `iframe` 是一个**标签名**时才会拆分。下面这些会原样通过，因为其中没有一个选中的是 iframe 元素：`.iframe > body`（class）、`#iframe > body`（id）、`div.iframe > body`（标签是 `div`）、`[data-type="iframe"] > body`（属性），以及一个孤立的 `iframe` 或 `//iframe`（后面没有可供搜索的内容）。
@@ -130,7 +235,7 @@ links = await tab.query('iframe > a', find_all=True)
 像 Cloudflare Turnstile 这样的组件存在于跨源 iframe（进程外框架，即 OOPIF）中，并且常常把它们的控件藏在一个封闭的 shadow 根里。`tab.find_shadow_roots(deep=True, timeout=...)` 能触及那些框架。关于 shadow 根 API 参见 [DOM 遍历](dom-traversal.md)，关于端到端处理 Turnstile 参见[验证码绕过](../stealth/captcha-bypass.md)。
 
 !!! note "从 `tab.get_frame()` 迁移"
-    早期版本用 `tab.get_frame()` 把 iframe 转换成一个单独的对象。该方法已弃用，将被移除。请直接使用 iframe 的 `WebElement`，如上所示。
+    早期版本用 `tab.get_frame()` 把 iframe 转换成一个单独的对象。Pydoll 3 已移除该方法。请直接使用 iframe 的 `WebElement`，如上所示。
 
 ## 下一步
 

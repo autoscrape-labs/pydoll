@@ -8,25 +8,46 @@ A humanização é opcional por interação, então você gasta os milissegundos
 
 Passe `humanize=True` para `type_text()` e o Pydoll varia o intervalo entre as teclas e adiciona erros de digitação ocasionais que são corrigidos (cerca de 2%). Sem isso, a digitação corre a uma taxa fixa de 50ms por caractere.
 
-```python
-import asyncio
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
+    ```python
+    from pydoll.sync import Chrome
+
+    def main():
+        with Chrome() as browser:
+            tab = browser.start()
+            tab.go_to('https://quotes.toscrape.com/login')
+
+            username = tab.find(id='username')
+            username.type_text('tester', humanize=True)
+
+            password = tab.find(id='password')
+            password.type_text('secret-passphrase', humanize=True)
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+
+    from pydoll import Chrome
 
 
-async def main():
-    async with Chrome() as browser:
-        tab = await browser.start()
-        await tab.go_to('https://quotes.toscrape.com/login')
+    async def main():
+        async with Chrome() as browser:
+            tab = await browser.start()
+            await tab.go_to('https://quotes.toscrape.com/login')
 
-        username = await tab.find(id='username')
-        await username.type_text('tester', humanize=True)
+            username = await tab.find(id='username')
+            await username.type_text('tester', humanize=True)
 
-        password = await tab.find(id='password')
-        await password.type_text('secret-passphrase', humanize=True)
+            password = await tab.find(id='password')
+            await password.type_text('secret-passphrase', humanize=True)
 
-asyncio.run(main())
-```
+    asyncio.run(main())
+    ```
 
 Quando o conteúdo de um campo não precisa parecer digitado (um token oculto, um valor que ninguém observa), `insert_text()` define a string inteira de uma vez, sem eventos por tecla.
 
@@ -36,15 +57,29 @@ Quando o conteúdo de um campo não precisa parecer digitado (um token oculto, u
 
 `humanize=True` no `click()` move o cursor até o elemento por um caminho curvo, com tempo humano, antes de pressionar. Você também pode deslocar o clique para fora do centro exato com `x_offset`/`y_offset`, e variar quanto tempo o botão fica pressionado com `hold_time`.
 
-```python
-button = await tab.find(id='submit')
+=== "Sync"
 
-# aproximação curva, tempo de pressão humano
-await button.click(humanize=True)
+    ```python
+    button = tab.find(id='submit')
 
-# cai um pouco fora do centro, segura um instante a mais
-await button.click(x_offset=6, y_offset=-3, hold_time=0.12)
-```
+    # aproximação curva, tempo de pressão humano
+    button.click(humanize=True)
+
+    # cai um pouco fora do centro, segura um instante a mais
+    button.click(x_offset=6, y_offset=-3, hold_time=0.12)
+    ```
+
+=== "Async"
+
+    ```python
+    button = await tab.find(id='submit')
+
+    # aproximação curva, tempo de pressão humano
+    await button.click(humanize=True)
+
+    # cai um pouco fora do centro, segura um instante a mais
+    await button.click(x_offset=6, y_offset=-3, hold_time=0.12)
+    ```
 
 `click()` despacha eventos de mouse reais (move, down, up, click), que é o que uma página vê de um usuário real. `click_using_js()` chama o `click()` JavaScript do elemento: funciona em elementos ocultos ou cobertos e é mais rápido, mas não dispara nenhum dos eventos de mouse, então prefira `click()` onde o comportamento é observado e reserve `click_using_js()` para controles ocultos ou etapas críticas em velocidade.
 
@@ -52,11 +87,21 @@ await button.click(x_offset=6, y_offset=-3, hold_time=0.12)
 
 Para coordenadas puras em vez de um elemento, controle `tab.mouse` com `humanize=True`. O cursor segue um caminho de Bezier com uma duração da Lei de Fitts (mais longa para alvos mais distantes e menores), um perfil de velocidade em forma de sino, um pequeno tremor e um overshoot ocasional que se corrige de volta.
 
-```python
-await tab.mouse.move(480, 260, humanize=True)
-await tab.mouse.click(480, 260, humanize=True)
-await tab.mouse.drag(120, 200, 480, 360, humanize=True)
-```
+=== "Sync"
+
+    ```python
+    tab.mouse.move(480, 260, humanize=True)
+    tab.mouse.click(480, 260, humanize=True)
+    tab.mouse.drag(120, 200, 480, 360, humanize=True)
+    ```
+
+=== "Async"
+
+    ```python
+    await tab.mouse.move(480, 260, humanize=True)
+    await tab.mouse.click(480, 260, humanize=True)
+    await tab.mouse.drag(120, 200, 480, 360, humanize=True)
+    ```
 
 Veja [Mouse](../guides/mouse.md) para a API completa de coordenadas e [Teclado](../guides/keyboard.md) para pressionamentos de teclas e atalhos.
 
@@ -64,24 +109,44 @@ Veja [Mouse](../guides/mouse.md) para a API completa de coordenadas e [Teclado](
 
 Usuários reais não se teletransportam para baixo numa página. `tab.scroll` oferece três modos; `humanize=True` roda um modelo de física com momento, atrito, micro-pausas e overshoot, e espera pelo evento `scrollend` do navegador antes de retornar, de modo que a próxima ação só roda depois que a rolagem termina.
 
-```python
-import asyncio
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
-from pydoll.constants import ScrollPosition
+    ```python
+    from pydoll.sync import Chrome
+    from pydoll.constants import ScrollPosition
+
+    def main():
+        with Chrome() as browser:
+            tab = browser.start()
+            tab.go_to('https://news.ycombinator.com')
+
+            tab.scroll.by(ScrollPosition.DOWN, 600, humanize=True)
+            tab.scroll.to_bottom(humanize=True)
+            tab.scroll.to_top(humanize=True)
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+
+    from pydoll import Chrome
+    from pydoll.constants import ScrollPosition
 
 
-async def main():
-    async with Chrome() as browser:
-        tab = await browser.start()
-        await tab.go_to('https://news.ycombinator.com')
+    async def main():
+        async with Chrome() as browser:
+            tab = await browser.start()
+            await tab.go_to('https://news.ycombinator.com')
 
-        await tab.scroll.by(ScrollPosition.DOWN, 600, humanize=True)
-        await tab.scroll.to_bottom(humanize=True)
-        await tab.scroll.to_top(humanize=True)
+            await tab.scroll.by(ScrollPosition.DOWN, 600, humanize=True)
+            await tab.scroll.to_bottom(humanize=True)
+            await tab.scroll.to_top(humanize=True)
 
-asyncio.run(main())
-```
+    asyncio.run(main())
+    ```
 
 Sem `humanize`, `smooth=True` (o padrão) faz uma animação CSS previsível, e `smooth=False` salta instantaneamente. Para trazer um elemento para a área visível antes de um screenshot, use `await element.scroll_into_view()`.
 

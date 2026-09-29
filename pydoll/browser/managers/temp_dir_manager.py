@@ -1,5 +1,4 @@
 import logging
-import os
 import shutil
 import time
 from pathlib import Path
@@ -70,57 +69,27 @@ class TempDirectoryManager:
 
     def handle_cleanup_error(self, func: Callable[[str], None], path: str, exc_info: tuple):
         """
-        Handle errors during directory cleanup with browser-specific workarounds.
+        Handle errors during directory cleanup.
+
+        Chrome keeps some profile files open for a moment after its process
+        exits (Windows holds caches, cookies and history for a few hundred
+        milliseconds), so a ``PermissionError`` is retried a few times and then
+        skipped with a warning: cleanup is best effort and must not fail the
+        browser shutdown. Any other ``OSError`` is skipped as well.
 
         Args:
             func: Original function that failed.
             path: Path that could not be processed.
             exc_info: Exception information tuple.
-
-        Note:
-            Handles Chromium-specific locked files like CrashpadMetrics.
         """
-        matches = ['CrashpadMetrics-active.pma']
-        match_substrings = ['Safe Browsing', 'Safe Browsing Cookies']
-        # Extra patterns commonly locked on Windows; compare case-insensitively
-        windows_locked_substrings = [
-            '\\cache\\',
-            '/cache/',
-            'no_vary_search',
-            'journal.baj',
-            '\\network\\cookies',
-            '/network/cookies',
-            'cookies-journal',
-            '\\local storage\\',
-            '/local storage/',
-            '\\local storage\\leveldb\\',
-            '/local storage/leveldb/',
-            '\\session storage\\',
-            '/session storage/',
-            'leveldb',
-            'indexeddb',
-        ]
         exc_type, exc_value, _ = exc_info
-
         if exc_type is PermissionError:
-            filename = Path(path).name
-            # Known Chromium files that may remain locked briefly on Windows
-            path_lc = path.lower()
-            windows_match = os.name == 'nt' and any(
-                substr in path_lc for substr in windows_locked_substrings
-            )
-            if (
-                filename in matches
-                or any(substr in path for substr in match_substrings)
-                or windows_match
-            ):
-                try:
-                    self.retry_process_file(func, path)
-                    return
-                except PermissionError:
-                    logger.warning(f'Ignoring locked Chrome file during cleanup: {path}')
-                    return
-        elif exc_type is OSError:
+            try:
+                self.retry_process_file(func, path)
+            except PermissionError:
+                logger.warning('Ignoring locked Chrome file during cleanup: %s', path)
+            return
+        if exc_type is not None and issubclass(exc_type, OSError):
             return
         raise exc_value
 

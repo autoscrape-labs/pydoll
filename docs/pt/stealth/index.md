@@ -9,6 +9,7 @@ Algumas das partes difíceis você já ganha de graça: como o Pydoll controla u
 - [Como manter a identidade do navegador consistente](#keep-the-identity-consistent)
 - [Como interagir como uma pessoa](#interact-like-a-person)
 - [Como lidar com o Cloudflare Turnstile](#handle-cloudflare-turnstile)
+- [O que fazer quando o bloqueado é o seu script Playwright](#your-playwright-script-is-blocked)
 
 ## Mantenha a identidade consistente {#keep-the-identity-consistent}
 
@@ -20,13 +21,25 @@ Comece por [Técnicas de evasão](evasion-techniques.md) para as alavancas que v
 
 Cliques instantâneos no centro exato de um elemento e teclas digitadas a cada 50ms são fingerprints comportamentais. Passe `humanize=True` e o Pydoll move o cursor por um caminho curvo, com um tempo humano, antes de clicar, e digita com ritmo variável e erros de digitação ocasionais que são corrigidos:
 
-```python
-search_box = await tab.find(id='search')
-await search_box.type_text('browser automation', humanize=True)
+=== "Sync"
 
-submit = await tab.find(tag_name='button', type='submit')
-await submit.click(humanize=True)
-```
+    ```python
+    search_box = tab.find(id='search')
+    search_box.type_text('browser automation', humanize=True)
+
+    submit = tab.find(tag_name='button', type='submit')
+    submit.click(humanize=True)
+    ```
+
+=== "Async"
+
+    ```python
+    search_box = await tab.find(id='search')
+    await search_box.type_text('browser automation', humanize=True)
+
+    submit = await tab.find(tag_name='button', type='submit')
+    await submit.click(humanize=True)
+    ```
 
 A humanização é opcional por interação, então você a mantém onde o comportamento é observado e a dispensa onde a velocidade importa. [Interações humanizadas](human-like-interactions.md) explica o modelo de tempo e como ajustá-lo.
 
@@ -34,14 +47,57 @@ A humanização é opcional por interação, então você a mantém onde o compo
 
 Quando uma página protegida exibe o checkbox do Turnstile, o Pydoll consegue detectá-lo e clicar nele para você:
 
-```python
-async with tab.expect_and_bypass_cloudflare_captcha():
-    await tab.go_to('https://site-protected-by-cloudflare.com')
+=== "Sync"
 
-print('Challenge handled, page loaded.')
-```
+    ```python
+    with tab.expect_cloudflare_turnstile():
+        tab.go_to('https://site-protected-by-cloudflare.com')
+
+    print('Challenge handled, page loaded.')
+    ```
+
+=== "Async"
+
+    ```python
+    async with tab.expect_cloudflare_turnstile():
+        await tab.go_to('https://site-protected-by-cloudflare.com')
+
+    print('Challenge handled, page loaded.')
+    ```
 
 Clicar no widget é apenas parte disso: se o Cloudflare aceita ou não o clique também depende da reputação do seu IP e de quão consistente o resto do seu navegador parece. Se os desafios continuarem falhando, siga por [Bypass de captcha](captcha-bypass.md) e considere [um proxy residencial](../guides/proxies.md).
+
+## Seu script Playwright está bloqueado {#your-playwright-script-is-blocked}
+
+O próprio Playwright adiciona uma quarta camada de sinais: o driver habilita o domínio `Runtime`, abre o navegador com `--enable-automation` e injeta scripts a cada navegação. Forks de stealth removem isso depois do fato, no driver (Patchright) ou no navegador (Camoufox), e precisam continuar patcheando conforme os dois mudam.
+
+O Pydoll não tem driver para patchear. Troque um import e o mesmo script roda pela conexão CDP do próprio Pydoll, que nunca habilita `Runtime` para o seu código e nunca adiciona essas flags:
+
+=== "Sync"
+
+    ```python
+    from pydoll.playwright.sync_api import sync_playwright
+
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=False)
+        page = browser.new_page()
+        with page.tab.expect_cloudflare_turnstile():
+            page.goto('https://site-protected-by-cloudflare.com')
+    ```
+
+=== "Async"
+
+    ```python
+    from pydoll.playwright.async_api import async_playwright
+
+    async with async_playwright() as p:
+        browser = await p.chromium.launch(headless=False)
+        page = await browser.new_page()
+        async with page.tab.expect_cloudflare_turnstile():
+            await page.goto('https://site-protected-by-cloudflare.com')
+    ```
+
+As três camadas acima continuam valendo para esse script: identidade, comportamento e desafios são seus para configurar, por `page.tab`. [Traga seu script Playwright](../playwright.md) percorre isso.
 
 ## O que vem a seguir
 

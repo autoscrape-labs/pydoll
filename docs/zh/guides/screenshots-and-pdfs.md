@@ -6,21 +6,38 @@
 
 用一个文件路径调用 `take_screenshot()`。扩展名决定格式。
 
-```python
-import asyncio
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
+    ```python
+    from pydoll.sync import Chrome
+
+    def main():
+        with Chrome() as browser:
+            tab = browser.start()
+            tab.go_to('https://en.wikipedia.org/wiki/Python_(programming_language)')
+
+            tab.take_screenshot('python.png')
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+
+    from pydoll import Chrome
 
 
-async def main():
-    async with Chrome() as browser:
-        tab = await browser.start()
-        await tab.go_to('https://en.wikipedia.org/wiki/Python_(programming_language)')
+    async def main():
+        async with Chrome() as browser:
+            tab = await browser.start()
+            await tab.go_to('https://en.wikipedia.org/wiki/Python_(programming_language)')
 
-        await tab.take_screenshot('python.png')
+            await tab.take_screenshot('python.png')
 
-asyncio.run(main())
-```
+    asyncio.run(main())
+    ```
 
 <p align="center">
   <img src="/docs/resources/images/screenshot-python-wikipedia.png" alt="Pydoll 捕获的 Wikipedia Python 文章" width="760" />
@@ -31,11 +48,21 @@ asyncio.run(main())
 
 格式跟随文件扩展名：PNG（无损）、JPEG（更小，有损）或 WebP。`quality` 取值 0 到 100，适用于有损格式。
 
-```python
-await tab.take_screenshot('page.png')               # 无损
-await tab.take_screenshot('page.jpeg', quality=85)  # 更小的文件
-await tab.take_screenshot('page.webp', quality=90)
-```
+=== "Sync"
+
+    ```python
+    tab.take_screenshot('page.png')               # 无损
+    tab.take_screenshot('page.jpeg', quality=85)  # 更小的文件
+    tab.take_screenshot('page.webp', quality=90)
+    ```
+
+=== "Async"
+
+    ```python
+    await tab.take_screenshot('page.png')               # 无损
+    await tab.take_screenshot('page.jpeg', quality=85)  # 更小的文件
+    await tab.take_screenshot('page.webp', quality=90)
+    ```
 
 !!! note "格式来自扩展名"
     不支持的扩展名会抛出 `InvalidFileExtension`。`.jpg` 和 `.jpeg` 都可用；`.jpg` 在内部会被规范化为 `.jpeg`。
@@ -44,9 +71,17 @@ await tab.take_screenshot('page.webp', quality=90)
 
 默认你得到的是可见的视口。传入 `beyond_viewport=True` 可捕获折叠线以下、一直到底的所有内容。
 
-```python
-await tab.take_screenshot('full-article.png', beyond_viewport=True)
-```
+=== "Sync"
+
+    ```python
+    tab.take_screenshot('full-article.png', beyond_viewport=True)
+    ```
+
+=== "Async"
+
+    ```python
+    await tab.take_screenshot('full-article.png', beyond_viewport=True)
+    ```
 
 !!! warning "长页面消耗内存"
     在非常长的页面上，`beyond_viewport=True` 耗时更久、占用更多内存，因为整个页面是一次性渲染的。
@@ -55,30 +90,61 @@ await tab.take_screenshot('full-article.png', beyond_viewport=True)
 
 传入 `as_base64=True` 可拿回一个 base64 字符串，而不写文件。用它来嵌入图像或把它发到别处，没有临时文件需要清理。
 
-```python
-data = await tab.take_screenshot(as_base64=True)
+=== "Sync"
 
-html = f'<img src="data:image/png;base64,{data}" />'
-```
+    ```python
+    data = tab.take_screenshot(as_base64=True)
+
+    html = f'<img src="data:image/png;base64,{data}" />'
+    ```
+
+=== "Async"
+
+    ```python
+    data = await tab.take_screenshot(as_base64=True)
+
+    html = f'<img src="data:image/png;base64,{data}" />'
+    ```
 
 ## 给单个元素截图
 
 在一个元素上调用 `take_screenshot()`，只捕获那个元素。Pydoll 会先把它滚动到可见区域。
 
-```python
-await tab.go_to('https://en.wikipedia.org/wiki/Python_(programming_language)')
+=== "Sync"
 
-infobox = await tab.find(class_name='infobox')
-await infobox.take_screenshot('infobox.png')
-```
+    ```python
+    tab.go_to('https://en.wikipedia.org/wiki/Python_(programming_language)')
+
+    infobox = tab.find(class_name='infobox')
+    infobox.take_screenshot('infobox.png')
+    ```
+
+=== "Async"
+
+    ```python
+    await tab.go_to('https://en.wikipedia.org/wiki/Python_(programming_language)')
+
+    infobox = await tab.find(class_name='infobox')
+    await infobox.take_screenshot('infobox.png')
+    ```
 
 这也是你捕获 iframe 内部内容的方式：`tab.take_screenshot()` 只能看到顶层页面，所以找到框架内部的一个元素，改为给它截图。
 
-```python
-iframe = await tab.find(tag_name='iframe')
-content = await iframe.find(id='content')
-await content.take_screenshot('iframe-content.png')
-```
+=== "Sync"
+
+    ```python
+    iframe = tab.find(tag_name='iframe')
+    content = iframe.find(id='content')
+    content.take_screenshot('iframe-content.png')
+    ```
+
+=== "Async"
+
+    ```python
+    iframe = await tab.find(tag_name='iframe')
+    content = await iframe.find(id='content')
+    await content.take_screenshot('iframe-content.png')
+    ```
 
 | | `tab.take_screenshot()` | `element.take_screenshot()` |
 |---|---|---|
@@ -92,22 +158,41 @@ await content.take_screenshot('iframe-content.png')
 
 `print_to_pdf()` 通过 Chrome 的打印管线渲染页面。传入一个路径，或者用 `as_base64=True` 得到内存中的字节。
 
-```python
-import asyncio
-from pathlib import Path
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
+    ```python
+    from pathlib import Path
+
+    from pydoll.sync import Chrome
+
+    def main():
+        with Chrome() as browser:
+            tab = browser.start()
+            tab.go_to('https://en.wikipedia.org/wiki/Python_(programming_language)')
+
+            tab.print_to_pdf(Path('python.pdf'))
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+    from pathlib import Path
+
+    from pydoll import Chrome
 
 
-async def main():
-    async with Chrome() as browser:
-        tab = await browser.start()
-        await tab.go_to('https://en.wikipedia.org/wiki/Python_(programming_language)')
+    async def main():
+        async with Chrome() as browser:
+            tab = await browser.start()
+            await tab.go_to('https://en.wikipedia.org/wiki/Python_(programming_language)')
 
-        await tab.print_to_pdf(Path('python.pdf'))
+            await tab.print_to_pdf(Path('python.pdf'))
 
-asyncio.run(main())
-```
+    asyncio.run(main())
+    ```
 
 ### 控制输出
 
@@ -120,56 +205,112 @@ asyncio.run(main())
 | `scale` | `1.0` | 缩放系数，0.1 到 2.0。小于 1.0 时每页容纳更多内容。 |
 | `as_base64` | `False` | 返回一个 base64 字符串，而不写文件。 |
 
-```python
-# 带页眉页脚、略微缩小的横向报告
-await tab.print_to_pdf(
-    Path('report.pdf'),
-    landscape=True,
-    display_header_footer=True,
-    scale=0.9,
-)
+=== "Sync"
 
-# 省墨：不带背景图形
-await tab.print_to_pdf(Path('draft.pdf'), print_background=False)
+    ```python
+    # 带页眉页脚、略微缩小的横向报告
+    tab.print_to_pdf(
+        Path('report.pdf'),
+        landscape=True,
+        display_header_footer=True,
+        scale=0.9,
+    )
 
-# 内存中的字节，不写文件
-pdf_data = await tab.print_to_pdf(as_base64=True)
-```
+    # 省墨：不带背景图形
+    tab.print_to_pdf(Path('draft.pdf'), print_background=False)
+
+    # 内存中的字节，不写文件
+    pdf_data = tab.print_to_pdf(as_base64=True)
+    ```
+
+=== "Async"
+
+    ```python
+    # 带页眉页脚、略微缩小的横向报告
+    await tab.print_to_pdf(
+        Path('report.pdf'),
+        landscape=True,
+        display_header_footer=True,
+        scale=0.9,
+    )
+
+    # 省墨：不带背景图形
+    await tab.print_to_pdf(Path('draft.pdf'), print_background=False)
+
+    # 内存中的字节，不写文件
+    pdf_data = await tab.print_to_pdf(as_base64=True)
+    ```
 
 ## 保存页面以供离线查看
 
 `save_bundle()` 把页面及其资源（CSS、JS、图片、字体、媒体）写入一个 `.zip`，你可以稍后打开。归档中包含一个 `index.html`，其中的 URL 已被改写为指向本地文件。
 
-```python
-await tab.save_bundle('page.zip')
-```
+=== "Sync"
+
+    ```python
+    tab.save_bundle('page.zip')
+    ```
+
+=== "Async"
+
+    ```python
+    await tab.save_bundle('page.zip')
+    ```
 
 传入 `inline_assets=True`，可用 data URI 以及内联的 `<style>`/`<script>` 标签把一切嵌入到单个自包含的 `index.html` 中：
 
-```python
-await tab.save_bundle('page-inline.zip', inline_assets=True)
-```
+=== "Sync"
+
+    ```python
+    tab.save_bundle('page-inline.zip', inline_assets=True)
+    ```
+
+=== "Async"
+
+    ```python
+    await tab.save_bundle('page-inline.zip', inline_assets=True)
+    ```
 
 !!! note "哪些内容会被打包"
     文档、样式表、脚本、图片、字体和媒体。加载失败、被取消或使用 `data:` URI 的资源会被跳过。
 
 ## 处理常见错误
 
-```python
-from pydoll.exceptions import InvalidFileExtension, MissingScreenshotPath
+=== "Sync"
 
-# 没有路径且 as_base64 为 False
-try:
-    await tab.take_screenshot()
-except MissingScreenshotPath:
-    print('Pass a path, or set as_base64=True.')
+    ```python
+    from pydoll.exceptions import InvalidFileExtension, MissingScreenshotPath
 
-# 不支持的扩展名
-try:
-    await tab.take_screenshot('image.bmp')
-except InvalidFileExtension as error:
-    print(error)
-```
+    # 没有路径且 as_base64 为 False
+    try:
+        tab.take_screenshot()
+    except MissingScreenshotPath:
+        print('Pass a path, or set as_base64=True.')
+
+    # 不支持的扩展名
+    try:
+        tab.take_screenshot('image.bmp')
+    except InvalidFileExtension as error:
+        print(error)
+    ```
+
+=== "Async"
+
+    ```python
+    from pydoll.exceptions import InvalidFileExtension, MissingScreenshotPath
+
+    # 没有路径且 as_base64 为 False
+    try:
+        await tab.take_screenshot()
+    except MissingScreenshotPath:
+        print('Pass a path, or set as_base64=True.')
+
+    # 不支持的扩展名
+    try:
+        await tab.take_screenshot('image.bmp')
+    except InvalidFileExtension as error:
+        print(error)
+    ```
 
 ## 下一步
 

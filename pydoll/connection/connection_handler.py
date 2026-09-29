@@ -5,7 +5,7 @@ import json
 import logging
 from contextlib import suppress
 from enum import Enum
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, Sequence, cast
 
 import websockets
 from websockets.asyncio.client import ClientConnection
@@ -22,7 +22,7 @@ from pydoll.protocol.base import CDPEvent, Response
 from pydoll.utils import get_browser_ws_address
 
 if TYPE_CHECKING:
-    from typing import Any, AsyncGenerator, Awaitable, Callable, Coroutine, Optional, Union
+    from typing import Any, AsyncGenerator, Awaitable, Callable, Coroutine
 
     from websockets.asyncio.client import connect as Connect
 
@@ -41,11 +41,11 @@ class ConnectionHandler:
 
     def __init__(
         self,
-        connection_port: Optional[int] = None,
-        page_id: Optional[str] = None,
+        connection_port: int | None = None,
+        page_id: str | None = None,
         ws_address_resolver: Callable[[int], Coroutine[Any, Any, str]] = get_browser_ws_address,
         ws_connector: type[Connect] = websockets.connect,
-        ws_address: Optional[str] = None,
+        ws_address: str | None = None,
     ):
         """
         Initialize connection handler.
@@ -62,15 +62,17 @@ class ConnectionHandler:
         self._ws_address_resolver = ws_address_resolver
         self._ws_connector = ws_connector
         self._ws_address = ws_address
-        self._ws_connection: Optional[ClientConnection] = None
+        self._ws_connection: ClientConnection | None = None
         self._command_manager = CommandsManager()
         self._events_handler = EventsManager()
-        self._receive_task: Optional[asyncio.Task] = None
+        self._receive_task: asyncio.Task | None = None
         self._connection_lock = asyncio.Lock()
         logger.info('ConnectionHandler initialized.')
         logger.debug(
-            f'Init params: port={self._connection_port}, page_id={self._page_id}, '
-            f'ws_address_set={bool(self._ws_address)}'
+            'Init params: port=%s, page_id=%s, ws_address_set=%s',
+            self._connection_port,
+            self._page_id,
+            bool(self._ws_address),
         )
 
     @property
@@ -119,14 +121,16 @@ class ConnectionHandler:
         try:
             ws = cast(ClientConnection, self._ws_connection)
             logger.debug(
-                f'Sending command: id={command.get("id")}, method={command.get("method")}, '
-                f'timeout={timeout}s'
+                'Sending command: id=%s, method=%s, timeout=%ss',
+                command.get('id'),
+                command.get('method'),
+                timeout,
             )
             start = asyncio.get_running_loop().time()
             await ws.send(command_str)
             response: str = await asyncio.wait_for(future, timeout)
             elapsed = asyncio.get_running_loop().time() - start
-            logger.debug(f'Command completed: id={command.get("id")} in {elapsed:.3f}s')
+            logger.debug('Command completed: id=%s in %.3fs', command.get('id'), elapsed)
             response_data = json.loads(response)
             self._raise_if_failed(command, response_data)
             return response_data
@@ -143,6 +147,99 @@ class ConnectionHandler:
             logger.warning(f'WebSocket connection closed during command: id={command.get("id")}')
             raise WebSocketConnectionClosed()
 
+    async def execute_command_nowait(
+        self, command: Command[T_CommandParams, T_CommandResponse]
+    ) -> None:
+        """
+        Send a CDP command and return as soon as it is on the wire.
+
+        The answer is still consumed when it arrives, so the pending table stays
+        clean, and a CDP error is logged instead of raised. Meant for streams
+        of input events whose order the socket already guarantees: awaiting
+        each answer would add a network round trip between consecutive mouse
+        moves, which no real input device has.
+
+        Args:
+            command: CDP command to send.
+
+        Raises:
+            WebSocketConnectionClosed: If the connection cannot be (re)established.
+        """
+        await self._ensure_active_connection()
+        future = self._command_manager.create_command_future(command)
+        future.add_done_callback(lambda done: self._log_discarded_answer(command, done))
+        ws = cast(ClientConnection, self._ws_connection)
+        logger.debug(
+            'Sending command without waiting: id=%s, method=%s',
+            command.get('id'),
+            command.get('method'),
+        )
+        await ws.send(json.dumps(command))
+
+    @staticmethod
+    def _log_discarded_answer(command: Command, future: asyncio.Future) -> None:
+        """Log a CDP error answered to a command whose result nobody awaits."""
+        if future.cancelled():
+            return
+        response = json.loads(future.result())
+        if 'error' in response:
+            logger.debug(
+                'Unawaited command %s (id=%s) failed: %s',
+                command.get('method'),
+                command.get('id'),
+                response['error'],
+            )
+
+    async def execute_commands(
+        self,
+        commands: Sequence[Command[T_CommandParams, T_CommandResponse]],
+        timeout: int = 60,
+    ) -> list[T_CommandResponse]:
+        """Send several commands back to back and wait for all of their answers.
+
+        The browser handles the commands of one session in the order they
+        arrive, so sending a sequence without waiting for each answer keeps
+        the ordering (keydown before keyup, for example) while paying one
+        round trip for the whole batch instead of one per command.
+
+        Args:
+            commands: Commands to send, in order.
+            timeout: Seconds to wait for the last answer.
+
+        Returns:
+            The responses, in the same order as ``commands``.
+
+        Raises:
+            CommandFailed: If the browser rejects any command in the batch.
+            CommandExecutionTimeout: If the answers do not all arrive in time.
+            WebSocketConnectionClosed: If the connection closes meanwhile.
+        """
+        if not commands:
+            return []
+        await self._ensure_active_connection()
+        ws = cast(ClientConnection, self._ws_connection)
+        futures = [self._command_manager.create_command_future(command) for command in commands]
+        try:
+            for command in commands:
+                await ws.send(json.dumps(command))
+            responses: list[str] = await asyncio.wait_for(asyncio.gather(*futures), timeout)
+        except asyncio.TimeoutError:
+            for command in commands:
+                self._command_manager.remove_pending_command(command['id'])
+            logger.error('Batch of %d commands timed out after %ss', len(commands), timeout)
+            raise CommandExecutionTimeout()
+        except websockets.ConnectionClosed:
+            for command in commands:
+                self._command_manager.remove_pending_command(command['id'])
+            await self._handle_connection_loss()
+            raise WebSocketConnectionClosed()
+        results: list[T_CommandResponse] = []
+        for command, raw in zip(commands, responses):
+            response_data = json.loads(raw)
+            self._raise_if_failed(command, response_data)
+            results.append(response_data)
+        return results
+
     @staticmethod
     def _raise_if_failed(command: Command, response: Response) -> None:
         """Raise when the browser answered with an error instead of a result.
@@ -154,7 +251,7 @@ class ConnectionHandler:
         method = raw_method.value if isinstance(raw_method, Enum) else raw_method
         if 'error' in response:
             error = response['error']
-            logger.debug(f'Command rejected: method={method}, error={error}')
+            logger.debug('Command rejected: method=%s, error=%s', method, error)
             raise CommandFailed(
                 method=method,
                 code=error.get('code', 0),
@@ -186,14 +283,14 @@ class ConnectionHandler:
         """
         callback_id = self._events_handler.register_callback(event_name, callback, temporary)
         logger.debug(
-            f'Registered callback: id={callback_id}, event={event_name}, temporary={temporary}'
+            'Registered callback: id=%s, event=%s, temporary=%s', callback_id, event_name, temporary
         )
         return callback_id
 
     async def remove_callback(self, callback_id: int) -> bool:
         """Remove registered event callback by ID."""
         removed = self._events_handler.remove_callback(callback_id)
-        logger.debug(f'Removed callback: id={callback_id}, removed={removed}')
+        logger.debug('Removed callback: id=%s, removed=%s', callback_id, removed)
         return removed
 
     async def clear_callbacks(self):
@@ -243,7 +340,7 @@ class ConnectionHandler:
         """Create fresh WebSocket connection and start event listening."""
         await self._teardown_connection()
         ws_address = await self._resolve_ws_address()
-        logger.info(f'Connecting to {ws_address}')
+        logger.info('Connecting to %s', ws_address)
         self._ws_connection = await self._ws_connector(
             ws_address,
             max_size=None,
@@ -272,10 +369,10 @@ class ConnectionHandler:
             return self._ws_address
         if not self._page_id:
             resolved = await self._ws_address_resolver(self._connection_port)
-            logger.debug(f'Resolved browser-level WebSocket address: {resolved}')
+            logger.debug('Resolved browser-level WebSocket address: %s', resolved)
             return resolved
         address = f'ws://localhost:{self._connection_port}/devtools/page/{self._page_id}'
-        logger.debug(f'Resolved page-level WebSocket address: {address}')
+        logger.debug('Resolved page-level WebSocket address: %s', address)
         return address
 
     async def _handle_connection_loss(self):
@@ -299,14 +396,14 @@ class ConnectionHandler:
                 except Exception:
                     logger.exception('Error processing WebSocket message; skipping')
         except websockets.ConnectionClosed as e:
-            logger.info(f'WebSocket connection closed: {e}')
+            logger.info('WebSocket connection closed: %s', e)
         except Exception:
             logger.exception('Fatal error in WebSocket receive loop')
         finally:
             self._command_manager.fail_all_pending(WebSocketConnectionClosed())
             await self._events_handler.stop()
 
-    async def _incoming_messages(self) -> AsyncGenerator[Union[str, bytes], None]:
+    async def _incoming_messages(self) -> AsyncGenerator[str | bytes, None]:
         """Generator yielding raw messages from WebSocket connection."""
         ws = cast(ClientConnection, self._ws_connection)
 
@@ -330,7 +427,7 @@ class ConnectionHandler:
             self._events_handler.enqueue_event(cast(CDPEvent, message))
 
     @staticmethod
-    def _parse_message(raw_message: str) -> Union[CDPEvent, Response, None]:
+    def _parse_message(raw_message: str) -> CDPEvent | Response | None:
         """Parse raw message string into JSON object."""
         try:
             return json.loads(raw_message)
@@ -339,13 +436,13 @@ class ConnectionHandler:
             return None
 
     @staticmethod
-    def _is_command_response(message: Union[CDPEvent, Response]) -> bool:
+    def _is_command_response(message: CDPEvent | Response) -> bool:
         """Determine if message is command response or event notification."""
         return 'id' in message and isinstance(message.get('id'), int)
 
     def _handle_command_message(self, message: Response):
         """Resolve the pending future for a command response."""
-        logger.debug(f'Processing command response: {message.get("id")}')
+        logger.debug('Processing command response: %s', message.get('id'))
         self._command_manager.resolve_command(message['id'], json.dumps(message))
 
     def __repr__(self):

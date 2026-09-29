@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import itertools
 from dataclasses import dataclass
-from typing import Callable, Optional, Union, cast
+from typing import Callable, cast
 
 from pydantic import Field as PydanticField
 from pydantic.fields import FieldInfo
@@ -28,9 +28,9 @@ class ExtractionMetadata:
     in the field's json_schema_extra.
     """
 
-    selector: Optional[str] = None
-    attribute: Optional[str] = None
-    transform: Optional[Callable[[str], Union[str, int, float, bool, object]]] = None
+    selector: str | None = None
+    attribute: str | None = None
+    transform: Callable[[str], str | int | float | bool | object] | None = None
 
     @property
     def has_selector(self) -> bool:
@@ -38,7 +38,7 @@ class ExtractionMetadata:
         return self.selector is not None
 
 
-def pop_field_metadata(key: int) -> Optional[ExtractionMetadata]:
+def pop_field_metadata(key: int) -> ExtractionMetadata | None:
     """Retrieve and remove ExtractionMetadata from the registry by key.
 
     Uses pop to prevent the registry from growing indefinitely.
@@ -55,11 +55,11 @@ def pop_field_metadata(key: int) -> Optional[ExtractionMetadata]:
 
 def Field(
     *,
-    selector: Optional[str] = None,
-    attribute: Optional[str] = None,
-    description: Optional[str] = None,
+    selector: str | None = None,
+    attribute: str | None = None,
+    description: str | None = None,
     default: object = PydanticUndefined,
-    transform: Optional[Callable[[str], Union[str, int, float, bool, object]]] = None,
+    transform: Callable[[str], str | int | float | bool | object] | None = None,
 ) -> FieldInfo:
     """Define extraction metadata for a model field.
 

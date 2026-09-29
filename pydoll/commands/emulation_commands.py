@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from pydoll.protocol.base import Command
 from pydoll.protocol.emulation.methods import (
@@ -54,9 +54,9 @@ class EmulationCommands:
     @staticmethod
     def set_user_agent_override(
         user_agent: str,
-        accept_language: Optional[str] = None,
-        platform: Optional[str] = None,
-        user_agent_metadata: Optional[UserAgentMetadata] = None,
+        accept_language: str | None = None,
+        platform: str | None = None,
+        user_agent_metadata: UserAgentMetadata | None = None,
     ) -> SetUserAgentOverrideCommand:
         """
         Overrides the browser's User-Agent string via the Emulation domain.
@@ -103,13 +103,13 @@ class EmulationCommands:
 
     @staticmethod
     def set_geolocation_override(
-        latitude: Optional[float] = None,
-        longitude: Optional[float] = None,
-        accuracy: Optional[float] = None,
-        altitude: Optional[float] = None,
-        altitude_accuracy: Optional[float] = None,
-        heading: Optional[float] = None,
-        speed: Optional[float] = None,
+        latitude: float | None = None,
+        longitude: float | None = None,
+        accuracy: float | None = None,
+        altitude: float | None = None,
+        altitude_accuracy: float | None = None,
+        heading: float | None = None,
+        speed: float | None = None,
     ) -> SetGeolocationOverrideCommand:
         """Override the Geolocation Position reported by the browser.
 
@@ -149,16 +149,16 @@ class EmulationCommands:
         device_scale_factor: float,
         mobile: bool,
         *,
-        scale: Optional[float] = None,
-        screen_width: Optional[int] = None,
-        screen_height: Optional[int] = None,
-        position_x: Optional[int] = None,
-        position_y: Optional[int] = None,
-        dont_set_visible_size: Optional[bool] = None,
-        screen_orientation: Optional[ScreenOrientation] = None,
-        viewport: Optional[Viewport] = None,
-        display_feature: Optional[DisplayFeature] = None,
-        device_posture: Optional[DevicePosture] = None,
+        scale: float | None = None,
+        screen_width: int | None = None,
+        screen_height: int | None = None,
+        position_x: int | None = None,
+        position_y: int | None = None,
+        dont_set_visible_size: bool | None = None,
+        screen_orientation: ScreenOrientation | None = None,
+        viewport: Viewport | None = None,
+        display_feature: DisplayFeature | None = None,
+        device_posture: DevicePosture | None = None,
     ) -> SetDeviceMetricsOverrideCommand:
         """Override device screen metrics.
 
@@ -246,7 +246,7 @@ class EmulationCommands:
     @staticmethod
     def set_touch_emulation_enabled(
         enabled: bool,
-        max_touch_points: Optional[int] = None,
+        max_touch_points: int | None = None,
     ) -> SetTouchEmulationEnabledCommand:
         """Enable or disable touch event emulation.
 
@@ -268,8 +268,8 @@ class EmulationCommands:
 
     @staticmethod
     def set_emulated_media(
-        media: Optional[str] = None,
-        features: Optional[list[MediaFeature]] = None,
+        media: str | None = None,
+        features: list[MediaFeature] | None = None,
     ) -> SetEmulatedMediaCommand:
         """Emulate the given CSS media type and/or media features.
 
@@ -310,16 +310,16 @@ class EmulationCommands:
     def update_screen(
         screen_id: str,
         *,
-        left: Optional[int] = None,
-        top: Optional[int] = None,
-        width: Optional[int] = None,
-        height: Optional[int] = None,
-        work_area_insets: Optional[WorkAreaInsets] = None,
-        device_pixel_ratio: Optional[float] = None,
-        rotation: Optional[int] = None,
-        color_depth: Optional[int] = None,
-        label: Optional[str] = None,
-        is_internal: Optional[bool] = None,
+        left: int | None = None,
+        top: int | None = None,
+        width: int | None = None,
+        height: int | None = None,
+        work_area_insets: WorkAreaInsets | None = None,
+        device_pixel_ratio: float | None = None,
+        rotation: int | None = None,
+        color_depth: int | None = None,
+        label: str | None = None,
+        is_internal: bool | None = None,
     ) -> UpdateScreenCommand:
         """Update parameters of an existing screen (headless only).
 

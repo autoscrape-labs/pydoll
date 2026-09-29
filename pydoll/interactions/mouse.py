@@ -5,7 +5,7 @@ import logging
 import math
 import random
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from pydoll.commands import InputCommands, RuntimeCommands
 from pydoll.constants import PRESSED_POINTER_FORCE
@@ -18,7 +18,8 @@ from pydoll.interactions.utils import (
 from pydoll.protocol.input.types import MOUSE_BUTTON_MASK, MouseButton, MouseEventType
 
 if TYPE_CHECKING:
-    from pydoll.browser.tab import Tab
+    from pydoll.connection.connection_handler import ConnectionHandler
+    from pydoll.protocol.base import Command
 
 logger = logging.getLogger(__name__)
 
@@ -73,6 +74,14 @@ class Mouse:
     and dragging with optional humanized simulation using Bezier curves,
     Fitts's Law timing, minimum-jerk velocity profiles, physiological
     tremor, and overshoot correction.
+
+    A mouse belongs to one CDP session: the tab's for the main document and
+    its same-process iframes, or an out-of-process iframe's own session, which
+    has its own viewport coordinates. Elements pick the mouse of their frame,
+    so the cursor position it tracks always lives in the coordinate space the
+    events are dispatched in. Intermediate humanized moves are sent without
+    waiting for their answers, so the cadence between two moves is the frame
+    interval rather than the frame interval plus a network round trip.
     """
 
     _DEBUG_DOT_JS = """
@@ -97,23 +106,38 @@ class Mouse:
 
     def __init__(
         self,
-        tab: Tab,
-        timing: Optional[MouseTimingConfig] = None,
+        connection_handler: ConnectionHandler,
+        session_id: str | None = None,
+        timing: MouseTimingConfig | None = None,
         debug: bool = False,
     ):
         """
         Initialize mouse controller.
 
         Args:
-            tab: Tab instance to execute mouse commands on.
+            connection_handler: Connection the input events travel through: the
+                tab's, or the session handler of an out-of-process iframe.
+            session_id: Flattened CDP session to address, when the frame is
+                reached through the parent's connection.
             timing: Optional custom timing configuration for humanized movement.
             debug: Draw colored dots on the page to visualize mouse path.
         """
-        self._tab = tab
+        self._connection_handler = connection_handler
+        self._session_id = session_id
         self._timing = timing or MouseTimingConfig()
         self._position: tuple[float, float] = (0.0, 0.0)
-        self._pressed_button: Optional[MouseButton] = None
+        self._pressed_button: MouseButton | None = None
         self._debug = debug
+
+    @property
+    def connection_handler(self) -> ConnectionHandler:
+        """The connection this mouse dispatches its events through."""
+        return self._connection_handler
+
+    @property
+    def session_id(self) -> str | None:
+        """The flattened CDP session this mouse addresses, if any."""
+        return self._session_id
 
     @property
     def timing(self) -> MouseTimingConfig:
@@ -328,7 +352,7 @@ class Mouse:
             x += random.gauss(0, sigma)
             y += random.gauss(0, sigma)
 
-            await self._dispatch_move(x, y)
+            await self._dispatch_move(x, y, wait=False)
             prev = (x, y, now)
 
             frame_delay = config.frame_interval + random.uniform(
@@ -435,8 +459,26 @@ class Mouse:
             config.short_distance_threshold,
         )
 
-    async def _dispatch_move(self, x: float, y: float) -> None:
-        """Dispatch a mouseMoved event and update internal position."""
+    async def _send(self, command: Command) -> None:
+        """Send a command through this mouse's session and wait for its answer."""
+        if self._session_id is not None:
+            command['sessionId'] = self._session_id
+        await self._connection_handler.execute_command(command, timeout=60)
+
+    async def _send_nowait(self, command: Command) -> None:
+        """Send a command through this mouse's session without waiting for its answer."""
+        if self._session_id is not None:
+            command['sessionId'] = self._session_id
+        await self._connection_handler.execute_command_nowait(command)
+
+    async def _dispatch_move(self, x: float, y: float, *, wait: bool = True) -> None:
+        """Dispatch a mouseMoved event and update internal position.
+
+        Intermediate moves of a humanized path pass ``wait=False`` so that the
+        gap between two moves is the frame interval alone; the last move of a
+        path and every button event wait, which keeps the path ordered before
+        the click that follows it.
+        """
         pressed = self._pressed_button
         command = InputCommands.dispatch_mouse_event(
             type=MouseEventType.MOUSE_MOVED,
@@ -446,7 +488,10 @@ class Mouse:
             buttons=MOUSE_BUTTON_MASK[pressed] if pressed is not None else None,
             force=PRESSED_POINTER_FORCE if pressed is not None else None,
         )
-        await self._tab._execute_command(command)
+        if wait:
+            await self._send(command)
+        else:
+            await self._send_nowait(command)
         self._position = (x, y)
 
         if self._debug:
@@ -469,7 +514,7 @@ class Mouse:
             buttons=MOUSE_BUTTON_MASK[button] if pressed else None,
             force=PRESSED_POINTER_FORCE if pressed else None,
         )
-        await self._tab._execute_command(command)
+        await self._send(command)
         self._pressed_button = button if pressed else None
 
         if self._debug and event_type == MouseEventType.MOUSE_PRESSED:
@@ -487,7 +532,7 @@ class Mouse:
         script = self._DEBUG_DOT_JS.format(
             x=int(round(x)), y=int(round(y)), radius=radius, color=color
         )
-        await self._tab._execute_command(RuntimeCommands.evaluate(script))
+        await self._send(RuntimeCommands.evaluate(script))
 
 
 MouseAPI = Mouse

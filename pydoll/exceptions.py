@@ -251,6 +251,12 @@ class WaitElementTimeout(TimeoutException):
     message = 'Timed out waiting for element to appear'
 
 
+class WaitTimeout(TimeoutException):
+    """Raised when a wait_for_* or expect_* condition is not met in time."""
+
+    message = 'Timed out waiting for the condition'
+
+
 class DownloadTimeout(TimeoutException):
     """Raised when waiting for a file download to complete times out."""
 
@@ -328,22 +334,10 @@ class NoDialogPresent(DialogException):
     message = 'No dialog present on the page'
 
 
-class NotAnIFrame(PydollException):
-    """Raised when an element is not an iframe."""
-
-    message = 'The element is not an iframe'
-
-
 class InvalidIFrame(PydollException):
     """Raised when an iframe is not valid."""
 
     message = 'The iframe is not valid'
-
-
-class IFrameNotFound(PydollException):
-    """Raised when an iframe is not found."""
-
-    message = 'The iframe was not found'
 
 
 class NetworkEventsNotEnabled(PydollException):
@@ -380,6 +374,14 @@ class InvalidScriptWithElement(ScriptException):
     """Raised when a script contains 'argument' but no element is provided."""
 
     message = 'Script contains "argument" but no element was provided'
+
+
+class ScriptEvaluationError(ScriptException):
+    """Raised when the script a wait evaluates throws (or its promise rejects)."""
+
+    def __init__(self, error_text: str):
+        self.error_text = error_text
+        super().__init__(message=f'The script threw: {error_text}')
 
 
 class WrongPrefsDict(PydollException):

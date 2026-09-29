@@ -4,7 +4,7 @@ import asyncio
 import json
 import random
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from pydoll.commands import InputCommands, RuntimeCommands
 from pydoll.constants import Scripts, ScrollPosition
@@ -50,7 +50,7 @@ class Scroll:
     def __init__(
         self,
         tab: Tab,
-        timing: Optional[ScrollTimingConfig] = None,
+        timing: ScrollTimingConfig | None = None,
     ):
         """
         Initialize the Scroll with a Tab instance.

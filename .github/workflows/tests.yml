@@ -28,7 +28,7 @@ jobs:
           chrome-version: 132
       - name: Run tests with coverage
         run: |
-          poetry run pytest -s -x --cov=pydoll -vv --cov-report=xml
+          poetry run pytest -n 4 -x -q --cov=pydoll --cov-report=xml
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5

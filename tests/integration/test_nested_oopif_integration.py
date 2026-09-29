@@ -16,6 +16,7 @@ from _waits import wait_for_element_text, wait_for_js_value
 
 from pydoll.browser.chromium import Chrome
 from pydoll.browser.tab import Tab
+from pydoll.commands import RuntimeCommands
 from pydoll.utils import get_browser_ws_address
 
 PAGES_DIR = Path(__file__).parent / 'pages' / 'oopif'
@@ -88,46 +89,103 @@ def cross_origin_servers():
     srv_b.shutdown()
 
 
+async def _evaluate_in_frame(element, expression: str):
+    """Evaluate in the main world of the frame an element belongs to, through its session."""
+    response = await element._execute_command(
+        RuntimeCommands.evaluate(expression=expression, return_by_value=True)
+    )
+    return response['result']['result'].get('value')
+
+
 class TestCrossOriginIframeResolution:
     """Finding elements inside cross-origin (OOPIF) iframes."""
 
     @pytest.mark.asyncio
-    async def test_find_element_in_cross_origin_iframe(
-        self, ci_chrome_options, cross_origin_servers
-    ):
+    async def test_find_element_in_cross_origin_iframe(self, oopif_tab, cross_origin_servers):
         port_a, port_b = cross_origin_servers
         url = f'http://127.0.0.1:{port_a}/oopif_main.html?port={port_b}'
 
-        ci_chrome_options.add_argument('--site-per-process')
-        async with Chrome(options=ci_chrome_options) as browser:
-            tab = await browser.start()
-            await tab.go_to(url)
+        tab = oopif_tab
+        await tab.go_to(url)
 
-            iframe = await tab.find(id='cross-origin-iframe', timeout=10)
-            assert iframe.is_iframe
+        iframe = await tab.find(id='cross-origin-iframe', timeout=10)
+        assert iframe.is_iframe
 
-            heading = await iframe.find(id='oopif-heading', timeout=10)
-            assert await heading.text == 'Cross-Origin Content'
+        heading = await iframe.find(id='oopif-heading', timeout=10)
+        assert await heading.text() == 'Cross-Origin Content'
 
     @pytest.mark.asyncio
-    async def test_click_button_in_cross_origin_iframe(
-        self, ci_chrome_options, cross_origin_servers
-    ):
+    async def test_click_button_in_cross_origin_iframe(self, oopif_tab, cross_origin_servers):
         port_a, port_b = cross_origin_servers
         url = f'http://127.0.0.1:{port_a}/oopif_main.html?port={port_b}'
 
-        ci_chrome_options.add_argument('--site-per-process')
-        async with Chrome(options=ci_chrome_options) as browser:
-            tab = await browser.start()
-            await tab.go_to(url)
+        tab = oopif_tab
+        await tab.go_to(url)
 
-            iframe = await tab.find(id='cross-origin-iframe', timeout=10)
-            btn = await iframe.find(id='oopif-btn', timeout=10)
-            counter = await iframe.find(id='oopif-btn-count', timeout=10)
+        iframe = await tab.find(id='cross-origin-iframe', timeout=10)
+        btn = await iframe.find(id='oopif-btn', timeout=10)
+        counter = await iframe.find(id='oopif-btn-count', timeout=10)
 
-            assert await counter.text == '0'
-            await btn.click()
-            await wait_for_element_text(counter, '1')
+        assert await counter.text() == '0'
+        await btn.click()
+        await wait_for_element_text(counter, '1')
+
+    @pytest.mark.asyncio
+    async def test_elements_found_earlier_in_an_oopif_stay_usable_after_another_find(
+        self, oopif_tab, cross_origin_servers
+    ):
+        port_a, port_b = cross_origin_servers
+        tab = oopif_tab
+        await tab.go_to(_cross_site_main_url(port_a, port_b))
+
+        iframe = await tab.find(id='cross-origin-iframe', timeout=10)
+        btn = await iframe.find(id='oopif-btn', timeout=10)
+        counter = await iframe.find(id='oopif-btn-count', timeout=10)
+
+        assert counter._iframe_context is btn._iframe_context
+        assert await btn.is_visible()
+        await btn.click()
+        await wait_for_element_text(counter, '1')
+
+    @pytest.mark.asyncio
+    async def test_humanized_click_in_a_same_process_iframe_shares_the_tab_mouse(
+        self, oopif_tab, cross_origin_servers
+    ):
+        port_a, port_b = cross_origin_servers
+        tab = oopif_tab
+        await tab.go_to(f'http://127.0.0.1:{port_a}/oopif_main.html?port={port_b}')
+
+        iframe = await tab.find(id='cross-origin-iframe', timeout=10)
+        btn = await iframe.find(id='oopif-btn', timeout=10)
+        counter = await iframe.find(id='oopif-btn-count', timeout=10)
+
+        assert btn._input_mouse() is tab.mouse
+        await btn.click(humanize=True)
+        await wait_for_element_text(counter, '1')
+
+    @pytest.mark.asyncio
+    async def test_humanized_click_moves_a_mouse_inside_the_cross_origin_iframe(
+        self, oopif_tab, cross_origin_servers
+    ):
+        port_a, port_b = cross_origin_servers
+        tab = oopif_tab
+        await tab.go_to(_cross_site_main_url(port_a, port_b))
+
+        iframe = await tab.find(id='cross-origin-iframe', timeout=10)
+        btn = await iframe.find(id='oopif-btn', timeout=10)
+        counter = await iframe.find(id='oopif-btn-count', timeout=10)
+        await _evaluate_in_frame(
+            btn,
+            'window.__moves = 0; document.addEventListener("mousemove", () => { window.__moves++; })',
+        )
+
+        await btn.click(humanize=True)
+
+        await wait_for_element_text(counter, '1')
+        assert await _evaluate_in_frame(btn, 'window.__moves') > 2
+        frame_mouse = btn._input_mouse()
+        assert frame_mouse is not tab.mouse
+        assert frame_mouse is btn._iframe_context.mouse
 
 
 class TestNestedIframeInsideOopif:
@@ -135,43 +193,37 @@ class TestNestedIframeInsideOopif:
 
     @pytest.mark.asyncio
     async def test_find_element_in_nested_iframe_inside_oopif(
-        self, ci_chrome_options, cross_origin_servers
+        self, oopif_tab, cross_origin_servers
     ):
         """Navigate: main -> OOPIF -> nested iframe -> find element."""
         port_a, port_b = cross_origin_servers
         url = f'http://127.0.0.1:{port_a}/oopif_main.html?port={port_b}'
 
-        ci_chrome_options.add_argument('--site-per-process')
-        async with Chrome(options=ci_chrome_options) as browser:
-            tab = await browser.start()
-            await tab.go_to(url)
+        tab = oopif_tab
+        await tab.go_to(url)
 
-            oopif = await tab.find(id='cross-origin-iframe', timeout=10)
-            nested = await oopif.find(id='nested-iframe', timeout=10)
-            assert nested.is_iframe
+        oopif = await tab.find(id='cross-origin-iframe', timeout=10)
+        nested = await oopif.find(id='nested-iframe', timeout=10)
+        assert nested.is_iframe
 
-            heading = await nested.find(id='nested-heading', timeout=10)
-            assert await heading.text == 'Nested Iframe Content'
+        heading = await nested.find(id='nested-heading', timeout=10)
+        assert await heading.text() == 'Nested Iframe Content'
 
     @pytest.mark.asyncio
-    async def test_type_text_in_nested_iframe_inside_oopif(
-        self, ci_chrome_options, cross_origin_servers
-    ):
+    async def test_type_text_in_nested_iframe_inside_oopif(self, oopif_tab, cross_origin_servers):
         """Type text into an input inside a nested iframe within an OOPIF."""
         port_a, port_b = cross_origin_servers
         url = f'http://127.0.0.1:{port_a}/oopif_main.html?port={port_b}'
 
-        ci_chrome_options.add_argument('--site-per-process')
-        async with Chrome(options=ci_chrome_options) as browser:
-            tab = await browser.start()
-            await tab.go_to(url)
+        tab = oopif_tab
+        await tab.go_to(url)
 
-            oopif = await tab.find(id='cross-origin-iframe', timeout=10)
-            nested = await oopif.find(id='nested-iframe', timeout=10)
+        oopif = await tab.find(id='cross-origin-iframe', timeout=10)
+        nested = await oopif.find(id='nested-iframe', timeout=10)
 
-            input_el = await nested.find(id='nested-input', timeout=10)
-            await input_el.type_text('hello from nested oopif')
-            await wait_for_js_value(input_el, 'this.value', 'hello from nested oopif')
+        input_el = await nested.find(id='nested-input', timeout=10)
+        await input_el.type_text('hello from nested oopif')
+        await wait_for_js_value(input_el, 'this.value', 'hello from nested oopif')
 
 
 class TestDataUrlIframeInsideOopif:
@@ -186,114 +238,94 @@ class TestDataUrlIframeInsideOopif:
     """
 
     @pytest.mark.asyncio
-    async def test_find_element_in_data_iframe_inside_oopif(
-        self, ci_chrome_options, cross_origin_servers
-    ):
+    async def test_find_element_in_data_iframe_inside_oopif(self, oopif_tab, cross_origin_servers):
         port_a, port_b = cross_origin_servers
         url = _cross_site_main_url(port_a, port_b)
 
-        ci_chrome_options.add_argument('--site-per-process')
-        async with Chrome(options=ci_chrome_options) as browser:
-            tab = await browser.start()
-            await tab.go_to(url)
+        tab = oopif_tab
+        await tab.go_to(url)
 
-            oopif = await tab.find(id='cross-origin-iframe', timeout=10)
-            data_iframe = await oopif.find(id='data-iframe', timeout=10)
-            assert data_iframe.is_iframe
+        oopif = await tab.find(id='cross-origin-iframe', timeout=10)
+        data_iframe = await oopif.find(id='data-iframe', timeout=10)
+        assert data_iframe.is_iframe
 
-            heading = await data_iframe.find(id='data-heading', timeout=10)
-            assert await heading.text == 'Data Frame Content'
+        heading = await data_iframe.find(id='data-heading', timeout=10)
+        assert await heading.text() == 'Data Frame Content'
 
     @pytest.mark.asyncio
-    async def test_find_body_in_data_iframe_inside_oopif(
-        self, ci_chrome_options, cross_origin_servers
-    ):
+    async def test_find_body_in_data_iframe_inside_oopif(self, oopif_tab, cross_origin_servers):
         """The exact call from the bug report: find(tag_name='body')."""
         port_a, port_b = cross_origin_servers
         url = _cross_site_main_url(port_a, port_b)
 
-        ci_chrome_options.add_argument('--site-per-process')
-        async with Chrome(options=ci_chrome_options) as browser:
-            tab = await browser.start()
-            await tab.go_to(url)
+        tab = oopif_tab
+        await tab.go_to(url)
 
-            oopif = await tab.find(id='cross-origin-iframe', timeout=10)
-            data_iframe = await oopif.find(id='data-iframe', timeout=10)
+        oopif = await tab.find(id='cross-origin-iframe', timeout=10)
+        data_iframe = await oopif.find(id='data-iframe', timeout=10)
 
-            body = await data_iframe.find(tag_name='body', timeout=10)
-            assert 'Data Frame Content' in await body.text
+        body = await data_iframe.find(tag_name='body', timeout=10)
+        assert 'Data Frame Content' in await body.text()
 
     @pytest.mark.asyncio
-    async def test_type_text_in_data_iframe_inside_oopif(
-        self, ci_chrome_options, cross_origin_servers
-    ):
+    async def test_type_text_in_data_iframe_inside_oopif(self, oopif_tab, cross_origin_servers):
         port_a, port_b = cross_origin_servers
         url = _cross_site_main_url(port_a, port_b)
 
-        ci_chrome_options.add_argument('--site-per-process')
-        async with Chrome(options=ci_chrome_options) as browser:
-            tab = await browser.start()
-            await tab.go_to(url)
+        tab = oopif_tab
+        await tab.go_to(url)
 
-            oopif = await tab.find(id='cross-origin-iframe', timeout=10)
-            data_iframe = await oopif.find(id='data-iframe', timeout=10)
+        oopif = await tab.find(id='cross-origin-iframe', timeout=10)
+        data_iframe = await oopif.find(id='data-iframe', timeout=10)
 
-            input_el = await data_iframe.find(id='data-input', timeout=10)
-            await input_el.type_text('typed into data frame')
-            await wait_for_js_value(input_el, 'this.value', 'typed into data frame')
+        input_el = await data_iframe.find(id='data-input', timeout=10)
+        await input_el.type_text('typed into data frame')
+        await wait_for_js_value(input_el, 'this.value', 'typed into data frame')
 
 
 class TestShadowRootInsideOopif:
     """Discovering and interacting with shadow roots inside OOPIFs."""
 
     @pytest.mark.asyncio
-    async def test_find_shadow_roots_inside_oopif(
-        self, ci_chrome_options, cross_origin_servers
-    ):
+    async def test_find_shadow_roots_inside_oopif(self, oopif_tab, cross_origin_servers):
         """find_shadow_roots(True) should discover shadow roots across OOPIFs."""
         port_a, port_b = cross_origin_servers
         url = f'http://127.0.0.1:{port_a}/oopif_main.html?port={port_b}'
 
-        ci_chrome_options.add_argument('--site-per-process')
-        async with Chrome(options=ci_chrome_options) as browser:
-            tab = await browser.start()
-            await tab.go_to(url)
+        tab = oopif_tab
+        await tab.go_to(url)
 
-            shadow_roots = await tab.find_shadow_roots(True, timeout=10)
-            for sr in shadow_roots:
-                html = await sr.inner_html
-                if 'Shadow content inside OOPIF' in html:
-                    text_el = await sr.query('#shadow-text', timeout=10)
-                    assert await text_el.text == 'Shadow content inside OOPIF'
-                    return
+        shadow_roots = await tab.find_shadow_roots(True, timeout=10)
+        for sr in shadow_roots:
+            html = await sr.inner_html()
+            if 'Shadow content inside OOPIF' in html:
+                text_el = await sr.query('#shadow-text', timeout=10)
+                assert await text_el.text() == 'Shadow content inside OOPIF'
+                return
 
-            pytest.fail('Shadow root inside OOPIF not found via find_shadow_roots')
+        pytest.fail('Shadow root inside OOPIF not found via find_shadow_roots')
 
     @pytest.mark.asyncio
-    async def test_click_button_in_shadow_root_inside_oopif(
-        self, ci_chrome_options, cross_origin_servers
-    ):
+    async def test_click_button_in_shadow_root_inside_oopif(self, oopif_tab, cross_origin_servers):
         port_a, port_b = cross_origin_servers
         url = f'http://127.0.0.1:{port_a}/oopif_main.html?port={port_b}'
 
-        ci_chrome_options.add_argument('--site-per-process')
-        async with Chrome(options=ci_chrome_options) as browser:
-            tab = await browser.start()
-            await tab.go_to(url)
+        tab = oopif_tab
+        await tab.go_to(url)
 
-            shadow_roots = await tab.find_shadow_roots(True, timeout=10)
-            for sr in shadow_roots:
-                html = await sr.inner_html
-                if 'Shadow content inside OOPIF' in html:
-                    btn = await sr.query('#shadow-btn', timeout=10)
-                    counter = await sr.query('#shadow-btn-count', timeout=10)
-                    assert await counter.text == '0'
+        shadow_roots = await tab.find_shadow_roots(True, timeout=10)
+        for sr in shadow_roots:
+            html = await sr.inner_html()
+            if 'Shadow content inside OOPIF' in html:
+                btn = await sr.query('#shadow-btn', timeout=10)
+                counter = await sr.query('#shadow-btn-count', timeout=10)
+                assert await counter.text() == '0'
 
-                    await btn.click()
-                    await wait_for_element_text(counter, '1')
-                    return
+                await btn.click()
+                await wait_for_element_text(counter, '1')
+                return
 
-            pytest.fail('Shadow root inside OOPIF not found')
+        pytest.fail('Shadow root inside OOPIF not found')
 
 
 class TestIframeInsideShadowRootInsideOopif:
@@ -301,7 +333,7 @@ class TestIframeInsideShadowRootInsideOopif:
 
     @pytest.mark.asyncio
     async def test_find_element_in_iframe_inside_shadow_in_oopif(
-        self, ci_chrome_options, cross_origin_servers
+        self, oopif_tab, cross_origin_servers
     ):
         """This reproduces the original bug where IFrameContextResolver
         failed with InvalidIFrame because DOM.getFrameOwner was routed
@@ -310,52 +342,44 @@ class TestIframeInsideShadowRootInsideOopif:
         port_a, port_b = cross_origin_servers
         url = f'http://127.0.0.1:{port_a}/oopif_main.html?port={port_b}'
 
-        ci_chrome_options.add_argument('--site-per-process')
-        async with Chrome(options=ci_chrome_options) as browser:
-            tab = await browser.start()
-            await tab.go_to(url)
+        tab = oopif_tab
+        await tab.go_to(url)
 
-            shadow_roots = await tab.find_shadow_roots(True, timeout=10)
-            for sr in shadow_roots:
-                html = await sr.inner_html
-                if 'Shadow content inside OOPIF' in html:
-                    iframe = await sr.query('#shadow-iframe', timeout=10)
-                    assert iframe.is_iframe
+        shadow_roots = await tab.find_shadow_roots(True, timeout=10)
+        for sr in shadow_roots:
+            html = await sr.inner_html()
+            if 'Shadow content inside OOPIF' in html:
+                iframe = await sr.query('#shadow-iframe', timeout=10)
+                assert iframe.is_iframe
 
-                    heading = await iframe.find(
-                        id='shadow-iframe-heading', timeout=10
-                    )
-                    assert await heading.text == 'Shadow Iframe Content'
-                    return
+                heading = await iframe.find(id='shadow-iframe-heading', timeout=10)
+                assert await heading.text() == 'Shadow Iframe Content'
+                return
 
-            pytest.fail('Shadow root inside OOPIF not found')
+        pytest.fail('Shadow root inside OOPIF not found')
 
     @pytest.mark.asyncio
     async def test_type_text_in_iframe_inside_shadow_in_oopif(
-        self, ci_chrome_options, cross_origin_servers
+        self, oopif_tab, cross_origin_servers
     ):
         """Type text through: main -> OOPIF -> shadow root -> iframe -> input."""
         port_a, port_b = cross_origin_servers
         url = f'http://127.0.0.1:{port_a}/oopif_main.html?port={port_b}'
 
-        ci_chrome_options.add_argument('--site-per-process')
-        async with Chrome(options=ci_chrome_options) as browser:
-            tab = await browser.start()
-            await tab.go_to(url)
+        tab = oopif_tab
+        await tab.go_to(url)
 
-            shadow_roots = await tab.find_shadow_roots(True, timeout=10)
-            for sr in shadow_roots:
-                html = await sr.inner_html
-                if 'Shadow content inside OOPIF' in html:
-                    iframe = await sr.query('#shadow-iframe', timeout=10)
-                    input_el = await iframe.find(
-                        id='shadow-iframe-input', timeout=10
-                    )
-                    await input_el.type_text('deep nested text')
-                    await wait_for_js_value(input_el, 'this.value', 'deep nested text')
-                    return
+        shadow_roots = await tab.find_shadow_roots(True, timeout=10)
+        for sr in shadow_roots:
+            html = await sr.inner_html()
+            if 'Shadow content inside OOPIF' in html:
+                iframe = await sr.query('#shadow-iframe', timeout=10)
+                input_el = await iframe.find(id='shadow-iframe-input', timeout=10)
+                await input_el.type_text('deep nested text')
+                await wait_for_js_value(input_el, 'this.value', 'deep nested text')
+                return
 
-            pytest.fail('Shadow root inside OOPIF not found')
+        pytest.fail('Shadow root inside OOPIF not found')
 
 
 class TestRemoteConnectionIframeResolution:
@@ -390,11 +414,11 @@ class TestRemoteConnectionIframeResolution:
 
             iframe = await tab.find(id='cross-origin-iframe', timeout=10)
             heading = await iframe.find(id='oopif-heading', timeout=10)
-            assert await heading.text == 'Cross-Origin Content'
+            assert await heading.text() == 'Cross-Origin Content'
 
             nested = await iframe.find(id='nested-iframe', timeout=10)
             nested_heading = await nested.find(id='nested-heading', timeout=10)
-            assert await nested_heading.text == 'Nested Iframe Content'
+            assert await nested_heading.text() == 'Nested Iframe Content'
 
     @pytest.mark.asyncio
     async def test_find_shadow_roots_inside_oopif_over_remote_ws(
@@ -411,26 +435,7 @@ class TestRemoteConnectionIframeResolution:
 
             shadow_roots = await tab.find_shadow_roots(True, timeout=10)
             for sr in shadow_roots:
-                if 'Shadow content inside OOPIF' in await sr.inner_html:
+                if 'Shadow content inside OOPIF' in await sr.inner_html():
                     return
 
             pytest.fail('Shadow root inside OOPIF not found over remote ws connection')
-
-    @pytest.mark.asyncio
-    async def test_get_frame_over_remote_ws(self, ci_chrome_options, cross_origin_servers):
-        port_a, port_b = cross_origin_servers
-        url = _cross_site_main_url(port_a, port_b)
-
-        ci_chrome_options.add_argument('--site-per-process')
-        async with Chrome(options=ci_chrome_options) as launcher:
-            await launcher.start()
-            _, tab = await self._connect_remote(launcher)
-            await tab.go_to(url)
-
-            iframe = await tab.find(id='cross-origin-iframe', timeout=10)
-            await wait_for_js_value(tab, 'document.readyState', 'complete')
-            with pytest.warns(DeprecationWarning):
-                frame_tab = await tab.get_frame(iframe)
-
-            assert frame_tab._ws_address is not None
-            assert 'Cross-Origin Content' in await frame_tab.page_source

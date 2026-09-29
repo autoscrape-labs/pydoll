@@ -22,7 +22,7 @@ pydantic = "^2.0"
 ruff = "^0.7.1"
 pytest = "^8.3.3"
 taskipy = "^1.14.0"
-pytest-asyncio = "^0.24.0"
+pytest-asyncio = "^1.4.0"
 pytest-cov = "^6.0.0"
 aioresponses = "^0.7.7"
 mkdocs = "^1.6.1"
@@ -31,6 +31,8 @@ pymdown-extensions = "^10.14.3"
 mkdocstrings = {extras = ["python"], version = "^0.29.1"}
 griffe-typingdoc = "^0.2.8"
 mkdocs-static-i18n = "^1.3.0"
+pytest-xdist = "^3.8.0"
+griffe = ">=1.0,<2"
 
 [build-system]
 requires = ["poetry-core"]
@@ -43,9 +45,16 @@ target-version = "py310"
 
 [tool.ruff.lint]
 preview = true
-select = ['I', 'F', 'E', 'W', 'PL', 'PT']
+select = ['I', 'F', 'E', 'W', 'PL', 'PT', 'UP007']
 ignore = ['PLR0913', 'PLR0917', 'PLR0904', 'E701']
 exclude = ['tests', 'tests/*']
+
+[tool.ruff.lint.per-file-ignores]
+# The Playwright-compatible layer mirrors Playwright's public signatures: many
+# small instance methods and a few option-heavy functions are part of the contract.
+"pydoll/playwright/**" = ['PLR6301', 'PLR0911', 'PLR0912', 'PLR0915']
+"pydoll/sync/**" = ['PLR6301', 'PLR0911', 'PLR0912', 'PLR0915']
+"scripts/**" = ['PLR0912', 'PLR0915']
 
 [tool.ruff.format]
 preview = true
@@ -57,6 +66,8 @@ exclude = ['tests', 'tests/*']
 [tool.pytest.ini_options]
 pythonpath = "."
 addopts = '-p no:warnings'
+asyncio_default_fixture_loop_scope = "session"
+asyncio_default_test_loop_scope = "session"
 
 [tool.coverage.run]
 # Declarative layers are excluded from the coverage target: protocol event
@@ -78,8 +89,10 @@ exclude_also = [
 
 [tool.taskipy.tasks]
 lint = 'ruff check .; ruff check . --diff'
+generate-sync = 'python scripts/generate_sync_api.py'
+check-sync = 'python scripts/generate_sync_api.py --check'
 format = 'ruff check . --fix; ruff format .'
-test = 'pytest -s -x --cov=pydoll -vv'
+test = 'pytest -n 4 -x -q --cov=pydoll'
 post_test = 'coverage html'
 
 [tool.mypy]

@@ -8,25 +8,46 @@
 
 给 `type_text()` 传入 `humanize=True`，Pydoll 就会改变按键之间的延迟，并偶尔加入被纠正的拼写错误（约 2%）。不加它时，打字会以固定的每字符 50ms 运行。
 
-```python
-import asyncio
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
+    ```python
+    from pydoll.sync import Chrome
+
+    def main():
+        with Chrome() as browser:
+            tab = browser.start()
+            tab.go_to('https://quotes.toscrape.com/login')
+
+            username = tab.find(id='username')
+            username.type_text('tester', humanize=True)
+
+            password = tab.find(id='password')
+            password.type_text('secret-passphrase', humanize=True)
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+
+    from pydoll import Chrome
 
 
-async def main():
-    async with Chrome() as browser:
-        tab = await browser.start()
-        await tab.go_to('https://quotes.toscrape.com/login')
+    async def main():
+        async with Chrome() as browser:
+            tab = await browser.start()
+            await tab.go_to('https://quotes.toscrape.com/login')
 
-        username = await tab.find(id='username')
-        await username.type_text('tester', humanize=True)
+            username = await tab.find(id='username')
+            await username.type_text('tester', humanize=True)
 
-        password = await tab.find(id='password')
-        await password.type_text('secret-passphrase', humanize=True)
+            password = await tab.find(id='password')
+            await password.type_text('secret-passphrase', humanize=True)
 
-asyncio.run(main())
-```
+    asyncio.run(main())
+    ```
 
 当某个字段的内容不需要看起来像是打出来的（比如隐藏的 token，或没人关注的值），`insert_text()` 会一次性设置整个字符串，不产生逐键事件。
 
@@ -36,15 +57,29 @@ asyncio.run(main())
 
 在 `click()` 上使用 `humanize=True`，会在按下之前让光标以拟人的时序沿曲线路径移动到元素。你还可以用 `x_offset`/`y_offset` 把点击位置从正中心偏移一些，并用 `hold_time` 改变按键被按住的时长。
 
-```python
-button = await tab.find(id='submit')
+=== "Sync"
 
-# 曲线接近，拟人的按压时序
-await button.click(humanize=True)
+    ```python
+    button = tab.find(id='submit')
 
-# 落点略偏离中心，按住稍久一点
-await button.click(x_offset=6, y_offset=-3, hold_time=0.12)
-```
+    # 曲线接近，拟人的按压时序
+    button.click(humanize=True)
+
+    # 落点略偏离中心，按住稍久一点
+    button.click(x_offset=6, y_offset=-3, hold_time=0.12)
+    ```
+
+=== "Async"
+
+    ```python
+    button = await tab.find(id='submit')
+
+    # 曲线接近，拟人的按压时序
+    await button.click(humanize=True)
+
+    # 落点略偏离中心，按住稍久一点
+    await button.click(x_offset=6, y_offset=-3, hold_time=0.12)
+    ```
 
 `click()` 会派发真实的鼠标事件（move、down、up、click），这正是页面从真实用户那里看到的。而 `click_using_js()` 调用的是元素的 JavaScript `click()`：它能作用于隐藏或被遮挡的元素，速度也更快，但它不触发任何鼠标事件，所以在行为被监视的地方优先使用 `click()`，把 `click_using_js()` 留给隐藏控件或对速度要求高的步骤。
 
@@ -52,11 +87,21 @@ await button.click(x_offset=6, y_offset=-3, hold_time=0.12)
 
 如果面对的是原始坐标而不是元素，可以用 `humanize=True` 驱动 `tab.mouse`。光标会沿贝塞尔曲线路径移动，时长遵循费茨定律（目标越远、越小，用时越长），带有钟形的速度曲线、轻微的抖动，以及偶尔会冲过头再修正回来的过冲。
 
-```python
-await tab.mouse.move(480, 260, humanize=True)
-await tab.mouse.click(480, 260, humanize=True)
-await tab.mouse.drag(120, 200, 480, 360, humanize=True)
-```
+=== "Sync"
+
+    ```python
+    tab.mouse.move(480, 260, humanize=True)
+    tab.mouse.click(480, 260, humanize=True)
+    tab.mouse.drag(120, 200, 480, 360, humanize=True)
+    ```
+
+=== "Async"
+
+    ```python
+    await tab.mouse.move(480, 260, humanize=True)
+    await tab.mouse.click(480, 260, humanize=True)
+    await tab.mouse.drag(120, 200, 480, 360, humanize=True)
+    ```
 
 完整的坐标 API 参见 [鼠标](../guides/mouse.md)，按键和快捷键参见 [键盘](../guides/keyboard.md)。
 
@@ -64,24 +109,44 @@ await tab.mouse.drag(120, 200, 480, 360, humanize=True)
 
 真实用户不会在页面上瞬移。`tab.scroll` 提供三种模式；`humanize=True` 会运行一个带有动量、摩擦、微停顿和过冲的物理模型，并在返回之前等待浏览器的 `scrollend` 事件，所以下一个操作只会在滚动结束之后才运行。
 
-```python
-import asyncio
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
-from pydoll.constants import ScrollPosition
+    ```python
+    from pydoll.sync import Chrome
+    from pydoll.constants import ScrollPosition
+
+    def main():
+        with Chrome() as browser:
+            tab = browser.start()
+            tab.go_to('https://news.ycombinator.com')
+
+            tab.scroll.by(ScrollPosition.DOWN, 600, humanize=True)
+            tab.scroll.to_bottom(humanize=True)
+            tab.scroll.to_top(humanize=True)
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+
+    from pydoll import Chrome
+    from pydoll.constants import ScrollPosition
 
 
-async def main():
-    async with Chrome() as browser:
-        tab = await browser.start()
-        await tab.go_to('https://news.ycombinator.com')
+    async def main():
+        async with Chrome() as browser:
+            tab = await browser.start()
+            await tab.go_to('https://news.ycombinator.com')
 
-        await tab.scroll.by(ScrollPosition.DOWN, 600, humanize=True)
-        await tab.scroll.to_bottom(humanize=True)
-        await tab.scroll.to_top(humanize=True)
+            await tab.scroll.by(ScrollPosition.DOWN, 600, humanize=True)
+            await tab.scroll.to_bottom(humanize=True)
+            await tab.scroll.to_top(humanize=True)
 
-asyncio.run(main())
-```
+    asyncio.run(main())
+    ```
 
 不加 `humanize` 时，`smooth=True`（默认值）会做一个可预测的 CSS 动画，而 `smooth=False` 则会瞬间跳转。若要在截图前把某个元素滚动到可见区域，请使用 `await element.scroll_into_view()`。
 

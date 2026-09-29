@@ -6,24 +6,42 @@
 
 创建一个 `ChromiumOptions`，设置你需要的项，然后把它交给浏览器：
 
-```python
-import asyncio
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
-from pydoll.browser.options import ChromiumOptions
+    ```python
+    from pydoll.sync import Chrome, ChromiumOptions
+
+    def main():
+        options = ChromiumOptions()
+        options.headless = True
+        options.add_argument('--window-size=1920,1080')
+
+        with Chrome(options=options) as browser:
+            tab = browser.start()
+            tab.go_to('https://quotes.toscrape.com')
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+
+    from pydoll import Chrome, ChromiumOptions
 
 
-async def main():
-    options = ChromiumOptions()
-    options.headless = True
-    options.add_argument('--window-size=1920,1080')
+    async def main():
+        options = ChromiumOptions()
+        options.headless = True
+        options.add_argument('--window-size=1920,1080')
 
-    async with Chrome(options=options) as browser:
-        tab = await browser.start()
-        await tab.go_to('https://quotes.toscrape.com')
+        async with Chrome(options=options) as browser:
+            tab = await browser.start()
+            await tab.go_to('https://quotes.toscrape.com')
 
-asyncio.run(main())
-```
+    asyncio.run(main())
+    ```
 
 同一个 options 对象也适用于 Edge；把 `Chrome` 换成导入 `Edge` 即可。
 
@@ -70,7 +88,7 @@ options.binary_location = '/Applications/Google Chrome Canary.app/Contents/MacOS
 
 ## 为启动预留更长等待时间
 
-`start_timeout` 是 Pydoll 在放弃之前等待浏览器启动的秒数。在慢机器或重型配置文件上把它调高：
+`start_timeout` 是 Pydoll 在放弃之前等待浏览器启动的秒数。放弃时，`FailedToStartBrowser` 错误会说明进程是已经退出（附带退出码）还是一直没有在端口上应答，并带上浏览器写到 stderr 的最后几行，Chrome 正是在那里解释配置文件被锁或缺少库之类的问题。在慢机器或重型配置文件上把超时调高：
 
 ```python
 options = ChromiumOptions()

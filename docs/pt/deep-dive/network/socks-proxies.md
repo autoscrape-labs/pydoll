@@ -176,8 +176,7 @@ O Pydoll traz o `SOCKS5Forwarder` em `pydoll.utils`. É uma implementação ass�
 ```python
 import asyncio
 
-from pydoll.browser.chromium import Chrome
-from pydoll.browser.options import ChromiumOptions
+from pydoll import Chrome, ChromiumOptions
 from pydoll.utils import SOCKS5Forwarder
 
 
@@ -200,7 +199,7 @@ async def main():
 asyncio.run(main())
 ```
 
-O forwarder faz bind em `127.0.0.1`, então é alcançável apenas a partir da sua máquina. Não faça bind em `0.0.0.0`, o que exporia um proxy SOCKS5 não autenticado à rede. Como tudo roda pela interface de loopback, ele adiciona latência de sub-milissegundo.
+O forwarder faz bind em `127.0.0.1`, então é alcançável apenas a partir da sua máquina. Não faça bind em `0.0.0.0`, o que exporia um proxy SOCKS5 não autenticado à rede. Como tudo roda pela interface de loopback, ele adiciona latência de sub-milissegundo. O `SOCKS5Forwarder` é um servidor asyncio sem facade em `pydoll.sync`, então esta receita é só assíncrona.
 
 !!! tip "Ambientes restritos"
     Alguns ambientes (containers, serverless, VMs endurecidas) restringem o bind em portas locais. Use `local_port=0` para deixar o SO atribuir uma. Se o bind local estiver totalmente bloqueado, use um proxy HTTP CONNECT em vez disso, que o Chrome suporta nativamente com a autenticação tratada para você (veja [Proxies](../../guides/proxies.md)).

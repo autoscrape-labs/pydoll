@@ -176,8 +176,7 @@ Pydoll 在 `pydoll.utils` 中提供了 `SOCKS5Forwarder`。它是一个纯 Pytho
 ```python
 import asyncio
 
-from pydoll.browser.chromium import Chrome
-from pydoll.browser.options import ChromiumOptions
+from pydoll import Chrome, ChromiumOptions
 from pydoll.utils import SOCKS5Forwarder
 
 
@@ -200,7 +199,7 @@ async def main():
 asyncio.run(main())
 ```
 
-这个转发器绑定到 `127.0.0.1`，所以只有从你的机器才能访问到它。不要把它绑定到 `0.0.0.0`，那会把一个无认证的 SOCKS5 proxy 暴露给网络。因为一切都跑在回环接口上，它增加的延迟不到一毫秒。
+这个转发器绑定到 `127.0.0.1`，所以只有从你的机器才能访问到它。不要把它绑定到 `0.0.0.0`，那会把一个无认证的 SOCKS5 proxy 暴露给网络。因为一切都跑在回环接口上，它增加的延迟不到一毫秒。 `SOCKS5Forwarder` 是一个 asyncio 服务器，在 `pydoll.sync` 里没有对应的门面，所以这个配方只有异步版本。
 
 !!! tip "受限环境"
     某些环境（容器、serverless、加固过的 VM）会限制绑定本地端口。用 `local_port=0` 让操作系统分配一个。如果本地绑定被完全禁止，就改用一个 HTTP CONNECT proxy，Chrome 原生支持它，并为你处理好认证（见 [Proxy](../../guides/proxies.md)）。

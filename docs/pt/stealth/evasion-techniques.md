@@ -21,27 +21,48 @@ O indício de automação mais comum é um User-Agent que discorda de si mesmo: 
 
 O Pydoll corrige isso para você. Quando ele vê um argumento `--user-agent=`, ele aplica `Emulation.setUserAgentOverride` com o `platform` correspondente e os metadados completos de Client Hints (brand greased e ordem das brands calculadas do jeito que o Chromium calcula para aquele major), e expõe a forma reduzida `Chrome/MAJOR.0.0.0` que o Chrome real reporta, de modo que todas as camadas concordem, inclusive em novas abas e workers. Nada é injetado na página: `navigator.userAgent`, `platform`, `vendor` e `appVersion` vêm todos do próprio override.
 
-```python
-import asyncio
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
-from pydoll.browser.options import ChromiumOptions
+    ```python
+    from pydoll.sync import Chrome, ChromiumOptions
+
+    def main():
+        options = ChromiumOptions()
+        options.add_argument(
+            '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+            'AppleWebKit/537.36 (KHTML, like Gecko) '
+            'Chrome/130.0.0.0 Safari/537.36'
+        )
+
+        with Chrome(options=options) as browser:
+            tab = browser.start()
+            tab.go_to('https://browserleaks.com/javascript')
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+
+    from pydoll import Chrome, ChromiumOptions
 
 
-async def main():
-    options = ChromiumOptions()
-    options.add_argument(
-        '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
-        'AppleWebKit/537.36 (KHTML, like Gecko) '
-        'Chrome/130.0.0.0 Safari/537.36'
-    )
+    async def main():
+        options = ChromiumOptions()
+        options.add_argument(
+            '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+            'AppleWebKit/537.36 (KHTML, like Gecko) '
+            'Chrome/130.0.0.0 Safari/537.36'
+        )
 
-    async with Chrome(options=options) as browser:
-        tab = await browser.start()
-        await tab.go_to('https://browserleaks.com/javascript')
+        async with Chrome(options=options) as browser:
+            tab = await browser.start()
+            await tab.go_to('https://browserleaks.com/javascript')
 
-asyncio.run(main())
-```
+    asyncio.run(main())
+    ```
 
 Mantenha o `Chrome/<version>` na string igual ao Chrome que você realmente executa; uma versão que você não está rodando é, por si só, uma incompatibilidade. O override se aplica à primeira aba, às abas de `browser.new_tab()` e às abas encontradas via `browser.get_opened_tabs()`.
 
@@ -72,11 +93,21 @@ options.webrtc_leak_protection = True   # --force-webrtc-ip-handling-policy=disa
 
 Cliques instantâneos e teclas perfeitamente regulares são um fingerprint comportamental. Passe `humanize=True` para mover o cursor por um caminho curvo, com tempo humano, e digitar com ritmo variável e erros de digitação ocasionais que são corrigidos:
 
-```python
-field = await tab.find(id='search')
-await field.type_text('browser automation', humanize=True)
-await field.click(humanize=True)
-```
+=== "Sync"
+
+    ```python
+    field = tab.find(id='search')
+    field.type_text('browser automation', humanize=True)
+    field.click(humanize=True)
+    ```
+
+=== "Async"
+
+    ```python
+    field = await tab.find(id='search')
+    await field.type_text('browser automation', humanize=True)
+    await field.click(humanize=True)
+    ```
 
 Veja [Interações humanizadas](human-like-interactions.md) para o modelo de tempo e como ajustá-lo.
 
@@ -86,13 +117,21 @@ Um perfil novinho em folha, sem histórico e com todos os recursos desativados, 
 
 ## Erros comuns
 
-**Randomizar tudo.** Um `hardwareConcurrency`, `deviceMemory` e tamanho de tela aleatórios produzem dispositivos impossíveis. Máquinas reais são limitadas: 4 núcleos com 8 GB de RAM e uma tela 1920x1080 é plausível; 17 núcleos com 0,5 GB de RAM e uma tela 4K não é. Use perfis capturados de navegadores reais, não valores aleatórios.
+### Randomizar tudo
 
-**Injetar ruído no canvas.** Adicionar ruído à saída do canvas sai pela culatra: os detectores amostram o fingerprint repetidamente, e um valor que muda entre leituras é, por si só, um sinal de automação. O canvas do Pydoll é autêntico e estável; deixe-o quieto.
+Um `hardwareConcurrency`, `deviceMemory` e tamanho de tela aleatórios produzem dispositivos impossíveis. Máquinas reais são limitadas: 4 núcleos com 8 GB de RAM e uma tela 1920x1080 é plausível; 17 núcleos com 0,5 GB de RAM e uma tela 4K não é. Use perfis capturados de navegadores reais, não valores aleatórios.
 
-**User-Agents desatualizados.** Um UA de uma release do Chrome de seis meses atrás carece de recursos e Client Hints que a versão atual tem. Fique dentro das últimas duas ou três versões principais, e combine com o binário que você executa.
+### Injetar ruído no canvas
 
-**Ignorar o comportamento da sessão.** Mesmo com um fingerprint limpo, carregar 100 páginas num minuto, nunca rolar a página e nunca ficar ocioso são anomalias. Adicione delays de leitura, varie o ritmo e inclua pausas naturais.
+Adicionar ruído à saída do canvas sai pela culatra: os detectores amostram o fingerprint repetidamente, e um valor que muda entre leituras é, por si só, um sinal de automação. O canvas do Pydoll é autêntico e estável; deixe-o quieto.
+
+### User-Agents desatualizados
+
+Um UA de uma release do Chrome de seis meses atrás carece de recursos e Client Hints que a versão atual tem. Fique dentro das últimas duas ou três versões principais, e combine com o binário que você executa.
+
+### Ignorar o comportamento da sessão
+
+Mesmo com um fingerprint limpo, carregar 100 páginas num minuto, nunca rolar a página e nunca ficar ocioso são anomalias. Adicione delays de leitura, varie o ritmo e inclua pausas naturais.
 
 ## Verifique a sua configuração
 
@@ -107,21 +146,41 @@ Cheque o seu fingerprint nestes sites antes de rodar em escala:
 
 Uma verificação rápida com o Pydoll:
 
-```python
-result = await tab.execute_script('''
-    return {
-        userAgent: navigator.userAgent,
-        webdriver: navigator.webdriver,
-        languages: navigator.languages,
-        plugins: navigator.plugins.length,
-        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-    };
-''')
-fp = result['result']['result']['value']
+=== "Sync"
 
-assert fp['webdriver'] is False, 'navigator.webdriver should be false'
-assert 'HeadlessChrome' not in fp['userAgent'], 'headless leaking in the UA'
-```
+    ```python
+    result = tab.execute_script('''
+        return {
+            userAgent: navigator.userAgent,
+            webdriver: navigator.webdriver,
+            languages: navigator.languages,
+            plugins: navigator.plugins.length,
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        };
+    ''')
+    fp = result['result']['result']['value']
+
+    assert fp['webdriver'] is False, 'navigator.webdriver should be false'
+    assert 'HeadlessChrome' not in fp['userAgent'], 'headless leaking in the UA'
+    ```
+
+=== "Async"
+
+    ```python
+    result = await tab.execute_script('''
+        return {
+            userAgent: navigator.userAgent,
+            webdriver: navigator.webdriver,
+            languages: navigator.languages,
+            plugins: navigator.plugins.length,
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        };
+    ''')
+    fp = result['result']['result']['value']
+
+    assert fp['webdriver'] is False, 'navigator.webdriver should be false'
+    assert 'HeadlessChrome' not in fp['userAgent'], 'headless leaking in the UA'
+    ```
 
 ## O que vem a seguir
 

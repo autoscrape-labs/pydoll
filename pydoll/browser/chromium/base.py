@@ -5,12 +5,10 @@ import json
 import logging
 import os
 import shutil
-import warnings
 from abc import ABC, abstractmethod
 from contextlib import suppress
 from functools import partial
-from random import randint
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Optional, overload
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, overload
 from urllib.parse import urlsplit, urlunsplit
 
 from pydoll.browser.managers import (
@@ -42,13 +40,14 @@ from pydoll.protocol.fetch.events import FetchEvent
 from pydoll.protocol.fetch.types import AuthChallengeResponseType
 from pydoll.protocol.target.events import TargetEvent
 from pydoll.protocol.target.types import FilterEntry
+from pydoll.utils import PollInterval, find_free_port
 from pydoll.utils.fingerprint_builder import build_fingerprint_worker_js
 from pydoll.utils.user_agent_parser import ParsedUserAgent, UserAgentParser
 
 if TYPE_CHECKING:
     from tempfile import TemporaryDirectory
 
-    from pydoll.browser.interfaces import BrowserOptionsManager
+    from pydoll.browser.interfaces import BrowserOptionsManager, Options
     from pydoll.protocol.base import Command, Response, T_CommandParams, T_CommandResponse
     from pydoll.protocol.browser.methods import (
         GetVersionResponse,
@@ -89,11 +88,11 @@ class Browser(ABC):  # noqa: PLR0904
     def __init__(
         self,
         options_manager: BrowserOptionsManager,
-        connection_port: Optional[int] = None,
-        proxy_manager: Optional[ProxyManager] = None,
-        browser_process_manager: Optional[BrowserProcessManager] = None,
-        temp_directory_manager: Optional[TempDirectoryManager] = None,
-        connection_handler: Optional[ConnectionHandler] = None,
+        connection_port: int | None = None,
+        proxy_manager: ProxyManager | None = None,
+        browser_process_manager: BrowserProcessManager | None = None,
+        temp_directory_manager: TempDirectoryManager | None = None,
+        connection_handler: ConnectionHandler | None = None,
     ):
         """
         Initialize browser instance with configuration.
@@ -101,7 +100,7 @@ class Browser(ABC):  # noqa: PLR0904
         Args:
             options_manager: Manages browser options initialization and defaults.
                 Must implement initialize_options() and add_default_arguments().
-            connection_port: CDP WebSocket port. Random port (9223-9322) if None.
+            connection_port: CDP WebSocket port. A free port chosen by the OS if None.
             proxy_manager: Proxy manager; built from options when omitted.
             browser_process_manager: Process manager; default when omitted.
             temp_directory_manager: Temp directory manager; default when omitted.
@@ -112,22 +111,23 @@ class Browser(ABC):  # noqa: PLR0904
             Call start() to actually launch the browser.
         """
         self._validate_connection_port(connection_port)
-        self.options = options_manager.initialize_options()
+        self.options: Options = options_manager.initialize_options()
         self._proxy_manager = proxy_manager or ProxyManager(self.options)
-        self._connection_port = connection_port if connection_port else randint(9223, 9322)
+        self._connection_port = connection_port if connection_port else find_free_port()
         self._browser_process_manager = browser_process_manager or BrowserProcessManager()
         self._temp_directory_manager = temp_directory_manager or TempDirectoryManager()
-        self._ws_address: Optional[str] = None
+        self._ws_address: str | None = None
         self._connection_handler = connection_handler or ConnectionHandler(self._connection_port)
         self._backup_preferences_dir = ''
         self._tabs_opened: dict[str, Tab] = {}
         self._context_proxy_auth: dict[str, tuple[str, str]] = {}
-        self._context_fingerprints: dict[Optional[str], 'FingerprintConfig'] = {}
-        self._context_worker_callbacks: dict[Optional[str], int] = {}
-        self._fingerprint_fetch_callback: Optional[int] = None
+        self._context_fingerprints: dict[str | None, 'FingerprintConfig'] = {}
+        self._context_worker_callbacks: dict[str | None, int] = {}
+        self._fingerprint_fetch_callback: int | None = None
         logger.debug(
-            f'Browser initialized: port={self._connection_port}, '
-            f'headless={getattr(self.options, "headless", None)}'
+            'Browser initialized: port=%s, headless=%s',
+            self._connection_port,
+            getattr(self.options, 'headless', None),
         )
 
     async def __aenter__(self) -> 'Browser':
@@ -137,9 +137,9 @@ class Browser(ABC):  # noqa: PLR0904
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         """Async context manager exit with cleanup."""
-        logger.debug(f'Exiting browser async context: exc_type={exc_type}')
+        logger.debug('Exiting browser async context: exc_type=%s', exc_type)
         if self._backup_preferences_dir:
-            logger.debug(f'Restoring backup preferences directory: {self._backup_preferences_dir}')
+            logger.debug('Restoring backup preferences directory: %s', self._backup_preferences_dir)
             user_data_dir = self._get_user_data_dir()
             if user_data_dir:
                 shutil.copy2(
@@ -167,36 +167,27 @@ class Browser(ABC):  # noqa: PLR0904
             You are supposed to use this method only if you want to connect to a browser
             that is already running.
         """
-        logger.info(f'Connecting to browser via WebSocket: {ws_address}')
+        logger.info('Connecting to browser via WebSocket: %s', ws_address)
         await self._setup_ws_address(ws_address)
         tabs = await self.get_opened_tabs()
-        logger.info(f'Connected. Tabs available: {len(tabs)}')
+        logger.info('Connected. Tabs available: %s', len(tabs))
         if not tabs:
             raise NoValidTabFound('No tabs available on remote browser')
         return tabs[0]
 
-    async def start(self, headless: bool = False) -> Tab:
+    async def start(self) -> Tab:
         """
         Start browser process and establish CDP connection.
-
-        Args:
-            headless: Deprecated. Use `options.headless = True` instead.
 
         Returns:
             Initial tab for interaction.
 
         Raises:
-            FailedToStartBrowser: If the browser fails to start or connect.
+            FailedToStartBrowser: If the executable cannot be launched, exits before
+                answering, or does not answer within ``options.start_timeout``. The
+                message carries the exit code and the last lines the browser wrote
+                to stderr, which is where Chrome explains what went wrong.
         """
-        if headless:
-            warnings.warn(
-                "The 'headless' parameter is deprecated and will be removed in a future version. "
-                'Use `options.headless = True` instead.',
-                DeprecationWarning,
-                stacklevel=2,
-            )
-            self.options.headless = headless
-
         binary_location = self.options.binary_location or self._get_default_binary_location()
         logger.debug('Resolved binary location: %s', binary_location)
 
@@ -204,11 +195,15 @@ class Browser(ABC):  # noqa: PLR0904
         logger.debug('User data directory configured')
         proxy_config = self._proxy_manager.get_proxy_credentials()
 
-        logger.info(f'Starting browser process on port {self._connection_port}')
-        self._browser_process_manager.start_browser_process(
-            binary_location, self._connection_port, self.options.arguments
-        )
-        await self._verify_browser_running()
+        logger.info('Starting browser process on port %s', self._connection_port)
+        try:
+            self._browser_process_manager.start_browser_process(
+                binary_location, self._connection_port, self.options.arguments
+            )
+            await self._verify_browser_running()
+        except FailedToStartBrowser:
+            await self._abandon_start()
+            raise
         logger.info('Browser process started and responsive')
         await self._configure_proxy(proxy_config[0], proxy_config[1])
 
@@ -217,7 +212,7 @@ class Browser(ABC):  # noqa: PLR0904
         self._tabs_opened[valid_tab_id] = tab
         await self._setup_worker_user_agent_override()
         await self._apply_user_agent_override(tab)
-        logger.info(f'Initial tab attached: {valid_tab_id}')
+        logger.info('Initial tab attached: %s', valid_tab_id)
         return tab
 
     async def stop(self):
@@ -236,10 +231,10 @@ class Browser(ABC):  # noqa: PLR0904
 
         logger.info('Stopping browser process')
         await self._execute_command(BrowserCommands.close())
-        self._browser_process_manager.stop_process()
+        loop = asyncio.get_running_loop()
+        await loop.run_in_executor(None, self._browser_process_manager.stop_process)
         await self._connection_handler.close()
-        await asyncio.sleep(0.5 if os.name == 'nt' else 0.1)
-        self._temp_directory_manager.cleanup()
+        await loop.run_in_executor(None, self._temp_directory_manager.cleanup)
         logger.info('Browser process stopped and resources cleaned up')
 
     async def close(self):
@@ -250,7 +245,7 @@ class Browser(ABC):  # noqa: PLR0904
         await self._connection_handler.close()
 
     async def create_browser_context(
-        self, proxy_server: Optional[str] = None, proxy_bypass_list: Optional[str] = None
+        self, proxy_server: str | None = None, proxy_bypass_list: str | None = None
     ) -> str:
         """
         Create isolated browser context (like incognito).
@@ -267,12 +262,13 @@ class Browser(ABC):  # noqa: PLR0904
         """
         # If proxy_server contains credentials, strip them and store per-context auth
         sanitized_proxy = proxy_server
-        extracted_auth: Optional[tuple[str, str]] = None
+        extracted_auth: tuple[str, str] | None = None
         if proxy_server:
             sanitized_proxy, extracted_auth = self._sanitize_proxy_and_extract_auth(proxy_server)
             logger.debug(
-                f'Creating browser context with proxy: {sanitized_proxy}'
-                f'(credentials provided={bool(extracted_auth)})'
+                'Creating browser context with proxy: %s(credentials provided=%s)',
+                sanitized_proxy,
+                bool(extracted_auth),
             )
 
         response: CreateBrowserContextResponse = await self._execute_command(
@@ -284,7 +280,7 @@ class Browser(ABC):  # noqa: PLR0904
         context_id = response['result']['browserContextId']
         if extracted_auth:
             self._context_proxy_auth[context_id] = extracted_auth
-        logger.info(f'Created browser context: {context_id}')
+        logger.info('Created browser context: %s', context_id)
         return context_id
 
     async def delete_browser_context(self, browser_context_id: str):
@@ -297,7 +293,7 @@ class Browser(ABC):  # noqa: PLR0904
         Note:
             Closes all associated tabs immediately.
         """
-        logger.info(f'Deleting browser context: {browser_context_id}')
+        logger.info('Deleting browser context: %s', browser_context_id)
         self._context_proxy_auth.pop(browser_context_id, None)
         self._context_fingerprints.pop(browser_context_id, None)
         worker_callback_id = self._context_worker_callbacks.pop(browser_context_id, None)
@@ -312,10 +308,10 @@ class Browser(ABC):  # noqa: PLR0904
         response: GetBrowserContextsResponse = await self._execute_command(
             TargetCommands.get_browser_contexts()
         )
-        logger.debug(f'Fetched {len(response["result"]["browserContextIds"])} browser contexts')
+        logger.debug('Fetched %s browser contexts', len(response['result']['browserContextIds']))
         return response['result']['browserContextIds']
 
-    async def new_tab(self, url: str = '', browser_context_id: Optional[str] = None) -> Tab:
+    async def new_tab(self, url: str = '', browser_context_id: str | None = None) -> Tab:
         """
         Create new tab for page interaction.
 
@@ -326,7 +322,7 @@ class Browser(ABC):  # noqa: PLR0904
         Returns:
             Tab instance for page navigation and element interaction.
         """
-        logger.info(f'Creating new tab (context={browser_context_id})')
+        logger.info('Creating new tab (context=%s)', browser_context_id)
         response: CreateTargetResponse = await self._execute_command(
             TargetCommands.create_target(
                 browser_context_id=browser_context_id,
@@ -339,7 +335,7 @@ class Browser(ABC):  # noqa: PLR0904
         await self._setup_context_proxy_auth_for_tab(tab, browser_context_id)
         if url:
             await tab.go_to(url)
-        logger.info(f'New tab created: {target_id}')
+        logger.info('New tab created: %s', target_id)
         return tab
 
     async def get_targets(self) -> list[TargetInfo]:
@@ -353,7 +349,7 @@ class Browser(ABC):  # noqa: PLR0904
             List of TargetInfo objects.
         """
         response: GetTargetsResponse = await self._execute_command(TargetCommands.get_targets())
-        logger.debug(f'Fetched {len(response["result"]["targetInfos"])} targets')
+        logger.debug('Fetched %s targets', len(response['result']['targetInfos']))
         return response['result']['targetInfos']
 
     async def get_opened_tabs(self) -> list[Tab]:
@@ -384,9 +380,7 @@ class Browser(ABC):  # noqa: PLR0904
             await self._apply_user_agent_override(tab)
             new_tabs.append(tab)
         self._tabs_opened.update(dict(zip(remaining_target_ids, new_tabs)))
-        logger.debug(
-            f'Opened tabs resolved: existing={len(existing_tabs)}, new={len(new_tabs)}',
-        )
+        logger.debug('Opened tabs resolved: existing=%s, new=%s', len(existing_tabs), len(new_tabs))
         return existing_tabs + new_tabs
 
     async def get_tab_by_target(self, target: TargetInfo) -> Tab:
@@ -394,9 +388,9 @@ class Browser(ABC):  # noqa: PLR0904
         await self._apply_user_agent_override(tab)
         return tab
 
-    async def set_download_path(self, path: str, browser_context_id: Optional[str] = None):
+    async def set_download_path(self, path: str, browser_context_id: str | None = None):
         """Set download directory path (convenience method for set_download_behavior)."""
-        logger.info(f'Setting download path: {path} (context={browser_context_id})')
+        logger.info('Setting download path: %s (context=%s)', path, browser_context_id)
         return await self._execute_command(
             BrowserCommands.set_download_behavior(
                 behavior=DownloadBehavior.ALLOW,
@@ -408,8 +402,8 @@ class Browser(ABC):  # noqa: PLR0904
     async def set_download_behavior(
         self,
         behavior: DownloadBehavior,
-        download_path: Optional[str] = None,
-        browser_context_id: Optional[str] = None,
+        download_path: str | None = None,
+        browser_context_id: str | None = None,
         events_enabled: bool = False,
     ):
         """
@@ -422,9 +416,11 @@ class Browser(ABC):  # noqa: PLR0904
             events_enabled: Generate download events for progress tracking.
         """
         logger.info(
-            f'Setting download behavior: behavior={behavior},'
-            f'path={download_path}, context={browser_context_id},'
-            f'events={events_enabled}'
+            'Setting download behavior: behavior=%s,path=%s, context=%s,events=%s',
+            behavior,
+            download_path,
+            browser_context_id,
+            events_enabled,
         )
         return await self._execute_command(
             BrowserCommands.set_download_behavior(
@@ -435,19 +431,17 @@ class Browser(ABC):  # noqa: PLR0904
             )
         )
 
-    async def delete_all_cookies(self, browser_context_id: Optional[str] = None):
+    async def delete_all_cookies(self, browser_context_id: str | None = None):
         """Delete all cookies (session, persistent, third-party) from browser or context."""
-        logger.info(f'Clearing all cookies (context={browser_context_id})')
+        logger.info('Clearing all cookies (context=%s)', browser_context_id)
         return await self._execute_command(StorageCommands.clear_cookies(browser_context_id))
 
-    async def set_cookies(
-        self, cookies: list[CookieParam], browser_context_id: Optional[str] = None
-    ):
+    async def set_cookies(self, cookies: list[CookieParam], browser_context_id: str | None = None):
         """Set multiple cookies in browser or context."""
-        logger.debug(f'Setting {len(cookies)} cookies (context={browser_context_id})')
+        logger.debug('Setting %s cookies (context=%s)', len(cookies), browser_context_id)
         return await self._execute_command(StorageCommands.set_cookies(cookies, browser_context_id))
 
-    async def get_cookies(self, browser_context_id: Optional[str] = None) -> list[Cookie]:
+    async def get_cookies(self, browser_context_id: str | None = None) -> list[Cookie]:
         """Get all cookies from browser or context.
 
         Note:
@@ -458,14 +452,16 @@ class Browser(ABC):  # noqa: PLR0904
             StorageCommands.get_cookies(browser_context_id)
         )
         logger.debug(
-            f'Retrieved {len(response["result"]["cookies"])} cookies (context={browser_context_id})'
+            'Retrieved %s cookies (context=%s)',
+            len(response['result']['cookies']),
+            browser_context_id,
         )
         return response['result']['cookies']
 
     async def get_version(self) -> GetVersionResult:
         """Get browser version and CDP protocol information."""
         response: GetVersionResponse = await self._execute_command(BrowserCommands.get_version())
-        logger.debug(f'Browser version: {response["result"]}')
+        logger.debug('Browser version: %s', response['result'])
         return response['result']
 
     async def get_window_id_for_target(self, target_id: str) -> int:
@@ -473,7 +469,7 @@ class Browser(ABC):  # noqa: PLR0904
         response: GetWindowForTargetResponse = await self._execute_command(
             BrowserCommands.get_window_for_target(target_id)
         )
-        logger.debug(f'Window id for target {target_id}: {response["result"]["windowId"]}')
+        logger.debug('Window id for target %s: %s', target_id, response['result']['windowId'])
         return response['result']['windowId']
 
     async def get_window_id_for_tab(self, tab: Tab) -> int:
@@ -498,13 +494,13 @@ class Browser(ABC):  # noqa: PLR0904
     async def set_window_maximized(self):
         """Maximize browser window (affects all tabs in window)."""
         window_id = await self.get_window_id()
-        logger.info(f'Maximizing window: id={window_id}')
+        logger.info('Maximizing window: id=%s', window_id)
         return await self._execute_command(BrowserCommands.set_window_maximized(window_id))
 
     async def set_window_minimized(self):
         """Minimize browser window to taskbar/dock."""
         window_id = await self.get_window_id()
-        logger.info(f'Minimizing window: id={window_id}')
+        logger.info('Minimizing window: id=%s', window_id)
         return await self._execute_command(BrowserCommands.set_window_minimized(window_id))
 
     async def set_window_bounds(self, bounds: Bounds):
@@ -516,14 +512,14 @@ class Browser(ABC):  # noqa: PLR0904
                 Only specified properties are changed.
         """
         window_id = await self.get_window_id()
-        logger.info(f'Setting window bounds: id={window_id}, bounds={bounds}')
+        logger.info('Setting window bounds: id=%s, bounds=%s', window_id, bounds)
         return await self._execute_command(BrowserCommands.set_window_bounds(window_id, bounds))
 
     async def grant_permissions(
         self,
         permissions: list[PermissionType],
-        origin: Optional[str] = None,
-        browser_context_id: Optional[str] = None,
+        origin: str | None = None,
+        browser_context_id: str | None = None,
     ):
         """
         Grant browser permissions (geolocation, notifications, camera, etc.).
@@ -536,15 +532,18 @@ class Browser(ABC):  # noqa: PLR0904
             browser_context_id: Context to apply to (default if None).
         """
         logger.info(
-            f'Granting permissions: {permissions} (origin={origin}, context={browser_context_id})',
+            'Granting permissions: %s (origin=%s, context=%s)',
+            permissions,
+            origin,
+            browser_context_id,
         )
         return await self._execute_command(
             BrowserCommands.grant_permissions(permissions, origin, browser_context_id)
         )
 
-    async def reset_permissions(self, browser_context_id: Optional[str] = None):
+    async def reset_permissions(self, browser_context_id: str | None = None):
         """Reset all permissions to defaults and restore prompting behavior."""
-        logger.info(f'Resetting permissions (context={browser_context_id})')
+        logger.info('Resetting permissions (context=%s)', browser_context_id)
         return await self._execute_command(BrowserCommands.reset_permissions(browser_context_id))
 
     @overload
@@ -581,8 +580,10 @@ class Browser(ABC):  # noqa: PLR0904
         else:
             function_to_register = callback
         logger.debug(
-            f'Registering callback: event={event_name}, temporary={temporary}, '
-            f'async={asyncio.iscoroutinefunction(callback)}'
+            'Registering callback: event=%s, temporary=%s, async=%s',
+            event_name,
+            temporary,
+            asyncio.iscoroutinefunction(callback),
         )
         return await self._connection_handler.register_callback(
             event_name, function_to_register, temporary
@@ -590,13 +591,13 @@ class Browser(ABC):  # noqa: PLR0904
 
     async def remove_callback(self, callback_id: int):
         """Remove callback from browser."""
-        logger.debug(f'Removing callback: id={callback_id}')
+        logger.debug('Removing callback: id=%s', callback_id)
         return await self._connection_handler.remove_callback(callback_id)
 
     async def enable_fetch_events(
         self,
         handle_auth_requests: bool = False,
-        resource_type: Optional[ResourceType] = None,
+        resource_type: ResourceType | None = None,
     ):
         """
         Enable network request interception via Fetch domain.
@@ -612,8 +613,9 @@ class Browser(ABC):  # noqa: PLR0904
             Paused requests must be continued or they will timeout.
         """
         logger.debug(
-            f'Enabling Fetch events: handle_auth={handle_auth_requests}, '
-            f'resource_type={resource_type}'
+            'Enabling Fetch events: handle_auth=%s, resource_type=%s',
+            handle_auth_requests,
+            resource_type,
         )
         return await self._connection_handler.execute_command(
             FetchCommands.enable(
@@ -640,16 +642,16 @@ class Browser(ABC):  # noqa: PLR0904
     async def continue_request(
         self,
         request_id: str,
-        url: Optional[str] = None,
-        method: Optional[RequestMethod] = None,
-        post_data: Optional[str] = None,
-        headers: Optional[list[HeaderEntry]] = None,
-        intercept_response: Optional[bool] = None,
+        url: str | None = None,
+        method: RequestMethod | None = None,
+        post_data: str | None = None,
+        headers: list[HeaderEntry] | None = None,
+        intercept_response: bool | None = None,
     ):
         """
         Continue paused request without modifications.
         """
-        logger.debug(f'Continuing request: id={request_id}')
+        logger.debug('Continuing request: id=%s', request_id)
         return await self._execute_command(
             FetchCommands.continue_request(
                 request_id=request_id,
@@ -663,21 +665,24 @@ class Browser(ABC):  # noqa: PLR0904
 
     async def fail_request(self, request_id: str, error_reason: ErrorReason):
         """Fail request with error code."""
-        logger.debug(f'Failing request: id={request_id}, reason={error_reason}')
+        logger.debug('Failing request: id=%s, reason=%s', request_id, error_reason)
         return await self._execute_command(FetchCommands.fail_request(request_id, error_reason))
 
     async def fulfill_request(
         self,
         request_id: str,
         response_code: int,
-        response_headers: Optional[list[HeaderEntry]] = None,
-        body: Optional[str] = None,
-        response_phrase: Optional[str] = None,
+        response_headers: list[HeaderEntry] | None = None,
+        body: str | None = None,
+        response_phrase: str | None = None,
     ):
         """Fulfill request with response data."""
         logger.debug(
-            f'Fulfilling request: id={request_id}, code={response_code}, '
-            f'headers={bool(response_headers)}, body={bool(body)}'
+            'Fulfilling request: id=%s, code=%s, headers=%s, body=%s',
+            request_id,
+            response_code,
+            bool(response_headers),
+            bool(body),
         )
         return await self._execute_command(
             FetchCommands.fulfill_request(
@@ -690,7 +695,7 @@ class Browser(ABC):  # noqa: PLR0904
         )
 
     @staticmethod
-    def _validate_connection_port(connection_port: Optional[int]):
+    def _validate_connection_port(connection_port: int | None):
         """Validate connection port."""
         if connection_port and connection_port < 0:
             logger.error(f'Invalid connection port: {connection_port}')
@@ -699,20 +704,21 @@ class Browser(ABC):  # noqa: PLR0904
     async def _continue_request_callback(self, event: RequestPausedEvent):
         """Internal callback to continue paused requests."""
         request_id = event['params']['requestId']
-        logger.debug(f'[Fetch] REQUEST_PAUSED -> continue: id={request_id}')
+        logger.debug('[Fetch] REQUEST_PAUSED -> continue: id=%s', request_id)
         return await self.continue_request(request_id)
 
     async def _continue_request_with_auth_callback(
         self,
         event: RequestPausedEvent,
-        proxy_username: Optional[str],
-        proxy_password: Optional[str],
+        proxy_username: str | None,
+        proxy_password: str | None,
     ):
         """Internal callback for proxy authentication."""
         request_id = event['params']['requestId']
         logger.debug(
-            f'[Fetch] AUTH_REQUIRED -> provide credentials: id={request_id}, '
-            f'user_set={bool(proxy_username)}'
+            '[Fetch] AUTH_REQUIRED -> provide credentials: id=%s, user_set=%s',
+            request_id,
+            bool(proxy_username),
         )
         response: Response = await self._execute_command(
             FetchCommands.continue_request_with_auth(
@@ -729,21 +735,22 @@ class Browser(ABC):  # noqa: PLR0904
     async def _tab_continue_request_callback(event: RequestPausedEvent, tab: Tab):
         """Internal callback to continue paused requests at Tab level."""
         request_id = event['params']['requestId']
-        logger.debug(f'[Tab Fetch] REQUEST_PAUSED -> continue: id={request_id}')
+        logger.debug('[Tab Fetch] REQUEST_PAUSED -> continue: id=%s', request_id)
         return await tab.continue_request(request_id)
 
     @staticmethod
     async def _tab_continue_request_with_auth_callback(
         event: RequestPausedEvent,
         tab: Tab,
-        proxy_username: Optional[str],
-        proxy_password: Optional[str],
+        proxy_username: str | None,
+        proxy_password: str | None,
     ):
         """Internal callback for proxy/server authentication at Tab level."""
         request_id = event['params']['requestId']
         logger.debug(
-            f'[Tab Fetch] AUTH_REQUIRED -> provide credentials: id={request_id}, '
-            f'user_set={bool(proxy_username)}'
+            '[Tab Fetch] AUTH_REQUIRED -> provide credentials: id=%s, user_set=%s',
+            request_id,
+            bool(proxy_username),
         )
         response: Response = await tab.continue_with_auth(
             request_id=request_id,
@@ -755,7 +762,7 @@ class Browser(ABC):  # noqa: PLR0904
         return response
 
     async def _setup_context_proxy_auth_for_tab(
-        self, tab: Tab, browser_context_id: Optional[str]
+        self, tab: Tab, browser_context_id: str | None
     ) -> None:
         """Enable proxy auth handling for a Tab if its context has credentials stored."""
         if not browser_context_id:
@@ -765,8 +772,9 @@ class Browser(ABC):  # noqa: PLR0904
             return
         username, password = creds
         logger.debug(
-            f'Enabling context-level proxy auth for tab (context={browser_context_id}, '
-            f'user_set={bool(username)}'
+            'Enabling context-level proxy auth for tab (context=%s, user_set=%s',
+            browser_context_id,
+            bool(username),
         )
         await tab.enable_fetch_events(handle_auth=True)
         await tab.on(
@@ -906,7 +914,7 @@ class Browser(ABC):  # noqa: PLR0904
 
         return on_worker_attached
 
-    def _get_user_agent_from_options(self) -> Optional[str]:
+    def _get_user_agent_from_options(self) -> str | None:
         """Extract User-Agent value from --user-agent= browser argument."""
         for arg in self.options.arguments:
             if arg.startswith('--user-agent='):
@@ -915,26 +923,69 @@ class Browser(ABC):  # noqa: PLR0904
 
     async def _verify_browser_running(self):
         """
-        Verify browser started successfully.
+        Wait until the browser answers on its port, or explain why it did not.
+
+        Polls the endpoint until it answers or ``options.start_timeout`` elapses,
+        and gives up at once when the process has already exited. The error
+        names the exit code or the timeout, the port, and the last lines the
+        browser wrote to stderr.
 
         Raises:
-            FailedToStartBrowser: If the browser failed to start.
+            FailedToStartBrowser: If the process exited or never answered.
         """
-        logger.debug(f'Verifying browser is running (timeout={self.options.start_timeout})')
-        if not await self._is_browser_running(self.options.start_timeout):
-            logger.error('Browser failed to start within timeout')
-            raise FailedToStartBrowser()
+        timeout = self.options.start_timeout
+        logger.debug('Verifying browser is running (timeout=%s)', timeout)
+        loop = asyncio.get_running_loop()
+        deadline = loop.time() + timeout
+        interval = PollInterval(cap=1.0)
+        while True:
+            if await self._connection_handler.ping():
+                return
+            exit_code = self._browser_process_manager.exit_code()
+            if exit_code is not None:
+                raise FailedToStartBrowser(
+                    self._start_failure(
+                        f'The browser exited with code {exit_code} before answering on port '
+                        f'{self._connection_port}'
+                    )
+                )
+            if loop.time() >= deadline:
+                raise FailedToStartBrowser(
+                    self._start_failure(
+                        f'The browser did not answer on port {self._connection_port} within '
+                        f'{timeout}s'
+                    )
+                )
+            await interval.wait()
+
+    def _start_failure(self, reason: str) -> str:
+        """Compose and log the start failure message, with the browser's last output."""
+        output = self._browser_process_manager.recent_stderr()
+        if output:
+            indented = '\n'.join(f'  {line}' for line in output.splitlines())
+            message = f'{reason}. Last output from the browser:\n{indented}'
+        else:
+            message = f'{reason}. The browser wrote nothing to stderr'
+        logger.error(message)
+        return message
+
+    async def _abandon_start(self) -> None:
+        """Tear down what a failed start left behind: the process and the temp profile."""
+        loop = asyncio.get_running_loop()
+        if self._browser_process_manager.exit_code() is None:
+            await loop.run_in_executor(None, self._browser_process_manager.stop_process)
+        await loop.run_in_executor(None, self._temp_directory_manager.cleanup)
 
     async def _configure_proxy(
-        self, private_proxy: bool, proxy_credentials: tuple[Optional[str], Optional[str]]
+        self, private_proxy: bool, proxy_credentials: tuple[str | None, str | None]
     ):
         """Setup proxy authentication handling if needed."""
         if not private_proxy:
             return
 
         logger.debug(
-            'Configuring proxy authentication: '
-            f'credentials provided={bool(proxy_credentials[0] or proxy_credentials[1])}'
+            'Configuring proxy authentication: credentials provided=%s',
+            bool(proxy_credentials[0] or proxy_credentials[1]),
         )
         await self.enable_fetch_events(handle_auth_requests=True)
         await self.on(
@@ -985,20 +1036,52 @@ class Browser(ABC):  # noqa: PLR0904
 
         return tab_id
 
-    async def _is_browser_running(self, timeout: int = 10) -> bool:
-        """Check if browser process is running and CDP endpoint is responsive."""
-        for _ in range(timeout):
+    async def _is_browser_running(self, timeout: float = 10) -> bool:
+        """Check if browser process is running and CDP endpoint is responsive.
+
+        Polls the endpoint until it answers or ``timeout`` seconds elapse. The
+        pause starts at 20 ms, so a browser that is up after 300 ms is not made
+        to wait a full second, and backs off to one second, so a browser that
+        is gone costs a handful of connection attempts instead of hundreds.
+        """
+        loop = asyncio.get_running_loop()
+        deadline = loop.time() + timeout
+        interval = PollInterval(cap=1.0)
+        while True:
             if await self._connection_handler.ping():
                 return True
-            await asyncio.sleep(1)
+            if loop.time() >= deadline:
+                return False
+            await interval.wait()
 
-        return False
+    async def execute_command(
+        self, command: Command[T_CommandParams, T_CommandResponse], timeout: int = 60
+    ) -> T_CommandResponse:
+        """
+        Send a raw CDP command on the browser-level session.
+
+        Use it for browser-wide domains (Target, Browser, Storage, Emulation
+        screens) that pydoll does not wrap. Build commands with the factories in
+        ``pydoll.commands`` or pass a plain ``{'method': ..., 'params': ...}`` dict.
+
+        Args:
+            command: CDP command to send.
+            timeout: Seconds to wait for the browser's answer.
+
+        Returns:
+            The browser's response, with the domain result under ``'result'``.
+
+        Raises:
+            CommandFailed: If the browser answers with an error.
+            CommandExecutionTimeout: If no answer arrives within ``timeout``.
+        """
+        return await self._execute_command(command, timeout=timeout)
 
     async def _execute_command(
         self, command: Command[T_CommandParams, T_CommandResponse], timeout: int = 60
     ) -> T_CommandResponse:
         """Execute CDP command and return result (core method for browser communication)."""
-        logger.debug(f'Executing command: {command.get("method")} (timeout={timeout})')
+        logger.debug('Executing command: %s (timeout=%s)', command.get('method'), timeout)
         return await self._connection_handler.execute_command(command, timeout=timeout)
 
     def _setup_user_dir(self):
@@ -1012,7 +1095,7 @@ class Browser(ABC):  # noqa: PLR0904
             self.options.arguments.append(f'--user-data-dir={temp_dir.name}')
             if self.options.browser_preferences:
                 self._set_browser_preferences_in_temp_dir(temp_dir)
-        logger.debug(f'User dir setup complete: {self._get_user_data_dir()}')
+        logger.debug('User dir setup complete: %s', self._get_user_data_dir())
 
     def _set_browser_preferences_in_temp_dir(self, temp_dir: TemporaryDirectory):
         os.mkdir(os.path.join(temp_dir.name, 'Default'))
@@ -1053,9 +1136,9 @@ class Browser(ABC):  # noqa: PLR0904
         preferences.update(self.options.browser_preferences)
         with open(preferences_path, 'w', encoding='utf-8') as json_file:
             json.dump(preferences, json_file, indent=2)
-        logger.debug(f'Updated browser preferences in user data dir: {preferences_path}')
+        logger.debug('Updated browser preferences in user data dir: %s', preferences_path)
 
-    def _get_user_data_dir(self) -> Optional[str]:
+    def _get_user_data_dir(self) -> str | None:
         for arg in self.options.arguments:
             if arg.startswith('--user-data-dir='):
                 return arg.split('=', 1)[1]
@@ -1082,7 +1165,7 @@ class Browser(ABC):  # noqa: PLR0904
         await self._connection_handler._ensure_active_connection()
         logger.info('WebSocket address set for browser-level connection')
 
-    def _get_tab_kwargs(self, target_id: str, browser_context_id: Optional[str] = None) -> dict:
+    def _get_tab_kwargs(self, target_id: str, browser_context_id: str | None = None) -> dict:
         """
         Get kwargs for creating a tab based on the WebSocket address.
         If the WebSocket address is set, the tab will be created with the WebSocket address.
@@ -1103,7 +1186,7 @@ class Browser(ABC):  # noqa: PLR0904
             kwargs['ws_address'] = self._get_tab_ws_address(target_id)
         else:
             kwargs['connection_port'] = self._connection_port
-        logger.debug(f'Tab kwargs resolved for {target_id}: using_ws={bool(self._ws_address)}')
+        logger.debug('Tab kwargs resolved for %s: using_ws=%s', target_id, bool(self._ws_address))
         return kwargs
 
     def _get_tab_ws_address(self, tab_id: str) -> str:
@@ -1123,13 +1206,13 @@ class Browser(ABC):  # noqa: PLR0904
         # Preserve scheme and netloc; build the page path and keep query/fragment
         page_path = f'/devtools/page/{tab_id}'
         ws = urlunsplit((parts.scheme, parts.netloc, page_path, parts.query, parts.fragment))
-        logger.debug(f'Resolved tab WebSocket address: {ws}')
+        logger.debug('Resolved tab WebSocket address: %s', ws)
         return ws
 
     @staticmethod
     def _sanitize_proxy_and_extract_auth(
         proxy_server: str,
-    ) -> tuple[str, Optional[tuple[str, str]]]:
+    ) -> tuple[str, tuple[str, str] | None]:
         """Strip credentials from a proxy URL and return sanitized URL plus (user, pass).
 
         Accepts inputs like:
@@ -1143,7 +1226,7 @@ class Browser(ABC):  # noqa: PLR0904
         base = proxy_server if '://' in proxy_server else f'http://{proxy_server}'
         parts = urlsplit(base)
         netloc = parts.netloc
-        creds: Optional[tuple[str, str]] = None
+        creds: tuple[str, str] | None = None
         if '@' in netloc:
             cred_part, host_part = netloc.split('@', 1)
             if ':' in cred_part:

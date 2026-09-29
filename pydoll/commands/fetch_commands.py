@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from pydoll.protocol.base import Command
 from pydoll.protocol.fetch.methods import (
@@ -58,11 +58,11 @@ class FetchCommands:
     @staticmethod
     def continue_request(
         request_id: str,
-        url: Optional[str] = None,
-        method: Optional['RequestMethod'] = None,
-        post_data: Optional[str] = None,
-        headers: Optional[list['HeaderEntry']] = None,
-        intercept_response: Optional[bool] = None,
+        url: str | None = None,
+        method: 'RequestMethod' | None = None,
+        post_data: str | None = None,
+        headers: list['HeaderEntry'] | None = None,
+        intercept_response: bool | None = None,
     ) -> ContinueRequestCommand:
         """
         Creates a command to continue a paused fetch request.
@@ -73,14 +73,14 @@ class FetchCommands:
 
         Args:
             request_id (str): The ID of the fetch request to continue.
-            url (Optional[str]): The new URL for the fetch request. Defaults to None.
-            method (Optional[RequestMethod]): The HTTP method to use (e.g., 'GET',
+            url (str | None): The new URL for the fetch request. Defaults to None.
+            method (RequestMethod | None): The HTTP method to use (e.g., 'GET',
                 'POST'). Defaults to None.
-            post_data (Optional[dict]): The body data to send with the fetch
+            post_data (dict | None): The body data to send with the fetch
                 request. Defaults to None.
-            headers (Optional[list[HeaderEntry]]): A list of HTTP headers to include
+            headers (list[HeaderEntry] | None): A list of HTTP headers to include
                 in the fetch request. Defaults to None.
-            intercept_response (Optional[bool]): Indicates if the response
+            intercept_response (bool | None): Indicates if the response
                 should be intercepted. Defaults to None.
 
         Returns:
@@ -103,8 +103,8 @@ class FetchCommands:
     def continue_request_with_auth(
         request_id: str,
         auth_challenge_response: AuthChallengeResponseType,
-        proxy_username: Optional[str] = None,
-        proxy_password: Optional[str] = None,
+        proxy_username: str | None = None,
+        proxy_password: str | None = None,
     ) -> ContinueWithAuthCommand:
         """
         Creates a command to continue a paused fetch request with
@@ -117,9 +117,9 @@ class FetchCommands:
             request_id (str): The ID of the fetch request to continue.
             auth_challenge_response (AuthChallengeResponseType): The authentication
                 challenge response type.
-            proxy_username (Optional[str]): The username for proxy authentication.
+            proxy_username (str | None): The username for proxy authentication.
                 Defaults to None.
-            proxy_password (Optional[str]): The password for proxy authentication.
+            proxy_password (str | None): The password for proxy authentication.
                 Defaults to None.
 
         Returns:
@@ -154,8 +154,8 @@ class FetchCommands:
     def enable(
         handle_auth_requests: bool,
         url_pattern: str = '*',
-        resource_type: Optional['ResourceType'] = None,
-        request_stage: Optional['RequestStage'] = None,
+        resource_type: 'ResourceType' | None = None,
+        request_stage: 'RequestStage' | None = None,
     ) -> EnableCommand:
         """
         Creates a command to enable fetch interception.
@@ -168,9 +168,9 @@ class FetchCommands:
             handle_auth_requests (bool): Indicates if authentication requests
                 should be handled.
             url_pattern (str): Pattern to match URLs for interception. Defaults to '*'.
-            resource_type (Optional[ResourceType]): The type of resource to intercept.
+            resource_type (ResourceType | None): The type of resource to intercept.
                 Defaults to None.
-            request_stage (Optional[RequestStage]): The stage of the request to intercept.
+            request_stage (RequestStage | None): The stage of the request to intercept.
                 Defaults to None.
 
         Returns:
@@ -207,9 +207,9 @@ class FetchCommands:
     def fulfill_request(
         request_id: str,
         response_code: int,
-        response_headers: Optional[list['HeaderEntry']] = None,
-        body: Optional[str] = None,
-        response_phrase: Optional[str] = None,
+        response_headers: list['HeaderEntry'] | None = None,
+        body: str | None = None,
+        response_phrase: str | None = None,
     ) -> FulfillRequestCommand:
         """
         Creates a command to fulfill a fetch request with a custom response.
@@ -220,10 +220,10 @@ class FetchCommands:
         Args:
             request_id (str): The ID of the fetch request to fulfill.
             response_code (int): The HTTP status code to return.
-            response_headers (Optional[list[HeaderEntry]]): A list of response headers.
+            response_headers (list[HeaderEntry] | None): A list of response headers.
                 Defaults to None.
-            body (Optional[dict]): The body content of the response. Defaults to None.
-            response_phrase (Optional[str]): The response phrase (e.g., 'OK',
+            body (dict | None): The body content of the response. Defaults to None.
+            response_phrase (str | None): The response phrase (e.g., 'OK',
                 'Not Found'). Defaults to None.
 
         Returns:
@@ -262,9 +262,9 @@ class FetchCommands:
     @staticmethod
     def continue_response(
         request_id: str,
-        response_code: Optional[int] = None,
-        response_headers: Optional[list['HeaderEntry']] = None,
-        response_phrase: Optional[str] = None,
+        response_code: int | None = None,
+        response_headers: list['HeaderEntry'] | None = None,
+        response_phrase: str | None = None,
     ) -> ContinueResponseCommand:
         """
         Creates a command to continue a fetch response for an intercepted
@@ -277,11 +277,11 @@ class FetchCommands:
         Args:
             request_id (str): The ID of the fetch request to continue the
                 response for.
-            response_code (Optional[int]): The HTTP status code to send.
+            response_code (int | None): The HTTP status code to send.
                 Defaults to None.
-            response_headers (Optional[list[HeaderEntry]]): A list of response headers.
+            response_headers (list[HeaderEntry] | None): A list of response headers.
                 Defaults to None.
-            response_phrase (Optional[str]): The response phrase (e.g., 'OK').
+            response_phrase (str | None): The response phrase (e.g., 'OK').
                 Defaults to None.
 
         Returns:

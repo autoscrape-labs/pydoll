@@ -9,6 +9,7 @@
 - [如何保持浏览器身份的一致性](#keep-the-identity-consistent)
 - [如何像真人一样交互](#interact-like-a-person)
 - [如何处理 Cloudflare Turnstile](#handle-cloudflare-turnstile)
+- [当被拦截的正是你的 Playwright 脚本时该怎么办](#your-playwright-script-is-blocked)
 
 ## 保持身份一致 {#keep-the-identity-consistent}
 
@@ -20,13 +21,25 @@
 
 在元素正中心的瞬间点击，以及每 50ms 一次的按键，都是行为 fingerprint。传入 `humanize=True`，Pydoll 会在点击前以拟人的节奏沿曲线路径移动光标，并以变化的节奏打字，偶尔还会出现被纠正的拼写错误：
 
-```python
-search_box = await tab.find(id='search')
-await search_box.type_text('browser automation', humanize=True)
+=== "Sync"
 
-submit = await tab.find(tag_name='button', type='submit')
-await submit.click(humanize=True)
-```
+    ```python
+    search_box = tab.find(id='search')
+    search_box.type_text('browser automation', humanize=True)
+
+    submit = tab.find(tag_name='button', type='submit')
+    submit.click(humanize=True)
+    ```
+
+=== "Async"
+
+    ```python
+    search_box = await tab.find(id='search')
+    await search_box.type_text('browser automation', humanize=True)
+
+    submit = await tab.find(tag_name='button', type='submit')
+    await submit.click(humanize=True)
+    ```
 
 拟人化是按交互逐个选择启用的，所以你可以在行为被监视的地方保留它，在追求速度的地方跳过它。[拟人化交互](human-like-interactions.md) 解释了时序模型以及如何调整它。
 
@@ -34,14 +47,57 @@ await submit.click(humanize=True)
 
 当受保护的页面显示 Turnstile 复选框时，Pydoll 可以帮你检测并点击它：
 
-```python
-async with tab.expect_and_bypass_cloudflare_captcha():
-    await tab.go_to('https://site-protected-by-cloudflare.com')
+=== "Sync"
 
-print('Challenge handled, page loaded.')
-```
+    ```python
+    with tab.expect_cloudflare_turnstile():
+        tab.go_to('https://site-protected-by-cloudflare.com')
+
+    print('Challenge handled, page loaded.')
+    ```
+
+=== "Async"
+
+    ```python
+    async with tab.expect_cloudflare_turnstile():
+        await tab.go_to('https://site-protected-by-cloudflare.com')
+
+    print('Challenge handled, page loaded.')
+    ```
 
 点击这个控件只是其中一部分：Cloudflare 是否接受这次点击，还取决于你的 IP 信誉，以及浏览器其余部分看起来有多一致。如果挑战一直失败，请仔细阅读 [Captcha 绕过](captcha-bypass.md)，并考虑 [使用住宅 proxy](../guides/proxies.md)。
+
+## 你的 Playwright 脚本被拦截了 {#your-playwright-script-is-blocked}
+
+Playwright 本身会再加上第四层信号：它的驱动会启用 `Runtime` 域，用 `--enable-automation` 启动浏览器，并在每次导航时注入脚本。隐身分支事后把这些去掉，要么改驱动（Patchright），要么改浏览器（Camoufox），而且随着两者的演进还得不停地打补丁。
+
+Pydoll 没有可打补丁的驱动。改一行导入，同一个脚本就跑在 Pydoll 自己的 CDP 连接上，它永远不会为你的代码启用 `Runtime`，也永远不会添加那些标志：
+
+=== "Sync"
+
+    ```python
+    from pydoll.playwright.sync_api import sync_playwright
+
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=False)
+        page = browser.new_page()
+        with page.tab.expect_cloudflare_turnstile():
+            page.goto('https://site-protected-by-cloudflare.com')
+    ```
+
+=== "Async"
+
+    ```python
+    from pydoll.playwright.async_api import async_playwright
+
+    async with async_playwright() as p:
+        browser = await p.chromium.launch(headless=False)
+        page = await browser.new_page()
+        async with page.tab.expect_cloudflare_turnstile():
+            await page.goto('https://site-protected-by-cloudflare.com')
+    ```
+
+上面三层对这个脚本依然适用：身份、行为和挑战都需要你通过 `page.tab` 来配置。[带上你的 Playwright 脚本](../playwright.md) 会带你走一遍。
 
 ## 下一步
 

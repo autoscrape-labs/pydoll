@@ -12,13 +12,17 @@ from __future__ import annotations
 import pytest
 
 from pydoll.constants import By
+from pydoll.elements.shadow_root import ShadowRoot
 from pydoll.elements.web_element import WebElement
+from pydoll.interactions.iframe import IFrameContext
+from pydoll.interactions.mouse import Mouse, MouseTimingConfig
 from pydoll.exceptions import (
     ElementNotAFileInput,
     ElementNotInteractable,
     ElementNotVisible,
     InvalidFileExtension,
     MissingScreenshotPath,
+    WaitElementTimeout,
 )
 
 
@@ -62,7 +66,7 @@ def test_is_iframe_reflects_tag_name(make_element):
 
 
 def test_iframe_context_docstring_escapes_iframe_tag():
-    docstring = WebElement.iframe_context.fget.__doc__
+    docstring = WebElement.iframe_context.__doc__
     assert docstring is not None
     assert '``<iframe>``' in docstring
 
@@ -78,7 +82,7 @@ def test_attributes_returns_a_copy(make_element):
 async def test_inner_html_returns_outer_html(fake_conn, make_element):
     element = make_element(attributes=['tag_name', 'div'])
     fake_conn.set_response('DOM.getOuterHTML', {'outerHTML': '<div>hi</div>'})
-    assert await element.inner_html == '<div>hi</div>'
+    assert await element.inner_html() == '<div>hi</div>'
     assert fake_conn.last_command('DOM.getOuterHTML')['params']['objectId'] == 'el-1'
 
 
@@ -87,7 +91,7 @@ async def test_bounds_returns_box_model_content(fake_conn, make_element):
     element = make_element()
     quad = [0, 0, 100, 0, 100, 50, 0, 50]
     fake_conn.set_response('DOM.getBoxModel', {'model': {'content': quad}})
-    assert await element.bounds == quad
+    assert await element.bounds() == quad
 
 
 @pytest.mark.asyncio
@@ -339,3 +343,152 @@ async def test_scroll_into_view_asks_for_the_box_plus_a_margin(make_element, fak
 async def test_scroll_into_view_falls_back_to_plain_scroll_without_a_box(make_element, fake_conn):
     await make_element().scroll_into_view()
     assert 'rect' not in fake_conn.last_command('DOM.scrollIntoViewIfNeeded')['params']
+
+
+@pytest.mark.asyncio
+async def test_is_detached_reads_is_connected_and_treats_a_lost_object_as_detached(
+    fake_conn, make_element
+):
+    element = make_element()
+    fake_conn.set_response('Runtime.callFunctionOn', {'result': {'value': False}})
+    assert await element.is_detached() is False
+    assert 'isConnected' in fake_conn.last_command('Runtime.callFunctionOn')['params']['functionDeclaration']
+    fake_conn.set_failure('Runtime.callFunctionOn', -32000, 'Could not find object with given id')
+    assert await element.is_detached() is True
+
+
+@pytest.mark.asyncio
+async def test_wait_until_hidden_detached_and_enabled(fake_conn, make_element):
+    element = make_element()
+    fake_conn.set_response('Runtime.callFunctionOn', {'result': {'value': False}})
+    await element.wait_until(is_hidden=True, timeout=1)
+    fake_conn.set_response('Runtime.callFunctionOn', {'result': {'value': True}})
+    await element.wait_until(is_detached=True, timeout=1)
+    await element.wait_until(is_enabled=True, timeout=1)
+    assert 'this.disabled' in fake_conn.last_command('Runtime.callFunctionOn')['params']['functionDeclaration']
+
+
+@pytest.mark.asyncio
+async def test_wait_until_with_no_timeout_checks_once_and_raises(fake_conn, make_element):
+    element = make_element()
+    fake_conn.set_response('Runtime.callFunctionOn', {'result': {'value': True}})
+    before = len(fake_conn.commands_for('Runtime.callFunctionOn'))
+    with pytest.raises(WaitElementTimeout):
+        await element.wait_until(is_hidden=True, is_detached=True)
+    assert len(fake_conn.commands_for('Runtime.callFunctionOn')) - before == 2
+
+
+@pytest.mark.asyncio
+async def test_wait_until_times_out_and_requires_a_condition(fake_conn, make_element):
+    element = make_element()
+    fake_conn.set_response('Runtime.callFunctionOn', {'result': {'value': True}})
+    with pytest.raises(WaitElementTimeout):
+        await element.wait_until(is_hidden=True, timeout=0.05)
+    with pytest.raises(ValueError):
+        await element.wait_until()
+
+
+@pytest.mark.asyncio
+async def test_hover_moves_the_mouse_to_the_element_center(fake_conn, make_element):
+    element = make_element(attributes=['tag_name', 'div'])
+    fake_conn.set_response('Runtime.callFunctionOn', {'result': {'value': True}})
+    fake_conn.set_response('DOM.getBoxModel', {'model': {'content': [10, 10, 30, 10, 30, 50, 10, 50]}})
+
+    await element.hover(x_offset=2, y_offset=-3)
+
+    assert fake_conn.commands_for('DOM.scrollIntoViewIfNeeded')
+    moved = fake_conn.last_command('Input.dispatchMouseEvent')['params']
+    assert moved['type'] == 'mouseMoved'
+    assert (moved['x'], moved['y']) == (22, 27)
+
+
+@pytest.mark.asyncio
+async def test_hover_refuses_an_invisible_element(fake_conn, make_element):
+    element = make_element()
+    fake_conn.set_response('Runtime.callFunctionOn', {'result': {'value': False}})
+    with pytest.raises(ElementNotVisible):
+        await element.hover()
+
+
+@pytest.mark.asyncio
+async def test_double_click_sends_two_press_release_pairs_with_click_counts(fake_conn, make_element):
+    element = make_element(attributes=['tag_name', 'div'])
+    fake_conn.set_response('Runtime.callFunctionOn', {'result': {'value': True}})
+    fake_conn.set_response('DOM.getBoxModel', {'model': {'content': [0, 0, 100, 0, 100, 50, 0, 50]}})
+
+    await element.double_click()
+
+    events = [e['params'] for e in fake_conn.commands_for('Input.dispatchMouseEvent')]
+    assert [(e['type'], e['clickCount']) for e in events] == [
+        ('mousePressed', 1),
+        ('mouseReleased', 1),
+        ('mousePressed', 2),
+        ('mouseReleased', 2),
+    ]
+    assert all((e['x'], e['y']) == (50, 25) for e in events)
+    assert events[0]['force'] == 0.5 and events[0]['buttons'] == 1
+
+
+FAST_MOUSE = MouseTimingConfig(
+    frame_interval=0.001,
+    frame_interval_variance=0.0,
+    min_duration=0.01,
+    max_duration=0.02,
+    micro_pause_probability=0.0,
+    pre_click_pause_min=0.0,
+    pre_click_pause_max=0.0,
+    click_hold_min=0.0,
+    click_hold_max=0.0,
+    overshoot_probability=0.0,
+)
+
+
+def _visible_with_box(conn) -> None:
+    conn.set_response('Runtime.callFunctionOn', {'result': {'value': True}})
+    conn.set_response('DOM.getBoxModel', {'model': {'content': [10, 10, 30, 10, 30, 50, 10, 50]}})
+
+
+@pytest.mark.asyncio
+async def test_an_element_in_an_out_of_process_frame_gets_a_mouse_bound_to_the_frame_session(
+    fake_conn,
+):
+    frame_conn = type(fake_conn)()
+    _visible_with_box(frame_conn)
+    tab_mouse = Mouse(fake_conn, timing=FAST_MOUSE)
+    element = WebElement('el-1', fake_conn, attributes_list=['tag_name', 'div'], mouse=tab_mouse)
+    element._iframe_context = IFrameContext(
+        frame_id='child', session_handler=frame_conn, session_id='child-session'
+    )
+
+    await element.hover(humanize=True)
+
+    frame_mouse = element._input_mouse()
+    assert frame_mouse is not tab_mouse
+    assert frame_mouse is element._iframe_context.mouse
+    assert frame_mouse.timing is tab_mouse.timing
+    moves = frame_conn.commands_for('Input.dispatchMouseEvent')
+    assert len(moves) > 2
+    assert {move['sessionId'] for move in moves} == {'child-session'}
+    assert (moves[-1]['params']['x'], moves[-1]['params']['y']) == (20, 30)
+    assert not fake_conn.commands_for('Input.dispatchMouseEvent')
+    assert tab_mouse._position == (0.0, 0.0)
+
+
+@pytest.mark.asyncio
+async def test_an_element_in_a_same_process_frame_shares_the_tab_mouse(fake_conn):
+    _visible_with_box(fake_conn)
+    tab_mouse = Mouse(fake_conn, timing=FAST_MOUSE)
+    element = WebElement('el-1', fake_conn, attributes_list=['tag_name', 'div'], mouse=tab_mouse)
+    element._iframe_context = IFrameContext(frame_id='child', execution_context_id=7)
+
+    assert element._input_mouse() is tab_mouse
+    await element.hover(humanize=True)
+    assert tab_mouse._position == (20, 30)
+    assert element._iframe_context.mouse is None
+
+
+def test_a_shadow_root_hands_the_host_mouse_to_its_elements(fake_conn):
+    tab_mouse = Mouse(fake_conn, timing=FAST_MOUSE)
+    host = WebElement('host', fake_conn, attributes_list=['tag_name', 'div'], mouse=tab_mouse)
+    assert ShadowRoot('shadow', fake_conn, host_element=host)._mouse is tab_mouse
+    assert ShadowRoot('shadow', fake_conn)._mouse is None

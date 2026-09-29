@@ -1,6 +1,6 @@
 # Core concepts
 
-Pydoll is built on a few design decisions that shape how you write every script: no webdriver, an async API, humanized interactions, and an event system. This page explains each one at a working level, so the task guides that follow make sense.
+Pydoll is built on a few design decisions that shape how you write every script: no webdriver, one API in sync and async form, humanized interactions, and an event system. This page explains each one at a working level, so the task guides that follow make sense.
 
 ## No webdriver
 
@@ -20,67 +20,129 @@ graph LR
 
 When you start a browser, Pydoll launches the Chrome you already have installed with a remote-debugging port and opens a WebSocket to its CDP endpoint:
 
-```python
-import asyncio
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
+    ```python
+    from pydoll.sync import Chrome
+
+    def main():
+        with Chrome() as browser:
+            tab = browser.start()
+            tab.go_to('https://quotes.toscrape.com')
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+
+    from pydoll import Chrome
 
 
-async def main():
-    async with Chrome() as browser:
-        tab = await browser.start()
-        await tab.go_to('https://quotes.toscrape.com')
+    async def main():
+        async with Chrome() as browser:
+            tab = await browser.start()
+            await tab.go_to('https://quotes.toscrape.com')
 
-asyncio.run(main())
-```
+    asyncio.run(main())
+    ```
 
-You don't manage the port, the connection, or the browser process; `start()` does it, and the `async with` block stops the browser when you're done.
+You don't manage the port, the connection, or the browser process; `start()` does it, and the `with` block stops the browser when you're done.
 
 ## The browser and tab objects
 
 Two objects cover most of what you do. The **browser** (`Chrome` or `Edge`) is the process you launch. The **tab**, returned by `browser.start()`, is what you drive: navigation, element finding, screenshots, everything on the page happens through it.
 
-```python
-async with Chrome() as browser:
-    tab = await browser.start()          # the first tab
-    await tab.go_to('https://quotes.toscrape.com')
+=== "Sync"
 
-    second = await browser.new_tab()     # open more tabs from the browser
-    await second.go_to('https://books.toscrape.com')
-```
+    ```python
+    with Chrome() as browser:
+        tab = browser.start()          # the first tab
+        tab.go_to('https://quotes.toscrape.com')
+
+        second = browser.new_tab()     # open more tabs from the browser
+        second.go_to('https://books.toscrape.com')
+    ```
+
+=== "Async"
+
+    ```python
+    async with Chrome() as browser:
+        tab = await browser.start()          # the first tab
+        await tab.go_to('https://quotes.toscrape.com')
+
+        second = await browser.new_tab()     # open more tabs from the browser
+        await second.go_to('https://books.toscrape.com')
+    ```
 
 See [Tabs](tabs.md) for managing several tabs at once, and [Browser contexts](browser-contexts.md) for isolating sessions.
 
-## Everything is async
+## Sync and async {#sync-and-async}
 
-Every Pydoll call is a coroutine, so you `await` it inside an `async def` function and start the program with `asyncio.run()`. This is not a compatibility layer bolted on; it is how Pydoll drives many tabs and browsers at once. Because navigation and element waits spend most of their time idle, `asyncio.gather` runs them concurrently instead of one after another:
+Pydoll ships one API in two forms. Import from `pydoll.sync` and every call blocks until the browser answers, so a script reads top to bottom with no event loop to manage. Import from `pydoll` and the same classes are coroutines: you `await` each call inside an `async def` and start the program with `asyncio.run()`. The sync form is generated from the async one, so the two never differ in methods, arguments, or defaults, and every example in these docs shows both. There is a third door in for code that already exists: a Playwright script runs on Pydoll by changing one import, see [Bring your Playwright script](../playwright.md).
 
-```python
-import asyncio
+Where the async form pays off is concurrency. Navigation and element waits spend most of their time idle, so `asyncio.gather` runs them at the same time instead of one after another. The sync form gets the same effect from threads, because its calls are safe to make from several threads at once:
 
-from pydoll.browser.chromium import Chrome
+=== "Sync"
 
+    ```python
+    from concurrent.futures import ThreadPoolExecutor
 
-async def title_of(browser, url):
-    tab = await browser.new_tab(url)
-    title = await tab.title
-    await tab.close()
-    return title
+    from pydoll.sync import Chrome
 
 
-async def main():
-    urls = [
-        'https://quotes.toscrape.com/page/1/',
-        'https://quotes.toscrape.com/page/2/',
-        'https://quotes.toscrape.com/page/3/',
-    ]
-    async with Chrome() as browser:
-        await browser.start()
-        titles = await asyncio.gather(*(title_of(browser, url) for url in urls))
-        print(titles)
+    def title_of(browser, url):
+        tab = browser.new_tab(url)
+        title = tab.title()
+        tab.close()
+        return title
 
-asyncio.run(main())
-```
+
+    def main():
+        urls = [
+            'https://quotes.toscrape.com/page/1/',
+            'https://quotes.toscrape.com/page/2/',
+            'https://quotes.toscrape.com/page/3/',
+        ]
+        with Chrome() as browser:
+            browser.start()
+            with ThreadPoolExecutor() as pool:
+                titles = list(pool.map(lambda url: title_of(browser, url), urls))
+            print(titles)
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+
+    from pydoll import Chrome
+
+
+    async def title_of(browser, url):
+        tab = await browser.new_tab(url)
+        title = await tab.title()
+        await tab.close()
+        return title
+
+
+    async def main():
+        urls = [
+            'https://quotes.toscrape.com/page/1/',
+            'https://quotes.toscrape.com/page/2/',
+            'https://quotes.toscrape.com/page/3/',
+        ]
+        async with Chrome() as browser:
+            await browser.start()
+            titles = await asyncio.gather(*(title_of(browser, url) for url in urls))
+            print(titles)
+
+    asyncio.run(main())
+    ```
 
 The three pages load concurrently, so the whole thing takes about as long as the slowest single page, not the sum of all three.
 
@@ -89,13 +151,23 @@ The three pages load concurrently, so the whole thing takes about as long as the
 
 ## Humanized interactions
 
-By default a click lands in the center of an element and typing runs at a fixed rhythm. Pass `humanize=True` and Pydoll moves the cursor along a curved path before clicking and types with variable timing, including the occasional corrected typo:
+By default a click lands in the center of an element and typing sends the keystrokes back to back, as fast as the browser takes them. Pass `humanize=True` and Pydoll moves the cursor along a curved path before clicking and types with variable timing, including the occasional corrected typo:
 
-```python
-search = await tab.find(id='search')
-await search.type_text('web scraping', humanize=True)
-await search.click(humanize=True)
-```
+=== "Sync"
+
+    ```python
+    search = tab.find(id='search')
+    search.type_text('web scraping', humanize=True)
+    search.click(humanize=True)
+    ```
+
+=== "Async"
+
+    ```python
+    search = await tab.find(id='search')
+    await search.type_text('web scraping', humanize=True)
+    await search.click(humanize=True)
+    ```
 
 Humanization is opt-in per interaction, so you use it where a site watches behavior and skip it where raw speed matters. See [Human-like interactions](../stealth/human-like-interactions.md) for the timing model, and [Keyboard](keyboard.md) and [Mouse](mouse.md) for the full input APIs.
 
@@ -103,32 +175,59 @@ Humanization is opt-in per interaction, so you use it where a site watches behav
 
 Instead of polling the page in a loop, you can subscribe to browser events and run a callback when they fire. This is how you capture network traffic, react to navigation, or wait for a specific request:
 
-```python
-import asyncio
-from functools import partial
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
-from pydoll.protocol.network.events import NetworkEvent
+    ```python
+    import time
+    from functools import partial
+
+    from pydoll.sync import Chrome, NetworkEvent
+
+    def on_request(tab, event):
+        url = event['params']['request']['url']
+        if '/api/' in url:
+            print(f'API call: {url}')
+
+    def main():
+        with Chrome() as browser:
+            tab = browser.start()
+
+            tab.enable_network_events()
+            tab.on(NetworkEvent.REQUEST_WILL_BE_SENT, partial(on_request, tab))
+
+            tab.go_to('https://quotes.toscrape.com')
+            time.sleep(2)
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+    from functools import partial
+
+    from pydoll import Chrome, NetworkEvent
 
 
-async def on_request(tab, event):
-    url = event['params']['request']['url']
-    if '/api/' in url:
-        print(f'API call: {url}')
+    async def on_request(tab, event):
+        url = event['params']['request']['url']
+        if '/api/' in url:
+            print(f'API call: {url}')
 
 
-async def main():
-    async with Chrome() as browser:
-        tab = await browser.start()
+    async def main():
+        async with Chrome() as browser:
+            tab = await browser.start()
 
-        await tab.enable_network_events()
-        await tab.on(NetworkEvent.REQUEST_WILL_BE_SENT, partial(on_request, tab))
+            await tab.enable_network_events()
+            await tab.on(NetworkEvent.REQUEST_WILL_BE_SENT, partial(on_request, tab))
 
-        await tab.go_to('https://quotes.toscrape.com')
-        await asyncio.sleep(2)
+            await tab.go_to('https://quotes.toscrape.com')
+            await asyncio.sleep(2)
 
-asyncio.run(main())
-```
+    asyncio.run(main())
+    ```
 
 Enable only the event domains you use, and disable them when you're done. See [Events](events.md) for the full model and [Network monitoring](network-monitoring.md) for traffic capture.
 
@@ -136,24 +235,45 @@ Enable only the event domains you use, and disable them when you're done. See [E
 
 The same API drives any Chromium browser. Chrome is the primary target; Edge has full support; other Chromium builds work by pointing `binary_location` at them.
 
-```python
-from pydoll.browser.chromium import Chrome, Edge
-from pydoll.browser.options import ChromiumOptions
+=== "Sync"
 
-# Chrome
-async with Chrome() as browser:
-    tab = await browser.start()
+    ```python
+    from pydoll.sync import Chrome, ChromiumOptions, Edge
 
-# Edge
-async with Edge() as browser:
-    tab = await browser.start()
+    # Chrome
+    with Chrome() as browser:
+        tab = browser.start()
 
-# Any other Chromium build (Brave, Vivaldi, Opera, ...)
-options = ChromiumOptions()
-options.binary_location = '/path/to/brave-browser'
-async with Chrome(options=options) as browser:
-    tab = await browser.start()
-```
+    # Edge
+    with Edge() as browser:
+        tab = browser.start()
+
+    # Any other Chromium build (Brave, Vivaldi, Opera, ...)
+    options = ChromiumOptions()
+    options.binary_location = '/path/to/brave-browser'
+    with Chrome(options=options) as browser:
+        tab = browser.start()
+    ```
+
+=== "Async"
+
+    ```python
+    from pydoll import Chrome, ChromiumOptions, Edge
+
+    # Chrome
+    async with Chrome() as browser:
+        tab = await browser.start()
+
+    # Edge
+    async with Edge() as browser:
+        tab = await browser.start()
+
+    # Any other Chromium build (Brave, Vivaldi, Opera, ...)
+    options = ChromiumOptions()
+    options.binary_location = '/path/to/brave-browser'
+    async with Chrome(options=options) as browser:
+        tab = await browser.start()
+    ```
 
 ## What's next
 

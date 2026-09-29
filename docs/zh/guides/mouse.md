@@ -8,78 +8,196 @@ Pydoll 用两种方式驱动鼠标：通过你找到的元素，这是大多数�
 
 常见情形是点击你已经用 `find()` 或 `query()` 定位到的元素。在它上面调用 `click()`；你不用计算坐标，而且元素会先被滚动到可见区域。
 
-```python
-import asyncio
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
+    ```python
+    from pydoll.sync import Chrome
+
+    def main():
+        with Chrome() as browser:
+            tab = browser.start()
+            tab.go_to('https://the-internet.herokuapp.com/add_remove_elements/')
+
+            add_button = tab.find(text='Add Element')
+            add_button.click()
+
+            # 这次点击添加了一个 Delete 按钮
+            delete = tab.find(class_name='added-manually')
+            print('Added:', delete.text())
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+
+    from pydoll import Chrome
 
 
-async def main():
-    async with Chrome() as browser:
-        tab = await browser.start()
-        await tab.go_to('https://the-internet.herokuapp.com/add_remove_elements/')
+    async def main():
+        async with Chrome() as browser:
+            tab = await browser.start()
+            await tab.go_to('https://the-internet.herokuapp.com/add_remove_elements/')
 
-        add_button = await tab.find(text='Add Element')
-        await add_button.click()
+            add_button = await tab.find(text='Add Element')
+            await add_button.click()
 
-        # 这次点击添加了一个 Delete 按钮
-        delete = await tab.find(class_name='added-manually')
-        print('Added:', await delete.text)
+            # 这次点击添加了一个 Delete 按钮
+            delete = await tab.find(class_name='added-manually')
+            print('Added:', await delete.text())
 
-asyncio.run(main())
-```
+    asyncio.run(main())
+    ```
 
 `click()` 接受几个选项：
 
-```python
-# 点击相对元素中心偏移的一个点（像素）
-await element.click(x_offset=10, y_offset=5)
+=== "Sync"
 
-# 释放前把按钮多按住一会儿（秒）
-await element.click(hold_time=0.3)
+    ```python
+    # 点击相对元素中心偏移的一个点（像素）
+    element.click(x_offset=10, y_offset=5)
 
-# 拟人化：光标沿弧线移动到元素，然后点击
-await element.click(humanize=True)
-```
+    # 释放前把按钮多按住一会儿（秒）
+    element.click(hold_time=0.3)
+
+    # 拟人化：光标沿弧线移动到元素，然后点击
+    element.click(humanize=True)
+    ```
+
+=== "Async"
+
+    ```python
+    # 点击相对元素中心偏移的一个点（像素）
+    await element.click(x_offset=10, y_offset=5)
+
+    # 释放前把按钮多按住一会儿（秒）
+    await element.click(hold_time=0.3)
+
+    # 拟人化：光标沿弧线移动到元素，然后点击
+    await element.click(humanize=True)
+    ```
+
+`humanize=True` 在元素所在的任何位置都有效：主文档、iframe 内部（包括跨源的）以及 shadow root 内部。独立进程中的 iframe 有自己的视口坐标，所以其中的元素移动的是它们自己的光标，与标签页的光标分开跟踪。
 
 !!! note "元素点击 vs 原始坐标"
     优先使用 `element.click()`。它会替你找出元素的位置，并且能挺过布局变动。只有在没有元素可作为目标时，比如在 `<canvas>` 内部点击或按像素拖动一个手柄，才求助下面的坐标 API。
+
+## 悬停在元素上
+
+`hover()` 把光标移到元素上并停在那里，这就是打开 `mouseover` 时展开的菜单和悬停时显示的提示框的方式。元素会先被滚动到可视区域，`humanize=True` 让光标沿弧线移动而不是瞬移。
+
+=== "Sync"
+
+    ```python
+    menu = tab.find(class_name='nav-item', text='产品')
+    menu.hover()
+    tab.find(text='笔记本', timeout=2).click()
+
+    # 拟人化：光标沿弧线移动到元素上
+    menu.hover(humanize=True)
+    ```
+
+=== "Async"
+
+    ```python
+    menu = await tab.find(class_name='nav-item', text='产品')
+    await menu.hover()
+    await (await tab.find(text='笔记本', timeout=2)).click()
+
+    # 拟人化：光标沿弧线移动到元素上
+    await menu.hover(humanize=True)
+    ```
+
+## 双击元素
+
+`double_click()` 以页面触发 `dblclick` 事件所需的时序和点击计数发送两次点击，因此文本选择、行内编辑器和"打开项目"处理器都会像响应真实双击一样响应。它接受与 `click()` 相同的 `x_offset`、`y_offset` 和 `humanize` 选项。
+
+=== "Sync"
+
+    ```python
+    cell = tab.find(class_name='cell', text='未命名')
+    cell.double_click()
+    tab.find(tag_name='input', timeout=2).type_text('Q3 报告')
+    ```
+
+=== "Async"
+
+    ```python
+    cell = await tab.find(class_name='cell', text='未命名')
+    await cell.double_click()
+    await (await tab.find(tag_name='input', timeout=2)).type_text('Q3 报告')
+    ```
 
 ## 坐标鼠标 API
 
 `tab.mouse` 在明确的坐标处点击、移动和拖动，坐标以 CSS 像素为单位，从页面左上角算起。你通常从元素的边界得到这些坐标（参见[拖动滑块](#drag-a-slider)）。
 
-```python
-import asyncio
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
-from pydoll.protocol.input.types import MouseButton
+    ```python
+    from pydoll.sync import Chrome
+    from pydoll.protocol.input.types import MouseButton
+
+    def main():
+        with Chrome() as browser:
+            tab = browser.start()
+            tab.go_to('https://the-internet.herokuapp.com/')
+
+            tab.mouse.move(500, 300)                        # 移动光标
+            tab.mouse.click(500, 300)                       # 左键点击
+            tab.mouse.click(500, 300, button=MouseButton.RIGHT)  # 右键点击
+            tab.mouse.double_click(500, 300)               # 双击
+            tab.mouse.drag(100, 200, 500, 400)             # 按下、移动、释放
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+
+    from pydoll import Chrome
+    from pydoll.protocol.input.types import MouseButton
 
 
-async def main():
-    async with Chrome() as browser:
-        tab = await browser.start()
-        await tab.go_to('https://the-internet.herokuapp.com/')
+    async def main():
+        async with Chrome() as browser:
+            tab = await browser.start()
+            await tab.go_to('https://the-internet.herokuapp.com/')
 
-        await tab.mouse.move(500, 300)                        # 移动光标
-        await tab.mouse.click(500, 300)                       # 左键点击
-        await tab.mouse.click(500, 300, button=MouseButton.RIGHT)  # 右键点击
-        await tab.mouse.double_click(500, 300)               # 双击
-        await tab.mouse.drag(100, 200, 500, 400)             # 按下、移动、释放
+            await tab.mouse.move(500, 300)                        # 移动光标
+            await tab.mouse.click(500, 300)                       # 左键点击
+            await tab.mouse.click(500, 300, button=MouseButton.RIGHT)  # 右键点击
+            await tab.mouse.double_click(500, 300)               # 双击
+            await tab.mouse.drag(100, 200, 500, 400)             # 按下、移动、释放
 
-asyncio.run(main())
-```
+    asyncio.run(main())
+    ```
 
 `MouseButton`（来自 `pydoll.protocol.input.types`）有 `LEFT`、`MIDDLE` 和 `RIGHT`。`click()` 还接受 `click_count`（传 `2` 表示双击），而且每个方法都接受仅限关键字的 `humanize`。
 
 要分别按下和释放，`down()` 和 `up()` 在当前光标位置操作：
 
-```python
-await tab.mouse.move(300, 400)
-await tab.mouse.down(button=MouseButton.LEFT)
-await tab.mouse.move(600, 400)     # 手动拖动
-await tab.mouse.up(button=MouseButton.LEFT)
-```
+=== "Sync"
+
+    ```python
+    tab.mouse.move(300, 400)
+    tab.mouse.down(button=MouseButton.LEFT)
+    tab.mouse.move(600, 400)     # 手动拖动
+    tab.mouse.up(button=MouseButton.LEFT)
+    ```
+
+=== "Async"
+
+    ```python
+    await tab.mouse.move(300, 400)
+    await tab.mouse.down(button=MouseButton.LEFT)
+    await tab.mouse.move(600, 400)     # 手动拖动
+    await tab.mouse.up(button=MouseButton.LEFT)
+    ```
 
 `tab.mouse` 会跨调用追踪光标位置，因此 `down()`/`up()` 作用在上一次 `move()` 或 `click()` 留下的位置。
 
@@ -87,11 +205,21 @@ await tab.mouse.up(button=MouseButton.LEFT)
 
 默认情况下，一次移动或点击会径直跳到目标，这是一种行为上的破绽。传入 `humanize=True`，Pydoll 就让光标沿着一条带弧度、有人类节奏的路径移动（符合 Fitts 定律的耗时、钟形的速度曲线、细微的抖动，以及偶尔的过冲加修正）：
 
-```python
-await tab.mouse.move(500, 300, humanize=True)
-await tab.mouse.click(500, 300, humanize=True)
-await tab.mouse.drag(100, 200, 500, 400, humanize=True)
-```
+=== "Sync"
+
+    ```python
+    tab.mouse.move(500, 300, humanize=True)
+    tab.mouse.click(500, 300, humanize=True)
+    tab.mouse.drag(100, 200, 500, 400, humanize=True)
+    ```
+
+=== "Async"
+
+    ```python
+    await tab.mouse.move(500, 300, humanize=True)
+    await tab.mouse.click(500, 300, humanize=True)
+    await tab.mouse.drag(100, 200, 500, 400, humanize=True)
+    ```
 
 <p align="center">
   <img src="/docs/resources/images/gif-humanized-cursor-path.gif" alt="拟人化光标沿两段曲线路径移动" width="760" />
@@ -100,15 +228,29 @@ await tab.mouse.drag(100, 200, 500, 400, humanize=True)
 
 拟人化的元素点击同理。由于位置是被追踪的，先点击元素 A 再点击元素 B，会从一个描出一条自然的弧线到另一个：
 
-```python
-# 瞬时：光标径直跳到每个目标
-await (await tab.find(id='first')).click()
-await (await tab.find(id='second')).click()
+=== "Sync"
 
-# 拟人化：光标从一个目标自然地弧线过渡到下一个
-await (await tab.find(id='first')).click(humanize=True)
-await (await tab.find(id='second')).click(humanize=True)
-```
+    ```python
+    # 瞬时：光标径直跳到每个目标
+    tab.find(id='first').click()
+    tab.find(id='second').click()
+
+    # 拟人化：光标从一个目标自然地弧线过渡到下一个
+    tab.find(id='first').click(humanize=True)
+    tab.find(id='second').click(humanize=True)
+    ```
+
+=== "Async"
+
+    ```python
+    # 瞬时：光标径直跳到每个目标
+    await (await tab.find(id='first')).click()
+    await (await tab.find(id='second')).click()
+
+    # 拟人化：光标从一个目标自然地弧线过渡到下一个
+    await (await tab.find(id='first')).click(humanize=True)
+    await (await tab.find(id='second')).click(humanize=True)
+    ```
 
 关于完整的时间模型以及拟人化在什么时候重要，参见[拟人化交互](../stealth/human-like-interactions.md)。
 
@@ -136,11 +278,21 @@ tab.mouse.timing = MouseTimingConfig(
 
 设置 `tab.mouse.debug = True`，Pydoll 会在一个透明覆盖层上绘制光标路径：蓝点勾勒移动，红点标记点击。用它检查拟人化路径看起来是否自然，然后关掉。
 
-```python
-tab.mouse.debug = True
-await tab.mouse.click(500, 300, humanize=True)
-tab.mouse.debug = False
-```
+=== "Sync"
+
+    ```python
+    tab.mouse.debug = True
+    tab.mouse.click(500, 300, humanize=True)
+    tab.mouse.debug = False
+    ```
+
+=== "Async"
+
+    ```python
+    tab.mouse.debug = True
+    await tab.mouse.click(500, 300, humanize=True)
+    tab.mouse.debug = False
+    ```
 
 ## 实用示例
 
@@ -148,15 +300,29 @@ tab.mouse.debug = False
 
 从手柄的边界读取它的位置，然后从那里开始拖动：
 
-```python
-slider = await tab.query('.slider-handle')
-bounds = await slider.get_bounds_using_js()   # {'x', 'y', 'width', 'height'}，视口像素
+=== "Sync"
 
-start_x = bounds['x'] + bounds['width'] / 2
-start_y = bounds['y'] + bounds['height'] / 2
+    ```python
+    slider = tab.query('.slider-handle')
+    bounds = slider.get_bounds_using_js()   # {'x', 'y', 'width', 'height'}，视口像素
 
-await tab.mouse.drag(start_x, start_y, start_x + 200, start_y, humanize=True)
-```
+    start_x = bounds['x'] + bounds['width'] / 2
+    start_y = bounds['y'] + bounds['height'] / 2
+
+    tab.mouse.drag(start_x, start_y, start_x + 200, start_y, humanize=True)
+    ```
+
+=== "Async"
+
+    ```python
+    slider = await tab.query('.slider-handle')
+    bounds = await slider.get_bounds_using_js()   # {'x', 'y', 'width', 'height'}，视口像素
+
+    start_x = bounds['x'] + bounds['width'] / 2
+    start_y = bounds['y'] + bounds['height'] / 2
+
+    await tab.mouse.drag(start_x, start_y, start_x + 200, start_y, humanize=True)
+    ```
 
 <p align="center">
   <img src="/docs/resources/images/gif-humanized-slider-drag.gif" alt="沿拟人化路径拖动滑块手柄" width="760" />
@@ -167,16 +333,31 @@ await tab.mouse.drag(start_x, start_y, start_x + 200, start_y, humanize=True)
 
 把光标移到一个元素上以触发它的 CSS `:hover` 状态，而不点击：
 
-```python
-trigger = await tab.query('.dropdown-trigger')
-bounds = await trigger.get_bounds_using_js()
+=== "Sync"
 
-await tab.mouse.move(
-    bounds['x'] + bounds['width'] / 2,
-    bounds['y'] + bounds['height'] / 2,
-    humanize=True,
-)
-```
+    ```python
+    trigger = tab.query('.dropdown-trigger')
+    bounds = trigger.get_bounds_using_js()
+
+    tab.mouse.move(
+        bounds['x'] + bounds['width'] / 2,
+        bounds['y'] + bounds['height'] / 2,
+        humanize=True,
+    )
+    ```
+
+=== "Async"
+
+    ```python
+    trigger = await tab.query('.dropdown-trigger')
+    bounds = await trigger.get_bounds_using_js()
+
+    await tab.mouse.move(
+        bounds['x'] + bounds['width'] / 2,
+        bounds['y'] + bounds['height'] / 2,
+        humanize=True,
+    )
+    ```
 
 <p align="center">
   <img src="/docs/resources/images/gif-hover-menu.gif" alt="光标移动到菜单触发器上并打开下拉菜单" width="760" />

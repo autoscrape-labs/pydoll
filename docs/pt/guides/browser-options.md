@@ -6,24 +6,42 @@
 
 Crie um `ChromiumOptions`, defina o que precisar e entregue-o ao navegador:
 
-```python
-import asyncio
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
-from pydoll.browser.options import ChromiumOptions
+    ```python
+    from pydoll.sync import Chrome, ChromiumOptions
+
+    def main():
+        options = ChromiumOptions()
+        options.headless = True
+        options.add_argument('--window-size=1920,1080')
+
+        with Chrome(options=options) as browser:
+            tab = browser.start()
+            tab.go_to('https://quotes.toscrape.com')
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+
+    from pydoll import Chrome, ChromiumOptions
 
 
-async def main():
-    options = ChromiumOptions()
-    options.headless = True
-    options.add_argument('--window-size=1920,1080')
+    async def main():
+        options = ChromiumOptions()
+        options.headless = True
+        options.add_argument('--window-size=1920,1080')
 
-    async with Chrome(options=options) as browser:
-        tab = await browser.start()
-        await tab.go_to('https://quotes.toscrape.com')
+        async with Chrome(options=options) as browser:
+            tab = await browser.start()
+            await tab.go_to('https://quotes.toscrape.com')
 
-asyncio.run(main())
-```
+    asyncio.run(main())
+    ```
 
 O mesmo objeto de opções funciona para o Edge; importe `Edge` em vez de `Chrome`.
 
@@ -70,7 +88,7 @@ options.binary_location = '/Applications/Google Chrome Canary.app/Contents/MacOS
 
 ## Esperar mais pela inicialização
 
-`start_timeout` é quantos segundos o Pydoll espera o navegador subir antes de desistir. Aumente-o em máquinas lentas ou perfis pesados:
+`start_timeout` é quantos segundos o Pydoll espera o navegador subir antes de desistir. Quando desiste, o erro `FailedToStartBrowser` diz se o processo saiu, com o código de saída, ou se nunca respondeu na porta, e traz as últimas linhas que o navegador escreveu no stderr, que é onde o Chrome explica um perfil travado ou uma biblioteca ausente. Aumente o timeout em máquinas lentas ou perfis pesados:
 
 ```python
 options = ChromiumOptions()

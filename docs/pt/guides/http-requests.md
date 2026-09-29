@@ -6,23 +6,42 @@
 
 `tab.request` oferece uma interface parecida com a do `requests`. Chame `get()` com uma URL e leia a resposta:
 
-```python
-import asyncio
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
+    ```python
+    from pydoll.sync import Chrome
+
+    def main():
+        with Chrome() as browser:
+            tab = browser.start()
+
+            response = tab.request.get('https://jsonplaceholder.typicode.com/posts/1')
+
+            print(response.status_code)   # 200
+            print(response.json()['title'])
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+
+    from pydoll import Chrome
 
 
-async def main():
-    async with Chrome() as browser:
-        tab = await browser.start()
+    async def main():
+        async with Chrome() as browser:
+            tab = await browser.start()
 
-        response = await tab.request.get('https://jsonplaceholder.typicode.com/posts/1')
+            response = await tab.request.get('https://jsonplaceholder.typicode.com/posts/1')
 
-        print(response.status_code)   # 200
-        print(response.json()['title'])
+            print(response.status_code)   # 200
+            print(response.json()['title'])
 
-asyncio.run(main())
-```
+    asyncio.run(main())
+    ```
 
 A chamada passa pelo próprio `fetch` do navegador, então tudo o que o navegador já carrega (cookies, uma sessão ativa) vai junto com ela.
 
@@ -30,28 +49,52 @@ A chamada passa pelo próprio `fetch` do navegador, então tudo o que o navegado
 
 Requisições no contexto do navegador são mais úteis depois de um login. Entre na página como um usuário faria e depois acesse a API do site com a sessão que você acabou de estabelecer. Você não extrai um token nem copia um conjunto de cookies; a requisição já vem autenticada.
 
-```python
-import asyncio
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
+    ```python
+    from pydoll.sync import Chrome
+
+    def main():
+        with Chrome() as browser:
+            tab = browser.start()
+
+            # 1. Faça login pela interface (esta é a sua própria aplicação autenticada)
+            tab.go_to('https://yourapp.com/login')
+            tab.find(id='username').type_text('tester', humanize=True)
+            tab.find(id='password').type_text('secret', humanize=True)
+            tab.find(tag_name='button', type='submit').click()
+
+            # 2. Chame a API com a sessão logada
+            response = tab.request.get('https://yourapp.com/api/profile')
+            print(response.json())
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+
+    from pydoll import Chrome
 
 
-async def main():
-    async with Chrome() as browser:
-        tab = await browser.start()
+    async def main():
+        async with Chrome() as browser:
+            tab = await browser.start()
 
-        # 1. Faça login pela interface (esta é a sua própria aplicação autenticada)
-        await tab.go_to('https://yourapp.com/login')
-        await (await tab.find(id='username')).type_text('tester', humanize=True)
-        await (await tab.find(id='password')).type_text('secret', humanize=True)
-        await (await tab.find(tag_name='button', type='submit')).click()
+            # 1. Faça login pela interface (esta é a sua própria aplicação autenticada)
+            await tab.go_to('https://yourapp.com/login')
+            await (await tab.find(id='username')).type_text('tester', humanize=True)
+            await (await tab.find(id='password')).type_text('secret', humanize=True)
+            await (await tab.find(tag_name='button', type='submit')).click()
 
-        # 2. Chame a API com a sessão logada
-        response = await tab.request.get('https://yourapp.com/api/profile')
-        print(response.json())
+            # 2. Chame a API com a sessão logada
+            response = await tab.request.get('https://yourapp.com/api/profile')
+            print(response.json())
 
-asyncio.run(main())
-```
+    asyncio.run(main())
+    ```
 
 !!! note "Sem manipulação de cookies"
     Nada acima copia cookies ou passa um token. Como a requisição roda no contexto do navegador, ela usa a mesma sessão que a página acabou de autenticar.
@@ -60,24 +103,49 @@ asyncio.run(main())
 
 Passe `json=` para enviar um corpo JSON (o `Content-Type` é definido para você):
 
-```python
-response = await tab.request.post(
-    'https://jsonplaceholder.typicode.com/posts',
-    json={'title': 'Automating the web', 'body': 'with pydoll', 'userId': 1},
-)
-print(response.status_code)          # 201
-print(response.json()['id'])
-```
+=== "Sync"
+
+    ```python
+    response = tab.request.post(
+        'https://jsonplaceholder.typicode.com/posts',
+        json={'title': 'Automating the web', 'body': 'with pydoll', 'userId': 1},
+    )
+    print(response.status_code)          # 201
+    print(response.json()['id'])
+    ```
+
+=== "Async"
+
+    ```python
+    response = await tab.request.post(
+        'https://jsonplaceholder.typicode.com/posts',
+        json={'title': 'Automating the web', 'body': 'with pydoll', 'userId': 1},
+    )
+    print(response.status_code)          # 201
+    print(response.json()['id'])
+    ```
 
 Passe `data=` para enviar campos codificados como formulário. `data` e `json` são mutuamente exclusivos:
 
-```python
-response = await tab.request.post(
-    'https://httpbin.org/post',
-    data={'username': 'tester', 'remember': 'true'},
-)
-print(response.json()['form'])       # {'username': 'tester', 'remember': 'true'}
-```
+=== "Sync"
+
+    ```python
+    response = tab.request.post(
+        'https://httpbin.org/post',
+        data={'username': 'tester', 'remember': 'true'},
+    )
+    print(response.json()['form'])       # {'username': 'tester', 'remember': 'true'}
+    ```
+
+=== "Async"
+
+    ```python
+    response = await tab.request.post(
+        'https://httpbin.org/post',
+        data={'username': 'tester', 'remember': 'true'},
+    )
+    print(response.json()['form'])       # {'username': 'tester', 'remember': 'true'}
+    ```
 
 `data` também aceita um `str` ou `bytes` quando você precisa enviar um corpo bruto.
 
@@ -85,17 +153,33 @@ print(response.json()['form'])       # {'username': 'tester', 'remember': 'true'
 
 Cabeçalhos são uma lista de `HeaderEntry` (um dict tipado com `name` e `value`). Eles são adicionados por cima dos cabeçalhos automáticos do navegador, sem substituí-los:
 
-```python
-from pydoll.protocol.fetch.types import HeaderEntry
+=== "Sync"
 
-headers: list[HeaderEntry] = [
-    {'name': 'X-API-Version', 'value': '2'},
-    {'name': 'Accept-Language', 'value': 'pt-BR,pt;q=0.9'},
-]
+    ```python
+    from pydoll.protocol.fetch.types import HeaderEntry
 
-response = await tab.request.get('https://httpbin.org/headers', headers=headers)
-print(response.json()['headers'])
-```
+    headers: list[HeaderEntry] = [
+        {'name': 'X-API-Version', 'value': '2'},
+        {'name': 'Accept-Language', 'value': 'pt-BR,pt;q=0.9'},
+    ]
+
+    response = tab.request.get('https://httpbin.org/headers', headers=headers)
+    print(response.json()['headers'])
+    ```
+
+=== "Async"
+
+    ```python
+    from pydoll.protocol.fetch.types import HeaderEntry
+
+    headers: list[HeaderEntry] = [
+        {'name': 'X-API-Version', 'value': '2'},
+        {'name': 'Accept-Language', 'value': 'pt-BR,pt;q=0.9'},
+    ]
+
+    response = await tab.request.get('https://httpbin.org/headers', headers=headers)
+    print(response.json()['headers'])
+    ```
 
 !!! tip "Fique com cabeçalhos personalizados"
     Cabeçalhos personalizados como `X-API-Key` ou `Authorization` são enviados junto com os próprios cabeçalhos do navegador. Tentar sobrescrever um cabeçalho padrão (`User-Agent`, `Referer`) tem comportamento inconsistente, então deixe esses para o navegador e defina apenas os seus.
@@ -104,26 +188,51 @@ print(response.json()['headers'])
 
 O objeto `Response` espelha a biblioteca `requests`. `text`, `content`, `status_code`, `ok`, `headers`, `cookies` e `url` são propriedades; `json()` e `raise_for_status()` são métodos:
 
-```python
-response = await tab.request.get('https://jsonplaceholder.typicode.com/posts/1')
+=== "Sync"
 
-response.status_code     # 200
-response.ok              # True para 2xx e 3xx
+    ```python
+    response = tab.request.get('https://jsonplaceholder.typicode.com/posts/1')
 
-response.text            # corpo como str
-response.content         # corpo como bytes
-response.json()          # JSON parseado (dict ou list)
+    response.status_code     # 200
+    response.ok              # True para 2xx e 3xx
 
-response.url             # URL final após quaisquer redirecionamentos
+    response.text            # corpo como str
+    response.content         # corpo como bytes
+    response.json()          # JSON parseado (dict ou list)
 
-for header in response.headers:
-    print(header['name'], header['value'])
+    response.url             # URL final após quaisquer redirecionamentos
 
-for cookie in response.cookies:
-    print(cookie['name'], cookie['value'])
+    for header in response.headers:
+        print(header['name'], header['value'])
 
-response.raise_for_status()   # lança em um status 4xx ou 5xx
-```
+    for cookie in response.cookies:
+        print(cookie['name'], cookie['value'])
+
+    response.raise_for_status()   # lança em um status 4xx ou 5xx
+    ```
+
+=== "Async"
+
+    ```python
+    response = await tab.request.get('https://jsonplaceholder.typicode.com/posts/1')
+
+    response.status_code     # 200
+    response.ok              # True para 2xx e 3xx
+
+    response.text            # corpo como str
+    response.content         # corpo como bytes
+    response.json()          # JSON parseado (dict ou list)
+
+    response.url             # URL final após quaisquer redirecionamentos
+
+    for header in response.headers:
+        print(header['name'], header['value'])
+
+    for cookie in response.cookies:
+        print(cookie['name'], cookie['value'])
+
+    response.raise_for_status()   # lança em um status 4xx ou 5xx
+    ```
 
 `response.url` guarda apenas a URL final. Para acompanhar toda a cadeia de redirecionamentos, observe as requisições com [Monitoramento de rede](network-monitoring.md).
 
@@ -131,13 +240,25 @@ response.raise_for_status()   # lança em um status 4xx ou 5xx
 
 `get` e `post` cobrem a maior parte do trabalho; o restante dos verbos está disponível quando você precisar, com o mesmo formato:
 
-```python
-await tab.request.put('https://jsonplaceholder.typicode.com/posts/1', json={'title': 'edited'})
-await tab.request.patch('https://jsonplaceholder.typicode.com/posts/1', json={'title': 'tweaked'})
-await tab.request.delete('https://jsonplaceholder.typicode.com/posts/1')
-await tab.request.head('https://httpbin.org/get')
-await tab.request.options('https://httpbin.org/get')
-```
+=== "Sync"
+
+    ```python
+    tab.request.put('https://jsonplaceholder.typicode.com/posts/1', json={'title': 'edited'})
+    tab.request.patch('https://jsonplaceholder.typicode.com/posts/1', json={'title': 'tweaked'})
+    tab.request.delete('https://jsonplaceholder.typicode.com/posts/1')
+    tab.request.head('https://httpbin.org/get')
+    tab.request.options('https://httpbin.org/get')
+    ```
+
+=== "Async"
+
+    ```python
+    await tab.request.put('https://jsonplaceholder.typicode.com/posts/1', json={'title': 'edited'})
+    await tab.request.patch('https://jsonplaceholder.typicode.com/posts/1', json={'title': 'tweaked'})
+    await tab.request.delete('https://jsonplaceholder.typicode.com/posts/1')
+    await tab.request.head('https://httpbin.org/get')
+    await tab.request.options('https://httpbin.org/get')
+    ```
 
 Para controle total sobre o verbo e todas as opções em uma única chamada, use `tab.request.request(method, url, params=..., data=..., json=..., headers=...)`.
 

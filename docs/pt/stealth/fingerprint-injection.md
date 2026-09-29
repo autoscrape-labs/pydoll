@@ -20,25 +20,48 @@ Um limite honesto de saída: isto é substituição de identidade, não anonimat
 
 Chame `apply_fingerprint()` antes da primeira navegação. Só os campos presentes no perfil são sobrescritos; o resto mantém os valores reais do navegador.
 
-```python
-import asyncio
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
+    ```python
+    import time
+    from pydoll.sync import Chrome
 
-from examples.fingerprints import FINGERPRINTS
+    from examples.fingerprints import FINGERPRINTS
 
-async def spoof_fingerprint():
-    async with Chrome() as browser:
-        tab = await browser.start()
+    def spoof_fingerprint():
+        with Chrome() as browser:
+            tab = browser.start()
 
-        # Aplique antes da primeira navegação.
-        await tab.apply_fingerprint(FINGERPRINTS['macos_m3_new_york'])
+            # Aplique antes da primeira navegação.
+            tab.apply_fingerprint(FINGERPRINTS['macos_m3_new_york'])
 
-        await tab.go_to('https://abrahamjuliot.github.io/creepjs/')
-        await asyncio.sleep(5)
+            tab.go_to('https://abrahamjuliot.github.io/creepjs/')
+            time.sleep(5)
 
-asyncio.run(spoof_fingerprint())
-```
+    spoof_fingerprint()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+
+    from pydoll import Chrome
+
+    from examples.fingerprints import FINGERPRINTS
+
+    async def spoof_fingerprint():
+        async with Chrome() as browser:
+            tab = await browser.start()
+
+            # Aplique antes da primeira navegação.
+            await tab.apply_fingerprint(FINGERPRINTS['macos_m3_new_york'])
+
+            await tab.go_to('https://abrahamjuliot.github.io/creepjs/')
+            await asyncio.sleep(5)
+
+    asyncio.run(spoof_fingerprint())
+    ```
 
 !!! note "De onde vem `FINGERPRINTS`"
     O Pydoll não distribui perfis de fingerprint. `FINGERPRINTS` fica em `examples/fingerprints.py` no [repositório do pydoll](https://github.com/autoscrape-labs/pydoll), como perfis de referência para o formato `FingerprintConfig` (um typed dict de `pydoll.protocol.fingerprint.types`). Copie esse arquivo para o seu projeto e adapte cada perfil à sua máquina e ao seu IP. Um perfil reusado como está é uma assinatura compartilhada, não um disfarce.
@@ -75,10 +98,19 @@ O kernel e a renderização de texto do OS expõem o OS real em camadas que nenh
 
 O handshake TLS e o motor JavaScript reportam a versão real do binário; o User-Agent é a única parte que `apply_fingerprint()` muda. Leia a versão do binário e mantenha o major do perfil igual a ela, atualizando a cada upgrade do Chrome.
 
-```python
-version = await browser.get_version()
-print(version['product'])  # ex.: 'Chrome/152.0.7977.83'
-```
+=== "Sync"
+
+    ```python
+    version = browser.get_version()
+    print(version['product'])  # ex.: 'Chrome/152.0.7977.83'
+    ```
+
+=== "Async"
+
+    ```python
+    version = await browser.get_version()
+    print(version['product'])  # ex.: 'Chrome/152.0.7977.83'
+    ```
 
 ### Combine locale e fuso horário com o IP de saída
 
@@ -92,6 +124,8 @@ print(version['product'])  # ex.: 'Chrome/152.0.7977.83'
 ### Combine a GPU e as fontes com o host
 
 As seções `webgl` e `webgpu` mudam o que o navegador reporta sobre a GPU; o que a GPU desenha continua real. Nomeie a família de GPU que está de fato na máquina, e capture os limites e as features de um dispositivo real daquela classe em vez de adivinhar. A seção `fonts` cobre as sondas de fontes em JavaScript; o motor de layout mede as fontes realmente instaladas, então liste exatamente o que está instalado.
+
+Tire as listas de extensões WebGL da mesma captura. `getSupportedExtensions()` reporta a lista do perfil na ordem do próprio Chrome: uma extensão que a GPU do host tem passa direto, e uma que o host não tem é construída a partir da definição de interface do Chromium, com as constantes, os métodos, os formatos de textura comprimida e os limites que ela destrava. Um rasterizador por software expõe uma lista mais curta que qualquer GPU dedicada, e é isso que mantém essa diferença fora do perfil. Um nome que o pydoll não conhece só é mantido quando o host realmente o expõe.
 
 ### Fixe os Client Hints que o User-Agent não consegue carregar
 
@@ -108,14 +142,27 @@ fingerprint = FingerprintConfig(
 
 Um browser context guarda uma identidade. Aplicar um segundo fingerprint, diferente, ao mesmo context levanta `FingerprintContextConflict`. Rode identidades diferentes em contexts separados.
 
-```python
-ctx_id = await browser.create_browser_context()
-tab_us = await browser.start()
-tab_br = await browser.new_tab(browser_context_id=ctx_id)
+=== "Sync"
 
-await tab_us.apply_fingerprint(FINGERPRINTS['windows11_rtx3060_nyc'])
-await tab_br.apply_fingerprint(FINGERPRINTS['android_s24_ultra_sao_paulo'])
-```
+    ```python
+    tab_us = browser.start()
+    ctx_id = browser.create_browser_context()
+    tab_br = browser.new_tab(browser_context_id=ctx_id)
+
+    tab_us.apply_fingerprint(FINGERPRINTS['windows11_rtx3060_nyc'])
+    tab_br.apply_fingerprint(FINGERPRINTS['android_s24_ultra_sao_paulo'])
+    ```
+
+=== "Async"
+
+    ```python
+    tab_us = await browser.start()
+    ctx_id = await browser.create_browser_context()
+    tab_br = await browser.new_tab(browser_context_id=ctx_id)
+
+    await tab_us.apply_fingerprint(FINGERPRINTS['windows11_rtx3060_nyc'])
+    await tab_br.apply_fingerprint(FINGERPRINTS['android_s24_ultra_sao_paulo'])
+    ```
 
 Veja [Browser contexts](../guides/browser-contexts.md).
 

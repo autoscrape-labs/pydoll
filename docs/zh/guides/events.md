@@ -6,30 +6,53 @@
 
 处理事件始终是同样的三个步骤：启用你关心的域，用 `on()` 注册一个 callback，然后让事件触发。在其域被启用之前注册的 callback 永远不会运行，所以要先启用。
 
-```python
-import asyncio
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
-from pydoll.protocol.page.events import PageEvent
+    ```python
+    import time
+    from pydoll.sync import Chrome, PageEvent
+
+    def main():
+        with Chrome() as browser:
+            tab = browser.start()
+
+            def on_load(event):
+                print('page finished loading')
+
+            tab.enable_page_events()
+            tab.on(PageEvent.LOAD_EVENT_FIRED, on_load)
+
+            tab.go_to('https://news.ycombinator.com')
+            time.sleep(2)
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+
+    from pydoll import Chrome, PageEvent
 
 
-async def main():
-    async with Chrome() as browser:
-        tab = await browser.start()
+    async def main():
+        async with Chrome() as browser:
+            tab = await browser.start()
 
-        async def on_load(event):
-            print('page finished loading')
+            async def on_load(event):
+                print('page finished loading')
 
-        await tab.enable_page_events()
-        await tab.on(PageEvent.LOAD_EVENT_FIRED, on_load)
+            await tab.enable_page_events()
+            await tab.on(PageEvent.LOAD_EVENT_FIRED, on_load)
 
-        await tab.go_to('https://news.ycombinator.com')
-        await asyncio.sleep(2)
+            await tab.go_to('https://news.ycombinator.com')
+            await asyncio.sleep(2)
 
-asyncio.run(main())
-```
+    asyncio.run(main())
+    ```
 
-`on(event_name, callback)` 返回一个整数 id，你之后可以用它来移除该 callback。callback 可以是同步或异步的，它接收一个参数：事件本身。
+`on(event_name, callback)` 返回一个整数 id，你之后可以用它来移除该 callback。在异步 API 中，callback 可以是同步或异步的；它接收一个参数：事件本身。
 
 <iframe scrolling="no" src="/docs/resources/visuals/events-flow.html" aria-label="Events firing on a page and your callbacks running" style="width: 100%; height: 395px; border: 0;" loading="lazy"></iframe>
 
@@ -48,14 +71,26 @@ asyncio.run(main())
 
 每种事件类型在 `pydoll.protocol.<domain>.events` 下都是一个 `TypedDict`，所以为 callback 添加类型提示会让你在 `params` 的键上获得自动补全：
 
-```python
-from pydoll.protocol.network.events import RequestWillBeSentEvent
+=== "Sync"
+
+    ```python
+    from pydoll.protocol.network.events import RequestWillBeSentEvent
+
+    def on_request(event: RequestWillBeSentEvent):
+        request = event['params']['request']
+        print(f"{request['method']} {request['url']}")
+    ```
+
+=== "Async"
+
+    ```python
+    from pydoll.protocol.network.events import RequestWillBeSentEvent
 
 
-async def on_request(event: RequestWillBeSentEvent):
-    request = event['params']['request']
-    print(f"{request['method']} {request['url']}")
-```
+    async def on_request(event: RequestWillBeSentEvent):
+        request = event['params']['request']
+        print(f"{request['method']} {request['url']}")
+    ```
 
 下面的示例都假定有一个运行中的 `tab`，就像第一个示例里设置的那样。
 
@@ -63,25 +98,46 @@ async def on_request(event: RequestWillBeSentEvent):
 
 启用网络域，就能看到每一个请求发出、每一个响应返回：
 
-```python
-from pydoll.protocol.network.events import NetworkEvent
+=== "Sync"
+
+    ```python
+    from pydoll.sync import NetworkEvent
+
+    def on_request(event):
+        print(f"→ {event['params']['request']['url']}")
+
+    def on_response(event):
+        response = event['params']['response']
+        print(f"← {response['status']} {response['url']}")
+
+    tab.enable_network_events()
+    tab.on(NetworkEvent.REQUEST_WILL_BE_SENT, on_request)
+    tab.on(NetworkEvent.RESPONSE_RECEIVED, on_response)
+
+    tab.go_to('https://news.ycombinator.com')
+    ```
+
+=== "Async"
+
+    ```python
+    from pydoll import NetworkEvent
 
 
-async def on_request(event):
-    print(f"→ {event['params']['request']['url']}")
+    async def on_request(event):
+        print(f"→ {event['params']['request']['url']}")
 
 
-async def on_response(event):
-    response = event['params']['response']
-    print(f"← {response['status']} {response['url']}")
+    async def on_response(event):
+        response = event['params']['response']
+        print(f"← {response['status']} {response['url']}")
 
 
-await tab.enable_network_events()
-await tab.on(NetworkEvent.REQUEST_WILL_BE_SENT, on_request)
-await tab.on(NetworkEvent.RESPONSE_RECEIVED, on_response)
+    await tab.enable_network_events()
+    await tab.on(NetworkEvent.REQUEST_WILL_BE_SENT, on_request)
+    await tab.on(NetworkEvent.RESPONSE_RECEIVED, on_response)
 
-await tab.go_to('https://news.ycombinator.com')
-```
+    await tab.go_to('https://news.ycombinator.com')
+    ```
 
 若要修改或阻止请求而不只是观察它们，参见[请求拦截](request-interception.md)。
 
@@ -89,63 +145,123 @@ await tab.go_to('https://news.ycombinator.com')
 
 传入 `temporary=True`，callback 在第一次触发后就会移除自身。对于那种不应在之后每次加载时都重复的一次性设置，这正是你想要的：
 
-```python
-from pydoll.protocol.page.events import PageEvent
+=== "Sync"
 
-await tab.on(PageEvent.LOAD_EVENT_FIRED, on_load, temporary=True)
+    ```python
+    from pydoll.sync import PageEvent
 
-await tab.go_to('https://the-internet.herokuapp.com')  # 触发一次
-await tab.refresh()                                      # 不会再次触发
-```
+    tab.on(PageEvent.LOAD_EVENT_FIRED, on_load, temporary=True)
+
+    tab.go_to('https://the-internet.herokuapp.com')  # 触发一次
+    tab.refresh()                                      # 不会再次触发
+    ```
+
+=== "Async"
+
+    ```python
+    from pydoll import PageEvent
+
+    await tab.on(PageEvent.LOAD_EVENT_FIRED, on_load, temporary=True)
+
+    await tab.go_to('https://the-internet.herokuapp.com')  # 触发一次
+    await tab.refresh()                                      # 不会再次触发
+    ```
 
 ## 等待某个特定事件
 
-当你需要暂停直到某件事发生时，事件天然地与 `asyncio.Event` 搭配。注册一个设置标志的临时监听器，触发动作，然后等待该标志：
+当你需要暂停直到某件事发生时，事件天然地与事件标志搭配：同步 API 里用 `threading.Event`，异步 API 里用 `asyncio.Event`。注册一个设置标志的临时监听器，触发动作，然后等待该标志：
 
-```python
-import asyncio
+=== "Sync"
 
-from pydoll.protocol.page.events import PageEvent
+    ```python
+    import threading
+
+    from pydoll.sync import PageEvent
 
 
-async def click_and_wait_for_navigation(tab):
-    navigated = asyncio.Event()
+    def click_and_wait_for_navigation(tab):
+        navigated = threading.Event()
 
-    async def on_navigated(event):
-        navigated.set()
+        def on_navigated(event):
+            navigated.set()
 
-    await tab.enable_page_events()
-    await tab.on(PageEvent.FRAME_NAVIGATED, on_navigated, temporary=True)
+        tab.enable_page_events()
+        tab.on(PageEvent.FRAME_NAVIGATED, on_navigated, temporary=True)
 
-    link = await tab.find(text='Form Authentication')
-    await link.click()
+        link = tab.find(text='Form Authentication')
+        link.click()
 
-    await navigated.wait()
-    print('navigation finished')
-```
+        navigated.wait()
+        print('navigation finished')
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+
+    from pydoll import PageEvent
+
+
+    async def click_and_wait_for_navigation(tab):
+        navigated = asyncio.Event()
+
+        async def on_navigated(event):
+            navigated.set()
+
+        await tab.enable_page_events()
+        await tab.on(PageEvent.FRAME_NAVIGATED, on_navigated, temporary=True)
+
+        link = await tab.find(text='Form Authentication')
+        await link.click()
+
+        await navigated.wait()
+        print('navigation finished')
+    ```
 
 ## 在 callback 内部使用 tab
 
 `on()` 只把事件传给你的 callback。若要同时使用 tab（例如读取响应体），用 `functools.partial` 把它绑定进去：
 
-```python
-from functools import partial
+=== "Sync"
 
-from pydoll.protocol.network.events import NetworkEvent
+    ```python
+    from functools import partial
+
+    from pydoll.sync import NetworkEvent
+
+    def capture_json(tab, event):
+        url = event['params']['response']['url']
+        if '/api/' not in url:
+            return
+        request_id = event['params']['requestId']
+        body = tab.get_network_response_body(request_id)
+        print(f'{url}: {body[:80]}')
+
+    tab.enable_network_events()
+    tab.on(NetworkEvent.RESPONSE_RECEIVED, partial(capture_json, tab))
+    ```
+
+=== "Async"
+
+    ```python
+    from functools import partial
+
+    from pydoll import NetworkEvent
 
 
-async def capture_json(tab, event):
-    url = event['params']['response']['url']
-    if '/api/' not in url:
-        return
-    request_id = event['params']['requestId']
-    body = await tab.get_network_response_body(request_id)
-    print(f'{url}: {body[:80]}')
+    async def capture_json(tab, event):
+        url = event['params']['response']['url']
+        if '/api/' not in url:
+            return
+        request_id = event['params']['requestId']
+        body = await tab.get_network_response_body(request_id)
+        print(f'{url}: {body[:80]}')
 
 
-await tab.enable_network_events()
-await tab.on(NetworkEvent.RESPONSE_RECEIVED, partial(capture_json, tab))
-```
+    await tab.enable_network_events()
+    await tab.on(NetworkEvent.RESPONSE_RECEIVED, partial(capture_json, tab))
+    ```
 
 像上面那样尽早过滤：一旦发现事件不是你关心的，就立即返回，这样昂贵的工作只在该做时才运行。
 
@@ -153,33 +269,63 @@ await tab.on(NetworkEvent.RESPONSE_RECEIVED, partial(capture_json, tab))
 
 订阅对话框事件，就能自动应答 `alert`、`confirm` 和 `prompt` 弹框，而不是让它们卡住页面：
 
-```python
-from pydoll.protocol.page.events import PageEvent
+=== "Sync"
+
+    ```python
+    from pydoll.sync import PageEvent
+
+    def on_dialog(event):
+        if tab.has_dialog():
+            tab.handle_dialog(accept=True)
+
+    tab.enable_page_events()
+    tab.on(PageEvent.JAVASCRIPT_DIALOG_OPENING, on_dialog)
+    tab.go_to('https://the-internet.herokuapp.com/javascript_alerts')
+    ```
+
+=== "Async"
+
+    ```python
+    from pydoll import PageEvent
 
 
-async def on_dialog(event):
-    if await tab.has_dialog():
-        await tab.handle_dialog(accept=True)
+    async def on_dialog(event):
+        if await tab.has_dialog():
+            await tab.handle_dialog(accept=True)
 
 
-await tab.enable_page_events()
-await tab.on(PageEvent.JAVASCRIPT_DIALOG_OPENING, on_dialog)
-await tab.go_to('https://the-internet.herokuapp.com/javascript_alerts')
-```
+    await tab.enable_page_events()
+    await tab.on(PageEvent.JAVASCRIPT_DIALOG_OPENING, on_dialog)
+    await tab.go_to('https://the-internet.herokuapp.com/javascript_alerts')
+    ```
 
 ## 用完之后清理
 
 让监听器的作用范围只限于需要它们的那部分工作。用 id 移除单个 callback，或者全部清除，并在你用完某个域之后禁用它：
 
-```python
-callback_id = await tab.on(NetworkEvent.REQUEST_WILL_BE_SENT, on_request)
+=== "Sync"
 
-# ... 做需要它的那部分工作 ...
+    ```python
+    callback_id = tab.on(NetworkEvent.REQUEST_WILL_BE_SENT, on_request)
 
-await tab.remove_callback(callback_id)   # 移除一个
-await tab.clear_callbacks()              # 或移除该标签页上的每一个 callback
-await tab.disable_network_events()       # 停止该域
-```
+    # ... 做需要它的那部分工作 ...
+
+    tab.remove_callback(callback_id)   # 移除一个
+    tab.clear_callbacks()              # 或移除该标签页上的每一个 callback
+    tab.disable_network_events()       # 停止该域
+    ```
+
+=== "Async"
+
+    ```python
+    callback_id = await tab.on(NetworkEvent.REQUEST_WILL_BE_SENT, on_request)
+
+    # ... 做需要它的那部分工作 ...
+
+    await tab.remove_callback(callback_id)   # 移除一个
+    await tab.clear_callbacks()              # 或移除该标签页上的每一个 callback
+    await tab.disable_network_events()       # 停止该域
+    ```
 
 只启用你用得到的域。DOM 事件尤其在动态页面上触发得非常频繁，所以只在你需要时才订阅它们，并让 callback 保持快速；用 `asyncio.create_task` 把繁重的工作卸载到单独的任务里，这样它就不会拖住下一个事件。
 

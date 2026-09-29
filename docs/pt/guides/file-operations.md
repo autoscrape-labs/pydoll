@@ -6,78 +6,151 @@ Fazer upload e download de arquivos significa lidar com diálogos em nível de s
 
 Quando a página tem um `<input type="file">` de verdade, encontre-o e chame `set_input_files()`. Isso define os arquivos diretamente, sem abrir o diálogo do sistema operacional.
 
-```python
-import asyncio
-from pathlib import Path
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
+    ```python
+    from pathlib import Path
+
+    from pydoll.sync import Chrome
+
+    def main():
+        with Chrome() as browser:
+            tab = browser.start()
+            tab.go_to('https://the-internet.herokuapp.com/upload')
+
+            file_input = tab.find(id='file-upload')
+            file_input.set_input_files(Path('report.pdf'))
+
+            submit = tab.find(id='file-submit')
+            submit.click()
+
+            result = tab.find(tag_name='h3')
+            print(result.text())   # "File Uploaded!"
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+    from pathlib import Path
+
+    from pydoll import Chrome
 
 
-async def main():
-    async with Chrome() as browser:
-        tab = await browser.start()
-        await tab.go_to('https://the-internet.herokuapp.com/upload')
+    async def main():
+        async with Chrome() as browser:
+            tab = await browser.start()
+            await tab.go_to('https://the-internet.herokuapp.com/upload')
 
-        file_input = await tab.find(id='file-upload')
-        await file_input.set_input_files(Path('report.pdf'))
+            file_input = await tab.find(id='file-upload')
+            await file_input.set_input_files(Path('report.pdf'))
 
-        submit = await tab.find(id='file-submit')
-        await submit.click()
+            submit = await tab.find(id='file-submit')
+            await submit.click()
 
-        result = await tab.find(tag_name='h3')
-        print(await result.text)   # "File Uploaded!"
+            result = await tab.find(tag_name='h3')
+            print(await result.text())   # "File Uploaded!"
 
-asyncio.run(main())
-```
+    asyncio.run(main())
+    ```
 
 `set_input_files()` aceita uma `str`, um `pathlib.Path`, ou uma lista deles. Um `Path` é a escolha mais portável, mas uma string simples também funciona:
 
-```python
-await file_input.set_input_files('report.pdf')
-await file_input.set_input_files(Path.home() / 'Documents' / 'report.pdf')
-```
+=== "Sync"
+
+    ```python
+    file_input.set_input_files('report.pdf')
+    file_input.set_input_files(Path.home() / 'Documents' / 'report.pdf')
+    ```
+
+=== "Async"
+
+    ```python
+    await file_input.set_input_files('report.pdf')
+    await file_input.set_input_files(Path.home() / 'Documents' / 'report.pdf')
+    ```
 
 ### Fazer upload de vários arquivos de uma vez
 
 Para um input marcado como `multiple`, passe uma lista. Você pode montar essa lista como quiser, inclusive com `Path.glob()`:
 
-```python
-await file_input.set_input_files([
-    Path('report.pdf'),
-    Path('cover.png'),
-])
+=== "Sync"
 
-# todo CSV em uma pasta
-csv_files = list(Path('data').glob('*.csv'))
-await file_input.set_input_files(csv_files)
-```
+    ```python
+    file_input.set_input_files([
+        Path('report.pdf'),
+        Path('cover.png'),
+    ])
+
+    # todo CSV em uma pasta
+    csv_files = list(Path('data').glob('*.csv'))
+    file_input.set_input_files(csv_files)
+    ```
+
+=== "Async"
+
+    ```python
+    await file_input.set_input_files([
+        Path('report.pdf'),
+        Path('cover.png'),
+    ])
+
+    # todo CSV em uma pasta
+    csv_files = list(Path('data').glob('*.csv'))
+    await file_input.set_input_files(csv_files)
+    ```
 
 ## Fazer upload por um diálogo seletor de arquivos
 
 Muitos sites escondem o input de arquivo atrás de um botão estilizado ou de uma zona de arrastar e soltar, então clicar nele abre o seletor de arquivos do sistema operacional. O `set_input_files()` não tem o que mirar ali. Em vez disso, envolva o clique em `expect_file_chooser()`: ele intercepta o diálogo e define seus arquivos quando ele abre.
 
-```python
-import asyncio
-from pathlib import Path
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
+    ```python
+    from pathlib import Path
+
+    from pydoll.sync import Chrome
+
+    def main():
+        with Chrome() as browser:
+            tab = browser.start()
+            tab.go_to('https://example-uploads.test/gallery')
+
+            with tab.expect_file_chooser(files=Path('cover.png')):
+                upload_button = tab.find(class_name='upload-button')
+                upload_button.click()
+
+            print('File selected through the chooser.')
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+    from pathlib import Path
+
+    from pydoll import Chrome
 
 
-async def main():
-    async with Chrome() as browser:
-        tab = await browser.start()
-        await tab.go_to('https://example-uploads.test/gallery')
+    async def main():
+        async with Chrome() as browser:
+            tab = await browser.start()
+            await tab.go_to('https://example-uploads.test/gallery')
 
-        async with tab.expect_file_chooser(files=Path('cover.png')):
-            upload_button = await tab.find(class_name='upload-button')
-            await upload_button.click()
+            async with tab.expect_file_chooser(files=Path('cover.png')):
+                upload_button = await tab.find(class_name='upload-button')
+                await upload_button.click()
 
-        print('File selected through the chooser.')
+            print('File selected through the chooser.')
 
-asyncio.run(main())
-```
+    asyncio.run(main())
+    ```
 
-O clique que abre o diálogo vai **dentro** do bloco `async with`. Quando o seletor de arquivos abre, o Pydoll o preenche com seus arquivos; você nunca vê o diálogo nativo. `files` recebe a mesma `str`, `Path` ou lista que `set_input_files()` aceita.
+O clique que abre o diálogo vai **dentro** do bloco `with`. Quando o seletor de arquivos abre, o Pydoll o preenche com seus arquivos; você nunca vê o diálogo nativo. `files` recebe a mesma `str`, `Path` ou lista que `set_input_files()` aceita.
 
 !!! tip "Qual método de upload?"
     Use `set_input_files()` quando há um `<input type="file">` de verdade no DOM; é instantâneo e não precisa de diálogo. Use `expect_file_chooser()` quando o input está escondido e um controle personalizado abre o seletor do sistema operacional.
@@ -86,26 +159,48 @@ O clique que abre o diálogo vai **dentro** do bloco `async with`. Quando o sele
 
 Envolva a ação que inicia um download em `expect_download()`. O Pydoll espera o download terminar e te entrega um handle para lê-lo, então você não fica consultando um diretório esperando o arquivo aparecer.
 
-```python
-import asyncio
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
+    ```python
+    from pydoll.sync import Chrome
+
+    def main():
+        with Chrome() as browser:
+            tab = browser.start()
+            tab.go_to('https://the-internet.herokuapp.com/download')
+
+            with tab.expect_download() as download:
+                link = tab.query('.example a')
+                link.click()
+                data = download.read_bytes()
+
+            print(f'Downloaded {len(data)} bytes')
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+
+    from pydoll import Chrome
 
 
-async def main():
-    async with Chrome() as browser:
-        tab = await browser.start()
-        await tab.go_to('https://the-internet.herokuapp.com/download')
+    async def main():
+        async with Chrome() as browser:
+            tab = await browser.start()
+            await tab.go_to('https://the-internet.herokuapp.com/download')
 
-        async with tab.expect_download() as download:
-            link = await tab.query('.example a')
-            await link.click()
-            data = await download.read_bytes()
+            async with tab.expect_download() as download:
+                link = await tab.query('.example a')
+                await link.click()
+                data = await download.read_bytes()
 
-        print(f'Downloaded {len(data)} bytes')
+            print(f'Downloaded {len(data)} bytes')
 
-asyncio.run(main())
-```
+    asyncio.run(main())
+    ```
 
 Leia o arquivo **dentro** do bloco. Por padrão, o download vai parar em um diretório temporário que é limpo quando o bloco termina, então `read_bytes()` (ou `read_base64()`) é como você captura o conteúdo. O gatilho, aqui um clique em link, também vai dentro do bloco.
 
@@ -113,14 +208,27 @@ Leia o arquivo **dentro** do bloco. Por padrão, o download vai parar em um dire
 
 Passe `keep_file_at` com um diretório para persistir o download em vez de usar um diretório temporário descartável. O arquivo permanece depois que o bloco termina, e `download.file_path` te diz onde ele foi parar:
 
-```python
-async with tab.expect_download(keep_file_at='downloads/') as download:
-    link = await tab.query('.example a')
-    await link.click()
-    await download.wait_finished()
+=== "Sync"
 
-print(f'Saved to {download.file_path}')
-```
+    ```python
+    with tab.expect_download(keep_file_at='downloads/') as download:
+        link = tab.query('.example a')
+        link.click()
+        download.wait_finished()
+
+    print(f'Saved to {download.file_path}')
+    ```
+
+=== "Async"
+
+    ```python
+    async with tab.expect_download(keep_file_at='downloads/') as download:
+        link = await tab.query('.example a')
+        await link.click()
+        await download.wait_finished()
+
+    print(f'Saved to {download.file_path}')
+    ```
 
 `expect_download()` espera até 60 segundos por padrão; passe `timeout` em segundos para mudar isso. O handle também oferece `read_base64()` quando você precisa do conteúdo como uma string base64.
 

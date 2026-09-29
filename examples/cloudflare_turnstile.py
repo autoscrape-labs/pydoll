@@ -14,7 +14,7 @@ async def example_with_context_manager():
     page = await browser.new_tab()
 
     print('Using context manager approach...')
-    async with page.expect_and_bypass_cloudflare_captcha():
+    async with page.expect_cloudflare_turnstile():
         await page.go_to('https://www.planetminecraft.com/account/sign_in/')
         print('Page loaded, waiting for captcha to be handled...')
 
@@ -37,7 +37,7 @@ async def example_with_enable_disable():
     print('Using enable/disable approach...')
 
     # Enable automatic captcha solving before navigating
-    await page.enable_auto_solve_cloudflare_captcha()
+    await page.enable_cloudflare_turnstile_handling()
 
     # Navigate to the page - captcha will be handled automatically
     await page.go_to('https://www.planetminecraft.com/account/sign_in/')
@@ -48,7 +48,7 @@ async def example_with_enable_disable():
     await asyncio.sleep(5)
 
     # Disable auto-solving when no longer needed
-    await page.disable_auto_solve_cloudflare_captcha()
+    await page.disable_cloudflare_turnstile_handling()
     print('Auto-solving disabled')
 
     await browser.stop()

@@ -11,6 +11,7 @@ from __future__ import annotations
 import pytest
 
 from pydoll.elements.shadow_root import ShadowRoot
+from pydoll.elements.web_element import WebElement
 from pydoll.protocol.dom.types import ShadowRootType
 
 
@@ -28,14 +29,14 @@ def test_mode_property_reflects_construction(fake_conn):
 
 
 def test_host_element_property_reflects_construction(fake_conn):
-    host = object()
+    host = WebElement('host', fake_conn, attributes_list=['tag_name', 'div'])
     assert _shadow(fake_conn, host_element=host).host_element is host
 
 
 @pytest.mark.asyncio
 async def test_inner_html_returns_the_shadow_html(fake_conn):
     fake_conn.set_response('DOM.getOuterHTML', {'outerHTML': '<span>inner</span>'})
-    assert await _shadow(fake_conn).inner_html == '<span>inner</span>'
+    assert await _shadow(fake_conn).inner_html() == '<span>inner</span>'
 
 
 @pytest.mark.asyncio

@@ -1,0 +1,300 @@
+"""Playwright key names resolved to CDP key event parameters.
+
+Port of Playwright's US keyboard layout (``usKeyboardLayout.ts``) and of the
+key-description logic in ``input.ts``: a key can be named by its ``code``
+(``KeyA``, ``Digit1``), by its ``key`` value (``a``, ``Enter``, ``ArrowDown``)
+or by a shifted character (``A``, ``!``). Modifiers combine with ``+``.
+"""
+
+from __future__ import annotations
+
+import sys
+from dataclasses import dataclass
+from typing import TypedDict, cast
+
+from pydoll.playwright._errors import Error
+from pydoll.protocol.input.types import KeyLocation, KeyModifier
+
+
+@dataclass(frozen=True)
+class KeyDescription:
+    key: str
+    key_code: int
+    key_code_without_location: int
+    code: str
+    text: str
+    location: int
+    shifted: bool = False
+
+
+KEYPAD_LOCATION = 3
+
+
+class _KeyDefinition(TypedDict, total=False):
+    """One row of Playwright's US keyboard layout."""
+
+    key: str
+    keyCode: int
+    keyCodeWithoutLocation: int
+    location: int
+    text: str
+    shiftKey: str
+    shiftKeyCode: int
+
+
+def key_location(location: int) -> KeyLocation | None:
+    """CDP takes left and right as ``location``; the keypad travels as ``isKeypad``."""
+    if location in {KeyLocation.LEFT, KeyLocation.RIGHT}:
+        return KeyLocation(location)
+    return None
+
+
+_LAYOUT: dict[str, _KeyDefinition] = {
+    'Escape': {'keyCode': 27, 'key': 'Escape'},
+    'F1': {'keyCode': 112, 'key': 'F1'},
+    'F2': {'keyCode': 113, 'key': 'F2'},
+    'F3': {'keyCode': 114, 'key': 'F3'},
+    'F4': {'keyCode': 115, 'key': 'F4'},
+    'F5': {'keyCode': 116, 'key': 'F5'},
+    'F6': {'keyCode': 117, 'key': 'F6'},
+    'F7': {'keyCode': 118, 'key': 'F7'},
+    'F8': {'keyCode': 119, 'key': 'F8'},
+    'F9': {'keyCode': 120, 'key': 'F9'},
+    'F10': {'keyCode': 121, 'key': 'F10'},
+    'F11': {'keyCode': 122, 'key': 'F11'},
+    'F12': {'keyCode': 123, 'key': 'F12'},
+    'Backquote': {'keyCode': 192, 'shiftKey': '~', 'key': '`'},
+    'Digit1': {'keyCode': 49, 'shiftKey': '!', 'key': '1'},
+    'Digit2': {'keyCode': 50, 'shiftKey': '@', 'key': '2'},
+    'Digit3': {'keyCode': 51, 'shiftKey': '#', 'key': '3'},
+    'Digit4': {'keyCode': 52, 'shiftKey': '$', 'key': '4'},
+    'Digit5': {'keyCode': 53, 'shiftKey': '%', 'key': '5'},
+    'Digit6': {'keyCode': 54, 'shiftKey': '^', 'key': '6'},
+    'Digit7': {'keyCode': 55, 'shiftKey': '&', 'key': '7'},
+    'Digit8': {'keyCode': 56, 'shiftKey': '*', 'key': '8'},
+    'Digit9': {'keyCode': 57, 'shiftKey': '(', 'key': '9'},
+    'Digit0': {'keyCode': 48, 'shiftKey': ')', 'key': '0'},
+    'Minus': {'keyCode': 189, 'shiftKey': '_', 'key': '-'},
+    'Equal': {'keyCode': 187, 'shiftKey': '+', 'key': '='},
+    'Backslash': {'keyCode': 220, 'shiftKey': '|', 'key': '\\'},
+    'Backspace': {'keyCode': 8, 'key': 'Backspace'},
+    'Tab': {'keyCode': 9, 'key': 'Tab'},
+    'KeyQ': {'keyCode': 81, 'shiftKey': 'Q', 'key': 'q'},
+    'KeyW': {'keyCode': 87, 'shiftKey': 'W', 'key': 'w'},
+    'KeyE': {'keyCode': 69, 'shiftKey': 'E', 'key': 'e'},
+    'KeyR': {'keyCode': 82, 'shiftKey': 'R', 'key': 'r'},
+    'KeyT': {'keyCode': 84, 'shiftKey': 'T', 'key': 't'},
+    'KeyY': {'keyCode': 89, 'shiftKey': 'Y', 'key': 'y'},
+    'KeyU': {'keyCode': 85, 'shiftKey': 'U', 'key': 'u'},
+    'KeyI': {'keyCode': 73, 'shiftKey': 'I', 'key': 'i'},
+    'KeyO': {'keyCode': 79, 'shiftKey': 'O', 'key': 'o'},
+    'KeyP': {'keyCode': 80, 'shiftKey': 'P', 'key': 'p'},
+    'BracketLeft': {'keyCode': 219, 'shiftKey': '{', 'key': '['},
+    'BracketRight': {'keyCode': 221, 'shiftKey': '}', 'key': ']'},
+    'CapsLock': {'keyCode': 20, 'key': 'CapsLock'},
+    'KeyA': {'keyCode': 65, 'shiftKey': 'A', 'key': 'a'},
+    'KeyS': {'keyCode': 83, 'shiftKey': 'S', 'key': 's'},
+    'KeyD': {'keyCode': 68, 'shiftKey': 'D', 'key': 'd'},
+    'KeyF': {'keyCode': 70, 'shiftKey': 'F', 'key': 'f'},
+    'KeyG': {'keyCode': 71, 'shiftKey': 'G', 'key': 'g'},
+    'KeyH': {'keyCode': 72, 'shiftKey': 'H', 'key': 'h'},
+    'KeyJ': {'keyCode': 74, 'shiftKey': 'J', 'key': 'j'},
+    'KeyK': {'keyCode': 75, 'shiftKey': 'K', 'key': 'k'},
+    'KeyL': {'keyCode': 76, 'shiftKey': 'L', 'key': 'l'},
+    'Semicolon': {'keyCode': 186, 'shiftKey': ':', 'key': ';'},
+    'Quote': {'keyCode': 222, 'shiftKey': '"', 'key': "'"},
+    'Enter': {'keyCode': 13, 'key': 'Enter', 'text': '\r'},
+    'ShiftLeft': {'keyCode': 160, 'keyCodeWithoutLocation': 16, 'key': 'Shift', 'location': 1},
+    'KeyZ': {'keyCode': 90, 'shiftKey': 'Z', 'key': 'z'},
+    'KeyX': {'keyCode': 88, 'shiftKey': 'X', 'key': 'x'},
+    'KeyC': {'keyCode': 67, 'shiftKey': 'C', 'key': 'c'},
+    'KeyV': {'keyCode': 86, 'shiftKey': 'V', 'key': 'v'},
+    'KeyB': {'keyCode': 66, 'shiftKey': 'B', 'key': 'b'},
+    'KeyN': {'keyCode': 78, 'shiftKey': 'N', 'key': 'n'},
+    'KeyM': {'keyCode': 77, 'shiftKey': 'M', 'key': 'm'},
+    'Comma': {'keyCode': 188, 'shiftKey': '<', 'key': ','},
+    'Period': {'keyCode': 190, 'shiftKey': '>', 'key': '.'},
+    'Slash': {'keyCode': 191, 'shiftKey': '?', 'key': '/'},
+    'ShiftRight': {'keyCode': 161, 'keyCodeWithoutLocation': 16, 'key': 'Shift', 'location': 2},
+    'ControlLeft': {'keyCode': 162, 'keyCodeWithoutLocation': 17, 'key': 'Control', 'location': 1},
+    'MetaLeft': {'keyCode': 91, 'key': 'Meta', 'location': 1},
+    'AltLeft': {'keyCode': 164, 'keyCodeWithoutLocation': 18, 'key': 'Alt', 'location': 1},
+    'Space': {'keyCode': 32, 'key': ' '},
+    'AltRight': {'keyCode': 165, 'keyCodeWithoutLocation': 18, 'key': 'Alt', 'location': 2},
+    'AltGraph': {'keyCode': 225, 'key': 'AltGraph'},
+    'MetaRight': {'keyCode': 92, 'key': 'Meta', 'location': 2},
+    'ContextMenu': {'keyCode': 93, 'key': 'ContextMenu'},
+    'ControlRight': {'keyCode': 163, 'keyCodeWithoutLocation': 17, 'key': 'Control', 'location': 2},
+    'PrintScreen': {'keyCode': 44, 'key': 'PrintScreen'},
+    'ScrollLock': {'keyCode': 145, 'key': 'ScrollLock'},
+    'Pause': {'keyCode': 19, 'key': 'Pause'},
+    'PageUp': {'keyCode': 33, 'key': 'PageUp'},
+    'PageDown': {'keyCode': 34, 'key': 'PageDown'},
+    'Insert': {'keyCode': 45, 'key': 'Insert'},
+    'Delete': {'keyCode': 46, 'key': 'Delete'},
+    'Home': {'keyCode': 36, 'key': 'Home'},
+    'End': {'keyCode': 35, 'key': 'End'},
+    'ArrowLeft': {'keyCode': 37, 'key': 'ArrowLeft'},
+    'ArrowUp': {'keyCode': 38, 'key': 'ArrowUp'},
+    'ArrowRight': {'keyCode': 39, 'key': 'ArrowRight'},
+    'ArrowDown': {'keyCode': 40, 'key': 'ArrowDown'},
+    'AudioVolumeMute': {'keyCode': 173, 'key': 'AudioVolumeMute'},
+    'AudioVolumeDown': {'keyCode': 174, 'key': 'AudioVolumeDown'},
+    'AudioVolumeUp': {'keyCode': 175, 'key': 'AudioVolumeUp'},
+    'MediaTrackNext': {'keyCode': 176, 'key': 'MediaTrackNext'},
+    'MediaTrackPrevious': {'keyCode': 177, 'key': 'MediaTrackPrevious'},
+    'MediaPlayPause': {'keyCode': 179, 'key': 'MediaPlayPause'},
+    'NumLock': {'keyCode': 144, 'key': 'NumLock'},
+    'NumpadDivide': {'keyCode': 111, 'key': '/', 'location': 3},
+    'NumpadMultiply': {'keyCode': 106, 'key': '*', 'location': 3},
+    'NumpadSubtract': {'keyCode': 109, 'key': '-', 'location': 3},
+    'Numpad7': {'keyCode': 36, 'shiftKeyCode': 103, 'key': 'Home', 'shiftKey': '7', 'location': 3},
+    'Numpad8': {
+        'keyCode': 38,
+        'shiftKeyCode': 104,
+        'key': 'ArrowUp',
+        'shiftKey': '8',
+        'location': 3,
+    },
+    'Numpad9': {
+        'keyCode': 33,
+        'shiftKeyCode': 105,
+        'key': 'PageUp',
+        'shiftKey': '9',
+        'location': 3,
+    },
+    'Numpad4': {
+        'keyCode': 37,
+        'shiftKeyCode': 100,
+        'key': 'ArrowLeft',
+        'shiftKey': '4',
+        'location': 3,
+    },
+    'Numpad5': {'keyCode': 12, 'shiftKeyCode': 101, 'key': 'Clear', 'shiftKey': '5', 'location': 3},
+    'Numpad6': {
+        'keyCode': 39,
+        'shiftKeyCode': 102,
+        'key': 'ArrowRight',
+        'shiftKey': '6',
+        'location': 3,
+    },
+    'NumpadAdd': {'keyCode': 107, 'key': '+', 'location': 3},
+    'Numpad1': {'keyCode': 35, 'shiftKeyCode': 97, 'key': 'End', 'shiftKey': '1', 'location': 3},
+    'Numpad2': {
+        'keyCode': 40,
+        'shiftKeyCode': 98,
+        'key': 'ArrowDown',
+        'shiftKey': '2',
+        'location': 3,
+    },
+    'Numpad3': {
+        'keyCode': 34,
+        'shiftKeyCode': 99,
+        'key': 'PageDown',
+        'shiftKey': '3',
+        'location': 3,
+    },
+    'Numpad0': {'keyCode': 45, 'shiftKeyCode': 96, 'key': 'Insert', 'shiftKey': '0', 'location': 3},
+    'NumpadDecimal': {
+        'keyCode': 46,
+        'shiftKeyCode': 110,
+        'key': '\u0000',
+        'shiftKey': '.',
+        'location': 3,
+    },
+    'NumpadEnter': {'keyCode': 13, 'key': 'Enter', 'text': '\r', 'location': 3},
+}
+
+_ALIASES: dict[str, list[str]] = {
+    'ShiftLeft': ['Shift'],
+    'ControlLeft': ['Control'],
+    'AltLeft': ['Alt'],
+    'MetaLeft': ['Meta'],
+    'Enter': ['\n', '\r'],
+}
+
+MODIFIER_NAMES = ('Alt', 'Control', 'Meta', 'Shift')
+MODIFIER_BITS = {
+    'Alt': KeyModifier.ALT,
+    'Control': KeyModifier.CTRL,
+    'Meta': KeyModifier.META,
+    'Shift': KeyModifier.SHIFT,
+}
+
+
+def _build() -> dict[str, KeyDescription]:
+    result: dict[str, KeyDescription] = {}
+    for code, definition in _LAYOUT.items():
+        key = definition['key']
+        key_code = definition['keyCode']
+        without_location = definition.get('keyCodeWithoutLocation', key_code)
+        location = definition.get('location', 0)
+        text = definition.get('text', key if len(key) == 1 else '')
+        description = KeyDescription(key, key_code, without_location, code, text, location)
+        result.setdefault(code, description)
+        if key not in result or location == 0:
+            result.setdefault(key, description)
+        for alias in _ALIASES.get(code, []):
+            result.setdefault(alias, description)
+        shift_key = definition.get('shiftKey')
+        if shift_key is not None:
+            shifted_code = definition.get('shiftKeyCode', key_code)
+            shifted = KeyDescription(
+                shift_key, shifted_code, without_location, code, shift_key, location, True
+            )
+            result.setdefault(shift_key, shifted)
+    return result
+
+
+_KEYS = _build()
+
+
+def resolve_smart_modifier(name: str) -> str:
+    if name == 'ControlOrMeta':
+        return 'Meta' if sys.platform == 'darwin' else 'Control'
+    return name
+
+
+def split_key_string(key: str) -> list[str]:
+    tokens: list[str] = []
+    building = ''
+    for char in key:
+        if char == '+' and building:
+            tokens.append(building)
+            building = ''
+        else:
+            building += char
+    tokens.append(building)
+    return tokens
+
+
+def describe_key(name: str, shift_pressed: bool) -> KeyDescription:
+    """Resolve a single key token to its description, applying Shift when held."""
+    name = resolve_smart_modifier(name)
+    description = _KEYS.get(name)
+    if description is None:
+        if len(name) == 1:
+            return KeyDescription(name, 0, 0, '', name, 0)
+        raise Error(f'Unknown key: "{name}"')
+    if shift_pressed and not description.shifted:
+        layout = _LAYOUT.get(description.code, _KeyDefinition())
+        shift_key = layout.get('shiftKey')
+        if shift_key is not None:
+            return KeyDescription(
+                shift_key,
+                layout.get('shiftKeyCode', description.key_code),
+                description.key_code_without_location,
+                description.code,
+                shift_key,
+                description.location,
+                True,
+            )
+    return description
+
+
+def modifier_bits(names: list[str]) -> KeyModifier | None:
+    """Combine modifier names into the CDP bitmask (KeyModifier is not a Flag enum)."""
+    value = 0
+    for name in names:
+        value |= int(MODIFIER_BITS[resolve_smart_modifier(name)])
+    return cast(KeyModifier, value) if value else None

@@ -4,7 +4,7 @@
 
 ## 核心概念
 
-- [核心概念](core-concepts.md)：tab 和 browser 对象、异步模型，以及“无 webdriver”在实践中意味着什么。
+- [核心概念](core-concepts.md)：tab 和 browser 对象、同步与异步 API，以及“无 webdriver”在实践中意味着什么。
 
 ## 查找与提取
 
@@ -39,6 +39,7 @@
 
 ## 响应事件
 
+- [等待](waiting.md)：等待元素状态、URL、网络空闲，以及点击所触发的请求或响应。
 - [事件](events.md)：在页面和网络事件触发时运行回调。
 - [重试](retrying.md)：用 `retry` 装饰器重试不稳定的步骤。
 

@@ -6,25 +6,46 @@ A browser context is an isolated session inside one browser process: its own coo
 
 `create_browser_context()` returns a context id. Pass it to `new_tab()` and that tab lives in the isolated context.
 
-```python
-import asyncio
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
+    ```python
+    from pydoll.sync import Chrome
+
+    def main():
+        with Chrome() as browser:
+            browser.start()
+
+            context_id = browser.create_browser_context()
+            tab = browser.new_tab('https://github.com', browser_context_id=context_id)
+
+            print(tab.title())
+
+            browser.delete_browser_context(context_id)
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+
+    from pydoll import Chrome
 
 
-async def main():
-    async with Chrome() as browser:
-        await browser.start()
+    async def main():
+        async with Chrome() as browser:
+            await browser.start()
 
-        context_id = await browser.create_browser_context()
-        tab = await browser.new_tab('https://github.com', browser_context_id=context_id)
+            context_id = await browser.create_browser_context()
+            tab = await browser.new_tab('https://github.com', browser_context_id=context_id)
 
-        print(await tab.title)
+            print(await tab.title())
 
-        await browser.delete_browser_context(context_id)
+            await browser.delete_browser_context(context_id)
 
-asyncio.run(main())
-```
+    asyncio.run(main())
+    ```
 
 The tab you get from `browser.start()` lives in the permanent **default context**. Any tab you open without a `browser_context_id` joins it too.
 
@@ -32,18 +53,45 @@ The tab you get from `browser.start()` lives in the permanent **default context*
 
 Storage set in one context is invisible to another. Here two tabs write the same key and read back different values:
 
-```python
-await tab_a.go_to('https://the-internet.herokuapp.com')
-await tab_b.go_to('https://the-internet.herokuapp.com')
+=== "Sync"
 
-await tab_a.execute_script("localStorage.setItem('user', 'Alice')")
-await tab_b.execute_script("localStorage.setItem('user', 'Bob')")
+    ```python
+    context_a = browser.create_browser_context()
+    context_b = browser.create_browser_context()
+    tab_a = browser.new_tab(browser_context_id=context_a)
+    tab_b = browser.new_tab(browser_context_id=context_b)
 
-a = await tab_a.execute_script("return localStorage.getItem('user')", return_by_value=True)
-b = await tab_b.execute_script("return localStorage.getItem('user')", return_by_value=True)
-print(a['result']['result']['value'])  # Alice
-print(b['result']['result']['value'])  # Bob
-```
+    tab_a.go_to('https://the-internet.herokuapp.com')
+    tab_b.go_to('https://the-internet.herokuapp.com')
+
+    tab_a.execute_script("localStorage.setItem('user', 'Alice')")
+    tab_b.execute_script("localStorage.setItem('user', 'Bob')")
+
+    a = tab_a.execute_script("return localStorage.getItem('user')", return_by_value=True)
+    b = tab_b.execute_script("return localStorage.getItem('user')", return_by_value=True)
+    print(a['result']['result']['value'])  # Alice
+    print(b['result']['result']['value'])  # Bob
+    ```
+
+=== "Async"
+
+    ```python
+    context_a = await browser.create_browser_context()
+    context_b = await browser.create_browser_context()
+    tab_a = await browser.new_tab(browser_context_id=context_a)
+    tab_b = await browser.new_tab(browser_context_id=context_b)
+
+    await tab_a.go_to('https://the-internet.herokuapp.com')
+    await tab_b.go_to('https://the-internet.herokuapp.com')
+
+    await tab_a.execute_script("localStorage.setItem('user', 'Alice')")
+    await tab_b.execute_script("localStorage.setItem('user', 'Bob')")
+
+    a = await tab_a.execute_script("return localStorage.getItem('user')", return_by_value=True)
+    b = await tab_b.execute_script("return localStorage.getItem('user')", return_by_value=True)
+    print(a['result']['result']['value'])  # Alice
+    print(b['result']['result']['value'])  # Bob
+    ```
 
 Cookies, `localStorage`, `sessionStorage`, IndexedDB, cache, and permissions are all separate per context, so a login in one context does not sign you in anywhere else.
 
@@ -63,59 +111,116 @@ Log in on each context: the cookie lands only in that context's jar. Nothing cro
 
 ## Run several sessions side by side
 
-Give each account its own context and they stay logged in independently. Because the waits overlap, `asyncio.gather` runs them at once.
+Give each account its own context and they stay logged in independently. Open them at the same time so the waits overlap: a thread pool in the sync API, `asyncio.gather` in the async API.
 
-```python
-import asyncio
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
+    ```python
+    from concurrent.futures import ThreadPoolExecutor
 
-
-async def open_session(browser, label):
-    context_id = await browser.create_browser_context()
-    tab = await browser.new_tab('https://the-internet.herokuapp.com', browser_context_id=context_id)
-    await tab.execute_script(f"localStorage.setItem('account', '{label}')")
-    return context_id, tab, label
+    from pydoll.sync import Chrome
 
 
-async def main():
-    async with Chrome() as browser:
-        await browser.start()
+    def open_session(browser, label):
+        context_id = browser.create_browser_context()
+        tab = browser.new_tab('https://the-internet.herokuapp.com', browser_context_id=context_id)
+        tab.execute_script(f"localStorage.setItem('account', '{label}')")
+        return context_id, tab, label
 
-        sessions = await asyncio.gather(
-            open_session(browser, 'account-1'),
-            open_session(browser, 'account-2'),
-            open_session(browser, 'account-3'),
-        )
 
-        for context_id, tab, label in sessions:
-            result = await tab.execute_script(
-                "return localStorage.getItem('account')", return_by_value=True
+    def main():
+        with Chrome() as browser:
+            browser.start()
+
+            with ThreadPoolExecutor() as pool:
+                futures = [
+                    pool.submit(open_session, browser, label)
+                    for label in ('account-1', 'account-2', 'account-3')
+                ]
+                sessions = [future.result() for future in futures]
+
+            for context_id, tab, label in sessions:
+                result = tab.execute_script(
+                    "return localStorage.getItem('account')", return_by_value=True
+                )
+                active = result['result']['result']['value']
+                print(f'{label}: {active}')
+                browser.delete_browser_context(context_id)
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+
+    from pydoll import Chrome
+
+
+    async def open_session(browser, label):
+        context_id = await browser.create_browser_context()
+        tab = await browser.new_tab('https://the-internet.herokuapp.com', browser_context_id=context_id)
+        await tab.execute_script(f"localStorage.setItem('account', '{label}')")
+        return context_id, tab, label
+
+
+    async def main():
+        async with Chrome() as browser:
+            await browser.start()
+
+            sessions = await asyncio.gather(
+                open_session(browser, 'account-1'),
+                open_session(browser, 'account-2'),
+                open_session(browser, 'account-3'),
             )
-            active = result['result']['result']['value']
-            print(f'{label}: {active}')
-            await browser.delete_browser_context(context_id)
 
-asyncio.run(main())
-```
+            for context_id, tab, label in sessions:
+                result = await tab.execute_script(
+                    "return localStorage.getItem('account')", return_by_value=True
+                )
+                active = result['result']['result']['value']
+                print(f'{label}: {active}')
+                await browser.delete_browser_context(context_id)
+
+    asyncio.run(main())
+    ```
 
 ## Give a context its own cookies
 
 The browser-level cookie methods take a `browser_context_id`, so you can seed or read a context's cookies without navigating a tab. Cookies set on one context never appear on another.
 
-```python
-from pydoll.protocol.network.types import CookieParam
+=== "Sync"
 
-context_id = await browser.create_browser_context()
+    ```python
+    from pydoll.protocol.network.types import CookieParam
 
-await browser.set_cookies(
-    [CookieParam(name='session', value='abc123', domain='httpbin.org')],
-    browser_context_id=context_id,
-)
+    context_id = browser.create_browser_context()
 
-in_context = await browser.get_cookies(browser_context_id=context_id)
-in_default = await browser.get_cookies()   # does not include the cookie above
-```
+    browser.set_cookies(
+        [CookieParam(name='session', value='abc123', domain='httpbin.org')],
+        browser_context_id=context_id,
+    )
+
+    in_context = browser.get_cookies(browser_context_id=context_id)
+    in_default = browser.get_cookies()   # does not include the cookie above
+    ```
+
+=== "Async"
+
+    ```python
+    from pydoll.protocol.network.types import CookieParam
+
+    context_id = await browser.create_browser_context()
+
+    await browser.set_cookies(
+        [CookieParam(name='session', value='abc123', domain='httpbin.org')],
+        browser_context_id=context_id,
+    )
+
+    in_context = await browser.get_cookies(browser_context_id=context_id)
+    in_default = await browser.get_cookies()   # does not include the cookie above
+    ```
 
 See [Cookies and sessions](cookies-and-sessions.md) for reading, writing, and clearing cookies in depth.
 
@@ -123,13 +228,25 @@ See [Cookies and sessions](cookies-and-sessions.md) for reading, writing, and cl
 
 Pass `proxy_server` when you create the context and every request from its tabs goes through that proxy. This is how you run different geographies at the same time.
 
-```python
-us = await browser.create_browser_context(proxy_server='http://us-proxy.example:8080')
-eu = await browser.create_browser_context(proxy_server='http://eu-proxy.example:8080')
+=== "Sync"
 
-us_tab = await browser.new_tab('https://api.ipify.org', browser_context_id=us)
-eu_tab = await browser.new_tab('https://api.ipify.org', browser_context_id=eu)
-```
+    ```python
+    us = browser.create_browser_context(proxy_server='http://us-proxy.example:8080')
+    eu = browser.create_browser_context(proxy_server='http://eu-proxy.example:8080')
+
+    us_tab = browser.new_tab('https://api.ipify.org', browser_context_id=us)
+    eu_tab = browser.new_tab('https://api.ipify.org', browser_context_id=eu)
+    ```
+
+=== "Async"
+
+    ```python
+    us = await browser.create_browser_context(proxy_server='http://us-proxy.example:8080')
+    eu = await browser.create_browser_context(proxy_server='http://eu-proxy.example:8080')
+
+    us_tab = await browser.new_tab('https://api.ipify.org', browser_context_id=us)
+    eu_tab = await browser.new_tab('https://api.ipify.org', browser_context_id=eu)
+    ```
 
 Credentials in the proxy URL (`http://user:pass@host:port`) are handled for you: they are stripped from CDP commands and supplied only when the proxy challenges for auth. See [Proxies](proxies.md) for the full picture, and [Fingerprint injection](../stealth/fingerprint-injection.md) for keeping one identity per context.
 
@@ -137,9 +254,17 @@ Credentials in the proxy URL (`http://user:pass@host:port`) are handled for you:
 
 `delete_browser_context()` removes a context and closes every tab in it, which is a quick way to tear down a whole session at once.
 
-```python
-await browser.delete_browser_context(context_id)
-```
+=== "Sync"
+
+    ```python
+    browser.delete_browser_context(context_id)
+    ```
+
+=== "Async"
+
+    ```python
+    await browser.delete_browser_context(context_id)
+    ```
 
 !!! warning "Deleting a context closes its tabs"
     Every tab in the context is closed when you delete it, so read anything you still need first. The default context is permanent and cannot be deleted; it closes when the browser stops.

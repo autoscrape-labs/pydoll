@@ -8,27 +8,50 @@ selector 是你交给 `tab.query()`（以及提取模型中 `selector=`）的字
 
 <iframe scrolling="no" src="/docs/resources/visuals/selector-playground.html" aria-label="Type a CSS or XPath selector and see which elements it matches" style="width: 100%; height: 500px; border: 0;" loading="lazy"></iframe>
 
-```python
-import asyncio
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
+    ```python
+    from pydoll.sync import Chrome
+
+    def main():
+        with Chrome() as browser:
+            tab = browser.start()
+            tab.go_to('https://en.wikipedia.org/wiki/Python_(programming_language)')
+
+            # CSS: 通过 id 定位文章标题
+            title = tab.query('#firstHeading')
+            print(title.text())
+
+            # XPath: 第一个 href 中提到 python.org 的链接
+            link = tab.query("//a[contains(@href, 'python.org')]")
+            print(link.get_attribute('href'))
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+
+    from pydoll import Chrome
 
 
-async def main():
-    async with Chrome() as browser:
-        tab = await browser.start()
-        await tab.go_to('https://en.wikipedia.org/wiki/Python_(programming_language)')
+    async def main():
+        async with Chrome() as browser:
+            tab = await browser.start()
+            await tab.go_to('https://en.wikipedia.org/wiki/Python_(programming_language)')
 
-        # CSS: 通过 id 定位文章标题
-        title = await tab.query('#firstHeading')
-        print(await title.text)
+            # CSS: 通过 id 定位文章标题
+            title = await tab.query('#firstHeading')
+            print(await title.text())
 
-        # XPath: 第一个 href 中提到 python.org 的链接
-        link = await tab.query("//a[contains(@href, 'python.org')]")
-        print(link.get_attribute('href'))
+            # XPath: 第一个 href 中提到 python.org 的链接
+            link = await tab.query("//a[contains(@href, 'python.org')]")
+            print(link.get_attribute('href'))
 
-asyncio.run(main())
-```
+    asyncio.run(main())
+    ```
 
 上面两个查询都经过同一个 `query()` 调用。Pydoll 看到第二个查询开头的 `//`，就把它当作 XPath 处理。
 
@@ -47,70 +70,141 @@ asyncio.run(main())
 
 ### 按 id、class 和标签选取
 
-```python
-await tab.query('div')             # 第一个 <div>
-await tab.query('#username')       # id="username" 的元素
-await tab.query('.submit-btn')     # 第一个 class="submit-btn" 的元素
-await tab.query('.btn.primary')    # 同时带两个 class 的元素
-await tab.query('input')           # 第一个 <input>
-```
+=== "Sync"
+
+    ```python
+    tab.query('div')             # 第一个 <div>
+    tab.query('#username')       # id="username" 的元素
+    tab.query('.submit-btn')     # 第一个 class="submit-btn" 的元素
+    tab.query('.btn.primary')    # 同时带两个 class 的元素
+    tab.query('input')           # 第一个 <input>
+    ```
+
+=== "Async"
+
+    ```python
+    await tab.query('div')             # 第一个 <div>
+    await tab.query('#username')       # id="username" 的元素
+    await tab.query('.submit-btn')     # 第一个 class="submit-btn" 的元素
+    await tab.query('.btn.primary')    # 同时带两个 class 的元素
+    await tab.query('input')           # 第一个 <input>
+    ```
 
 ### 组合符
 
 组合符描述元素之间的关系。
 
-```python
-await tab.query('nav a')           # <nav> 内任意深度处的任何 <a>
-await tab.query('nav > a')         # 作为 <nav> 直接子节点的 <a>
-await tab.query('h1 + p')          # 紧跟在某个 <h1> 之后的 <p>
-await tab.query('h1 ~ p')          # 作为兄弟节点跟在某个 <h1> 之后的第一个 <p>
-```
+=== "Sync"
+
+    ```python
+    tab.query('nav a')           # <nav> 内任意深度处的任何 <a>
+    tab.query('nav > a')         # 作为 <nav> 直接子节点的 <a>
+    tab.query('h1 + p')          # 紧跟在某个 <h1> 之后的 <p>
+    tab.query('h1 ~ p')          # 作为兄弟节点跟在某个 <h1> 之后的第一个 <p>
+    ```
+
+=== "Async"
+
+    ```python
+    await tab.query('nav a')           # <nav> 内任意深度处的任何 <a>
+    await tab.query('nav > a')         # 作为 <nav> 直接子节点的 <a>
+    await tab.query('h1 + p')          # 紧跟在某个 <h1> 之后的 <p>
+    await tab.query('h1 ~ p')          # 作为兄弟节点跟在某个 <h1> 之后的第一个 <p>
+    ```
 
 ### 属性 selector
 
-```python
-await tab.query('input[required]')            # 带有该属性
-await tab.query("input[type='email']")        # 属性等于某个值
-await tab.query("a[href^='https://']")        # 值以……开头
-await tab.query("img[src$='.png']")           # 值以……结尾
-await tab.query("a[href*='wikipedia']")       # 值包含
-```
+=== "Sync"
+
+    ```python
+    tab.query('input[required]')            # 带有该属性
+    tab.query("input[type='email']")        # 属性等于某个值
+    tab.query("a[href^='https://']")        # 值以……开头
+    tab.query("img[src$='.png']")           # 值以……结尾
+    tab.query("a[href*='wikipedia']")       # 值包含
+    ```
+
+=== "Async"
+
+    ```python
+    await tab.query('input[required]')            # 带有该属性
+    await tab.query("input[type='email']")        # 属性等于某个值
+    await tab.query("a[href^='https://']")        # 值以……开头
+    await tab.query("img[src$='.png']")           # 值以……结尾
+    await tab.query("a[href*='wikipedia']")       # 值包含
+    ```
 
 ### 伪类
 
 伪类按位置或状态来选取。
 
-```python
-await tab.query('li:first-child')             # 兄弟节点中第一个 <li>
-await tab.query('li:nth-child(2)')            # 第二个 <li>
-await tab.query('tr:nth-child(odd)', find_all=True)  # 每一个奇数行
-await tab.query('input:checked')              # 被选中的 checkbox 或单选按钮
-await tab.query('button:not([disabled])')     # 不带 disabled 属性的按钮
-```
+=== "Sync"
+
+    ```python
+    tab.query('li:first-child')             # 兄弟节点中第一个 <li>
+    tab.query('li:nth-child(2)')            # 第二个 <li>
+    tab.query('tr:nth-child(odd)', find_all=True)  # 每一个奇数行
+    tab.query('input:checked')              # 被选中的 checkbox 或单选按钮
+    tab.query('button:not([disabled])')     # 不带 disabled 属性的按钮
+    ```
+
+=== "Async"
+
+    ```python
+    await tab.query('li:first-child')             # 兄弟节点中第一个 <li>
+    await tab.query('li:nth-child(2)')            # 第二个 <li>
+    await tab.query('tr:nth-child(odd)', find_all=True)  # 每一个奇数行
+    await tab.query('input:checked')              # 被选中的 checkbox 或单选按钮
+    await tab.query('button:not([disabled])')     # 不带 disabled 属性的按钮
+    ```
 
 ## XPath 参考
 
 ### 路径
 
-```python
-await tab.query('//div')           # 任何位置的任何 <div>
-await tab.query('//nav/a')         # 作为某个 <nav> 直接子节点的 <a>
-await tab.query('//nav//a')        # 某个 <nav> 内部任何位置的 <a>
-await tab.query('(//div)[1]')      # 文档中第一个 <div>
-await tab.query('//ul/li[last()]') # 某个 <ul> 中最后一个 <li>
-```
+=== "Sync"
+
+    ```python
+    tab.query('//div')           # 任何位置的任何 <div>
+    tab.query('//nav/a')         # 作为某个 <nav> 直接子节点的 <a>
+    tab.query('//nav//a')        # 某个 <nav> 内部任何位置的 <a>
+    tab.query('(//div)[1]')      # 文档中第一个 <div>
+    tab.query('//ul/li[last()]') # 某个 <ul> 中最后一个 <li>
+    ```
+
+=== "Async"
+
+    ```python
+    await tab.query('//div')           # 任何位置的任何 <div>
+    await tab.query('//nav/a')         # 作为某个 <nav> 直接子节点的 <a>
+    await tab.query('//nav//a')        # 某个 <nav> 内部任何位置的 <a>
+    await tab.query('(//div)[1]')      # 文档中第一个 <div>
+    await tab.query('//ul/li[last()]') # 某个 <ul> 中最后一个 <li>
+    ```
 
 ### 按属性和文本匹配
 
 这正是你需要 XPath 的地方。CSS 无法按可见文本选取，XPath 可以。
 
-```python
-await tab.query("//input[@type='email']")            # 属性等于
-await tab.query("//input[@type='text' and @required]")  # 两个条件
-await tab.query("//button[text()='Submit']")         # 精确文本
-await tab.query("//p[contains(text(), 'welcome')]")  # 部分文本
-await tab.query("//a[starts-with(@href, 'https://')]")  # 属性以……开头
-```
+=== "Sync"
+
+    ```python
+    tab.query("//input[@type='email']")            # 属性等于
+    tab.query("//input[@type='text' and @required]")  # 两个条件
+    tab.query("//button[text()='Submit']")         # 精确文本
+    tab.query("//p[contains(text(), 'welcome')]")  # 部分文本
+    tab.query("//a[starts-with(@href, 'https://')]")  # 属性以……开头
+    ```
+
+=== "Async"
+
+    ```python
+    await tab.query("//input[@type='email']")            # 属性等于
+    await tab.query("//input[@type='text' and @required]")  # 两个条件
+    await tab.query("//button[text()='Submit']")         # 精确文本
+    await tab.query("//p[contains(text(), 'welcome')]")  # 部分文本
+    await tab.query("//a[starts-with(@href, 'https://')]")  # 属性以……开头
+    ```
 
 !!! tip "匹配前先规范化文本"
     渲染出来的文本常常带有多余的空白。`//button[normalize-space(text())='Submit']` 会把连续的空格折叠成一个并去掉两端的空白，所以即使 HTML 的缩进参差不齐，它也能匹配。
@@ -130,11 +224,21 @@ await tab.query("//a[starts-with(@href, 'https://')]")  # 属性以……开头
 
 你会经常见到的简写：`//div/p` 就是 `//div/child::p`，`@id` 就是 `attribute::id`，而 `..` 就是 `parent::node()`。
 
-```python
-await tab.query("//input[@name='email']/parent::div")   # 向上到包裹它的 div
-await tab.query('//button/ancestor::form')              # 向上到外层的 form
-await tab.query("//label[text()='Email:']/following-sibling::input")  # 紧挨着某个 label 的 input
-```
+=== "Sync"
+
+    ```python
+    tab.query("//input[@name='email']/parent::div")   # 向上到包裹它的 div
+    tab.query('//button/ancestor::form')              # 向上到外层的 form
+    tab.query("//label[text()='Email:']/following-sibling::input")  # 紧挨着某个 label 的 input
+    ```
+
+=== "Async"
+
+    ```python
+    await tab.query("//input[@name='email']/parent::div")   # 向上到包裹它的 div
+    await tab.query('//button/ancestor::form')              # 向上到外层的 form
+    await tab.query("//label[text()='Email:']/following-sibling::input")  # 紧挨着某个 label 的 input
+    ```
 
 ## 实例演练
 
@@ -160,17 +264,35 @@ await tab.query("//label[text()='Email:']/following-sibling::input")  # 紧挨�
 
 你知道 label 的文本，却不知道 input 的 id。先找到 label，再横向走一步到 input：
 
-```python
-email = await tab.query("//label[text()='Email:']/following-sibling::input")
-```
+=== "Sync"
+
+    ```python
+    email = tab.query("//label[text()='Email:']/following-sibling::input")
+    ```
+
+=== "Async"
+
+    ```python
+    email = await tab.query("//label[text()='Email:']/following-sibling::input")
+    ```
 
 ### 找到某个字段旁边的错误信息
 
-```python
-error = await tab.query("//input[@id='email']/following-sibling::span[@class='error']")
-if await error.is_visible():
-    print('Email was rejected')
-```
+=== "Sync"
+
+    ```python
+    error = tab.query("//input[@id='email']/following-sibling::span[@class='error']")
+    if error.is_visible():
+        print('Email was rejected')
+    ```
+
+=== "Async"
+
+    ```python
+    error = await tab.query("//input[@id='email']/following-sibling::span[@class='error']")
+    if await error.is_visible():
+        print('Email was rejected')
+    ```
 
 `is_visible()` 报告的是该元素是否真的显示出来了，这在这里很重要，因为这个 span 一开始是隐藏的。
 
@@ -178,59 +300,129 @@ if await error.is_visible():
 
 提交按钮就是那个 `type='submit'` 的，所以你永远不必依赖它的位置：
 
-```python
-save = await tab.query("button[type='submit']")          # 这里 CSS 就够了
-save = await tab.query("//button[text()='Save']")        # 或者按 label 文本匹配
-```
+=== "Sync"
+
+    ```python
+    save = tab.query("button[type='submit']")          # 这里 CSS 就够了
+    save = tab.query("//button[text()='Save']")        # 或者按 label 文本匹配
+    ```
+
+=== "Async"
+
+    ```python
+    save = await tab.query("button[type='submit']")          # 这里 CSS 就够了
+    save = await tab.query("//button[text()='Save']")        # 或者按 label 文本匹配
+    ```
 
 ### 读取某个 checkbox 的 label
 
 `for` 属性把一个 label 和它的控件绑在一起，所以你可以直接跳到它：
 
-```python
-label = await tab.query("//label[@for='newsletter']")
-print(await label.text)   # "Subscribe to the newsletter"
-```
+=== "Sync"
+
+    ```python
+    label = tab.query("//label[@for='newsletter']")
+    print(label.text())   # "Subscribe to the newsletter"
+    ```
+
+=== "Async"
+
+    ```python
+    label = await tab.query("//label[@for='newsletter']")
+    print(await label.text())   # "Subscribe to the newsletter"
+    ```
 
 ### 从一个控件往上走到它所在的行
 
 在表格中，你常常拿着一个按钮，想要它所在的那一行。从该元素出发，用一个沿树向上攀爬的 XPath 来查询：
 
-```python
-delete = await tab.query("//tr[@data-product-id='101']//button[@class='delete']")
+=== "Sync"
 
-row = await delete.query('./ancestor::tr')
-print(row.get_attribute('data-product-id'))   # "101", get_attribute 不需要 await
-```
+    ```python
+    delete = tab.query("//tr[@data-product-id='101']//button[@class='delete']")
+
+    row = delete.query('./ancestor::tr')
+    print(row.get_attribute('data-product-id'))   # "101", get_attribute 不需要 await
+    ```
+
+=== "Async"
+
+    ```python
+    delete = await tab.query("//tr[@data-product-id='101']//button[@class='delete']")
+
+    row = await delete.query('./ancestor::tr')
+    print(row.get_attribute('data-product-id'))   # "101", get_attribute 不需要 await
+    ```
 
 `get_attribute()` 从你已经定位到的元素上同步读取一个值，所以它不需要 `await`。
 
 ## 用变量构建 selector
 
-当你要匹配的值来自你的程序时，用 f-string 来构建这个字符串。把值中的任何引号转义掉，以免它们破坏表达式：
+当你要匹配的值来自你的程序时，用 f-string 来构建这个字符串。XPath 的字符串字面量里没有转义字符，所以用值里不包含的那种引号把它包起来，两种引号都有时改用 `concat()`：
 
-```python
-async def row_for(tab, product_name):
-    safe = product_name.replace("'", "\\'")
-    return await tab.query(f"//tr[td[text()='{safe}']]")
+=== "Sync"
+
+    ```python
+    def xpath_literal(value):
+        if "'" not in value:
+            return f"'{value}'"
+        if '"' not in value:
+            return f'"{value}"'
+        parts = value.split("'")
+        return 'concat(' + ", \"'\", ".join(f"'{part}'" for part in parts) + ')'
+
+    def row_for(tab, product_name):
+        return tab.query(f'//tr[td[text()={xpath_literal(product_name)}]]')
+
+    laptop_row = row_for(tab, "Kid's Laptop")
+    ```
+
+=== "Async"
+
+    ```python
+    def xpath_literal(value):
+        if "'" not in value:
+            return f"'{value}'"
+        if '"' not in value:
+            return f'"{value}"'
+        parts = value.split("'")
+        return 'concat(' + ", \"'\", ".join(f"'{part}'" for part in parts) + ')'
 
 
-laptop_row = await row_for(tab, 'Laptop')
-```
+    async def row_for(tab, product_name):
+        return await tab.query(f'//tr[td[text()={xpath_literal(product_name)}]]')
+
+
+    laptop_row = await row_for(tab, "Kid's Laptop")
+    ```
 
 ## 让 selector 保持稳定
 
 挑选那些改版不太可能动到的属性，并尽量依靠最简单能奏效的表达式。
 
-```python
-# 稳定：name 和 id 能挺过布局变动
-await tab.query('#signup')
-await tab.query("[data-testid='save-button']")
-await tab.query("input[name='email']")
+=== "Sync"
 
-# 脆弱：基于位置的链条会在标记发生变化时失效
-await tab.query('div > div > div:nth-child(3) > input')
-```
+    ```python
+    # 稳定：name 和 id 能挺过布局变动
+    tab.query('#signup')
+    tab.query("[data-testid='save-button']")
+    tab.query("input[name='email']")
+
+    # 脆弱：基于位置的链条会在标记发生变化时失效
+    tab.query('div > div > div:nth-child(3) > input')
+    ```
+
+=== "Async"
+
+    ```python
+    # 稳定：name 和 id 能挺过布局变动
+    await tab.query('#signup')
+    await tab.query("[data-testid='save-button']")
+    await tab.query("input[name='email']")
+
+    # 脆弱：基于位置的链条会在标记发生变化时失效
+    await tab.query('div > div > div:nth-child(3) > input')
+    ```
 
 对于简单的查找，CSS 比 XPath 略快一点，但这个差距是每次查询几毫秒，很少值得为它去优化。选那个读起来清晰、又能挺过页面变化的 selector。
 

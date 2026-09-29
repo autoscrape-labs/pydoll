@@ -43,10 +43,19 @@ x(t) = x0 + (xf - x0) * (10t^3 - 15t^4 + 6t^5)
 
 在 `humanize=True` 时，Pydoll 生成的移动会回应上面每一个破绽。路径遵循一条控制点随机化的三次 Bezier 曲线，因此它会弯曲而不是走直线。沿路径的速度遵循最小急动度曲线（`10t^3 - 15t^4 + 6t^5`），给出 Fitts's Law 所预测的钟形曲线，而持续时间正是根据 Fitts's Law 本身计算得出的。生理性震颤被作为与速度成反比缩放的位置噪声加入（当光标缓慢移动时更明显，与真实生理相符），过冲以设定的概率发生并随后修正，偶尔的微停顿模拟短暂的犹豫。
 
-```python
-await element.click(humanize=True)
-await tab.mouse.click(500, 300, humanize=True)   # 坐标形式
-```
+=== "Sync"
+
+    ```python
+    element.click(humanize=True)
+    tab.mouse.click(500, 300, humanize=True)   # 坐标形式
+    ```
+
+=== "Async"
+
+    ```python
+    await element.click(humanize=True)
+    await tab.mouse.click(500, 300, humanize=True)   # 坐标形式
+    ```
 
 时序模型可以通过赋值给 `tab.mouse.timing` 的 `MouseTimingConfig` 进行配置。实用指南请参见 [Human-like interactions](../../stealth/human-like-interactions.md)。
 
@@ -77,9 +86,17 @@ await tab.mouse.click(500, 300, humanize=True)   # 坐标形式
 
 在 `type_text(humanize=True)` 时，按键延迟是从一个分布中抽取的，而不是固定间隔。标点会获得额外的延迟，模拟打字者在句子结构处的停顿；偶尔的思考停顿和更罕见的分心停顿模拟思考或被打断的瞬间。真实的打字错误以每字符大约 2% 的概率发生，分为五种错误类型，按现实世界的频率加权（相邻键、换位、双击、漏字符、漏空格），每个错误后都跟着一个自然的修正序列。
 
-```python
-await element.type_text('Hello, world!', humanize=True)
-```
+=== "Sync"
+
+    ```python
+    element.type_text('Hello, world!', humanize=True)
+    ```
+
+=== "Async"
+
+    ```python
+    await element.type_text('Hello, world!', humanize=True)
+    ```
 
 关于如何调整它，请参见 [Human-like interactions](../../stealth/human-like-interactions.md)。
 
@@ -99,11 +116,21 @@ await element.type_text('Hello, world!', humanize=True)
 
 Pydoll 的拟人化滚动回应了这些：它遵循 Bezier 缓动曲线以实现自然的加速和减速，为 delta 添加逐帧抖动，插入偶尔的微停顿，有时过冲并修正，并把长距离拆分成多个"轻拂"手势而不是一次连续的移动。
 
-```python
-from pydoll.constants import ScrollPosition
+=== "Sync"
 
-await tab.scroll.by(ScrollPosition.DOWN, 800, humanize=True)
-```
+    ```python
+    from pydoll.constants import ScrollPosition
+
+    tab.scroll.by(ScrollPosition.DOWN, 800, humanize=True)
+    ```
+
+=== "Async"
+
+    ```python
+    from pydoll.constants import ScrollPosition
+
+    await tab.scroll.by(ScrollPosition.DOWN, 800, humanize=True)
+    ```
 
 ## 其他行为信号
 

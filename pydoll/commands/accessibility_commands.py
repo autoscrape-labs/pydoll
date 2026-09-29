@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from pydoll.protocol.accessibility.methods import (
     AccessibilityMethod,
@@ -60,10 +60,10 @@ class AccessibilityCommands:
 
     @staticmethod
     def get_partial_ax_tree(
-        node_id: Optional[int] = None,
-        backend_node_id: Optional[int] = None,
-        object_id: Optional[str] = None,
-        fetch_relatives: Optional[bool] = None,
+        node_id: int | None = None,
+        backend_node_id: int | None = None,
+        object_id: str | None = None,
+        fetch_relatives: bool | None = None,
     ) -> GetPartialAXTreeCommand:
         """
         Fetches the accessibility node and partial accessibility tree for this
@@ -95,8 +95,8 @@ class AccessibilityCommands:
 
     @staticmethod
     def get_full_ax_tree(
-        depth: Optional[int] = None,
-        frame_id: Optional[str] = None,
+        depth: int | None = None,
+        frame_id: str | None = None,
     ) -> GetFullAXTreeCommand:
         """
         Fetches the entire accessibility tree for the root Document.
@@ -119,7 +119,7 @@ class AccessibilityCommands:
 
     @staticmethod
     def get_root_ax_node(
-        frame_id: Optional[str] = None,
+        frame_id: str | None = None,
     ) -> GetRootAXNodeCommand:
         """
         Fetches the root node of the accessibility tree for a Document.
@@ -138,9 +138,9 @@ class AccessibilityCommands:
 
     @staticmethod
     def get_ax_node_and_ancestors(
-        node_id: Optional[int] = None,
-        backend_node_id: Optional[int] = None,
-        object_id: Optional[str] = None,
+        node_id: int | None = None,
+        backend_node_id: int | None = None,
+        object_id: str | None = None,
     ) -> GetAXNodeAndAncestorsCommand:
         """
         Fetches a node and all ancestors up to and including the root.
@@ -166,7 +166,7 @@ class AccessibilityCommands:
     @staticmethod
     def get_child_ax_nodes(
         id: AXNodeId,
-        frame_id: Optional[str] = None,
+        frame_id: str | None = None,
     ) -> GetChildAXNodesCommand:
         """
         Fetches a particular accessibility node by AXNodeId.
@@ -186,11 +186,11 @@ class AccessibilityCommands:
 
     @staticmethod
     def query_ax_tree(
-        node_id: Optional[int] = None,
-        backend_node_id: Optional[int] = None,
-        object_id: Optional[str] = None,
-        accessible_name: Optional[str] = None,
-        role: Optional[str] = None,
+        node_id: int | None = None,
+        backend_node_id: int | None = None,
+        object_id: str | None = None,
+        accessible_name: str | None = None,
+        role: str | None = None,
     ) -> QueryAXTreeCommand:
         """
         Queries the accessibility tree for a DOM subtree for nodes with a

@@ -6,7 +6,7 @@ Pydoll's extraction engine lets you define **what** you want from a page using t
 
 ## Why use a model
 
-Traditional scraping code spreads `find()` calls, `await element.text`, attribute reads, and manual type conversions across dozens of lines. When the page changes, you hunt through that code to find which selector broke.
+Traditional scraping code spreads `find()` calls, `element.text` reads, attribute reads, and manual type conversions across dozens of lines. When the page changes, you hunt through that code to find which selector broke.
 
 With structured extraction, all your selectors live in one place (the model), the types are enforced automatically, and the output is a Pydantic object with IDE autocomplete and serialization built in.
 
@@ -17,7 +17,7 @@ With structured extraction, all your selectors live in one place (the model), th
 An extraction model is a class that inherits from `ExtractionModel`. Each field uses `Field()` to declare a CSS or XPath selector.
 
 ```python
-from pydoll.extractor import ExtractionModel, Field
+from pydoll import ExtractionModel, Field
 
 class Quote(ExtractionModel):
     text: str = Field(selector='.text', description='The quote text')
@@ -31,47 +31,89 @@ The `selector` parameter accepts both CSS selectors and XPath expressions. Pydol
 
 Use `tab.extract()` to populate one model instance from the page. It resolves each field's selector against the page and returns the first match, typed and validated:
 
-```python
-import asyncio
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
-from pydoll.extractor import ExtractionModel, Field
+    ```python
+    from pydoll.sync import Chrome, ExtractionModel, Field
+
+    class Quote(ExtractionModel):
+        text: str = Field(selector='.text')
+        author: str = Field(selector='.author')
+
+    def main():
+        with Chrome() as browser:
+            tab = browser.start()
+            tab.go_to('https://quotes.toscrape.com')
+
+            quote = tab.extract(Quote)
+            print(quote.author, quote.text)   # str fields, fully typed
+            print(quote.model_dump())         # dict via pydantic
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+
+    from pydoll import Chrome, ExtractionModel, Field
 
 
-class Quote(ExtractionModel):
-    text: str = Field(selector='.text')
-    author: str = Field(selector='.author')
+    class Quote(ExtractionModel):
+        text: str = Field(selector='.text')
+        author: str = Field(selector='.author')
 
 
-async def main():
-    async with Chrome() as browser:
-        tab = await browser.start()
-        await tab.go_to('https://quotes.toscrape.com')
+    async def main():
+        async with Chrome() as browser:
+            tab = await browser.start()
+            await tab.go_to('https://quotes.toscrape.com')
 
-        quote = await tab.extract(Quote)
-        print(quote.author, quote.text)   # str fields, fully typed
-        print(quote.model_dump())         # dict via pydantic
+            quote = await tab.extract(Quote)
+            print(quote.author, quote.text)   # str fields, fully typed
+            print(quote.model_dump())         # dict via pydantic
 
-asyncio.run(main())
-```
+    asyncio.run(main())
+    ```
 
 ### Extract multiple items
 
 Use `tab.extract_all()` with a `scope` selector that identifies the repeating container. Each match generates one model instance, with fields resolved relative to that container.
 
-```python
-quotes = await tab.extract_all(Quote, scope='.quote')
+=== "Sync"
 
-for q in quotes:
-    print(f'{q.author}: {q.text}')
-    print(q.tags)
-```
+    ```python
+    quotes = tab.extract_all(Quote, scope='.quote')
+
+    for q in quotes:
+        print(f'{q.author}: {q.text}')
+        print(q.tags)
+    ```
+
+=== "Async"
+
+    ```python
+    quotes = await tab.extract_all(Quote, scope='.quote')
+
+    for q in quotes:
+        print(f'{q.author}: {q.text}')
+        print(q.tags)
+    ```
 
 You can limit the number of results:
 
-```python
-top_5 = await tab.extract_all(Quote, scope='.quote', limit=5)
-```
+=== "Sync"
+
+    ```python
+    top_5 = tab.extract_all(Quote, scope='.quote', limit=5)
+    ```
+
+=== "Async"
+
+    ```python
+    top_5 = await tab.extract_all(Quote, scope='.quote', limit=5)
+    ```
 
 ## Field options
 
@@ -192,14 +234,12 @@ Each `.contributor` element becomes the scope for one `Contributor` instance.
 
 ## Optional fields and defaults
 
-Fields that might not be present on every page should use `Optional` with a `default`:
+Fields that might not be present on every page should allow `None` and carry a `default`:
 
 ```python
-from typing import Optional
-
 class Article(ExtractionModel):
     title: str = Field(selector='h1', description='Title')
-    subtitle: Optional[str] = Field(
+    subtitle: str | None = Field(
         selector='.subtitle',
         description='Optional subtitle',
         default=None,
@@ -222,30 +262,57 @@ Both `typing.Optional[str]` and the PEP 604 syntax `str | None` are supported.
 
 The `timeout` parameter controls how long the engine waits for elements to appear, in seconds. This is propagated to every internal query, including nested models and list fields.
 
-```python
-# Wait up to 10 seconds for elements to appear
-article = await tab.extract(Article, timeout=10)
+=== "Sync"
 
-# No waiting (default), elements must already be in the DOM
-article = await tab.extract(Article)
+    ```python
+    # Wait up to 10 seconds for elements to appear
+    article = tab.extract(Article, timeout=10)
 
-# Also works with extract_all
-quotes = await tab.extract_all(Quote, scope='.quote', timeout=5)
-```
+    # No waiting (default), elements must already be in the DOM
+    article = tab.extract(Article)
 
-This uses the same polling mechanism as `tab.query(timeout=...)`, so there is no need for manual `asyncio.sleep()` calls between navigation and extraction.
+    # Also works with extract_all
+    quotes = tab.extract_all(Quote, scope='.quote', timeout=5)
+    ```
+
+=== "Async"
+
+    ```python
+    # Wait up to 10 seconds for elements to appear
+    article = await tab.extract(Article, timeout=10)
+
+    # No waiting (default), elements must already be in the DOM
+    article = await tab.extract(Article)
+
+    # Also works with extract_all
+    quotes = await tab.extract_all(Quote, scope='.quote', timeout=5)
+    ```
+
+This uses the same polling mechanism as `tab.query(timeout=...)`, so there is no need for manual sleeps between navigation and extraction.
 
 ## Scope extraction to a region
 
 The `scope` parameter limits extraction to a specific region of the page:
 
-```python
-# Extract only from the main article, ignoring sidebar/footer
-article = await tab.extract(Article, scope='#main-article')
+=== "Sync"
 
-# extract_all requires scope (it defines the repeating container)
-quotes = await tab.extract_all(Quote, scope='.quote')
-```
+    ```python
+    # Extract only from the main article, ignoring sidebar/footer
+    article = tab.extract(Article, scope='#main-article')
+
+    # extract_all requires scope (it defines the repeating container)
+    quotes = tab.extract_all(Quote, scope='.quote')
+    ```
+
+=== "Async"
+
+    ```python
+    # Extract only from the main article, ignoring sidebar/footer
+    article = await tab.extract(Article, scope='#main-article')
+
+    # extract_all requires scope (it defines the repeating container)
+    quotes = await tab.extract_all(Quote, scope='.quote')
+    ```
 
 ## XPath selectors
 
@@ -268,24 +335,47 @@ class SearchResult(ExtractionModel):
 
 The extraction engine raises specific exceptions that you can catch and handle:
 
-```python
-from pydoll.extractor import FieldExtractionFailed, InvalidExtractionModel
+=== "Sync"
 
-# InvalidExtractionModel: raised at model definition time
-# when a Field has neither selector nor description
-try:
-    class BadModel(ExtractionModel):
-        field: str = Field()  # no selector, no description
-except InvalidExtractionModel:
-    print('Invalid model definition')
+    ```python
+    from pydoll.extractor import FieldExtractionFailed, InvalidExtractionModel
 
-# FieldExtractionFailed: raised at extraction time
-# when a required field's element is not found
-try:
-    result = await tab.extract(MyModel)
-except FieldExtractionFailed as e:
-    print(f'Extraction failed: {e}')
-```
+    # InvalidExtractionModel: raised at model definition time
+    # when a Field has neither selector nor description
+    try:
+        class BadModel(ExtractionModel):
+            field: str = Field()  # no selector, no description
+    except InvalidExtractionModel:
+        print('Invalid model definition')
+
+    # FieldExtractionFailed: raised at extraction time
+    # when a required field's element is not found
+    try:
+        result = tab.extract(MyModel)
+    except FieldExtractionFailed as e:
+        print(f'Extraction failed: {e}')
+    ```
+
+=== "Async"
+
+    ```python
+    from pydoll.extractor import FieldExtractionFailed, InvalidExtractionModel
+
+    # InvalidExtractionModel: raised at model definition time
+    # when a Field has neither selector nor description
+    try:
+        class BadModel(ExtractionModel):
+            field: str = Field()  # no selector, no description
+    except InvalidExtractionModel:
+        print('Invalid model definition')
+
+    # FieldExtractionFailed: raised at extraction time
+    # when a required field's element is not found
+    try:
+        result = await tab.extract(MyModel)
+    except FieldExtractionFailed as e:
+        print(f'Extraction failed: {e}')
+    ```
 
 For optional fields, extraction failures are silently handled and the default value is used. Only required fields (those without a `default`) raise exceptions.
 
@@ -293,19 +383,37 @@ For optional fields, extraction failures are silently handled and the default va
 
 `ExtractionModel` inherits from `pydantic.BaseModel`, so all Pydantic features work out of the box:
 
-```python
-article = await tab.extract(Article)
+=== "Sync"
 
-# Serialization
-article.model_dump()          # dict
-article.model_dump_json()     # JSON string
+    ```python
+    article = tab.extract(Article)
 
-# JSON Schema (useful for API docs or LLM prompts)
-Article.model_json_schema()
+    # Serialization
+    article.model_dump()          # dict
+    article.model_dump_json()     # JSON string
 
-# Validation happens automatically
-# If a transform returns the wrong type, Pydantic raises ValidationError
-```
+    # JSON Schema (useful for API docs or LLM prompts)
+    Article.model_json_schema()
+
+    # Validation happens automatically
+    # If a transform returns the wrong type, Pydantic raises ValidationError
+    ```
+
+=== "Async"
+
+    ```python
+    article = await tab.extract(Article)
+
+    # Serialization
+    article.model_dump()          # dict
+    article.model_dump_json()     # JSON string
+
+    # JSON Schema (useful for API docs or LLM prompts)
+    Article.model_json_schema()
+
+    # Validation happens automatically
+    # If a transform returns the wrong type, Pydantic raises ValidationError
+    ```
 
 You can use any Pydantic feature in your models: validators, field aliases, model configuration, and more. The extraction engine adds the selector/transform layer on top without interfering with Pydantic's behavior.
 
@@ -313,34 +421,64 @@ You can use any Pydantic feature in your models: validators, field aliases, mode
 
 Here is a complete, runnable example that extracts quotes from [quotes.toscrape.com](https://quotes.toscrape.com):
 
-```python
-import asyncio
-from pydoll.browser.chromium import Chrome
-from pydoll.extractor import ExtractionModel, Field
+=== "Sync"
 
-class Quote(ExtractionModel):
-    text: str = Field(selector='.text', description='The quote text')
-    author: str = Field(selector='.author', description='Who said the quote')
-    tags: list[str] = Field(selector='.tag', description='Associated tags')
+    ```python
+    from pydoll.sync import Chrome, ExtractionModel, Field
 
-async def main():
-    async with Chrome() as browser:
-        tab = await browser.start()
-        await tab.go_to('https://quotes.toscrape.com')
+    class Quote(ExtractionModel):
+        text: str = Field(selector='.text', description='The quote text')
+        author: str = Field(selector='.author', description='Who said the quote')
+        tags: list[str] = Field(selector='.tag', description='Associated tags')
 
-        quotes = await tab.extract_all(Quote, scope='.quote', timeout=5)
+    def main():
+        with Chrome() as browser:
+            tab = browser.start()
+            tab.go_to('https://quotes.toscrape.com')
 
-        print(f'Extracted {len(quotes)} quotes\n')
-        for q in quotes:
-            print(f'"{q.text}"')
-            print(f'  by {q.author} | tags: {", ".join(q.tags)}\n')
+            quotes = tab.extract_all(Quote, scope='.quote', timeout=5)
 
-        # Pydantic serialization
-        for q in quotes:
-            print(q.model_dump_json())
+            print(f'Extracted {len(quotes)} quotes\n')
+            for q in quotes:
+                print(f'"{q.text}"')
+                print(f'  by {q.author} | tags: {", ".join(q.tags)}\n')
 
-asyncio.run(main())
-```
+            # Pydantic serialization
+            for q in quotes:
+                print(q.model_dump_json())
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+    from pydoll import Chrome, ExtractionModel, Field
+
+    class Quote(ExtractionModel):
+        text: str = Field(selector='.text', description='The quote text')
+        author: str = Field(selector='.author', description='Who said the quote')
+        tags: list[str] = Field(selector='.tag', description='Associated tags')
+
+    async def main():
+        async with Chrome() as browser:
+            tab = await browser.start()
+            await tab.go_to('https://quotes.toscrape.com')
+
+            quotes = await tab.extract_all(Quote, scope='.quote', timeout=5)
+
+            print(f'Extracted {len(quotes)} quotes\n')
+            for q in quotes:
+                print(f'"{q.text}"')
+                print(f'  by {q.author} | tags: {", ".join(q.tags)}\n')
+
+            # Pydantic serialization
+            for q in quotes:
+                print(q.model_dump_json())
+
+    asyncio.run(main())
+    ```
 
 ## What's next
 

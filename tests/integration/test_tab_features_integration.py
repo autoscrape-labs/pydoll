@@ -14,15 +14,10 @@ import base64
 from pathlib import Path
 
 import pytest
-import pytest_asyncio
 
-from pydoll.browser.chromium import Chrome
 from pydoll.exceptions import (
-    IFrameNotFound,
     InvalidFileExtension,
-    InvalidIFrame,
     MissingScreenshotPath,
-    NotAnIFrame,
     WaitElementTimeout,
 )
 
@@ -35,13 +30,6 @@ PDF_MAGIC = b'%PDF'
 
 def _file_url(name: str) -> str:
     return f'file://{(PAGES / name).absolute()}'
-
-
-@pytest_asyncio.fixture
-async def tab(ci_chrome_options):
-    async with Chrome(options=ci_chrome_options) as browser:
-        page = await browser.start()
-        yield page
 
 
 class TestScreenshots:
@@ -100,29 +88,6 @@ class TestPrintToPdf:
         await tab.go_to(_file_url('test_core_simple.html'))
         with pytest.raises(ValueError):
             await tab.print_to_pdf()
-
-
-class TestGetFrameContract:
-    @pytest.mark.asyncio
-    async def test_non_iframe_element_is_rejected(self, tab):
-        await tab.go_to(_file_url('iframe_features.html'))
-        div = await tab.find(id='not-a-frame')
-        with pytest.raises(NotAnIFrame):
-            await tab.get_frame(div)
-
-    @pytest.mark.asyncio
-    async def test_iframe_without_src_is_rejected(self, tab):
-        await tab.go_to(_file_url('iframe_features.html'))
-        frame = await tab.find(id='frame-no-src')
-        with pytest.raises(InvalidIFrame):
-            await tab.get_frame(frame)
-
-    @pytest.mark.asyncio
-    async def test_same_origin_iframe_without_own_target_is_not_found(self, tab):
-        await tab.go_to(_file_url('iframe_features.html'))
-        frame = await tab.find(id='frame-same-origin')
-        with pytest.raises(IFrameNotFound):
-            await tab.get_frame(frame)
 
 
 class TestFileChooserInterception:

@@ -6,24 +6,44 @@
 
 `tab.get_cookies()` 返回该标签页所在浏览器上下文中的每一个 cookie，而不只是当前页面的：
 
-```python
-import asyncio
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
+    ```python
+    from pydoll.sync import Chrome
+
+    def main():
+        with Chrome() as browser:
+            tab = browser.start()
+            tab.go_to('https://github.com')
+
+            cookies = tab.get_cookies()
+            print(f'{len(cookies)} cookies')
+            for cookie in cookies:
+                print(f"  {cookie['name']} = {cookie['value'][:16]}...")
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+
+    from pydoll import Chrome
 
 
-async def main():
-    async with Chrome() as browser:
-        tab = await browser.start()
-        await tab.go_to('https://github.com')
+    async def main():
+        async with Chrome() as browser:
+            tab = await browser.start()
+            await tab.go_to('https://github.com')
 
-        cookies = await tab.get_cookies()
-        print(f'{len(cookies)} cookies')
-        for cookie in cookies:
-            print(f"  {cookie['name']} = {cookie['value'][:16]}...")
+            cookies = await tab.get_cookies()
+            print(f'{len(cookies)} cookies')
+            for cookie in cookies:
+                print(f"  {cookie['name']} = {cookie['value'][:16]}...")
 
-asyncio.run(main())
-```
+    asyncio.run(main())
+    ```
 
 每个 cookie 都是一个字典，包含 `name`、`value`、`domain`、`path`、`expires`、`secure`、`httpOnly`、`sameSite`，以及像 `size` 和 `session` 这样的几个只读字段。
 
@@ -31,22 +51,41 @@ asyncio.run(main())
 
 给 `tab.set_cookies()` 传入一个 cookie 字典的列表。只有 `name` 和 `value` 是必填的；其余都是可选的，会回退到合理的默认值（`domain` 为当前页面，`path` 为 `/`，`secure` 和 `httpOnly` 为 `False`）。
 
-```python
-await tab.set_cookies([
-    {'name': 'theme', 'value': 'dark', 'domain': 'github.com'},
-    {'name': 'session', 'value': 'abc123', 'domain': 'github.com', 'secure': True, 'httpOnly': True},
-])
-```
+=== "Sync"
+
+    ```python
+    tab.set_cookies([
+        {'name': 'theme', 'value': 'dark', 'domain': 'github.com'},
+        {'name': 'session', 'value': 'abc123', 'domain': 'github.com', 'secure': True, 'httpOnly': True},
+    ])
+    ```
+
+=== "Async"
+
+    ```python
+    await tab.set_cookies([
+        {'name': 'theme', 'value': 'dark', 'domain': 'github.com'},
+        {'name': 'session', 'value': 'abc123', 'domain': 'github.com', 'secure': True, 'httpOnly': True},
+    ])
+    ```
 
 cookies 作用于整个浏览器上下文，所以该上下文中的每个标签页都能看到它们。如果站点在加载时会读取 cookies，就在导航之前设置它们。
 
 ## 清除 cookies
 
-```python
-await tab.delete_all_cookies()
-```
+=== "Sync"
 
-这会清除该标签页所在的上下文。若要清除某个特定的上下文，使用带有其 id 的浏览器级方法：`await browser.delete_all_cookies(browser_context_id=ctx)`。
+    ```python
+    tab.delete_all_cookies()
+    ```
+
+=== "Async"
+
+    ```python
+    await tab.delete_all_cookies()
+    ```
+
+这会清除该标签页所在的上下文。若要清除某个特定的上下文，使用带有其 id 的浏览器级方法：`browser.delete_all_cookies(browser_context_id=ctx)`。
 
 ## 保存并恢复会话
 
@@ -54,61 +93,119 @@ await tab.delete_all_cookies()
 
 第一次运行，登录并保存：
 
-```python
-import asyncio
-import json
-from pathlib import Path
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
+    ```python
+    import json
+    from pathlib import Path
 
-COOKIE_FILE = Path('session.json')
+    from pydoll.sync import Chrome
+
+    COOKIE_FILE = Path('session.json')
+
+    def login_and_save():
+        with Chrome() as browser:
+            tab = browser.start()
+            tab.go_to('https://quotes.toscrape.com/login')
+
+            tab.find(id='username').type_text('tester', humanize=True)
+            tab.find(id='password').type_text('secret', humanize=True)
+            tab.find(tag_name='input', type='submit').click()
+
+            cookies = tab.get_cookies()
+            COOKIE_FILE.write_text(json.dumps(cookies))
+            print(f'Saved {len(cookies)} cookies')
+
+    login_and_save()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+    import json
+    from pathlib import Path
+
+    from pydoll import Chrome
+
+    COOKIE_FILE = Path('session.json')
 
 
-async def login_and_save():
-    async with Chrome() as browser:
-        tab = await browser.start()
-        await tab.go_to('https://quotes.toscrape.com/login')
+    async def login_and_save():
+        async with Chrome() as browser:
+            tab = await browser.start()
+            await tab.go_to('https://quotes.toscrape.com/login')
 
-        await (await tab.find(id='username')).type_text('tester', humanize=True)
-        await (await tab.find(id='password')).type_text('secret', humanize=True)
-        await (await tab.find(tag_name='input', type='submit')).click()
+            await (await tab.find(id='username')).type_text('tester', humanize=True)
+            await (await tab.find(id='password')).type_text('secret', humanize=True)
+            await (await tab.find(tag_name='input', type='submit')).click()
 
-        cookies = await tab.get_cookies()
-        COOKIE_FILE.write_text(json.dumps(cookies))
-        print(f'Saved {len(cookies)} cookies')
+            cookies = await tab.get_cookies()
+            COOKIE_FILE.write_text(json.dumps(cookies))
+            print(f'Saved {len(cookies)} cookies')
 
-asyncio.run(login_and_save())
-```
+    asyncio.run(login_and_save())
+    ```
 
 之后的运行，加载 cookies，你就已经登录了：
 
-```python
-import asyncio
-import json
-from pathlib import Path
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
+    ```python
+    import json
+    from pathlib import Path
 
-COOKIE_FILE = Path('session.json')
+    from pydoll.sync import Chrome
+
+    COOKIE_FILE = Path('session.json')
+
+    def restore_and_use():
+        saved = json.loads(COOKIE_FILE.read_text())
+        cookies = [
+            {'name': c['name'], 'value': c['value'], 'domain': c['domain'], 'path': c.get('path', '/')}
+            for c in saved
+        ]
+
+        with Chrome() as browser:
+            tab = browser.start()
+            tab.set_cookies(cookies)
+
+            tab.go_to('https://quotes.toscrape.com')
+            logout = tab.find(text='Logout', timeout=5, raise_exc=False)
+            print('Session restored.' if logout else 'Session expired, log in again.')
+
+    restore_and_use()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+    import json
+    from pathlib import Path
+
+    from pydoll import Chrome
+
+    COOKIE_FILE = Path('session.json')
 
 
-async def restore_and_use():
-    saved = json.loads(COOKIE_FILE.read_text())
-    cookies = [
-        {'name': c['name'], 'value': c['value'], 'domain': c['domain'], 'path': c.get('path', '/')}
-        for c in saved
-    ]
+    async def restore_and_use():
+        saved = json.loads(COOKIE_FILE.read_text())
+        cookies = [
+            {'name': c['name'], 'value': c['value'], 'domain': c['domain'], 'path': c.get('path', '/')}
+            for c in saved
+        ]
 
-    async with Chrome() as browser:
-        tab = await browser.start()
-        await tab.set_cookies(cookies)
+        async with Chrome() as browser:
+            tab = await browser.start()
+            await tab.set_cookies(cookies)
 
-        await tab.go_to('https://quotes.toscrape.com')
-        logout = await tab.find(text='Logout', timeout=5, raise_exc=False)
-        print('Session restored.' if logout else 'Session expired, log in again.')
+            await tab.go_to('https://quotes.toscrape.com')
+            logout = await tab.find(text='Logout', timeout=5, raise_exc=False)
+            print('Session restored.' if logout else 'Session expired, log in again.')
 
-asyncio.run(restore_and_use())
-```
+    asyncio.run(restore_and_use())
+    ```
 
 重新格式化这一步很重要：`get_cookies()` 返回完整的 `Cookie` 对象，其中带有 `set_cookies()` 不接受的只读字段（`size`、`session` 等），所以只把可设置的字段复制过去。
 
@@ -121,15 +218,29 @@ asyncio.run(restore_and_use())
 
 cookies 归属于某个浏览器上下文。两个上下文有各自独立的 cookie 存储，这正是你并排运行两个账号而互不干扰的方式。用浏览器级方法在某个特定上下文中设置 cookies：
 
-```python
-ctx = await browser.create_browser_context()
-tab2 = await browser.new_tab(browser_context_id=ctx)
+=== "Sync"
 
-await browser.set_cookies(
-    [{'name': 'session', 'value': 'second-account', 'domain': 'quotes.toscrape.com'}],
-    browser_context_id=ctx,
-)
-```
+    ```python
+    ctx = browser.create_browser_context()
+    tab2 = browser.new_tab(browser_context_id=ctx)
+
+    browser.set_cookies(
+        [{'name': 'session', 'value': 'second-account', 'domain': 'quotes.toscrape.com'}],
+        browser_context_id=ctx,
+    )
+    ```
+
+=== "Async"
+
+    ```python
+    ctx = await browser.create_browser_context()
+    tab2 = await browser.new_tab(browser_context_id=ctx)
+
+    await browser.set_cookies(
+        [{'name': 'session', 'value': 'second-account', 'domain': 'quotes.toscrape.com'}],
+        browser_context_id=ctx,
+    )
+    ```
 
 关于并行运行隔离会话，参见[浏览器上下文](browser-contexts.md)。
 

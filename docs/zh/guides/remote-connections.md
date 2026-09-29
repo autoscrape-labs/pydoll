@@ -22,28 +22,50 @@ curl http://localhost:9222/json/version
 
 创建一个 browser 对象，用 WebSocket 地址调用 `connect()`，然后像操作其他标签页一样使用返回的那个：
 
-```python
-import asyncio
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
+    ```python
+    from pydoll.sync import Chrome
+
+    def main():
+        browser = Chrome()
+        tab = browser.connect('ws://localhost:9222/devtools/browser/<id>')
+
+        print(tab.title())
+
+        tab.go_to('https://news.ycombinator.com')
+        headline = tab.find(class_name='titleline')
+        print(headline.text())
+
+        browser.close()
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+
+    from pydoll import Chrome
 
 
-async def main():
-    browser = Chrome()
-    tab = await browser.connect('ws://localhost:9222/devtools/browser/<id>')
+    async def main():
+        browser = Chrome()
+        tab = await browser.connect('ws://localhost:9222/devtools/browser/<id>')
 
-    print(await tab.title)
+        print(await tab.title())
 
-    await tab.go_to('https://news.ycombinator.com')
-    headline = await tab.find(class_name='titleline')
-    print(await headline.text)
+        await tab.go_to('https://news.ycombinator.com')
+        headline = await tab.find(class_name='titleline')
+        print(await headline.text())
 
-    await browser.close()
+        await browser.close()
 
-asyncio.run(main())
-```
+    asyncio.run(main())
+    ```
 
-`connect()` 返回第一个打开的标签页。用 `await browser.get_opened_tabs()` 访问其他标签页，方式和你自己启动浏览器时完全一样。请看 [标签页](tabs.md)。
+`connect()` 返回第一个打开的标签页。用 `browser.get_opened_tabs()` 访问其他标签页，方式和你自己启动浏览器时完全一样。请看 [标签页](tabs.md)。
 
 !!! warning "用 `close()` 断开连接，而不是 `stop()`"
     这个浏览器不是你启动的，所以不要终止它。`await browser.close()` 只会关闭 Pydoll 的 WebSocket 连接，让浏览器继续为其他用途运行。`await browser.stop()` 会向浏览器发送关闭命令并杀掉进程，这适用于你自己启动的浏览器，而不是你接入的那个。
@@ -52,25 +74,47 @@ asyncio.run(main())
 
 你通常在运行时发现该地址，而不是把它写死。用任意 HTTP 客户端查询这个 JSON 端点：
 
-```python
-import asyncio
+=== "Sync"
 
-import aiohttp
-from pydoll.browser.chromium import Chrome
+    ```python
+    import json
+    from urllib.request import urlopen
+
+    from pydoll.sync import Chrome
+
+    def main():
+        with urlopen('http://localhost:9222/json/version') as resp:
+            ws_address = json.load(resp)['webSocketDebuggerUrl']
+
+        browser = Chrome()
+        tab = browser.connect(ws_address)
+        print(tab.title())
+        browser.close()
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+
+    import aiohttp
+    from pydoll import Chrome
 
 
-async def main():
-    async with aiohttp.ClientSession() as session:
-        async with session.get('http://localhost:9222/json/version') as resp:
-            ws_address = (await resp.json())['webSocketDebuggerUrl']
+    async def main():
+        async with aiohttp.ClientSession() as session:
+            async with session.get('http://localhost:9222/json/version') as resp:
+                ws_address = (await resp.json())['webSocketDebuggerUrl']
 
-    browser = Chrome()
-    tab = await browser.connect(ws_address)
-    print(await tab.title)
-    await browser.close()
+        browser = Chrome()
+        tab = await browser.connect(ws_address)
+        print(await tab.title())
+        await browser.close()
 
-asyncio.run(main())
-```
+    asyncio.run(main())
+    ```
 
 对于另一台机器上的浏览器，把 `localhost` 替换成该服务器的地址，并从客户端查询 `http://<host>:9222/json/version`。
 
@@ -95,7 +139,7 @@ docker run -d --shm-size=2g -p 127.0.0.1:9222:9222 \
 
 ```python
 from pydoll.connection import ConnectionHandler
-from pydoll.elements.web_element import WebElement
+from pydoll import WebElement
 
 connection = ConnectionHandler(ws_address='ws://localhost:9222/devtools/page/<id>')
 
@@ -110,7 +154,7 @@ await button.click(x_offset=5, y_offset=5)
 await connection.close()
 ```
 
-`objectId` 就是 `Runtime.evaluate` 或 `DOM.resolveNode` 这类 CDP 命令为某个节点返回的东西。这样既能保留你现有的搭建，又能在其上借用 Pydoll 的等待与交互。
+`objectId` 就是 `Runtime.evaluate` 或 `DOM.resolveNode` 这类 CDP 命令为某个节点返回的东西。这样既能保留你现有的搭建，又能在其上借用 Pydoll 的等待与交互。`ConnectionHandler` 是一个 asyncio 对象，所以这个集成点只有异步版本；`pydoll.sync` 里的门面包裹的是通过它们启动或连接的浏览器所产生的元素。
 
 ## 下一步
 

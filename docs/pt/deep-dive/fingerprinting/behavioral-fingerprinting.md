@@ -43,10 +43,19 @@ A entropia aqui mede o quão imprevisível é o caminho. Os sistemas de detecç�
 
 Com `humanize=True`, o Pydoll gera movimentos que respondem a cada um dos indícios acima. O caminho segue uma curva de Bezier cúbica com pontos de controle aleatorizados, então ele curva em vez de correr reto. A velocidade ao longo dele segue o perfil de mínimo jerk (`10t^3 - 15t^4 + 6t^5`), gerando a curva em formato de sino que a Lei de Fitts prevê, e a duração é calculada a partir da própria Lei de Fitts. O tremor fisiológico é adicionado como ruído de posição escalado inversamente à velocidade (mais visível quando o cursor se move devagar, combinando com a fisiologia real), o overshoot acontece com uma probabilidade definida antes de uma correção, e micropausas ocasionais simulam breves hesitações.
 
-```python
-await element.click(humanize=True)
-await tab.mouse.click(500, 300, humanize=True)   # forma com coordenadas
-```
+=== "Sync"
+
+    ```python
+    element.click(humanize=True)
+    tab.mouse.click(500, 300, humanize=True)   # forma com coordenadas
+    ```
+
+=== "Async"
+
+    ```python
+    await element.click(humanize=True)
+    await tab.mouse.click(500, 300, humanize=True)   # forma com coordenadas
+    ```
 
 O modelo de timing é configurável através de `MouseTimingConfig` atribuído a `tab.mouse.timing`. Veja [Human-like interactions](../../stealth/human-like-interactions.md) para o guia prático.
 
@@ -77,9 +86,17 @@ As duas medições fundamentais são o dwell time (do `keydown` ao `keyup` numa 
 
 Com `type_text(humanize=True)`, os atrasos entre as teclas são extraídos de uma distribuição, e não de um intervalo fixo. A pontuação recebe um atraso extra, simulando a pausa que um digitador faz na estrutura da frase; pausas ocasionais de reflexão e pausas de distração mais raras simulam momentos de pensamento ou interrupção. Erros de digitação realistas ocorrem em torno de 2% por caractere ao longo de cinco tipos de erro ponderados pela frequência no mundo real (tecla adjacente, transposição, pressionamento duplo, caractere pulado, espaço perdido), cada um seguido por uma sequência natural de correção.
 
-```python
-await element.type_text('Hello, world!', humanize=True)
-```
+=== "Sync"
+
+    ```python
+    element.type_text('Hello, world!', humanize=True)
+    ```
+
+=== "Async"
+
+    ```python
+    await element.type_text('Hello, world!', humanize=True)
+    ```
 
 Veja [Human-like interactions](../../stealth/human-like-interactions.md) para saber como ajustá-lo.
 
@@ -99,11 +116,21 @@ As rodas do mouse produzem eventos `wheel` discretos com deltas consistentes (fr
 
 A rolagem humanizada do Pydoll responde a esses pontos: ela segue uma curva de easing de Bezier para aceleração e desaceleração naturais, adiciona jitter por frame aos deltas, insere micropausas ocasionais, às vezes ultrapassa e corrige, e quebra distâncias longas em múltiplos gestos de "flick" em vez de um movimento contínuo.
 
-```python
-from pydoll.constants import ScrollPosition
+=== "Sync"
 
-await tab.scroll.by(ScrollPosition.DOWN, 800, humanize=True)
-```
+    ```python
+    from pydoll.constants import ScrollPosition
+
+    tab.scroll.by(ScrollPosition.DOWN, 800, humanize=True)
+    ```
+
+=== "Async"
+
+    ```python
+    from pydoll.constants import ScrollPosition
+
+    await tab.scroll.by(ScrollPosition.DOWN, 800, humanize=True)
+    ```
 
 ## Outros sinais comportamentais
 

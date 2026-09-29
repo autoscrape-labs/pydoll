@@ -35,6 +35,13 @@ class TestEmptyAndBootstrap:
         assert build_fingerprint_js(config) == build_fingerprint_js(config)
 
 
+def _js_const(js: str, name: str):
+    """The JSON value assigned to ``const <name> = ...;`` in the built script."""
+    head = f'const {name} = '
+    start = js.index(head) + len(head)
+    return json.loads(js[start : js.index(';\n', start)])
+
+
 class TestNativeToStringHook:
     def test_getters_use_computed_name_and_mark(self):
         """Getters must resolve to native under toString (computed-name + _mark)."""
@@ -44,11 +51,40 @@ class TestNativeToStringHook:
         block = js[js.index('const _install') : js.index('const _nativeGetter')]
         assert '_mark(_g)' in block
 
+    def test_no_wrapper_looks_up_call_or_apply(self):
+        """Delegation goes through the captured Reflect.apply: a ``fn.call`` or
+        ``fn.apply`` inside a wrapper is a property read on Function.prototype
+        that a counter installed during a toString() probe observes."""
+        js = build_fingerprint_js({
+            'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/152.0.0.0',
+            'hardware': {'device_memory': 8, 'hardware_concurrency': 8},
+            'webgl': {
+                'vendor': 'v',
+                'renderer': 'r',
+                'supported_extensions': ['WEBGL_lose_context'],
+            },
+            'webgpu': {
+                'vendor': 'nvidia',
+                'features': ['shader-f16'],
+                'limits': {'maxBufferSize': 1},
+            },
+            'audio': {'sample_rate': 48000},
+            'media_devices': {'audio_inputs': 1, 'audio_outputs': 1, 'video_inputs': 1},
+            'speech': {'voices': [{'name': 'A', 'lang': 'en-US'}]},
+            'media_codecs': {'video': {'video/mp4': 'probably'}},
+            'fonts': {'available_fonts': ['Arial']},
+            'platform_apis': {'hidden': ['navigator.share']},
+            'webrtc_ip_policy': 'relay',
+        })
+        assert 'const _apply = Reflect.apply;' in js
+        assert '.call(' not in js
+        assert '.apply(' not in js
+
     def test_getters_invoke_native_getter_for_brand_check(self):
         """Every constant getter calls the original native getter first, so a
         foreign receiver throws the real Illegal invocation."""
         js = build_fingerprint_js({'hardware': {'device_memory': 8}})
-        assert 'if (_og) _og.call(this); return value;' in js
+        assert 'if (_og) _apply(_og, this, []); return value;' in js
 
 
 class TestFakePlatformObjects:
@@ -67,7 +103,7 @@ class TestFakePlatformObjects:
 
     def test_enumerate_devices_awaits_native_call(self):
         js = build_fingerprint_js({'media_devices': {'audio_inputs': 1, 'video_inputs': 1}})
-        assert 'origEnumerate.call(this).then(() => makeDevices())' in js
+        assert '_apply(origEnumerate, this, []).then(() => makeDevices())' in js
         inputs = js.index("makeDev('audioinput')")
         video = js.index("makeDev('videoinput')")
         outputs = js.index("makeDev('audiooutput')")
@@ -79,7 +115,7 @@ class TestFakePlatformObjects:
         js = build_fingerprint_js({'speech': {'voices': voices}})
         assert '_fake(SpeechSynthesisVoice.prototype' in js
         assert '_defF(SpeechSynthesisVoice.prototype, prop)' in js
-        assert 'origGetVoices.call(this);' in js
+        assert '_apply(origGetVoices, this, []);' in js
 
 
 class TestPrototypePatching:
@@ -151,7 +187,7 @@ class TestSections:
         """baseLatency/outputLatency keep the host buffer, divided by the claimed rate."""
         js = build_fingerprint_js({'audio': {'sample_rate': 48000}})
         assert "for (const _prop of ['baseLatency', 'outputLatency'])" in js
-        assert 'Math.round(real * _deviceRate.call(self)) / 48000' in js
+        assert 'Math.round(real * _apply(_deviceRate, self, [])) / 48000' in js
         assert '(!real || _truthful.has(self))' in js
 
     def test_audio_reads_the_device_rate_before_overriding_it(self):
@@ -183,24 +219,116 @@ class TestSections:
         assert "_patchM(FontFace.prototype, 'load'" in js
         assert 'check(' not in js
 
-    def test_webgl_never_fakes_extension_objects(self):
+    def test_webgl_declared_extensions_come_from_the_registry_in_chrome_order(self, caplog):
         config = {
             'webgl': {
                 'vendor': 'Google Inc. (NVIDIA)',
                 'renderer': 'ANGLE (NVIDIA)',
-                'supported_extensions': ['WEBGL_debug_renderer_info'],
+                'supported_extensions': [
+                    'OES_element_index_uint',
+                    'KHR_parallel_shader_compile',
+                    'EXT_sRGB',
+                    'WEBGL_compressed_texture_pvrtc',
+                    'WEBGL_debug_shaders',
+                    'EXT_made_up_extension',
+                ],
+                'webgl2_extensions': ['OES_vertex_array_object', 'KHR_parallel_shader_compile'],
+                'max_texture_max_anisotropy': 8,
                 'max_samples': 8,
             }
         }
-        js = build_fingerprint_js(config)
+        with caplog.at_level('WARNING'):
+            js = build_fingerprint_js(config)
+        order1 = _js_const(js, 'ext1Order')
+        declared1 = _js_const(js, 'declared1')
+        declared2 = _js_const(js, 'declared2')
+        assert order1 == [
+            'EXT_sRGB',
+            'KHR_parallel_shader_compile',
+            'OES_element_index_uint',
+            'WEBGL_compressed_texture_pvrtc',
+            'EXT_made_up_extension',
+        ]
+        assert 'EXT_made_up_extension' in caplog.text
+        assert declared1['KHR_parallel_shader_compile'] == {
+            'interface': 'KHRParallelShaderCompile',
+            'constants': {'COMPLETION_STATUS_KHR': 0x91B1},
+            'methods': [],
+            'returns': {},
+            'params': {},
+            'formats': [],
+        }
+        assert declared1['WEBGL_compressed_texture_pvrtc']['formats'] == [
+            0x8C00,
+            0x8C01,
+            0x8C02,
+            0x8C03,
+        ]
+        assert 'WEBGL_debug_shaders' not in declared1
+        assert 'EXT_made_up_extension' not in declared1
+        assert 'OES_vertex_array_object' not in declared2
+        assert list(declared2) == ['KHR_parallel_shader_compile']
+        assert f'{0x84FF}: 8' in js
+        assert f'{0x8D57}: 8' in js
         assert '|| {}' not in js
         assert "HIDDEN_EXT = 'WEBGL_debug_shaders'" in js
-        assert 'real.filter(allowed)' in js
-        assert 'const real = origGetParameter.call(this, pname);' in js
-        assert f'{0x8D57}: 8' in js
+
+    def test_webgl_profile_limit_overrides_a_constructed_extension_default(self):
+        js = build_fingerprint_js({
+            'webgl': {
+                'vendor': 'v',
+                'renderer': 'r',
+                'supported_extensions': ['EXT_texture_filter_anisotropic', 'WEBGL_draw_buffers'],
+                'max_texture_max_anisotropy': 4,
+            }
+        })
+        declared = _js_const(js, 'declared1')
+        assert declared['EXT_texture_filter_anisotropic']['params'] == {str(0x84FF): 4}
+        assert declared['WEBGL_draw_buffers']['params'][str(0x8CDF)] == 8
+        assert declared['WEBGL_draw_buffers']['methods'] == [['drawBuffersWEBGL', 1]]
+
+    def test_webgl_constructed_methods_are_emitted_by_name_as_chrome_installs_them(self):
+        js = build_fingerprint_js({
+            'webgl': {
+                'vendor': 'v',
+                'renderer': 'r',
+                'supported_extensions': ['OES_vertex_array_object', 'EXT_disjoint_timer_query'],
+            }
+        })
+        declared = _js_const(js, 'declared1')
+        assert [name for name, _ in declared['OES_vertex_array_object']['methods']] == [
+            'bindVertexArrayOES',
+            'createVertexArrayOES',
+            'deleteVertexArrayOES',
+            'isVertexArrayOES',
+        ]
+        assert declared['EXT_disjoint_timer_query']['methods'][0] == ['beginQueryEXT', 2]
+
+    def test_webgl_names_the_parameters_extensions_own_and_guards_lost_contexts(self):
+        js = build_fingerprint_js({
+            'webgl': {'vendor': 'v', 'renderer': 'r', 'max_texture_max_anisotropy': 4}
+        })
+        head = 'const extensionOwnedParams = new Set('
+        start = js.index(head) + len(head)
+        owned = json.loads(js[start : js.index(');', start)])
+        assert 0x84FF in owned
+        assert 0x8B8B in owned
+        assert 0x0D33 not in owned
+        assert 'if (real === null && extensionOwnedParams.has(pname)) return real;' in js
+        assert 'const origIsContextLost = proto.isContextLost;' in js
+        assert '_apply(origGetSupportedExtensions, this, []);\n      return null;' in js
+        assert 'const interfaces = new Map();' in js
+
+    def test_webgl_without_extension_lists_constructs_nothing(self):
+        js = build_fingerprint_js({'webgl': {'vendor': 'v', 'renderer': 'r'}})
+        assert 'const ext1 = null;' in js
+        assert 'const ext1Order = null;' in js
+        assert 'const declared1 = {};' in js
+        assert 'const declared2 = {};' in js
 
     def test_compressed_formats_follow_the_advertised_extensions(self):
-        """A hidden extension takes its format enums out of COMPRESSED_TEXTURE_FORMATS."""
+        """A hidden extension takes its format enums out of COMPRESSED_TEXTURE_FORMATS,
+        and a constructed one appends its enums once enabled."""
         config = {
             'webgl': {
                 'vendor': 'Google Inc. (NVIDIA)',
@@ -211,7 +339,8 @@ class TestSections:
         js = build_fingerprint_js(config)
         assert 'const COMPRESSED_FORMATS = 0x86A3;' in js
         assert 'if (pname === COMPRESSED_FORMATS && ArrayBuffer.isView(real))' in js
-        assert 'new Uint32Array(Array.prototype.filter.call(real, formatAllowed))' in js
+        assert 'const kept = _apply(Array.prototype.filter, real, [formatAllowed]);' in js
+        assert 'new Uint32Array(_apply(Array.prototype.concat, kept, [fakeFormats(this)]))' in js
         assert 'if (allowed(name)) return true;' in js
 
     def test_compressed_format_enums_match_the_extension_specs(self):
@@ -298,7 +427,7 @@ class TestSections:
         js = build_fingerprint_js({'media_devices': {'audio_inputs': 1}})
         assert '_FAKES.has(value) || _foreignFake(value)' in js
         assert 'if (value instanceof Object) return false;' in js
-        assert '_FAKED.has(_ORIG.call(d.get))' in js
+        assert '_FAKED.has(_apply(_ORIG, d.get, []))' in js
         assert 'new Proxy(' not in js
 
     def test_clone_error_keeps_the_native_message(self):
@@ -383,7 +512,7 @@ class TestPlatformApis:
         })
         assert '"BarcodeDetector", "navigator.share"' in js
         assert 'delete target[prop]' in js
-        assert 'hasOwnProperty.call(target, prop)' in js
+        assert '_apply(Object.prototype.hasOwnProperty, target, [prop])' in js
 
     def test_empty_list_injects_nothing(self):
         assert build_fingerprint_js({'platform_apis': {'hidden': []}}) == ''
@@ -402,7 +531,7 @@ class TestMediaCodecs:
 
     def test_native_answer_runs_first_on_every_call(self):
         js = build_fingerprint_js({'media_codecs': {'can_play_type': {'audio/mpeg': 'maybe'}}})
-        assert '_native.apply(this, arguments)' in js
+        assert '_apply(_native, this, arguments)' in js
         assert 'answer === undefined ? real : answer' in js
 
     def test_media_source_map_is_coerced_to_booleans(self):

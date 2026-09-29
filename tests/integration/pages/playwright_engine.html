@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Engine fixtures</title>
+    <style>
+        .hidden { display: none; }
+        .invisible { visibility: hidden; }
+        #overlay { position: fixed; left: 0; top: 0; width: 200px; height: 200px; background: rgba(0,0,0,0.3); z-index: 10; }
+        #covered { position: absolute; left: 20px; top: 20px; width: 100px; height: 40px; }
+        #free { position: absolute; left: 300px; top: 300px; width: 100px; height: 40px; }
+        .badge::before { content: "New: "; }
+    </style>
+</head>
+<body>
+    <h1 id="title">Engine fixtures</h1>
+
+    <section id="text-section">
+        <p id="p-hello">Hello   World</p>
+        <p id="p-hello-again">hello world again</p>
+        <p id="p-nested">Outer <span id="inner-span">inner text</span> tail</p>
+        <button id="btn-submit" type="button">Submit</button>
+        <input id="input-submit" type="submit" value="Send now">
+        <div id="wrapper"><div id="deep-div">Deep content</div></div>
+    </section>
+
+    <section id="role-section">
+        <a id="link-docs" href="/docs">Read the docs</a>
+        <a id="anchor-no-href">Not a link</a>
+        <button id="btn-save" aria-pressed="true">Save</button>
+        <button id="btn-disabled" disabled>Disabled action</button>
+        <div role="button" id="div-button" tabindex="0">Custom Button</div>
+        <button id="btn-hidden" class="hidden">Hidden button</button>
+        <button id="btn-aria-hidden" aria-hidden="true">Aria hidden button</button>
+        <span class="badge" id="badge-btn" role="button">Item</span>
+        <h2 id="h2-features">Features</h2>
+        <h3 id="h3-details">Details</h3>
+        <div role="heading" aria-level="4" id="aria-heading">Aria heading</div>
+        <input type="checkbox" id="cb-checked" checked aria-label="Accept terms">
+        <input type="checkbox" id="cb-unchecked" aria-label="Newsletter">
+        <div role="checkbox" aria-checked="true" id="aria-cb">Aria checked</div>
+        <label for="name-input">Full name</label>
+        <input id="name-input" type="text">
+        <label id="wrapping-label">Email address <input id="email-input" type="email"></label>
+        <input id="placeholder-input" type="text" placeholder="Search here">
+        <input id="labelledby-input" type="text" aria-labelledby="lbl-a lbl-b">
+        <span id="lbl-a">First</span><span id="lbl-b">Second</span>
+        <img id="img-logo" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" alt="Company logo">
+        <img id="img-presentation" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" alt="">
+        <span id="span-title" title="Tooltip text">Hover me</span>
+        <input id="readonly-input" type="text" readonly value="fixed">
+        <select id="select-single">
+            <option value="a">Alpha</option>
+            <option value="b" selected>Beta</option>
+            <option value="c" disabled>Gamma</option>
+        </select>
+        <select id="select-multi" multiple>
+            <option value="x">Ex</option>
+            <option value="y">Why</option>
+            <option value="z">Zed</option>
+        </select>
+        <button id="btn-fieldset-disabled-container"></button>
+        <fieldset disabled>
+            <button id="btn-in-disabled-fieldset">Inside disabled fieldset</button>
+        </fieldset>
+        <ul id="list">
+            <li data-testid="item" class="item">one</li>
+            <li data-testid="item" class="item">two</li>
+            <li data-testid="item" class="item">three</li>
+        </ul>
+        <div id="cards">
+            <article class="card" id="card-1"><h4>Card A</h4><button>Buy</button></article>
+            <article class="card" id="card-2"><h4>Card B</h4><span>Sold out</span></article>
+            <article class="card" id="card-3"><h4>Card C</h4><button>Buy</button></article>
+        </div>
+        <div id="pw-invisible" class="invisible">Invisible text</div>
+        <div id="sized-zero" style="width:0;height:0;overflow:hidden">Zero</div>
+    </section>
+
+    <section id="hit-section">
+        <div id="overlay"></div>
+        <button id="covered">Covered</button>
+        <button id="free">Free</button>
+    </section>
+
+    <div id="shadow-host"></div>
+
+    <div id="editable" contenteditable="true">edit me</div>
+    <input id="number-input" type="number">
+    <input id="date-input" type="date">
+    <input id="color-input" type="color" value="#000000">
+
+    <script>
+        const host = document.getElementById('shadow-host');
+        const root = host.attachShadow({ mode: 'open' });
+        root.innerHTML = '<button id="shadow-btn" data-testid="shadow-item">Shadow Button</button><p class="shadow-text">Shadow text here</p>';
+    </script>
+</body>
+</html>

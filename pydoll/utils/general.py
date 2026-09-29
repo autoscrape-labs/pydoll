@@ -1,7 +1,9 @@
+import asyncio
 import base64
 import logging
 import os
 import re
+import socket
 from html import unescape
 from html.parser import HTMLParser
 from pathlib import Path
@@ -298,3 +300,38 @@ def normalize_synthetic_xpath(selector: str) -> str:
     if end_idx == -1 or end_idx <= start_idx:
         return selector
     return s[start_idx:end_idx]
+
+
+def find_free_port() -> int:
+    """Return a TCP port the operating system reports free on the loopback interface.
+
+    Chrome's remote debugging port must be unique per browser on the machine.
+    Picking one at random from a small range collides as soon as a few browsers
+    run at once (parallel test workers, several scrapers on one host), and a
+    collision is silent: the new browser cannot bind, so pydoll ends up talking
+    to whichever browser already owns the port. Asking the OS for an ephemeral
+    port narrows the window to the moment between this call and Chrome binding.
+    """
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as probe:
+        probe.bind(('127.0.0.1', 0))
+        return probe.getsockname()[1]
+
+
+class PollInterval:
+    """Pause between polling attempts that starts short and backs off.
+
+    A fixed half-second pause makes every wait cost half a second even when the
+    thing appears after ten milliseconds. Starting at ``start`` seconds and
+    multiplying by ``factor`` up to ``cap`` keeps quick outcomes quick while a
+    long wait still settles into a cheap polling rate.
+    """
+
+    def __init__(self, start: float = 0.02, cap: float = 0.25, factor: float = 1.5) -> None:
+        self._current = start
+        self._cap = cap
+        self._factor = factor
+
+    async def wait(self) -> None:
+        """Sleep for the current interval, then lengthen it for the next call."""
+        await asyncio.sleep(self._current)
+        self._current = min(self._current * self._factor, self._cap)

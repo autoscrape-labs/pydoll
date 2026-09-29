@@ -4,7 +4,7 @@ import asyncio
 import logging
 from collections import deque
 from contextlib import suppress
-from typing import TYPE_CHECKING, Optional, cast
+from typing import TYPE_CHECKING, cast
 
 from pydoll.protocol.page.events import (
     JavascriptDialogOpeningEvent,
@@ -37,7 +37,7 @@ class EventsManager:
         self.network_logs: deque[RequestWillBeSentEvent] = deque(maxlen=MAX_NETWORK_LOGS)
         self.dialog = JavascriptDialogOpeningEvent()  # type: ignore
         self._event_queue: asyncio.Queue = asyncio.Queue()
-        self._worker_task: Optional[asyncio.Task] = None
+        self._worker_task: asyncio.Task | None = None
         logger.info('EventsManager initialized')
         logger.debug('Initial state: callbacks=0, logs=0, dialog=empty')
 
@@ -114,9 +114,11 @@ class EventsManager:
             'callback': callback,
             'temporary': temporary,
         }
-        logger.info(f"Registered callback '{event_name}' with ID {self._callback_id}")
+        logger.info("Registered callback '%s' with ID %s", event_name, self._callback_id)
         logger.debug(
-            f'Callback details: temporary={temporary}, total_callbacks={len(self._event_callbacks)}'
+            'Callback details: temporary=%s, total_callbacks=%s',
+            temporary,
+            len(self._event_callbacks),
         )
         return self._callback_id
 
@@ -127,8 +129,8 @@ class EventsManager:
             return False
 
         del self._event_callbacks[callback_id]
-        logger.info(f'Removed callback ID {callback_id}')
-        logger.debug(f'Remaining callbacks: {len(self._event_callbacks)}')
+        logger.info('Removed callback ID %s', callback_id)
+        logger.debug('Remaining callbacks: %s', len(self._event_callbacks))
         return True
 
     def clear_callbacks(self):
@@ -148,7 +150,7 @@ class EventsManager:
         if not event_name:
             logger.warning(f'Discarding event without method: {str(event_data)[:200]}')
             return
-        logger.debug(f'Processing event: {event_name}')
+        logger.debug('Processing event: %s', event_name)
 
         if 'Network.requestWillBeSent' in event_name:
             self._update_network_logs(event_data)
@@ -168,6 +170,24 @@ class EventsManager:
         """Add network event to logs (bounded deque keeps the last MAX_NETWORK_LOGS)."""
         self.network_logs.append(event_data)
 
+    @staticmethod
+    def _call_sync_callback(
+        cb_id: int, callback: Callable[[CDPEvent], object], event_data: CDPEvent
+    ):
+        """Run a synchronous callback, keeping a ``CancelledError`` it raises from
+        escaping as the worker's own cancellation.
+
+        A plain function cannot be the target of a task cancellation, so a
+        ``CancelledError`` here comes from the callback itself, typically from
+        reading a future that ``asyncio.wait_for`` already cancelled. Letting it
+        propagate would kill the event worker and stall every later event until
+        the socket reconnects, so it is logged like any other callback error.
+        """
+        try:
+            callback(event_data)
+        except asyncio.CancelledError:
+            logger.error('Callback %s raised CancelledError (a cancelled future was read)', cb_id)
+
     async def _trigger_callbacks(self, event_name: str, event_data: CDPEvent):
         """Trigger all registered callbacks for event, removing temporary ones."""
         callbacks_to_remove = []
@@ -178,9 +198,9 @@ class EventsManager:
                     if asyncio.iscoroutinefunction(cb_data['callback']):
                         await cb_data['callback'](event_data)
                     else:
-                        cb_data['callback'](event_data)
+                        self._call_sync_callback(cb_id, cb_data['callback'], event_data)
                 except Exception as e:
-                    logger.error(f'Error in callback {cb_id}: {str(e)}')
+                    logger.error('Error in callback %s: %s', cb_id, e)
 
                 if cb_data['temporary']:
                     callbacks_to_remove.append(cb_id)
@@ -188,5 +208,5 @@ class EventsManager:
         for cb_id in callbacks_to_remove:
             self.remove_callback(cb_id)
         logger.debug(
-            f"Triggered callbacks for '{event_name}'. Removed temporaries: {callbacks_to_remove}"
+            "Triggered callbacks for '%s'. Removed temporaries: %s", event_name, callbacks_to_remove
         )

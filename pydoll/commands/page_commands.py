@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Literal, Optional
+from typing import TYPE_CHECKING, Literal
 
 from pydoll.protocol.base import Command
 from pydoll.protocol.page.methods import (
@@ -130,18 +130,18 @@ class PageCommands:
     @staticmethod
     def add_script_to_evaluate_on_new_document(
         source: str,
-        world_name: Optional[str] = None,
-        include_command_line_api: Optional[bool] = None,
-        run_immediately: Optional[bool] = None,
+        world_name: str | None = None,
+        include_command_line_api: bool | None = None,
+        run_immediately: bool | None = None,
     ) -> AddScriptToEvaluateOnNewDocumentCommand:
         """
         Creates a command to add a script that will be evaluated when a new document is created.
 
         Args:
             source (str): Script source to be evaluated when a new document is created.
-            world_name (Optional[str]): If specified, creates an isolated world with the given name.
-            include_command_line_api (Optional[bool]): Whether to include command line API.
-            run_immediately (Optional[bool]): Whether to run the script immediately on
+            world_name (str | None): If specified, creates an isolated world with the given name.
+            include_command_line_api (bool | None): Whether to include command line API.
+            run_immediately (bool | None): Whether to run the script immediately on
                 existing contexts.
 
         Returns:
@@ -167,23 +167,23 @@ class PageCommands:
 
     @staticmethod
     def capture_screenshot(
-        format: Optional[ScreenshotFormat] = None,
-        quality: Optional[int] = None,
-        clip: Optional[Viewport] = None,
-        from_surface: Optional[bool] = None,
-        capture_beyond_viewport: Optional[bool] = None,
-        optimize_for_speed: Optional[bool] = None,
+        format: ScreenshotFormat | None = None,
+        quality: int | None = None,
+        clip: Viewport | None = None,
+        from_surface: bool | None = None,
+        capture_beyond_viewport: bool | None = None,
+        optimize_for_speed: bool | None = None,
     ) -> CaptureScreenshotCommand:
         """
         Creates a command to capture a screenshot of the current page.
 
         Args:
-            format (Optional[str]): Image compression format (jpeg, png, or webp).
-            quality (Optional[int]): Compression quality from 0-100 (jpeg only).
-            clip (Optional[Viewport]): Region of the page to capture.
-            from_surface (Optional[bool]): Capture from the surface, not the view.
-            capture_beyond_viewport (Optional[bool]): Capture beyond the viewport.
-            optimize_for_speed (Optional[bool]): Optimize for speed, not for size.
+            format (str | None): Image compression format (jpeg, png, or webp).
+            quality (int | None): Compression quality from 0-100 (jpeg only).
+            clip (Viewport | None): Region of the page to capture.
+            from_surface (bool | None): Capture from the surface, not the view.
+            capture_beyond_viewport (bool | None): Capture beyond the viewport.
+            optimize_for_speed (bool | None): Optimize for speed, not for size.
 
         Returns:
             CaptureScreenshotCommand: Command object with base64-encoded image data.
@@ -217,16 +217,16 @@ class PageCommands:
     @staticmethod
     def create_isolated_world(
         frame_id: str,
-        world_name: Optional[str] = None,
-        grant_universal_access: Optional[bool] = None,
+        world_name: str | None = None,
+        grant_universal_access: bool | None = None,
     ) -> CreateIsolatedWorldCommand:
         """
         Creates a command to create an isolated world for the given frame.
 
         Args:
             frame_id (str): ID of the frame in which to create the isolated world.
-            world_name (Optional[str]): Name to be reported in the Execution Context.
-            grant_universal_access (Optional[bool]): Whether to grant universal access.
+            world_name (str | None): Name to be reported in the Execution Context.
+            grant_universal_access (bool | None): Whether to grant universal access.
 
         Returns:
             CreateIsolatedWorldCommand: Command object with the execution context ID.
@@ -251,13 +251,13 @@ class PageCommands:
 
     @staticmethod
     def enable(
-        enable_file_chooser_opened_event: Optional[bool] = None,
+        enable_file_chooser_opened_event: bool | None = None,
     ) -> EnableCommand:
         """
         Creates a command to enable page domain notifications.
 
         Args:
-            enable_file_chooser_opened_event (Optional[bool]): Whether to emit
+            enable_file_chooser_opened_event (bool | None): Whether to emit
                 Page.fileChooserOpened event.
 
         Returns:
@@ -271,7 +271,7 @@ class PageCommands:
 
     @staticmethod
     def get_app_manifest(
-        manifest_id: Optional[str] = None,
+        manifest_id: str | None = None,
     ) -> GetAppManifestCommand:
         """
         Creates a command to get the manifest for the current document.
@@ -316,14 +316,14 @@ class PageCommands:
 
     @staticmethod
     def handle_javascript_dialog(
-        accept: bool, prompt_text: Optional[str] = None
+        accept: bool, prompt_text: str | None = None
     ) -> HandleJavaScriptDialogCommand:
         """
         Creates a command to handle a JavaScript dialog.
 
         Args:
             accept (bool): Whether to accept or dismiss the dialog.
-            prompt_text (Optional[str]): Text to enter in prompt dialogs.
+            prompt_text (str | None): Text to enter in prompt dialogs.
 
         Returns:
             HandleJavaScriptDialogCommand: Command object to handle a JavaScript dialog.
@@ -337,20 +337,20 @@ class PageCommands:
     @staticmethod
     def navigate(
         url: str,
-        referrer: Optional[str] = None,
-        transition_type: Optional[TransitionType] = None,
-        frame_id: Optional[str] = None,
-        referrer_policy: Optional[ReferrerPolicy] = None,
+        referrer: str | None = None,
+        transition_type: TransitionType | None = None,
+        frame_id: str | None = None,
+        referrer_policy: ReferrerPolicy | None = None,
     ) -> NavigateCommand:
         """
         Creates a command to navigate to a specific URL.
 
         Args:
             url (str): URL to navigate to.
-            referrer (Optional[str]): Referrer URL.
-            transition_type (Optional[str]): Intended transition type.
-            frame_id (Optional[str]): Frame ID to navigate.
-            referrer_policy (Optional[str]): Referrer policy.
+            referrer (str | None): Referrer URL.
+            transition_type (str | None): Intended transition type.
+            frame_id (str | None): Frame ID to navigate.
+            referrer_policy (str | None): Referrer policy.
 
         Returns:
             NavigateCommand: Command object to navigate to a URL.
@@ -383,43 +383,43 @@ class PageCommands:
 
     @staticmethod
     def print_to_pdf(  # noqa: PLR0912
-        landscape: Optional[bool] = None,
-        display_header_footer: Optional[bool] = None,
-        print_background: Optional[bool] = None,
-        scale: Optional[float] = None,
-        paper_width: Optional[float] = None,
-        paper_height: Optional[float] = None,
-        margin_top: Optional[float] = None,
-        margin_bottom: Optional[float] = None,
-        margin_left: Optional[float] = None,
-        margin_right: Optional[float] = None,
-        page_ranges: Optional[str] = None,
-        header_template: Optional[str] = None,
-        footer_template: Optional[str] = None,
-        prefer_css_page_size: Optional[bool] = None,
-        transfer_mode: Optional[TransferMode] = None,
-        generate_tagged_pdf: Optional[bool] = None,
-        generate_document_outline: Optional[bool] = None,
+        landscape: bool | None = None,
+        display_header_footer: bool | None = None,
+        print_background: bool | None = None,
+        scale: float | None = None,
+        paper_width: float | None = None,
+        paper_height: float | None = None,
+        margin_top: float | None = None,
+        margin_bottom: float | None = None,
+        margin_left: float | None = None,
+        margin_right: float | None = None,
+        page_ranges: str | None = None,
+        header_template: str | None = None,
+        footer_template: str | None = None,
+        prefer_css_page_size: bool | None = None,
+        transfer_mode: TransferMode | None = None,
+        generate_tagged_pdf: bool | None = None,
+        generate_document_outline: bool | None = None,
     ) -> PrintToPDFCommand:
         """
         Creates a command to print the current page to PDF.
 
         Args:
-            landscape (Optional[bool]): Paper orientation.
-            display_header_footer (Optional[bool]): Display header and footer.
-            print_background (Optional[bool]): Print background graphics.
-            scale (Optional[float]): Scale of the webpage rendering.
-            paper_width (Optional[float]): Paper width in inches.
-            paper_height (Optional[float]): Paper height in inches.
-            margin_top (Optional[float]): Top margin in inches.
-            margin_bottom (Optional[float]): Bottom margin in inches.
-            margin_left (Optional[float]): Left margin in inches.
-            margin_right (Optional[float]): Right margin in inches.
-            page_ranges (Optional[str]): Paper ranges to print, e.g., '1-5, 8, 11-13'.
-            header_template (Optional[str]): HTML template for the print header.
-            footer_template (Optional[str]): HTML template for the print footer.
-            prefer_css_page_size (Optional[bool]): Whether to prefer page size as defined by CSS.
-            transfer_mode (Optional[str]): Transfer mode.
+            landscape (bool | None): Paper orientation.
+            display_header_footer (bool | None): Display header and footer.
+            print_background (bool | None): Print background graphics.
+            scale (float | None): Scale of the webpage rendering.
+            paper_width (float | None): Paper width in inches.
+            paper_height (float | None): Paper height in inches.
+            margin_top (float | None): Top margin in inches.
+            margin_bottom (float | None): Bottom margin in inches.
+            margin_left (float | None): Left margin in inches.
+            margin_right (float | None): Right margin in inches.
+            page_ranges (str | None): Paper ranges to print, e.g., '1-5, 8, 11-13'.
+            header_template (str | None): HTML template for the print header.
+            footer_template (str | None): HTML template for the print footer.
+            prefer_css_page_size (bool | None): Whether to prefer page size as defined by CSS.
+            transfer_mode (str | None): Transfer mode.
 
         Returns:
             PrintToPDFCommand: Command object to print the page to PDF.
@@ -464,16 +464,16 @@ class PageCommands:
 
     @staticmethod
     def reload(
-        ignore_cache: Optional[bool] = None,
-        script_to_evaluate_on_load: Optional[str] = None,
-        loader_id: Optional[str] = None,
+        ignore_cache: bool | None = None,
+        script_to_evaluate_on_load: str | None = None,
+        loader_id: str | None = None,
     ) -> ReloadCommand:
         """
         Creates a command to reload the current page.
 
         Args:
-            ignore_cache (Optional[bool]): If true, browser cache is ignored.
-            script_to_evaluate_on_load (Optional[str]): Script to be injected into the page on load.
+            ignore_cache (bool | None): If true, browser cache is ignored.
+            script_to_evaluate_on_load (str | None): Script to be injected into the page on load.
 
         Returns:
             ReloadCommand: Command object to reload the page.
@@ -629,9 +629,7 @@ class PageCommands:
         return Command(method=PageMethod.CRASH)
 
     @staticmethod
-    def generate_test_report(
-        message: str, group: Optional[str] = None
-    ) -> GenerateTestReportCommand:
+    def generate_test_report(message: str, group: str | None = None) -> GenerateTestReportCommand:
         """
         Creates a command to generate a test report.
 
@@ -639,7 +637,7 @@ class PageCommands:
 
         Args:
             message (str): Message to be displayed in the report.
-            group (Optional[str]): Group label for the report.
+            group (str | None): Group label for the report.
 
         Returns:
             GenerateTestReportCommand: Command object to generate a test report.
@@ -668,17 +666,15 @@ class PageCommands:
         return Command(method=PageMethod.GET_AD_SCRIPT_ANCESTRY_IDS, params=params)
 
     @staticmethod
-    def get_app_id(
-        app_id: Optional[str] = None, recommended_id: Optional[str] = None
-    ) -> GetAppIdCommand:
+    def get_app_id(app_id: str | None = None, recommended_id: str | None = None) -> GetAppIdCommand:
         """
         Creates a command to get the app ID.
 
         Experimental: This method is experimental and may be subject to change.
 
         Args:
-            app_id (Optional[str]): App ID for verification.
-            recommended_id (Optional[str]): Recommended app ID.
+            app_id (str | None): App ID for verification.
+            recommended_id (str | None): Recommended app ID.
 
         Returns:
             GetAppIdCommand: Command object to get the app ID.
@@ -705,7 +701,7 @@ class PageCommands:
         Experimental: This method is experimental and may be subject to change.
 
         Args:
-            frame_id (Optional[str]): Frame ID to get trials for.
+            frame_id (str | None): Frame ID to get trials for.
 
         Returns:
             GetOriginTrialsCommand: Command object to get origin trials.
@@ -766,8 +762,8 @@ class PageCommands:
         frame_id: str,
         url: str,
         query: str,
-        case_sensitive: Optional[bool] = None,
-        is_regex: Optional[bool] = None,
+        case_sensitive: bool | None = None,
+        is_regex: bool | None = None,
     ) -> SearchInResourceCommand:
         """
         Creates a command to search for a string in a resource.
@@ -853,10 +849,10 @@ class PageCommands:
     @staticmethod
     def start_screencast(
         format: ScreencastFormat,
-        quality: Optional[int] = None,
-        max_width: Optional[int] = None,
-        max_height: Optional[int] = None,
-        every_nth_frame: Optional[int] = None,
+        quality: int | None = None,
+        max_width: int | None = None,
+        max_height: int | None = None,
+        every_nth_frame: int | None = None,
     ) -> StartScreencastCommand:
         """
         Creates a command to start a screencast.

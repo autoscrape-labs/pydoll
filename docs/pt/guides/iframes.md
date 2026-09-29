@@ -6,23 +6,42 @@ Páginas embutem outros documentos com `<iframe>`, e um iframe tem seu próprio 
 
 Encontre o `<iframe>` como qualquer elemento, depois chame `find()` ou `query()` nele. Essas chamadas rodam dentro do frame automaticamente.
 
-```python
-import asyncio
+=== "Sync"
 
-from pydoll.browser.chromium import Chrome
+    ```python
+    from pydoll.sync import Chrome
+
+    def main():
+        with Chrome() as browser:
+            tab = browser.start()
+            tab.go_to('https://the-internet.herokuapp.com/iframe')
+
+            editor = tab.find(tag_name='iframe')   # o frame do editor embutido
+            body = editor.find(id='tinymce')        # um elemento dentro do frame
+            print(body.text())
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+
+    from pydoll import Chrome
 
 
-async def main():
-    async with Chrome() as browser:
-        tab = await browser.start()
-        await tab.go_to('https://the-internet.herokuapp.com/iframe')
+    async def main():
+        async with Chrome() as browser:
+            tab = await browser.start()
+            await tab.go_to('https://the-internet.herokuapp.com/iframe')
 
-        editor = await tab.find(tag_name='iframe')   # o frame do editor embutido
-        body = await editor.find(id='tinymce')        # um elemento dentro do frame
-        print(await body.text)
+            editor = await tab.find(tag_name='iframe')   # o frame do editor embutido
+            body = await editor.find(id='tinymce')        # um elemento dentro do frame
+            print(await body.text())
 
-asyncio.run(main())
-```
+    asyncio.run(main())
+    ```
 
 `tab.find()` e `tab.query()` só enxergam o documento de nível superior. Para alcançar conteúdo dentro de um frame, comece pelo elemento iframe, não pela aba.
 
@@ -38,13 +57,25 @@ graph TB
 ```
 
 
-```python
-outer = await tab.find(id='outer-frame')
-inner = await outer.find(tag_name='iframe')
+=== "Sync"
 
-submit = await inner.find(id='submit')
-await submit.click()
-```
+    ```python
+    outer = tab.find(id='outer-frame')
+    inner = outer.find(tag_name='iframe')
+
+    submit = inner.find(id='submit')
+    submit.click()
+    ```
+
+=== "Async"
+
+    ```python
+    outer = await tab.find(id='outer-frame')
+    inner = await outer.find(tag_name='iframe')
+
+    submit = await inner.find(id='submit')
+    await submit.click()
+    ```
 
 O padrão é sempre o mesmo: encontre o elemento iframe, use esse elemento para continuar buscando, repita para níveis mais profundos. Você nunca faz cache de alvos de frame nem abre abas extras.
 
@@ -52,21 +83,41 @@ O padrão é sempre o mesmo: encontre o elemento iframe, use esse elemento para 
 
 `execute_script()` em um elemento iframe roda no próprio contexto de execução do frame, tanto para frames de mesma origem quanto de origem cruzada.
 
-```python
-iframe = await tab.find(tag_name='iframe')
-result = await iframe.execute_script('return document.title', return_by_value=True)
-print(result['result']['result']['value'])
-```
+=== "Sync"
+
+    ```python
+    iframe = tab.find(tag_name='iframe')
+    result = iframe.execute_script('return document.title', return_by_value=True)
+    print(result['result']['result']['value'])
+    ```
+
+=== "Async"
+
+    ```python
+    iframe = await tab.find(tag_name='iframe')
+    result = await iframe.execute_script('return document.title', return_by_value=True)
+    print(result['result']['result']['value'])
+    ```
 
 ## Capturar o conteúdo de um frame
 
 `tab.take_screenshot()` captura apenas a página de nível superior. Para capturar algo dentro de um frame, faça a captura de tela de um elemento dentro dele:
 
-```python
-iframe = await tab.find(tag_name='iframe')
-chart = await iframe.find(id='sales-chart')
-await chart.take_screenshot('chart.png')
-```
+=== "Sync"
+
+    ```python
+    iframe = tab.find(tag_name='iframe')
+    chart = iframe.find(id='sales-chart')
+    chart.take_screenshot('chart.png')
+    ```
+
+=== "Async"
+
+    ```python
+    iframe = await tab.find(tag_name='iframe')
+    chart = await iframe.find(id='sales-chart')
+    await chart.take_screenshot('chart.png')
+    ```
 
 ## Cruzar a fronteira de um frame em um único seletor
 
@@ -76,51 +127,105 @@ Em vez de encontrar cada iframe e depois buscar dentro dele, você pode escrever
 
 Use um combinador (`>` ou um espaço) depois de um composto `iframe`:
 
-```python
-# cruza um iframe
-button = await tab.query('iframe > .submit-btn')
+=== "Sync"
 
-# corresponde ao iframe por atributo
-pay = await tab.query('iframe[src*="checkout"] > #pay-button')
+    ```python
+    # cruza um iframe
+    button = tab.query('iframe > .submit-btn')
 
-# iframes aninhados
-content = await tab.query('iframe.outer > iframe.inner > div.content')
+    # corresponde ao iframe por atributo
+    pay = tab.query('iframe[src*="checkout"] > #pay-button')
 
-# iframe abaixo da raiz, não nela
-submit = await tab.query('div > iframe > button.submit')
-```
+    # iframes aninhados
+    content = tab.query('iframe.outer > iframe.inner > div.content')
+
+    # iframe abaixo da raiz, não nela
+    submit = tab.query('div > iframe > button.submit')
+    ```
+
+=== "Async"
+
+    ```python
+    # cruza um iframe
+    button = await tab.query('iframe > .submit-btn')
+
+    # corresponde ao iframe por atributo
+    pay = await tab.query('iframe[src*="checkout"] > #pay-button')
+
+    # iframes aninhados
+    content = await tab.query('iframe.outer > iframe.inner > div.content')
+
+    # iframe abaixo da raiz, não nela
+    submit = await tab.query('div > iframe > button.submit')
+    ```
 
 ### Com XPath
 
 Use `/` depois de um passo `iframe`:
 
-```python
-# cruza um iframe
-button = await tab.query('//iframe/body/button[@id="submit"]')
+=== "Sync"
 
-# predicado no iframe
-heading = await tab.query('//iframe[@src*="cloudflare"]//h1')
+    ```python
+    # cruza um iframe
+    button = tab.query('//iframe/body/button[@id="submit"]')
 
-# iframes aninhados
-element = await tab.query('//iframe[@id="outer"]//iframe[@id="inner"]//div')
-```
+    # predicado no iframe
+    heading = tab.query('//iframe[contains(@src, "cloudflare")]//h1')
+
+    # iframes aninhados
+    element = tab.query('//iframe[@id="outer"]//iframe[@id="inner"]//div')
+    ```
+
+=== "Async"
+
+    ```python
+    # cruza um iframe
+    button = await tab.query('//iframe/body/button[@id="submit"]')
+
+    # predicado no iframe
+    heading = await tab.query('//iframe[contains(@src, "cloudflare")]//h1')
+
+    # iframes aninhados
+    element = await tab.query('//iframe[@id="outer"]//iframe[@id="inner"]//div')
+    ```
 
 Um seletor que cruza faz exatamente o que a versão manual faz, em uma única chamada:
 
-```python
-# uma chamada através da fronteira do frame
-button = await tab.query('iframe[src*="checkout"] > form > button')
+=== "Sync"
 
-# a mesma coisa, detalhada
-iframe = await tab.find(tag_name='iframe', src='*checkout*')
-button = await iframe.query('form > button')
-```
+    ```python
+    # uma chamada através da fronteira do frame
+    button = tab.query('iframe[src*="checkout"] > form > button')
+
+    # a mesma coisa, detalhada
+    iframe = tab.find(tag_name='iframe', src='*checkout*')
+    button = iframe.query('form > button')
+    ```
+
+=== "Async"
+
+    ```python
+    # uma chamada através da fronteira do frame
+    button = await tab.query('iframe[src*="checkout"] > form > button')
+
+    # a mesma coisa, detalhada
+    iframe = await tab.find(tag_name='iframe', src='*checkout*')
+    button = await iframe.query('form > button')
+    ```
 
 O último segmento respeita `find_all=True`, retornando toda correspondência dentro do frame final:
 
-```python
-links = await tab.query('iframe > a', find_all=True)
-```
+=== "Sync"
+
+    ```python
+    links = tab.query('iframe > a', find_all=True)
+    ```
+
+=== "Async"
+
+    ```python
+    links = await tab.query('iframe > a', find_all=True)
+    ```
 
 !!! note "Quando o seletor não é dividido"
     A divisão só acontece quando `iframe` é um **nome de tag**. Estes passam sem alteração, porque nenhum deles seleciona um elemento iframe: `.iframe > body` (classe), `#iframe > body` (id), `div.iframe > body` (a tag é `div`), `[data-type="iframe"] > body` (atributo), e um `iframe` ou `//iframe` sozinho (nada vem depois para buscar dentro).
@@ -130,7 +235,7 @@ links = await tab.query('iframe > a', find_all=True)
 Widgets como o Cloudflare Turnstile vivem em iframes de origem cruzada (frames fora do processo, ou OOPIFs) e muitas vezes escondem seus controles em um shadow root fechado. `tab.find_shadow_roots(deep=True, timeout=...)` alcança esses frames. Veja [Percorrer o DOM](dom-traversal.md) para a API de shadow root e [Contornar captcha](../stealth/captcha-bypass.md) para lidar com o Turnstile de ponta a ponta.
 
 !!! note "Migrando de `tab.get_frame()`"
-    Versões anteriores convertiam um iframe em um objeto separado com `tab.get_frame()`. Esse método está obsoleto e será removido. Trabalhe diretamente com o `WebElement` do iframe, como mostrado acima.
+    Versões anteriores convertiam um iframe em um objeto separado com `tab.get_frame()`. O Pydoll 3 removeu esse método. Trabalhe diretamente com o `WebElement` do iframe, como mostrado acima.
 
 ## Próximos passos
 

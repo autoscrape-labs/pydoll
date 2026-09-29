@@ -71,10 +71,13 @@ class WebGLProfile(TypedDict):
     WebGL2 has many WebGL1 extensions built-in (e.g. OES_vertex_array_object),
     so their extension lists differ in practice.
 
-    ``supported_extensions`` / ``webgl2_extensions`` are an allow-list: an
-    extension the real GPU does not implement is dropped from
-    ``getSupportedExtensions()`` and ``getExtension()`` returns ``null`` for it,
-    so the page never sees a fake extension object. WebGL2-only limits
+    ``supported_extensions`` / ``webgl2_extensions`` are the list the page
+    sees, in Chrome's own registration order. An extension the real GPU has is
+    passed through untouched; one it lacks is built from Chromium's interface
+    definition (constants, methods, the compressed texture formats it adds and
+    the ``getParameter`` limits it unlocks), so a software rasterizer's short
+    list never shows through a profile that names a discrete GPU. A name pydoll
+    does not know is kept only when the real context exposes it. WebGL2-only limits
     (``max_3d_texture_size``, ``max_samples``, ``max_uniform_block_size``, ...)
     are read by fingerprinting suites alongside the WebGL1 ones; leave any of
     them unset and the real GPU's value is reported, so set the whole family
@@ -148,6 +151,7 @@ class WebGLProfile(TypedDict):
     max_vertex_output_components: NotRequired[int]  # gl2.MAX_VERTEX_OUTPUT_COMPONENTS
     max_fragment_input_components: NotRequired[int]  # gl2.MAX_FRAGMENT_INPUT_COMPONENTS
     max_element_index: NotRequired[int]  # gl2.MAX_ELEMENT_INDEX
+    max_texture_max_anisotropy: NotRequired[int]
     supported_extensions: NotRequired[list[str]]  # WebGL1 extension names
     webgl2_extensions: NotRequired[list[str]]  # WebGL2-specific extension names
     shader_precision_formats: NotRequired[

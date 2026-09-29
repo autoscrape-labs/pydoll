@@ -30,6 +30,10 @@ class FakeTextField:
     async def focus(self):
         self.focus_calls += 1
 
+    async def _execute_commands(self, commands):
+        """Mirror FindElementsMixin._execute_commands so plain typing takes the batch path."""
+        return [await self._execute_command(command) for command in commands]
+
     async def _execute_command(self, command):
         params = command['params']
         if params.get('type') == 'keyDown':
@@ -119,7 +123,8 @@ def recording_field():
 
 
 @pytest.mark.asyncio
-async def test_default_typing_holds_each_key_before_releasing(recording_field, monkeypatch):
+async def test_default_typing_releases_each_key_immediately(recording_field, monkeypatch):
+    """The plain path sends keydown and keyup back to back; only humanize=True dwells."""
     sleeps: list[float] = []
 
     async def fake_sleep(delay):
@@ -131,9 +136,9 @@ async def test_default_typing_holds_each_key_before_releasing(recording_field, m
     await keyboard.type_text('ab')
 
     trace = recording_field.trace
-    down = trace.index(('keyDown', 'a'))
-    assert trace[down + 1] == ('sleep', Keyboard.DEFAULT_KEY_HOLD)
-    assert trace[down + 2] == ('keyUp', 'a')
+    assert trace == [('keyDown', 'a'), ('keyUp', 'a'), ('keyDown', 'b'), ('keyUp', 'b')]
+    assert sleeps == []
+    assert recording_field.focus_calls == 1
     assert recording_field.text == 'ab'
 
 

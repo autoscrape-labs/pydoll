@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from pydoll.protocol.base import Command
 from pydoll.protocol.network.methods import (
@@ -132,10 +132,10 @@ class NetworkCommands:
     @staticmethod
     def delete_cookies(
         name: str,
-        url: Optional[str] = None,
-        domain: Optional[str] = None,
-        path: Optional[str] = None,
-        partition_key: Optional[CookiePartitionKey] = None,
+        url: str | None = None,
+        domain: str | None = None,
+        path: str | None = None,
+        partition_key: CookiePartitionKey | None = None,
     ) -> ClearCookiesCommand:
         """
         Deletes browser cookies with matching criteria.
@@ -188,9 +188,9 @@ class NetworkCommands:
 
     @staticmethod
     def enable(
-        max_total_buffer_size: Optional[int] = None,
-        max_resource_buffer_size: Optional[int] = None,
-        max_post_data_size: Optional[int] = None,
+        max_total_buffer_size: int | None = None,
+        max_resource_buffer_size: int | None = None,
+        max_post_data_size: int | None = None,
     ) -> EnableCommand:
         """
         Enables network monitoring with configurable buffers.
@@ -219,7 +219,7 @@ class NetworkCommands:
 
     @staticmethod
     def get_cookies(
-        urls: Optional[list[str]] = None,
+        urls: list[str] | None = None,
     ) -> GetCookiesCommand:
         """
         Retrieves cookies matching specified URLs.
@@ -322,18 +322,18 @@ class NetworkCommands:
     def set_cookie(
         name: str,
         value: str,
-        url: Optional[str] = None,
-        domain: Optional[str] = None,
-        path: Optional[str] = None,
-        secure: Optional[bool] = None,
-        http_only: Optional[bool] = None,
-        same_site: Optional[CookieSameSite] = None,
-        expires: Optional[float] = None,
-        priority: Optional[CookiePriority] = None,
-        same_party: Optional[bool] = None,
-        source_scheme: Optional[CookieSourceScheme] = None,
-        source_port: Optional[int] = None,
-        partition_key: Optional[CookiePartitionKey] = None,
+        url: str | None = None,
+        domain: str | None = None,
+        path: str | None = None,
+        secure: bool | None = None,
+        http_only: bool | None = None,
+        same_site: CookieSameSite | None = None,
+        expires: float | None = None,
+        priority: CookiePriority | None = None,
+        same_party: bool | None = None,
+        source_scheme: CookieSourceScheme | None = None,
+        source_port: int | None = None,
+        partition_key: CookiePartitionKey | None = None,
     ) -> SetCookieCommand:
         """
         Creates or updates a cookie with specified attributes.
@@ -453,9 +453,9 @@ class NetworkCommands:
     @staticmethod
     def set_useragent_override(
         user_agent: str,
-        accept_language: Optional[str] = None,
-        platform: Optional[str] = None,
-        user_agent_metadata: Optional[UserAgentMetadata] = None,
+        accept_language: str | None = None,
+        platform: str | None = None,
+        user_agent_metadata: UserAgentMetadata | None = None,
     ) -> SetUserAgentOverrideCommand:
         """
         Overrides the browser's User-Agent string.
@@ -731,8 +731,8 @@ class NetworkCommands:
     @staticmethod
     def set_cookie_controls(
         enable_third_party_cookie_restriction: bool,
-        disable_third_party_cookie_metadata: Optional[bool] = None,
-        disable_third_party_cookie_heuristics: Optional[bool] = None,
+        disable_third_party_cookie_metadata: bool | None = None,
+        disable_third_party_cookie_heuristics: bool | None = None,
     ) -> SetCookieControlsCommand:
         """
         Configures third-party cookie handling policies.
@@ -828,10 +828,10 @@ class NetworkCommands:
         latency: float,
         download_throughput: float,
         upload_throughput: float,
-        connection_type: Optional[ConnectionType] = None,
-        packet_loss: Optional[float] = None,
-        packet_queue_length: Optional[int] = None,
-        packet_reordering: Optional[bool] = None,
+        connection_type: ConnectionType | None = None,
+        packet_loss: float | None = None,
+        packet_queue_length: int | None = None,
+        packet_reordering: bool | None = None,
     ) -> EmulateNetworkConditionsCommand:
         """
         Emulates custom network conditions for realistic testing scenarios.
@@ -878,7 +878,7 @@ class NetworkCommands:
 
     @staticmethod
     def get_security_isolation_status(
-        frame_id: Optional[str] = None,
+        frame_id: str | None = None,
     ) -> GetSecurityIsolationStatusCommand:
         """
         Retrieves security isolation information.
@@ -910,7 +910,7 @@ class NetworkCommands:
     def load_network_resource(
         url: str,
         options: LoadNetworkResourceOptions,
-        frame_id: Optional[str] = None,
+        frame_id: str | None = None,
     ) -> LoadNetworkResourceCommand:
         """
         Loads a network resource with specific options.

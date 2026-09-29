@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 import platform
 from contextlib import suppress
-from typing import TYPE_CHECKING, Awaitable, Callable, Optional, cast
+from typing import TYPE_CHECKING, Awaitable, Callable, cast
 
 from pydoll.commands import (
     BrowserCommands,
@@ -91,7 +91,7 @@ class FingerprintApplier:
 
     def __init__(self, tab: 'Tab') -> None:
         self._tab = tab
-        self._applied: Optional[FingerprintConfig] = None
+        self._applied: FingerprintConfig | None = None
 
     async def apply(
         self, fingerprint: FingerprintConfig, cross_origin_iframes: bool = True
@@ -191,8 +191,8 @@ class FingerprintApplier:
     async def _apply_native_overrides(
         self,
         fingerprint: FingerprintConfig,
-        parsed: Optional['ParsedUserAgent'],
-        accept_language: Optional[str],
+        parsed: 'ParsedUserAgent' | None,
+        accept_language: str | None,
         mobile: bool,
         headless: bool,
     ) -> None:
@@ -283,7 +283,7 @@ class FingerprintApplier:
 
     @staticmethod
     def _apply_client_hint_overrides(
-        parsed: 'ParsedUserAgent', client_hints: Optional['ClientHintsFingerprint']
+        parsed: 'ParsedUserAgent', client_hints: 'ClientHintsFingerprint' | None
     ) -> None:
         """Pin the high-entropy Client Hints the User-Agent string cannot carry."""
         if not client_hints:
@@ -324,7 +324,7 @@ class FingerprintApplier:
         return on_frame_navigated
 
     @staticmethod
-    def _touch_emulation_command(fingerprint: FingerprintConfig) -> Optional['Command']:
+    def _touch_emulation_command(fingerprint: FingerprintConfig) -> 'Command' | None:
         """Build the native touch-emulation command for a touch-capable profile.
 
         ``Emulation.setTouchEmulationEnabled`` sets ``navigator.maxTouchPoints``,
@@ -500,8 +500,8 @@ class FingerprintApplier:
     async def _setup_worker_override(
         self,
         fingerprint: FingerprintConfig,
-        parsed: Optional['ParsedUserAgent'],
-        accept_language: Optional[str],
+        parsed: 'ParsedUserAgent' | None,
+        accept_language: str | None,
         mobile: bool,
         setup_browser_scope: bool = True,
         cross_origin_iframes: bool = True,
@@ -622,7 +622,7 @@ class FingerprintApplier:
         )
         return host_platform is not None and parsed.platform == host_platform
 
-    def _launch_user_agent(self) -> Optional[str]:
+    def _launch_user_agent(self) -> str | None:
         """Read the User-Agent the browser was launched with, if any."""
         options = getattr(self._tab._browser, 'options', None)
         for argument in getattr(options, 'arguments', []) or []:
@@ -631,7 +631,7 @@ class FingerprintApplier:
         return None
 
     def _launch_identity_matches(
-        self, fingerprint: FingerprintConfig, parsed: Optional['ParsedUserAgent']
+        self, fingerprint: FingerprintConfig, parsed: 'ParsedUserAgent' | None
     ) -> bool:
         """Whether the browser already launched with this profile's identity.
 
@@ -682,7 +682,7 @@ class FingerprintApplier:
         async def on_request_paused(event: dict) -> None:
             params = event['params']
             request_id = params['requestId']
-            headers: Optional[list[HeaderEntry]] = None
+            headers: list[HeaderEntry] | None = None
             with suppress(KeyError, CommandExecutionTimeout, WebSocketConnectionClosed):
                 fingerprint = await self._fingerprint_for_frame(params.get('frameId', ''))
                 if fingerprint is not None and 'user_agent' in fingerprint:
@@ -704,7 +704,7 @@ class FingerprintApplier:
             )
         )
 
-    async def _fingerprint_for_frame(self, frame_id: str) -> Optional[FingerprintConfig]:
+    async def _fingerprint_for_frame(self, frame_id: str) -> FingerprintConfig | None:
         """Resolve the fingerprint of the context a paused request belongs to.
 
         For a worker or service worker script fetch the ``frameId`` Chrome
@@ -797,15 +797,15 @@ class FingerprintApplier:
         self,
         connection: ConnectionHandler,
         worker_types: set[str],
-        parsed: Optional['ParsedUserAgent'],
-        accept_language: Optional[str],
+        parsed: 'ParsedUserAgent' | None,
+        accept_language: str | None,
         mobile: bool,
-        hardware_concurrency: Optional[int],
+        hardware_concurrency: int | None,
         worker_js: str,
         worker_deferred_js: str = '',
         scope_context_id: object = _NO_WORKER_SCOPE,
         include_iframes: bool = False,
-        fingerprint: Optional['FingerprintConfig'] = None,
+        fingerprint: 'FingerprintConfig' | None = None,
         page_js: str = '',
     ) -> Callable[[dict], Awaitable[None]]:
         """Build an attachedToTarget handler that replays the fingerprint on workers.
@@ -899,10 +899,10 @@ class FingerprintApplier:
         self,
         connection: ConnectionHandler,
         session_id: str,
-        parsed: Optional['ParsedUserAgent'],
-        accept_language: Optional[str],
+        parsed: 'ParsedUserAgent' | None,
+        accept_language: str | None,
         mobile: bool,
-        hardware_concurrency: Optional[int],
+        hardware_concurrency: int | None,
         worker_js: str,
     ) -> None:
         """Replay UA / hardwareConcurrency / JS overrides on a single worker session.
@@ -938,8 +938,8 @@ class FingerprintApplier:
         self,
         connection: ConnectionHandler,
         session_id: str,
-        parsed: Optional['ParsedUserAgent'],
-        accept_language: Optional[str],
+        parsed: 'ParsedUserAgent' | None,
+        accept_language: str | None,
         mobile: bool,
         fingerprint: FingerprintConfig,
         page_js: str,
@@ -1004,7 +1004,7 @@ class FingerprintApplier:
 
     @staticmethod
     def _user_agent_command(
-        parsed: 'ParsedUserAgent', accept_language: Optional[str], mobile: bool
+        parsed: 'ParsedUserAgent', accept_language: str | None, mobile: bool
     ) -> 'Command':
         """Build the ``setUserAgentOverride`` command for a parsed User-Agent."""
         metadata = parsed.user_agent_metadata
@@ -1018,7 +1018,7 @@ class FingerprintApplier:
 
     def _device_metrics_command(
         self, screen: 'ScreenFingerprint', mobile: bool, include_screen_size: bool = True
-    ) -> Optional['Command']:
+    ) -> 'Command' | None:
         """Build the ``setDeviceMetricsOverride`` command from screen config.
 
         Headful (``include_screen_size``): the ``screen.width`` / ``screen.height``
@@ -1037,7 +1037,7 @@ class FingerprintApplier:
         ``inner_*`` honoured) or a fractional dpr (the virtual screen rounds it).
         Returns ``None`` when nothing remains to override.
         """
-        screen_orientation: Optional[ScreenOrientation] = None
+        screen_orientation: ScreenOrientation | None = None
         orientation_type = screen.get('orientation_type')
         if orientation_type:
             cdp_type = self._ORIENTATION_CDP_MAP.get(orientation_type)
@@ -1067,7 +1067,7 @@ class FingerprintApplier:
     @staticmethod
     def _media_features_command(
         media_features: 'MediaFeaturesFingerprint',
-    ) -> Optional['Command']:
+    ) -> 'Command' | None:
         """Build the ``setEmulatedMedia`` command, or ``None`` when nothing is set."""
         candidates = (
             ('color-gamut', media_features.get('color_gamut')),
@@ -1085,7 +1085,7 @@ class FingerprintApplier:
         return EmulationCommands.set_emulated_media(features=features)
 
     @staticmethod
-    def _build_accept_language(fingerprint: FingerprintConfig) -> Optional[str]:
+    def _build_accept_language(fingerprint: FingerprintConfig) -> str | None:
         """Build the Accept-Language value passed to CDP from locale config.
 
         Returns a plain, unweighted language list (e.g. ``'en-US,en'``). CDP's
@@ -1100,7 +1100,7 @@ class FingerprintApplier:
             return None
         return ','.join(languages)
 
-    def _launch_accept_language(self) -> Optional[str]:
+    def _launch_accept_language(self) -> str | None:
         """Read the Accept-Language the browser was launched with, if any.
 
         Both ways of setting it before launch are accepted: the ``--accept-lang``
@@ -1119,7 +1119,7 @@ class FingerprintApplier:
             return str(value['accept_languages'])
         return None
 
-    def _accept_language_override(self, fingerprint: FingerprintConfig) -> Optional[str]:
+    def _accept_language_override(self, fingerprint: FingerprintConfig) -> str | None:
         """Decide whether the languages have to ride on the User-Agent override.
 
         ``Emulation.setUserAgentOverride.acceptLanguage`` is the only CDP way to
@@ -1171,7 +1171,7 @@ class FingerprintApplier:
     async def _apply_user_agent(
         self,
         parsed: 'ParsedUserAgent',
-        accept_language: Optional[str] = None,
+        accept_language: str | None = None,
         mobile: bool = False,
     ) -> None:
         """Apply user-agent override from an already-parsed User-Agent.
@@ -1277,7 +1277,7 @@ class FingerprintApplier:
         return any('--headless' in argument for argument in arguments)
 
     @staticmethod
-    def _primary_screen_id(response: 'GetScreenInfosResponse') -> Optional[str]:
+    def _primary_screen_id(response: 'GetScreenInfosResponse') -> str | None:
         """Pick the primary screen id from a getScreenInfos response.
 
         Returns ``None`` when the response carries no screens (e.g. an error
@@ -1295,7 +1295,7 @@ class FingerprintApplier:
         return screens[0].get('id')
 
     @staticmethod
-    def _work_area_insets(screen: 'ScreenFingerprint', dpr: int) -> Optional['WorkAreaInsets']:
+    def _work_area_insets(screen: 'ScreenFingerprint', dpr: int) -> 'WorkAreaInsets' | None:
         """Build physical-pixel work-area insets from the fingerprint's avail_*.
 
         The vertical gap ``height - avail_height`` is reserved at ``avail_top``

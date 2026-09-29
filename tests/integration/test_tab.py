@@ -15,6 +15,8 @@ from typing import Any, Callable
 
 import pytest
 
+from pydoll.exceptions import WaitTimeout
+
 
 async def _wait_until(condition: Callable[[], Any], timeout: float = 2.0) -> Any:
     """Poll until condition() is truthy and return it; awaits async conditions."""
@@ -52,7 +54,7 @@ async def test_enable_event_domain_sets_flag_and_sends_command(
 @pytest.mark.asyncio
 async def test_current_url_evaluates_location_and_returns_value(cdp_server, fake_tab):
     cdp_server.set_result('Runtime.evaluate', {'result': {'value': 'https://example.com/p'}})
-    url = await fake_tab.current_url
+    url = await fake_tab.current_url()
     assert url == 'https://example.com/p'
     sent = cdp_server.commands_for('Runtime.evaluate')[-1]
     assert sent['params']['expression'] == 'window.location.href'
@@ -96,6 +98,30 @@ async def test_refresh_reloads_waits_for_load_and_restores_page_events(cdp_serve
     await reload
     assert cdp_server.commands_for('Page.reload')
     assert fake_tab.page_events_enabled is False
+
+
+@pytest.mark.asyncio
+async def test_expect_response_timeout_does_not_kill_the_event_worker(cdp_server, fake_tab):
+    """``wait_for`` cancels the future the finished-callback used to read; the
+    ``CancelledError`` that read raised escaped the events worker and stopped
+    every later event until the socket reconnected. A slow sibling callback on
+    the same event holds the dispatch open past the timeout to hit that window."""
+
+    async def slow(_event):
+        await asyncio.sleep(0.2)
+
+    await fake_tab.on('Network.loadingFinished', slow)
+    with pytest.raises(WaitTimeout):
+        async with fake_tab.expect_response('**/api/data', timeout=0.1):
+            await cdp_server.push_event('Network.loadingFinished', {'requestId': 'r1'})
+            await asyncio.sleep(0.02)
+    await asyncio.sleep(0.3)
+
+    markers: list[dict] = []
+    await fake_tab.on('Custom.marker', markers.append)
+    await cdp_server.push_event('Custom.marker')
+    await _wait_until(lambda: len(markers) == 1)
+    assert cdp_server.total_connections == 1
 
 
 @pytest.mark.asyncio

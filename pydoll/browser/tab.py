@@ -4,12 +4,11 @@ import asyncio
 import base64 as _b64
 import contextlib
 import io
+import json
 import logging
 import shutil
-import warnings
 import zipfile
 from contextlib import asynccontextmanager
-from functools import partial
 from pathlib import Path
 from tempfile import mkdtemp
 from typing import (
@@ -18,10 +17,7 @@ from typing import (
     AsyncGenerator,
     Awaitable,
     Callable,
-    Optional,
-    TypeAlias,
     TypeVar,
-    Union,
     cast,
     overload,
 )
@@ -40,7 +36,7 @@ from pydoll.commands import (
     TargetCommands,
 )
 from pydoll.connection import ConnectionHandler
-from pydoll.constants import By, PageLoadState
+from pydoll.constants import PageLoadState
 from pydoll.elements.mixins import FindElementsMixin
 from pydoll.elements.shadow_root import ShadowRoot
 from pydoll.elements.web_element import WebElement
@@ -48,19 +44,18 @@ from pydoll.exceptions import (
     CommandExecutionTimeout,
     CommandFailed,
     DownloadTimeout,
-    IFrameNotFound,
     InvalidFileExtension,
-    InvalidIFrame,
     InvalidScriptWithElement,
     InvalidTabInitialization,
     MissingScreenshotPath,
     NavigationError,
     NetworkEventsNotEnabled,
     NoDialogPresent,
-    NotAnIFrame,
     PageLoadTimeout,
+    ScriptEvaluationError,
     TopLevelTargetRequired,
     WaitElementTimeout,
+    WaitTimeout,
     WebSocketConnectionClosed,
 )
 from pydoll.extractor.engine import ExtractionEngine
@@ -68,19 +63,22 @@ from pydoll.interactions import KeyboardAPI, MouseAPI, ScrollAPI
 from pydoll.interactions.iframe import IFrameContext
 from pydoll.protocol.browser.types import DownloadBehavior, DownloadProgressState
 from pydoll.protocol.dom.types import Node, ShadowRootType
+from pydoll.protocol.network.events import NetworkEvent
 from pydoll.protocol.network.types import ResourceType
 from pydoll.protocol.page.events import PageEvent
 from pydoll.protocol.page.types import FrameResourceTree, ScreenshotFormat
 from pydoll.protocol.runtime.methods import (
-    CallFunctionOnResponse,
     EvaluateResponse,
     SerializationOptions,
 )
-from pydoll.protocol.runtime.types import CallArgument
+from pydoll.protocol.runtime.types import ExceptionDetails, RemoteObject
 from pydoll.protocol.target.types import TargetInfo
 from pydoll.utils import (
+    PollInterval,
+    UrlPattern,
     decode_base64_to_bytes,
     has_return_outside_function,
+    url_matcher,
 )
 from pydoll.utils.bundle import (
     build_asset_filename,
@@ -122,8 +120,7 @@ if TYPE_CHECKING:
         NavigateResponse,
         PrintToPDFResponse,
     )
-    from pydoll.protocol.runtime.methods import CallFunctionOnResponse, EvaluateResponse
-    from pydoll.protocol.storage.methods import GetCookiesResponse as StorageGetCookiesResponse
+    from pydoll.protocol.runtime.methods import EvaluateResponse
     from pydoll.protocol.target.methods import (
         AttachToTargetResponse,
         GetTargetsResponse,
@@ -131,8 +128,6 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-
-IFrame: TypeAlias = 'Tab'
 
 T = TypeVar('T', bound='ExtractionModel')
 
@@ -147,17 +142,17 @@ class Tab(FindElementsMixin):
 
     Primary interface for web page automation including navigation, DOM manipulation,
     JavaScript execution, event handling, network monitoring, and specialized tasks
-    like Cloudflare bypass.
+    like Cloudflare Turnstile handling.
     """
 
     def __init__(
         self,
         browser: Browser,
-        connection_port: Optional[int] = None,
-        target_id: Optional[str] = None,
-        browser_context_id: Optional[str] = None,
-        ws_address: Optional[str] = None,
-        connection_handler: Optional[ConnectionHandler] = None,
+        connection_port: int | None = None,
+        target_id: str | None = None,
+        browser_context_id: str | None = None,
+        ws_address: str | None = None,
+        connection_handler: ConnectionHandler | None = None,
     ):
         """
         Initialize tab controller for existing browser tab.
@@ -186,20 +181,29 @@ class Tab(FindElementsMixin):
         self._dom_events_enabled = False
         self._runtime_events_enabled = False
         self._intercept_file_chooser_dialog_enabled = False
-        self._cloudflare_captcha_callback_id: Optional[int] = None
-        self._fingerprint_applier: Optional[FingerprintApplier] = None
-        self._request: Optional[Request] = None
-        self._scroll: Optional[ScrollAPI] = None
-        self._keyboard: Optional[KeyboardAPI] = None
-        self._mouse: MouseAPI = MouseAPI(self)
-        self._extraction_engine: Optional[ExtractionEngine] = None
+        self._fingerprint_applier: FingerprintApplier | None = None
+        self._request: Request | None = None
+        self._scroll: ScrollAPI | None = None
+        self._keyboard: KeyboardAPI | None = None
+        self._mouse: MouseAPI = MouseAPI(self._connection_handler)
+        self._extraction_engine: ExtractionEngine | None = None
         logger.debug(
-            (
-                f'Tab initialized: target_id={self._target_id}, '
-                f'ws_address_set={bool(self._ws_address)}, '
-                f'context_id={self._browser_context_id}, port={self._connection_port}'
-            )
+            'Tab initialized: target_id=%s, ws_address_set=%s, context_id=%s, port=%s',
+            self._target_id,
+            bool(self._ws_address),
+            self._browser_context_id,
+            self._connection_port,
         )
+
+    @property
+    def target_id(self) -> str | None:
+        """CDP target id of this tab, when known."""
+        return self._target_id
+
+    @property
+    def browser_context_id(self) -> str | None:
+        """Browser context this tab belongs to (None for the default context)."""
+        return self._browser_context_id
 
     @property
     def page_events_enabled(self) -> bool:
@@ -283,7 +287,7 @@ class Tab(FindElementsMixin):
         self,
         model: type[T],
         *,
-        scope: Optional[str] = None,
+        scope: str | None = None,
         timeout: int = 0,
     ) -> T:
         """Extract structured data from the page into a typed model.
@@ -308,7 +312,7 @@ class Tab(FindElementsMixin):
         *,
         scope: str,
         timeout: int = 0,
-        limit: Optional[int] = None,
+        limit: int | None = None,
     ) -> list[T]:
         """Extract multiple items from repeated containers on the page.
 
@@ -331,7 +335,6 @@ class Tab(FindElementsMixin):
         """Whether file chooser dialog interception is active."""
         return self._intercept_file_chooser_dialog_enabled
 
-    @property
     async def current_url(self) -> str:
         """Get current page URL (reflects redirects and client-side navigation)."""
         response: EvaluateResponse = await self._execute_command(
@@ -339,7 +342,6 @@ class Tab(FindElementsMixin):
         )
         return response['result']['result']['value']
 
-    @property
     async def page_source(self) -> str:
         """Get complete HTML source of current page (live DOM state)."""
         response: EvaluateResponse = await self._execute_command(
@@ -347,7 +349,6 @@ class Tab(FindElementsMixin):
         )
         return response['result']['result']['value']
 
-    @property
     async def title(self) -> str:
         """Get current page title."""
         response: EvaluateResponse = await self._execute_command(
@@ -374,8 +375,8 @@ class Tab(FindElementsMixin):
     async def enable_fetch_events(
         self,
         handle_auth: bool = False,
-        resource_type: Optional[ResourceType] = None,
-        request_stage: Optional[RequestStage] = None,
+        resource_type: ResourceType | None = None,
+        request_stage: RequestStage | None = None,
     ):
         """
         Enable CDP Fetch domain for request interception.
@@ -389,8 +390,10 @@ class Tab(FindElementsMixin):
             Intercepted requests must be explicitly continued or timeout.
         """
         logger.debug(
-            f'Enabling Fetch events: handle_auth={handle_auth}, resource_type={resource_type}, '
-            f'stage={request_stage}'
+            'Enabling Fetch events: handle_auth=%s, resource_type=%s, stage=%s',
+            handle_auth,
+            resource_type,
+            request_stage,
         )
         response: Response[EmptyResponse] = await self._execute_command(
             FetchCommands.enable(
@@ -431,52 +434,6 @@ class Tab(FindElementsMixin):
         self._intercept_file_chooser_dialog_enabled = True
         logger.debug('File chooser interception enabled')
         return response
-
-    async def enable_auto_solve_cloudflare_captcha(
-        self,
-        custom_selector: Optional[tuple[By, str]] = None,
-        time_before_click: Optional[float] = None,
-        time_to_wait_captcha: float = 5,
-    ):
-        """
-        Enable automatic Cloudflare Turnstile captcha bypass.
-
-        Args:
-            custom_selector: Deprecated — ignored. Cloudflare Turnstile is now
-                detected automatically via shadow root inspection.
-            time_before_click: Deprecated — ignored. The checkbox is now
-                located via shadow root polling and clicked immediately.
-            time_to_wait_captcha: Timeout for captcha detection (default 5s).
-        """
-        if custom_selector is not None:
-            warnings.warn(
-                'custom_selector is deprecated and ignored. Cloudflare Turnstile is now '
-                'detected automatically via shadow root inspection.',
-                DeprecationWarning,
-                stacklevel=2,
-            )
-
-        if time_before_click is not None:
-            warnings.warn(
-                'time_before_click is deprecated and ignored. The checkbox is now '
-                'located via shadow root polling and clicked immediately.',
-                DeprecationWarning,
-                stacklevel=2,
-            )
-
-        logger.info('Enabling Cloudflare captcha auto-solve')
-        if not self.page_events_enabled:
-            await self.enable_page_events()
-
-        callback = partial(
-            self._bypass_cloudflare,
-            time_to_wait_captcha=time_to_wait_captcha,
-        )
-
-        self._cloudflare_captcha_callback_id = await self.on(PageEvent.LOAD_EVENT_FIRED, callback)
-        logger.debug(
-            f'Cloudflare auto-solve callback registered: id={self._cloudflare_captcha_callback_id}'
-        )
 
     async def disable_fetch_events(self):
         """Disable CDP Fetch domain and release paused requests."""
@@ -528,12 +485,6 @@ class Tab(FindElementsMixin):
         logger.debug('File chooser interception disabled')
         return response
 
-    async def disable_auto_solve_cloudflare_captcha(self):
-        """Disable automatic Cloudflare Turnstile captcha bypass."""
-        logger.info('Disabling Cloudflare captcha auto-solve')
-        await self._connection_handler.remove_callback(self._cloudflare_captcha_callback_id)
-        self._cloudflare_captcha_callback_id = None
-
     async def close(self):
         """
         Close this browser tab.
@@ -541,60 +492,11 @@ class Tab(FindElementsMixin):
         Note:
             Tab instance becomes invalid after calling this method.
         """
-        logger.info(f'Closing tab: target_id={self._target_id}')
+        logger.info('Closing tab: target_id=%s', self._target_id)
         result = await self._execute_command(PageCommands.close())
-        self._browser._tabs_opened.pop(self._target_id)
+        self._browser._tabs_opened.pop(self._target_id, None)
         logger.debug('Tab closed and removed from browser registry')
         return result
-
-    async def get_frame(self, frame: 'WebElement') -> IFrame:
-        """
-        .. deprecated:: ?.?.?
-            Use iframe `WebElement` instances directly; this method will be removed in
-            a future version.
-
-        Get Tab object for interacting with iframe content.
-
-        Args:
-            frame: Tab representing the iframe tag.
-
-        Returns:
-            Tab instance configured for iframe interaction.
-
-        Raises:
-            NotAnIFrame: If element is not an iframe.
-            InvalidIFrame: If iframe lacks valid src attribute.
-            IFrameNotFound: If iframe target not found in browser.
-        """
-        warnings.warn(
-            'Tab.get_frame() is deprecated and will be removed in a future version. '
-            'Interact with iframe WebElements directly.',
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        logger.debug(f'Resolving iframe: tag={frame.tag_name}')
-        if not frame.tag_name == 'iframe':
-            raise NotAnIFrame
-
-        frame_url = frame.get_attribute('src')
-        logger.debug(f'Iframe src resolved: {frame_url}')
-        if not frame_url:
-            raise InvalidIFrame('The iframe does not have a valid src attribute')
-
-        targets = await self._browser.get_targets()
-        iframe_target = next((target for target in targets if target['url'] == frame_url), None)
-        if not iframe_target:
-            raise IFrameNotFound('The target for the iframe was not found')
-
-        target_id = iframe_target['targetId']
-        if target_id in self._browser._tabs_opened:
-            logger.debug(f'Iframe tab already tracked: {target_id}')
-            return self._browser._tabs_opened[target_id]
-
-        tab = Tab(self._browser, **self._browser._get_tab_kwargs(target_id))
-        self._browser._tabs_opened[target_id] = tab
-        logger.debug(f'Iframe tab created and registered: {target_id}')
-        return tab
 
     async def find_shadow_roots(self, deep: bool = False, timeout: float = 0) -> list[ShadowRoot]:
         """
@@ -611,10 +513,10 @@ class Tab(FindElementsMixin):
                 objects will automatically route CDP commands through the
                 correct OOPIF session.
             timeout: Maximum seconds to wait for shadow roots to appear.
-                When > 0, repeatedly polls the DOM (every 0.5s) until at least
-                one shadow root is found or the timeout expires. Useful when
-                shadow hosts are injected asynchronously (e.g., Cloudflare
-                Turnstile loading inside an OOPIF).
+                When > 0, repeatedly polls the DOM (starting every 20 ms and backing
+                off to 250 ms) until at least one shadow root is found or the timeout
+                expires. Useful when shadow hosts are injected asynchronously (e.g.,
+                Cloudflare Turnstile loading inside an OOPIF).
 
         Returns:
             List of ShadowRoot instances found in the page.
@@ -629,6 +531,7 @@ class Tab(FindElementsMixin):
             return await self._collect_all_shadow_roots(deep)
 
         start_time = asyncio.get_running_loop().time()
+        interval = PollInterval()
         while True:
             shadow_roots = await self._collect_all_shadow_roots(deep)
             if shadow_roots:
@@ -639,7 +542,7 @@ class Tab(FindElementsMixin):
                     f'Timed out after {timeout}s waiting for shadow roots in page'
                 )
 
-            await asyncio.sleep(0.5)
+            await interval.wait()
 
     async def _collect_all_shadow_roots(self, deep: bool) -> list[ShadowRoot]:
         """Collect shadow roots from the main document and optionally OOPIFs."""
@@ -663,13 +566,13 @@ class Tab(FindElementsMixin):
                 )
                 shadow_object_id = resolve_response['result']['object']['objectId']
             except (CommandExecutionTimeout, CommandFailed, WebSocketConnectionClosed, KeyError):
-                logger.debug(f'Failed to resolve shadow root: backend_node_id={backend_node_id}')
+                logger.debug('Failed to resolve shadow root: backend_node_id=%s', backend_node_id)
                 continue
 
             try:
                 host_element = await self._resolve_shadow_host(host_backend_id)
             except (CommandExecutionTimeout, CommandFailed, WebSocketConnectionClosed, KeyError):
-                logger.debug(f'Failed to resolve shadow host: backend_node_id={host_backend_id}')
+                logger.debug('Failed to resolve shadow host: backend_node_id=%s', host_backend_id)
                 host_element = None
             mode = ShadowRootType(shadow_data.get('shadowRootType', 'open'))
             shadow_roots.append(
@@ -685,7 +588,7 @@ class Tab(FindElementsMixin):
             oopif_roots = await self._collect_oopif_shadow_roots()
             shadow_roots.extend(oopif_roots)
 
-        logger.debug(f'Found {len(shadow_roots)} shadow roots')
+        logger.debug('Found %s shadow roots', len(shadow_roots))
         return shadow_roots
 
     async def _resolve_shadow_host(self, host_backend_id: int | None) -> WebElement | None:
@@ -725,7 +628,7 @@ class Tab(FindElementsMixin):
                 roots = await self._collect_shadow_roots_from_oopif_target(target, browser_handler)
                 shadow_roots.extend(roots)
 
-            logger.debug(f'Found {len(shadow_roots)} shadow roots in OOPIFs')
+            logger.debug('Found %s shadow roots in OOPIFs', len(shadow_roots))
             return shadow_roots
         finally:
             await browser_handler.close()
@@ -745,7 +648,7 @@ class Tab(FindElementsMixin):
             if not session_id:
                 return []
         except (CommandExecutionTimeout, CommandFailed, WebSocketConnectionClosed):
-            logger.debug(f'Failed to attach to OOPIF target: {target_id}')
+            logger.debug('Failed to attach to OOPIF target: %s', target_id)
             return []
 
         try:
@@ -756,7 +659,7 @@ class Tab(FindElementsMixin):
             )
             root_node = doc_response.get('result', {}).get('root', {})
         except (CommandExecutionTimeout, CommandFailed, WebSocketConnectionClosed):
-            logger.debug(f'Failed to get document from OOPIF target: {target_id}')
+            logger.debug('Failed to get document from OOPIF target: %s', target_id)
             return []
 
         entries: list[tuple[Node, int | None]] = []
@@ -798,7 +701,7 @@ class Tab(FindElementsMixin):
             )
             shadow_object_id = resolve_response['result']['object']['objectId']
         except (CommandExecutionTimeout, CommandFailed, WebSocketConnectionClosed, KeyError):
-            logger.debug(f'Failed to resolve OOPIF shadow root: backend_node_id={backend_node_id}')
+            logger.debug('Failed to resolve OOPIF shadow root: backend_node_id=%s', backend_node_id)
             return None
 
         host_element = await self._resolve_oopif_shadow_host(
@@ -856,7 +759,7 @@ class Tab(FindElementsMixin):
                 mouse=self._mouse,
             )
         except (CommandExecutionTimeout, CommandFailed, WebSocketConnectionClosed, KeyError):
-            logger.debug(f'Failed to resolve OOPIF shadow host: backend_node_id={host_backend_id}')
+            logger.debug('Failed to resolve OOPIF shadow host: backend_node_id=%s', host_backend_id)
             return None
 
     @staticmethod
@@ -880,21 +783,22 @@ class Tab(FindElementsMixin):
         return await self._execute_command(PageCommands.bring_to_front())
 
     async def get_cookies(self) -> list[Cookie]:
-        """Get all cookies accessible from current page."""
+        """Get all cookies of this tab's browser context.
+
+        A tab that lives in a browser context created with
+        ``browser.create_browser_context()`` reads them through the browser
+        connection, because Chrome only accepts ``browserContextId`` on the
+        browser target, not on a page session.
+        """
         logger.debug('Fetching cookies for current page')
         if self._browser_context_id:
-            response_storage: StorageGetCookiesResponse = await self._execute_command(
-                StorageCommands.get_cookies(self._browser_context_id)
-            )
-            cookies = response_storage['result']['cookies']
-            logger.debug(f'Fetched {len(cookies)} cookies')
-            return cookies
+            return await self._browser.get_cookies(self._browser_context_id)
 
         response_network: NetworkGetCookiesResponse = await self._execute_command(
             NetworkCommands.get_cookies()
         )
         cookies = response_network['result']['cookies']
-        logger.debug(f'Fetched {len(cookies)} cookies')
+        logger.debug('Fetched %s cookies', len(cookies))
         return cookies
 
     async def get_network_response_body(self, request_id: str) -> str:
@@ -916,10 +820,10 @@ class Tab(FindElementsMixin):
         response: GetResponseBodyResponse = await self._execute_command(
             NetworkCommands.get_response_body(request_id)
         )
-        logger.debug(f'Retrieved network response body for request_id={request_id}')
+        logger.debug('Retrieved network response body for request_id=%s', request_id)
         return response['result']['body']
 
-    async def get_network_logs(self, filter: Optional[str] = None) -> list[RequestWillBeSentEvent]:
+    async def get_network_logs(self, filter: str | None = None) -> list[RequestWillBeSentEvent]:
         """
         Get network logs.
 
@@ -940,7 +844,7 @@ class Tab(FindElementsMixin):
             logs = [
                 log for log in logs if filter in log['params'].get('request', {}).get('url', '')
             ]
-        logger.debug(f'Returning {len(logs)} network logs (filtered={bool(filter)})')
+        logger.debug('Returning %s network logs (filtered=%s)', len(logs), bool(filter))
         return logs
 
     async def set_cookies(self, cookies: list[CookieParam]):
@@ -953,15 +857,17 @@ class Tab(FindElementsMixin):
         Note:
             Defaults to current page's domain if not specified.
         """
-        logger.info(f'Setting {len(cookies)} cookies on current page')
-        return await self._execute_command(
-            StorageCommands.set_cookies(cookies, self._browser_context_id)
-        )
+        logger.info('Setting %s cookies on current page', len(cookies))
+        if self._browser_context_id:
+            return await self._browser.set_cookies(cookies, self._browser_context_id)
+        return await self._execute_command(StorageCommands.set_cookies(cookies))
 
     async def delete_all_cookies(self):
         """Delete all cookies from current browser context."""
         logger.info('Clearing all cookies from current browser context')
-        return await self._execute_command(StorageCommands.clear_cookies(self._browser_context_id))
+        if self._browser_context_id:
+            return await self._browser.delete_all_cookies(self._browser_context_id)
+        return await self._execute_command(StorageCommands.clear_cookies())
 
     async def apply_fingerprint(
         self, fingerprint: FingerprintConfig, *, cross_origin_iframes: bool = True
@@ -1001,18 +907,398 @@ class Tab(FindElementsMixin):
             NavigationError: If the navigation fails (e.g., DNS error).
             PageLoadTimeout: If page doesn't finish loading within timeout.
         """
-        logger.info(f'Navigating to URL: {url} (timeout={timeout}s)')
+        logger.info('Navigating to URL: %s (timeout=%ss)', url, timeout)
         async with self._wait_page_load(timeout=timeout):
             response: NavigateResponse = await self._execute_command(PageCommands.navigate(url))
             error_text = response['result'].get('errorText')
             if error_text:
                 raise NavigationError(url, error_text)
-        logger.info(f'Navigation complete: {url}')
+        logger.info('Navigation complete: %s', url)
+
+    async def wait_for_url(self, url: UrlPattern, timeout: float = 30) -> str:
+        """
+        Wait until the tab's URL matches a pattern and return it.
+
+        Covers full navigations and in-page changes (``pushState``) alike,
+        because it reads the live URL instead of listening to one event.
+
+        Args:
+            url: A glob (``'*/checkout/*'``), a compiled regular expression,
+                or a callable that receives the URL and returns True to match.
+            timeout: Maximum seconds to wait.
+
+        Returns:
+            The URL that matched.
+
+        Raises:
+            WaitTimeout: If no matching URL is seen within ``timeout``.
+        """
+        matches = url_matcher(url)
+        loop = asyncio.get_running_loop()
+        deadline = loop.time() + timeout
+        interval = PollInterval()
+        while True:
+            current = await self.current_url()
+            if matches(current):
+                return current
+            if loop.time() >= deadline:
+                raise WaitTimeout(
+                    f'Timed out after {timeout}s waiting for the URL to match {url!r}'
+                )
+            await interval.wait()
+
+    async def wait_for_script(self, script: str, timeout: float = 30) -> Any:
+        """
+        Wait until a JavaScript expression evaluates to a truthy value and return it.
+
+        Truthiness is JavaScript's, judged on the page side: a DOM node, a
+        function, an object (even ``{}`` or ``[]``) and a non-empty string or
+        non-zero number are truthy; ``undefined``, ``null``, ``false``, ``0``,
+        ``NaN``, ``-0``, ``0n`` and ``''`` are falsy. A promise is awaited and
+        its settled value is judged.
+
+        Args:
+            script: An expression such as ``'window.app && window.app.ready'``,
+                or a script with a ``return``.
+            timeout: Maximum seconds to wait.
+
+        Returns:
+            The value itself when it is a primitive (string, number, ``True``),
+            ``True`` for any object, node or function.
+
+        Raises:
+            WaitTimeout: If the script stays falsy for ``timeout`` seconds.
+            ScriptEvaluationError: As soon as the script throws or its promise
+                rejects, with the JavaScript error text.
+        """
+        loop = asyncio.get_running_loop()
+        deadline = loop.time() + timeout
+        interval = PollInterval()
+        while True:
+            response = await self.execute_script(script, return_by_value=False, await_promise=True)
+            evaluated = response['result']
+            details = evaluated.get('exceptionDetails')
+            if details is not None:
+                await self._release_remote_object(details.get('exception'))
+                raise ScriptEvaluationError(_exception_text(details))
+            remote = evaluated['result']
+            await self._release_remote_object(remote)
+            if _remote_object_is_truthy(remote):
+                return remote['value'] if 'value' in remote else True
+            if loop.time() >= deadline:
+                raise WaitTimeout(f'Timed out after {timeout}s waiting for script: {script!r}')
+            await interval.wait()
+
+    async def _release_remote_object(self, remote: RemoteObject | None) -> None:
+        """Free the handle Chrome kept for an object returned by reference."""
+        if remote is None or 'objectId' not in remote:
+            return
+        with contextlib.suppress(CommandFailed):
+            await self._execute_command(RuntimeCommands.release_object(remote['objectId']))
+
+    async def wait_for_absence(
+        self,
+        id: str | None = None,
+        class_name: str | None = None,
+        name: str | None = None,
+        tag_name: str | None = None,
+        text: str | None = None,
+        timeout: float = 30,
+        **attributes: str,
+    ) -> None:
+        """
+        Wait until no element matches the criteria, the same criteria ``find()`` takes.
+
+        Use it for the thing that has to go away before you continue: a
+        loading overlay, a "saving" badge, a modal that closes on its own.
+
+        Args:
+            id, class_name, name, tag_name, text, **attributes: Criteria, as in ``find()``.
+            timeout: Maximum seconds to wait.
+
+        Raises:
+            WaitTimeout: If a matching element is still present after ``timeout``.
+        """
+        criteria: dict[str, str] = {
+            key: value
+            for key, value in {
+                'id': id,
+                'class_name': class_name,
+                'name': name,
+                'tag_name': tag_name,
+                'text': text,
+            }.items()
+            if value is not None
+        }
+        criteria.update(attributes)
+        finder = cast('Callable[..., Awaitable[WebElement | None]]', self.find)
+        loop = asyncio.get_running_loop()
+        deadline = loop.time() + timeout
+        interval = PollInterval()
+        while True:
+            element = await finder(timeout=0, raise_exc=False, **criteria)
+            if element is None:
+                return
+            if loop.time() >= deadline:
+                raise WaitTimeout(f'Timed out after {timeout}s waiting for an element to disappear')
+            await interval.wait()
+
+    async def wait_for_network_idle(self, idle_time: float = 0.5, timeout: float = 30) -> None:
+        """
+        Wait until the page has had no network requests in flight for ``idle_time`` seconds.
+
+        Requests are counted from the moment this method is called, so call
+        it right after the action that starts them (a navigation, a click that
+        loads data). A request that never finishes keeps the page busy until
+        ``timeout``.
+
+        Args:
+            idle_time: Seconds without any request in flight that count as idle.
+            timeout: Maximum seconds to wait.
+
+        Raises:
+            WaitTimeout: If the network is never idle for ``idle_time`` within ``timeout``.
+        """
+        loop = asyncio.get_running_loop()
+        deadline = loop.time() + timeout
+        in_flight: set[str] = set()
+        quiet_since = loop.time()
+
+        def started(event: dict) -> None:
+            nonlocal quiet_since
+            in_flight.add(event['params']['requestId'])
+            quiet_since = loop.time()
+
+        def finished(event: dict) -> None:
+            nonlocal quiet_since
+            in_flight.discard(event['params']['requestId'])
+            if not in_flight:
+                quiet_since = loop.time()
+
+        owns_network_events = not self._network_events_enabled
+        if owns_network_events:
+            await self.enable_network_events()
+        callback_ids = [
+            await self.on(NetworkEvent.REQUEST_WILL_BE_SENT, started),
+            await self.on(NetworkEvent.LOADING_FINISHED, finished),
+            await self.on(NetworkEvent.LOADING_FAILED, finished),
+        ]
+        try:
+            while True:
+                if not in_flight and loop.time() - quiet_since >= idle_time:
+                    return
+                if loop.time() >= deadline:
+                    raise WaitTimeout(
+                        f'Timed out after {timeout}s waiting for the network to be idle '
+                        f'({len(in_flight)} requests in flight)'
+                    )
+                await asyncio.sleep(min(0.05, idle_time))
+        finally:
+            for callback_id in callback_ids:
+                with contextlib.suppress(Exception):
+                    await self.remove_callback(callback_id)
+            if owns_network_events:
+                with contextlib.suppress(Exception):
+                    await self.disable_network_events()
+
+    @asynccontextmanager
+    async def expect_navigation(
+        self, url: UrlPattern | None = None, timeout: float = 30
+    ) -> AsyncGenerator[None, None]:
+        """
+        Wait for a navigation started inside the block, and for the new page to load.
+
+        Register before acting, act inside the block, and the block only
+        exits once the main frame has navigated (to a URL matching ``url``,
+        when given) and reached the load state set in ``options.page_load_state``.
+
+        Args:
+            url: Optional glob, regular expression or callable the new URL must match.
+            timeout: Maximum seconds to wait after the block.
+
+        Raises:
+            WaitTimeout: If the navigation or the load does not happen in time.
+        """
+        matches = url_matcher(url) if url is not None else None
+        loop = asyncio.get_running_loop()
+        navigated: asyncio.Future[str] = loop.create_future()
+        loaded = asyncio.Event()
+        load_event = self._PAGE_LOAD_EVENT_MAP[self._browser.options.page_load_state]
+
+        def on_frame_navigated(event: dict) -> None:
+            frame = event['params']['frame']
+            if frame.get('parentId'):
+                return
+            if matches is not None and not matches(frame.get('url', '')):
+                return
+            if not navigated.done():
+                navigated.set_result(frame.get('url', ''))
+
+        def on_loaded(event: dict) -> None:
+            if navigated.done():
+                loaded.set()
+
+        owns_page_events = not self._page_events_enabled
+        if owns_page_events:
+            await self.enable_page_events()
+        callback_ids = [
+            await self.on(PageEvent.FRAME_NAVIGATED, on_frame_navigated),
+            await self.on(load_event, on_loaded),
+        ]
+        try:
+            yield
+            deadline = loop.time() + timeout
+            try:
+                await asyncio.wait_for(navigated, timeout)
+                await asyncio.wait_for(loaded.wait(), max(deadline - loop.time(), 0))
+            except asyncio.TimeoutError:
+                raise WaitTimeout(f'Timed out after {timeout}s waiting for a navigation')
+        finally:
+            for callback_id in callback_ids:
+                with contextlib.suppress(Exception):
+                    await self.remove_callback(callback_id)
+            if owns_page_events:
+                with contextlib.suppress(Exception):
+                    await self.disable_page_events()
+
+    @asynccontextmanager
+    async def expect_request(
+        self, url: UrlPattern, timeout: float = 30
+    ) -> AsyncGenerator[RequestHandle, None]:
+        """
+        Capture the first request whose URL matches, sent during the block.
+
+        The handle is empty inside the block and filled when the block exits,
+        which is when the wait happens.
+
+        Args:
+            url: A glob, a compiled regular expression, or a callable on the URL.
+            timeout: Maximum seconds to wait after the block for the request.
+
+        Yields:
+            RequestHandle: URL, method, headers and body of the request.
+
+        Raises:
+            WaitTimeout: If no matching request is sent within ``timeout``.
+        """
+        matches = url_matcher(url)
+        loop = asyncio.get_running_loop()
+        seen: asyncio.Future[dict] = loop.create_future()
+
+        def on_request(event: dict) -> None:
+            request = event['params']['request']
+            if not seen.done() and matches(request['url']):
+                seen.set_result(event['params'])
+
+        owns_network_events = not self._network_events_enabled
+        if owns_network_events:
+            await self.enable_network_events()
+        callback_id = await self.on(NetworkEvent.REQUEST_WILL_BE_SENT, on_request)
+        handle = RequestHandle()
+        try:
+            yield handle
+            try:
+                params = await asyncio.wait_for(seen, timeout)
+            except asyncio.TimeoutError:
+                raise WaitTimeout(f'Timed out after {timeout}s waiting for a request to {url!r}')
+            handle._fill(params)
+        finally:
+            with contextlib.suppress(Exception):
+                await self.remove_callback(callback_id)
+            if owns_network_events:
+                with contextlib.suppress(Exception):
+                    await self.disable_network_events()
+
+    @asynccontextmanager
+    async def expect_response(
+        self, url: UrlPattern, timeout: float = 30
+    ) -> AsyncGenerator[ResponseHandle, None]:
+        """
+        Capture the first response whose URL matches, received during the block.
+
+        The block exits once the response has arrived and its body has been
+        read, so ``response.json()`` is ready right after the block: the usual
+        way to read the API call a click triggers instead of scraping the DOM.
+        A 204, 205 or 304 response has no body by definition (Chrome reports
+        its load as aborted), so it completes with an empty body.
+
+        Args:
+            url: A glob, a compiled regular expression, or a callable on the URL.
+            timeout: Maximum seconds to wait after the block for the response.
+
+        Yields:
+            ResponseHandle: status, headers and body of the response.
+
+        Raises:
+            WaitTimeout: If no matching response completes within ``timeout``.
+        """
+        matches = url_matcher(url)
+        loop = asyncio.get_running_loop()
+        received: asyncio.Future[dict] = loop.create_future()
+        finished: asyncio.Future[bool] = loop.create_future()
+        captured: list[dict] = []
+
+        def on_response(event: dict) -> None:
+            params = event['params']
+            if not received.done() and matches(params['response']['url']):
+                captured.append(params)
+                received.set_result(params)
+
+        def on_finished(event: dict) -> None:
+            if not captured or finished.done():
+                return
+            if event['params']['requestId'] != captured[0]['requestId']:
+                return
+            if event['method'] == NetworkEvent.LOADING_FINISHED:
+                finished.set_result(True)
+                return
+            status = int(captured[0]['response'].get('status', 0))
+            error_text = event['params'].get('errorText', '')
+            aborted = event['params'].get('canceled', False) or 'ERR_ABORTED' in error_text
+            finished.set_result(status in _BODILESS_STATUSES and aborted)
+
+        owns_network_events = not self._network_events_enabled
+        if owns_network_events:
+            await self.enable_network_events()
+        callback_ids = [
+            await self.on(NetworkEvent.RESPONSE_RECEIVED, on_response),
+            await self.on(NetworkEvent.LOADING_FINISHED, on_finished),
+            await self.on(NetworkEvent.LOADING_FAILED, on_finished),
+        ]
+        handle = ResponseHandle()
+        try:
+            yield handle
+            try:
+                params = await asyncio.wait_for(received, timeout)
+                completed = await asyncio.wait_for(finished, timeout)
+            except asyncio.TimeoutError:
+                raise WaitTimeout(f'Timed out after {timeout}s waiting for a response from {url!r}')
+            body: bytes | None = None
+            if completed and int(params['response'].get('status', 0)) in _BODILESS_STATUSES:
+                body = b''
+            elif completed:
+                raw: GetResponseBodyResponse = await self._execute_command(
+                    NetworkCommands.get_response_body(params['requestId'])
+                )
+                result = raw['result']
+                body = (
+                    decode_base64_to_bytes(result['body'])
+                    if result.get('base64Encoded')
+                    else result['body'].encode('utf-8')
+                )
+            handle._fill(params, body)
+        finally:
+            for callback_id in callback_ids:
+                with contextlib.suppress(Exception):
+                    await self.remove_callback(callback_id)
+            if owns_network_events:
+                with contextlib.suppress(Exception):
+                    await self.disable_network_events()
 
     async def refresh(
         self,
         ignore_cache: bool = False,
-        script_to_evaluate_on_load: Optional[str] = None,
+        script_to_evaluate_on_load: str | None = None,
     ):
         """
         Reload current page and wait for completion.
@@ -1025,8 +1311,9 @@ class Tab(FindElementsMixin):
             PageLoadTimeout: If page doesn't finish loading within timeout.
         """
         logger.info(
-            f'Reloading page (ignore_cache={ignore_cache}, '
-            f'script_on_load={bool(script_to_evaluate_on_load)})'
+            'Reloading page (ignore_cache=%s, script_on_load=%s)',
+            ignore_cache,
+            bool(script_to_evaluate_on_load),
         )
         async with self._wait_page_load():
             await self._execute_command(
@@ -1039,11 +1326,11 @@ class Tab(FindElementsMixin):
 
     async def take_screenshot(
         self,
-        path: Optional[str | Path] = None,
+        path: str | Path | None = None,
         quality: int = 100,
         beyond_viewport: bool = False,
         as_base64: bool = False,
-    ) -> Optional[str]:
+    ) -> str | None:
         """
         Capture screenshot of current page.
 
@@ -1084,8 +1371,11 @@ class Tab(FindElementsMixin):
         output_format = ScreenshotFormat.get_value(output_extension)
 
         logger.info(
-            f'Taking screenshot: path={path}, quality={quality}, '
-            f'beyond_viewport={beyond_viewport}, as_base64={as_base64}'
+            'Taking screenshot: path=%s, quality=%s, beyond_viewport=%s, as_base64=%s',
+            path,
+            quality,
+            beyond_viewport,
+            as_base64,
         )
         response: CaptureScreenshotResponse = await self._execute_command(
             PageCommands.capture_screenshot(
@@ -1111,19 +1401,19 @@ class Tab(FindElementsMixin):
             screenshot_bytes = decode_base64_to_bytes(screenshot_data)
             async with aiofiles.open(str(path), 'wb') as file:
                 await file.write(screenshot_bytes)
-            logger.info(f'Screenshot saved to: {path}')
+            logger.info('Screenshot saved to: %s', path)
 
         return None
 
     async def print_to_pdf(
         self,
-        path: Optional[str | Path] = None,
+        path: str | Path | None = None,
         landscape: bool = False,
         display_header_footer: bool = False,
         print_background: bool = True,
         scale: float = 1.0,
         as_base64: bool = False,
-    ) -> Optional[str]:
+    ) -> str | None:
         """
         Generate PDF of current page.
 
@@ -1142,9 +1432,14 @@ class Tab(FindElementsMixin):
             ValueError: If path is not provided when as_base64=False.
         """
         logger.info(
-            f'Generating PDF: path={path}, landscape={landscape}, '
-            f'header_footer={display_header_footer}, print_bg={print_background}, '
-            f'scale={scale}, as_base64={as_base64}'
+            'Generating PDF: path=%s, landscape=%s, header_footer=%s, '
+            'print_bg=%s, scale=%s, as_base64=%s',
+            path,
+            landscape,
+            display_header_footer,
+            print_background,
+            scale,
+            as_base64,
         )
         response: PrintToPDFResponse = await self._execute_command(
             PageCommands.print_to_pdf(
@@ -1165,7 +1460,7 @@ class Tab(FindElementsMixin):
         pdf_bytes = decode_base64_to_bytes(pdf_data)
         async with aiofiles.open(path, 'wb') as file:
             await file.write(pdf_bytes)
-        logger.info(f'PDF saved to: {path}')
+        logger.info('PDF saved to: %s', path)
 
         return None
 
@@ -1190,7 +1485,7 @@ class Tab(FindElementsMixin):
         if path.suffix.lower() != '.zip':
             raise InvalidFileExtension(f'Expected .zip extension, got {path.suffix!r}')
 
-        logger.info(f'Saving page bundle: path={path}, inline={inline_assets}')
+        logger.info('Saving page bundle: path=%s, inline=%s', path, inline_assets)
 
         page_was_enabled = self.page_events_enabled
         if not page_was_enabled:
@@ -1218,7 +1513,7 @@ class Tab(FindElementsMixin):
 
             async with aiofiles.open(path, 'wb') as f:
                 await f.write(buf.getvalue())
-            logger.info(f'Page bundle saved to: {path}')
+            logger.info('Page bundle saved to: %s', path)
         finally:
             if not page_was_enabled:
                 await self.disable_page_events()
@@ -1296,10 +1591,10 @@ class Tab(FindElementsMixin):
         if not await self.has_dialog():
             raise NoDialogPresent()
         message = self._connection_handler.dialog['params']['message']
-        logger.debug(f'Dialog message retrieved: {message}')
+        logger.debug('Dialog message retrieved: %s', message)
         return message
 
-    async def handle_dialog(self, accept: bool, prompt_text: Optional[str] = None):
+    async def handle_dialog(self, accept: bool, prompt_text: str | None = None):
         """
         Respond to JavaScript dialog.
 
@@ -1315,153 +1610,76 @@ class Tab(FindElementsMixin):
         """
         if not await self.has_dialog():
             raise NoDialogPresent()
-        logger.info(f'Handling dialog: accept={accept}, has_prompt_text={bool(prompt_text)}')
+        logger.info('Handling dialog: accept=%s, has_prompt_text=%s', accept, bool(prompt_text))
         return await self._execute_command(
             PageCommands.handle_javascript_dialog(accept=accept, prompt_text=prompt_text)
         )
 
-    @overload
     async def execute_script(
         self,
         script: str,
         *,
-        object_group: Optional[str] = None,
-        include_command_line_api: Optional[bool] = None,
-        silent: Optional[bool] = None,
-        context_id: Optional[int] = None,
-        return_by_value: Optional[bool] = None,
-        generate_preview: Optional[bool] = None,
-        user_gesture: Optional[bool] = None,
-        await_promise: Optional[bool] = None,
-        throw_on_side_effect: Optional[bool] = None,
-        timeout: Optional[float] = None,
-        disable_breaks: Optional[bool] = None,
-        repl_mode: Optional[bool] = None,
-        allow_unsafe_eval_blocked_by_csp: Optional[bool] = None,
-        unique_context_id: Optional[str] = None,
-        serialization_options: Optional[SerializationOptions] = None,
-    ) -> EvaluateResponse: ...
-
-    @overload
-    async def execute_script(
-        self,
-        script: str,
-        element: WebElement,
-        *,
-        arguments: Optional[list[CallArgument]] = None,
-        silent: Optional[bool] = None,
-        return_by_value: Optional[bool] = None,
-        generate_preview: Optional[bool] = None,
-        user_gesture: Optional[bool] = None,
-        await_promise: Optional[bool] = None,
-        execution_context_id: Optional[int] = None,
-        object_group: Optional[str] = None,
-        throw_on_side_effect: Optional[bool] = None,
-        unique_context_id: Optional[str] = None,
-        serialization_options: Optional[SerializationOptions] = None,
-    ) -> CallFunctionOnResponse: ...
-
-    async def execute_script(
-        self,
-        script: str,
-        element: Optional[WebElement] = None,
-        *,
-        arguments: Optional[list[CallArgument]] = None,
-        object_group: Optional[str] = None,
-        include_command_line_api: Optional[bool] = None,
-        silent: Optional[bool] = None,
-        context_id: Optional[int] = None,
-        return_by_value: Optional[bool] = None,
-        generate_preview: Optional[bool] = None,
-        user_gesture: Optional[bool] = None,
-        await_promise: Optional[bool] = None,
-        execution_context_id: Optional[int] = None,
-        throw_on_side_effect: Optional[bool] = None,
-        timeout: Optional[float] = None,
-        disable_breaks: Optional[bool] = None,
-        repl_mode: Optional[bool] = None,
-        allow_unsafe_eval_blocked_by_csp: Optional[bool] = None,
-        unique_context_id: Optional[str] = None,
-        serialization_options: Optional[SerializationOptions] = None,
-    ) -> Union[EvaluateResponse, CallFunctionOnResponse]:
+        object_group: str | None = None,
+        include_command_line_api: bool | None = None,
+        silent: bool | None = None,
+        context_id: int | None = None,
+        return_by_value: bool | None = None,
+        generate_preview: bool | None = None,
+        user_gesture: bool | None = None,
+        await_promise: bool | None = None,
+        throw_on_side_effect: bool | None = None,
+        timeout: float | None = None,
+        disable_breaks: bool | None = None,
+        repl_mode: bool | None = None,
+        allow_unsafe_eval_blocked_by_csp: bool | None = None,
+        unique_context_id: str | None = None,
+        serialization_options: SerializationOptions | None = None,
+    ) -> EvaluateResponse:
         """
         Execute JavaScript in page context.
 
         Args:
             script (str): JavaScript code to execute.
-            element (Optional[WebElement]): Optional WebElement to execute script on.
-            arguments (Optional[list[CallArgument]]): Arguments to pass to the function.
-            object_group (Optional[str]): Symbolic group name for the result (Runtime.evaluate).
-            include_command_line_api (Optional[bool]): Whether to include command line API
+            object_group (str | None): Symbolic group name for the result (Runtime.evaluate).
+            include_command_line_api (bool | None): Whether to include command line API
                 (Runtime.evaluate).
-            silent (Optional[bool]): Whether to silence exceptions (Runtime.evaluate).
-            context_id (Optional[int]): ID of the execution context to evaluate in
+            silent (bool | None): Whether to silence exceptions (Runtime.evaluate).
+            context_id (int | None): ID of the execution context to evaluate in
                 (Runtime.evaluate).
-            return_by_value (Optional[bool]): Whether to return the result by value instead of
+            return_by_value (bool | None): Whether to return the result by value instead of
                 reference (Runtime.evaluate).
-            generate_preview (Optional[bool]): Whether to generate a preview for the result
+            generate_preview (bool | None): Whether to generate a preview for the result
                 (Runtime.evaluate).
-            user_gesture (Optional[bool]): Whether to treat evaluation as initiated by user
+            user_gesture (bool | None): Whether to treat evaluation as initiated by user
                 gesture (Runtime.evaluate).
-            await_promise (Optional[bool]): Whether to await promise result (Runtime.evaluate).
-            execution_context_id (Optional[int]): ID of the execution context to call the
-                function in.
-            throw_on_side_effect (Optional[bool]): Whether to throw if side effect cannot be
+            await_promise (bool | None): Whether to await promise result (Runtime.evaluate).
+            throw_on_side_effect (bool | None): Whether to throw if side effect cannot be
                 ruled out (Runtime.evaluate).
-            timeout (Optional[float]): Timeout in milliseconds (Runtime.evaluate).
-            disable_breaks (Optional[bool]): Whether to disable breakpoints during evaluation
+            timeout (float | None): Timeout in milliseconds (Runtime.evaluate).
+            disable_breaks (bool | None): Whether to disable breakpoints during evaluation
                 (Runtime.evaluate).
-            repl_mode (Optional[bool]): Whether to execute in REPL mode (Runtime.evaluate).
-            allow_unsafe_eval_blocked_by_csp (Optional[bool]): Allow unsafe evaluation
+            repl_mode (bool | None): Whether to execute in REPL mode (Runtime.evaluate).
+            allow_unsafe_eval_blocked_by_csp (bool | None): Allow unsafe evaluation
                 (Runtime.evaluate).
-            unique_context_id (Optional[str]): Unique context ID for evaluation
+            unique_context_id (str | None): Unique context ID for evaluation
                 (Runtime.evaluate).
-            serialization_options (Optional[SerializationOptions]): Serialization options for
+            serialization_options (SerializationOptions | None): Serialization options for
                 the result (Runtime.evaluate).
 
         Returns:
-            Union[EvaluateResponse, CallFunctionOnResponse]: The result of the script execution.
+            EvaluateResponse: The result of the script execution.
 
         Raises:
-            InvalidScriptWithElement: If script uses 'argument' keyword but no element is provided.
+            InvalidScriptWithElement: If the script references ``argument``; run it through
+                ``WebElement.execute_script()`` instead.
 
         Examples:
             # Execute a simple script to log a message
-            await page.execute_script('console.log("Hello World")')
+            await tab.execute_script('console.log("Hello World")')
 
             # Execute a script that returns the page title
-            await page.execute_script('return document.title')
-
-            # Execute a script on an element to click it
-            await page.execute_script('argument.click()', element)
-
-            # Execute a script on an element to set its value
-            await page.execute_script('argument.value = "Hello"', element)
+            await tab.execute_script('return document.title')
         """
-        logger.debug(f'Executing script: with_element={bool(element)}, length={len(script)}')
-        if element is not None:
-            warnings.warn(
-                'Passing a WebElement to Tab.execute_script() is deprecated. '
-                'Use WebElement.execute_script() instead.',
-                DeprecationWarning,
-                stacklevel=2,
-            )
-
-            return await element.execute_script(
-                script,
-                arguments=arguments,
-                silent=silent,
-                return_by_value=return_by_value,
-                generate_preview=generate_preview,
-                user_gesture=user_gesture,
-                await_promise=await_promise,
-                execution_context_id=execution_context_id,
-                object_group=object_group,
-                throw_on_side_effect=throw_on_side_effect,
-                unique_context_id=unique_context_id,
-                serialization_options=serialization_options,
-            )
-
         if has_return_outside_function(script):
             script = f'(function(){{ {script} }})()'
 
@@ -1483,10 +1701,8 @@ class Tab(FindElementsMixin):
             unique_context_id=unique_context_id,
             serialization_options=serialization_options,
         )
-        logger.debug(f'Executing script without element: length={len(script)}')
-        result: Union[EvaluateResponse, CallFunctionOnResponse] = await self._execute_command(
-            command
-        )
+        logger.debug('Executing script: length=%s', len(script))
+        result: EvaluateResponse = await self._execute_command(command)
         self._validate_argument_error(result)
         return result
 
@@ -1494,16 +1710,16 @@ class Tab(FindElementsMixin):
     async def continue_request(
         self,
         request_id: str,
-        url: Optional[str] = None,
-        method: Optional[RequestMethod] = None,
-        post_data: Optional[str] = None,
-        headers: Optional[list[HeaderEntry]] = None,
-        intercept_response: Optional[bool] = None,
+        url: str | None = None,
+        method: RequestMethod | None = None,
+        post_data: str | None = None,
+        headers: list[HeaderEntry] | None = None,
+        intercept_response: bool | None = None,
     ):
         """
         Continue paused request without modifications.
         """
-        logger.debug(f'Continue request on tab: id={request_id}')
+        logger.debug('Continue request on tab: id=%s', request_id)
         return await self._execute_command(
             FetchCommands.continue_request(
                 request_id=request_id,
@@ -1517,21 +1733,24 @@ class Tab(FindElementsMixin):
 
     async def fail_request(self, request_id: str, error_reason: ErrorReason):
         """Fail request with error code."""
-        logger.debug(f'Fail request on tab: id={request_id}, reason={error_reason}')
+        logger.debug('Fail request on tab: id=%s, reason=%s', request_id, error_reason)
         return await self._execute_command(FetchCommands.fail_request(request_id, error_reason))
 
     async def fulfill_request(
         self,
         request_id: str,
         response_code: int,
-        response_headers: Optional[list[HeaderEntry]] = None,
-        body: Optional[str] = None,
-        response_phrase: Optional[str] = None,
+        response_headers: list[HeaderEntry] | None = None,
+        body: str | None = None,
+        response_phrase: str | None = None,
     ):
         """Fulfill request with response data."""
         logger.debug(
-            f'Fulfill request on tab: id={request_id}, code={response_code}, '
-            f'headers_set={bool(response_headers)}, body_set={bool(body)}'
+            'Fulfill request on tab: id=%s, code=%s, headers_set=%s, body_set=%s',
+            request_id,
+            response_code,
+            bool(response_headers),
+            bool(body),
         )
         return await self._execute_command(
             FetchCommands.fulfill_request(
@@ -1547,8 +1766,8 @@ class Tab(FindElementsMixin):
         self,
         request_id: str,
         auth_challenge_response: AuthChallengeResponseType,
-        proxy_username: Optional[str] = None,
-        proxy_password: Optional[str] = None,
+        proxy_username: str | None = None,
+        proxy_password: str | None = None,
     ):
         """Continue a paused request replying to an authentication challenge.
 
@@ -1556,8 +1775,10 @@ class Tab(FindElementsMixin):
         with handle_auth=True.
         """
         logger.debug(
-            f'Continue with auth on tab: id={request_id}, response={auth_challenge_response}, '
-            f'user_set={bool(proxy_username)}'
+            'Continue with auth on tab: id=%s, response=%s, user_set=%s',
+            request_id,
+            auth_challenge_response,
+            bool(proxy_username),
         )
         return await self._execute_command(
             FetchCommands.continue_request_with_auth(
@@ -1588,7 +1809,7 @@ class Tab(FindElementsMixin):
                     backend_node_id=event['params']['backendNodeId'],
                 )
             )
-            logger.debug(f'Files set on input: {file_list}')
+            logger.debug('Files set on input: %s', file_list)
 
         if self.page_events_enabled is False:
             _before_page_events_enabled = False
@@ -1615,43 +1836,21 @@ class Tab(FindElementsMixin):
             await self.disable_page_events()
 
     @asynccontextmanager
-    async def expect_and_bypass_cloudflare_captcha(
+    async def expect_cloudflare_turnstile(
         self,
-        custom_selector: Optional[tuple[By, str]] = None,
-        time_before_click: Optional[float] = None,
         time_to_wait_captcha: float = 5,
     ) -> AsyncGenerator[None, None]:
         """
-        Context manager for automatic Cloudflare captcha bypass.
+        Handle the Cloudflare Turnstile widget if it appears while the block runs.
 
         Args:
-            custom_selector: Deprecated — ignored. Cloudflare Turnstile is now
-                detected automatically via shadow root inspection.
-            time_before_click: Deprecated — ignored. The checkbox is now
-                located via shadow root polling and clicked immediately.
             time_to_wait_captcha: Timeout for captcha detection (default 5s).
         """
-        if custom_selector is not None:
-            warnings.warn(
-                'custom_selector is deprecated and ignored. Cloudflare Turnstile is now '
-                'detected automatically via shadow root inspection.',
-                DeprecationWarning,
-                stacklevel=2,
-            )
-
-        if time_before_click is not None:
-            warnings.warn(
-                'time_before_click is deprecated and ignored. The checkbox is now '
-                'located via shadow root polling and clicked immediately.',
-                DeprecationWarning,
-                stacklevel=2,
-            )
-
         captcha_processed = asyncio.Event()
 
-        async def bypass_cloudflare(_: dict):
+        async def handle_turnstile(_: dict):
             try:
-                await self._bypass_cloudflare(
+                await self._handle_cloudflare_turnstile(
                     _,
                     time_to_wait_captcha=time_to_wait_captcha,
                 )
@@ -1663,8 +1862,8 @@ class Tab(FindElementsMixin):
         if not _before_page_events_enabled:
             await self.enable_page_events()
 
-        logger.info('Expecting and bypassing Cloudflare captcha if present')
-        callback_id = await self.on(PageEvent.LOAD_EVENT_FIRED, bypass_cloudflare)
+        logger.info('Handling Cloudflare Turnstile if present')
+        callback_id = await self.on(PageEvent.LOAD_EVENT_FIRED, handle_turnstile)
 
         try:
             yield
@@ -1677,9 +1876,9 @@ class Tab(FindElementsMixin):
     @asynccontextmanager
     async def expect_download(
         self,
-        keep_file_at: Optional[Union[str, Path]] = None,
-        timeout: Optional[float] = None,
-    ) -> AsyncGenerator[_DownloadHandle, None]:
+        keep_file_at: str | Path | None = None,
+        timeout: float | None = None,
+    ) -> AsyncGenerator[DownloadHandle, None]:
         """
         Context manager for handling a file download triggered inside the block.
 
@@ -1693,7 +1892,7 @@ class Tab(FindElementsMixin):
             timeout: Max seconds to wait for download completion. Defaults to 60.
 
         Yields:
-            _DownloadHandle: Handle to read the downloaded file (bytes/base64) and check its path.
+            DownloadHandle: Handle to read the downloaded file (bytes/base64) and check its path.
         """
         download_timeout = 60.0 if timeout is None else float(timeout)
 
@@ -1705,7 +1904,7 @@ class Tab(FindElementsMixin):
             download_dir = str(Path(keep_file_at))
             Path(download_dir).mkdir(parents=True, exist_ok=True)
 
-        logger.info(f'Expecting download (dir={download_dir}, timeout={download_timeout}s)')
+        logger.info('Expecting download (dir=%s, timeout=%ss)', download_dir, download_timeout)
         await self._browser.set_download_behavior(
             behavior=DownloadBehavior.ALLOW,
             download_path=download_dir,
@@ -1736,7 +1935,7 @@ class Tab(FindElementsMixin):
             if not will_begin.done():
                 will_begin.set_result(True)
             logger.info(
-                f'Download will begin: url={state["url"]}, filename={state["suggestedFilename"]}'
+                'Download will begin: url=%s, filename=%s', state['url'], state['suggestedFilename']
             )
 
         async def on_progress(event: DownloadProgressEvent):
@@ -1754,7 +1953,7 @@ class Tab(FindElementsMixin):
             state['filePath'] = file_path
             if not done.done():
                 done.set_result(True)
-            logger.info(f'Download completed: {file_path}')
+            logger.info('Download completed: %s', file_path)
 
         await self.on(
             PageEvent.DOWNLOAD_WILL_BEGIN,
@@ -1767,7 +1966,7 @@ class Tab(FindElementsMixin):
             False,
         )
 
-        handle = _DownloadHandle(
+        handle = DownloadHandle(
             state=state,
             will_begin_future=will_begin,
             done_future=done,
@@ -1853,8 +2052,10 @@ class Tab(FindElementsMixin):
             function_to_register = callback
 
         logger.debug(
-            f'Registering callback on tab: event={event_name}, temporary={temporary}, '
-            f'async={asyncio.iscoroutinefunction(callback)}'
+            'Registering callback on tab: event=%s, temporary=%s, async=%s',
+            event_name,
+            temporary,
+            asyncio.iscoroutinefunction(callback),
         )
         return await self._connection_handler.register_callback(
             event_name, function_to_register, temporary
@@ -1862,7 +2063,7 @@ class Tab(FindElementsMixin):
 
     async def remove_callback(self, callback_id: int):
         """Remove callback from tab."""
-        logger.debug(f'Removing callback from tab: id={callback_id}')
+        logger.debug('Removing callback from tab: id=%s', callback_id)
         return await self._connection_handler.remove_callback(callback_id)
 
     async def clear_callbacks(self):
@@ -1875,8 +2076,9 @@ class Tab(FindElementsMixin):
             logger.debug('Using WebSocket address for connection handler')
             return ConnectionHandler(ws_address=self._ws_address)
         logger.debug(
-            'Using port/target for connection handler: '
-            f'port={self._connection_port}, target_id={self._target_id}'
+            'Using port/target for connection handler: port=%s, target_id=%s',
+            self._connection_port,
+            self._target_id,
         )
         return ConnectionHandler(self._connection_port, self._target_id)
 
@@ -1884,21 +2086,21 @@ class Tab(FindElementsMixin):
     def _get_evaluate_command(
         script: str,
         *,
-        object_group: Optional[str] = None,
-        include_command_line_api: Optional[bool] = None,
-        silent: Optional[bool] = None,
-        context_id: Optional[int] = None,
-        return_by_value: Optional[bool] = None,
-        generate_preview: Optional[bool] = None,
-        user_gesture: Optional[bool] = None,
-        await_promise: Optional[bool] = None,
-        throw_on_side_effect: Optional[bool] = None,
-        timeout: Optional[float] = None,
-        disable_breaks: Optional[bool] = None,
-        repl_mode: Optional[bool] = None,
-        allow_unsafe_eval_blocked_by_csp: Optional[bool] = None,
-        unique_context_id: Optional[str] = None,
-        serialization_options: Optional[SerializationOptions] = None,
+        object_group: str | None = None,
+        include_command_line_api: bool | None = None,
+        silent: bool | None = None,
+        context_id: int | None = None,
+        return_by_value: bool | None = None,
+        generate_preview: bool | None = None,
+        user_gesture: bool | None = None,
+        await_promise: bool | None = None,
+        throw_on_side_effect: bool | None = None,
+        timeout: float | None = None,
+        disable_breaks: bool | None = None,
+        repl_mode: bool | None = None,
+        allow_unsafe_eval_blocked_by_csp: bool | None = None,
+        unique_context_id: str | None = None,
+        serialization_options: SerializationOptions | None = None,
     ):
         """Create an evaluate command with the given parameters."""
         return RuntimeCommands.evaluate(
@@ -1986,12 +2188,12 @@ class Tab(FindElementsMixin):
             page_loaded.set()
 
         callback_id = await self.on(event_name, on_loaded)
-        logger.debug(f'Waiting for page load via {event_name} (timeout={timeout}s)')
+        logger.debug('Waiting for page load via %s (timeout=%ss)', event_name, timeout)
 
         try:
             yield
             await asyncio.wait_for(page_loaded.wait(), timeout=timeout)
-            logger.debug(f'Page load event received: {event_name}')
+            logger.debug('Page load event received: %s', event_name)
         except asyncio.TimeoutError:
             logger.error(f'Page load timeout after {timeout}s waiting for {event_name}')
             raise PageLoadTimeout()
@@ -2002,7 +2204,7 @@ class Tab(FindElementsMixin):
                 with contextlib.suppress(Exception):
                     await self.disable_page_events()
 
-    async def _find_cloudflare_shadow_root(self) -> Optional[ShadowRoot]:
+    async def _find_cloudflare_shadow_root(self) -> ShadowRoot | None:
         """Return the Cloudflare Turnstile shadow root if currently present.
 
         Performs a single scan of the page's shadow roots and returns the first
@@ -2011,7 +2213,7 @@ class Tab(FindElementsMixin):
         """
         for shadow_root in await self.find_shadow_roots(deep=False):
             with contextlib.suppress(Exception):
-                if _CLOUDFLARE_CHALLENGE_DOMAIN in await shadow_root.inner_html:
+                if _CLOUDFLARE_CHALLENGE_DOMAIN in await shadow_root.inner_html():
                     return shadow_root
         return None
 
@@ -2024,7 +2226,7 @@ class Tab(FindElementsMixin):
         fast (``timeout=0``): any node captured here can go stale while
         Cloudflare re-renders the iframe, and polling locally on a stale node
         both wastes time and can let four sequential waits overrun the caller's
-        deadline. Failing fast lets ``_bypass_cloudflare`` restart the whole
+        deadline. Failing fast lets ``_handle_cloudflare_turnstile`` restart the whole
         traversal from the top on its next poll.
         """
         iframe = await shadow_root.query(_CLOUDFLARE_IFRAME_SELECTOR, timeout=0)
@@ -2033,12 +2235,12 @@ class Tab(FindElementsMixin):
         checkbox = await inner_shadow.query(_CLOUDFLARE_CHECKBOX_SELECTOR, timeout=0)
         await checkbox.click()
 
-    async def _bypass_cloudflare(
+    async def _handle_cloudflare_turnstile(
         self,
         event: dict,
         time_to_wait_captcha: float = 5,
     ) -> None:
-        """Attempt to bypass Cloudflare Turnstile captcha via shadow root traversal.
+        """Locate the Cloudflare Turnstile checkbox through its shadow root and click it.
 
         Polls for the challenge widget and clicks its checkbox, retrying the
         whole traversal until *time_to_wait_captcha* elapses. Retrying is
@@ -2048,7 +2250,7 @@ class Tab(FindElementsMixin):
         """
         loop = asyncio.get_event_loop()
         deadline = loop.time() + time_to_wait_captcha
-        last_error: Optional[Exception] = None
+        last_error: Exception | None = None
         while True:
             try:
                 shadow_root = await self._find_cloudflare_shadow_root()
@@ -2057,17 +2259,17 @@ class Tab(FindElementsMixin):
                     return
             except Exception as exc:
                 last_error = exc
-                logger.debug(f'Cloudflare bypass attempt failed, retrying: {exc}')
+                logger.debug('Cloudflare Turnstile handling attempt failed, retrying: %s', exc)
 
             if loop.time() >= deadline:
                 break
             await asyncio.sleep(0.5)
 
         if last_error is not None:
-            logger.error(f'Error in cloudflare bypass: {last_error}')
+            logger.error(f'Error handling Cloudflare Turnstile: {last_error}')
 
 
-class _DownloadHandle:
+class DownloadHandle:
     """Handle returned by expect_download to access the downloaded file."""
 
     def __init__(
@@ -2083,13 +2285,13 @@ class _DownloadHandle:
         self._timeout = timeout
 
     @property
-    def file_path(self) -> Optional[str]:
+    def file_path(self) -> str | None:
         return self._state.get('filePath')
 
-    async def wait_started(self, timeout: Optional[float] = None) -> None:
+    async def wait_started(self, timeout: float | None = None) -> None:
         await asyncio.wait_for(self._will_begin_future, timeout=timeout or self._timeout)
 
-    async def wait_finished(self, timeout: Optional[float] = None) -> None:
+    async def wait_finished(self, timeout: float | None = None) -> None:
         await asyncio.wait_for(self._done_future, timeout=timeout or self._timeout)
 
     async def read_bytes(self) -> bytes:
@@ -2102,3 +2304,142 @@ class _DownloadHandle:
     async def read_base64(self) -> str:
         data = await self.read_bytes()
         return _b64.b64encode(data).decode('ascii')
+
+
+_SUCCESS_STATUSES = range(200, 300)
+_BODILESS_STATUSES = frozenset({204, 205, 304})
+_FALSY_UNSERIALIZABLE = frozenset({'NaN', '-0', '0n'})
+
+
+def _remote_object_is_truthy(remote: RemoteObject) -> bool:
+    """JavaScript truthiness of a ``Runtime.evaluate`` result returned by reference.
+
+    Primitives travel with ``value`` (or ``unserializableValue`` for NaN, -0,
+    the infinities and bigints); anything carrying an object handle (an
+    object, node, function or symbol) is truthy.
+    """
+    if remote.get('type') == 'undefined' or remote.get('subtype') == 'null':
+        return False
+    if 'unserializableValue' in remote:
+        return remote['unserializableValue'] not in _FALSY_UNSERIALIZABLE
+    if 'value' in remote:
+        return bool(remote['value'])
+    return True
+
+
+def _exception_text(details: ExceptionDetails) -> str:
+    """The first line of the thrown error (``ReferenceError: x is not defined``)."""
+    exception = details.get('exception')
+    if exception is not None:
+        description = exception.get('description') or str(exception.get('value', ''))
+        if description:
+            return description.split('\n', 1)[0]
+    return details.get('text', 'Uncaught')
+
+
+class RequestHandle:
+    """What ``expect_request()`` captured: filled when its block exits."""
+
+    def __init__(self) -> None:
+        self._params: dict | None = None
+
+    def _fill(self, params: dict) -> None:
+        self._params = params
+
+    @property
+    def _request(self) -> dict:
+        if self._params is None:
+            raise WaitTimeout('The request has not been captured yet; read it after the block')
+        return self._params['request']
+
+    @property
+    def request_id(self) -> str:
+        """CDP request id, usable with ``tab.get_network_response_body()``."""
+        if self._params is None:
+            raise WaitTimeout('The request has not been captured yet; read it after the block')
+        return self._params['requestId']
+
+    @property
+    def url(self) -> str:
+        return self._request['url']
+
+    @property
+    def method(self) -> str:
+        return self._request['method']
+
+    @property
+    def headers(self) -> dict[str, str]:
+        return dict(self._request.get('headers', {}))
+
+    @property
+    def post_data(self) -> str | None:
+        """The request body, when it had one."""
+        return self._request.get('postData')
+
+    @property
+    def resource_type(self) -> str | None:
+        """Chrome's resource type: Document, XHR, Fetch, Image, ..."""
+        if self._params is None:
+            return None
+        return self._params.get('type')
+
+
+class ResponseHandle:
+    """What ``expect_response()`` captured: filled, body included, when its block exits."""
+
+    def __init__(self) -> None:
+        self._params: dict | None = None
+        self._body: bytes | None = None
+
+    def _fill(self, params: dict, body: bytes | None) -> None:
+        self._params = params
+        self._body = body
+
+    @property
+    def _response(self) -> dict:
+        if self._params is None:
+            raise WaitTimeout('The response has not been captured yet; read it after the block')
+        return self._params['response']
+
+    @property
+    def request_id(self) -> str:
+        if self._params is None:
+            raise WaitTimeout('The response has not been captured yet; read it after the block')
+        return self._params['requestId']
+
+    @property
+    def url(self) -> str:
+        return self._response['url']
+
+    @property
+    def status(self) -> int:
+        return int(self._response['status'])
+
+    @property
+    def ok(self) -> bool:
+        """True for a 2xx status."""
+        return self.status in _SUCCESS_STATUSES
+
+    @property
+    def headers(self) -> dict[str, str]:
+        return dict(self._response.get('headers', {}))
+
+    @property
+    def mime_type(self) -> str:
+        return self._response.get('mimeType', '')
+
+    def body(self) -> bytes:
+        """The raw body, empty for a 204, 205 or 304.
+
+        Raises when loading failed, so there was no body to read.
+        """
+        if self._body is None:
+            self._response
+            raise WaitTimeout('The response body was not received (the request failed)')
+        return self._body
+
+    def text(self, encoding: str = 'utf-8') -> str:
+        return self.body().decode(encoding, errors='replace')
+
+    def json(self) -> Any:
+        return json.loads(self.text())

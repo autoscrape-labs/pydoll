@@ -49,20 +49,37 @@ Um **comando** é uma requisição que você envia: um método de domínio com p
 
 Um **evento** é uma notificação que o navegador envia por conta própria, uma vez que você habilita o domínio dele. `Page.loadEventFired`, `Network.requestWillBeSent` e `Fetch.requestPaused` são eventos. Você se inscreve com um callback e reage quando ele dispara:
 
-```python
-from functools import partial
+=== "Sync"
 
-from pydoll.protocol.network.events import NetworkEvent
+    ```python
+    from functools import partial
+
+    from pydoll.sync import NetworkEvent
+
+    def on_request(tab, event):
+        url = event['params']['request']['url']
+        print(f'request to: {url}')
+
+    tab.enable_network_events()
+    tab.on(NetworkEvent.REQUEST_WILL_BE_SENT, partial(on_request, tab))
+    ```
+
+=== "Async"
+
+    ```python
+    from functools import partial
+
+    from pydoll import NetworkEvent
 
 
-async def on_request(tab, event):
-    url = event['params']['request']['url']
-    print(f'request to: {url}')
+    async def on_request(tab, event):
+        url = event['params']['request']['url']
+        print(f'request to: {url}')
 
 
-await tab.enable_network_events()
-await tab.on(NetworkEvent.REQUEST_WILL_BE_SENT, partial(on_request, tab))
-```
+    await tab.enable_network_events()
+    await tab.on(NetworkEvent.REQUEST_WILL_BE_SENT, partial(on_request, tab))
+    ```
 
 Eventos são o motivo de a automação sobre CDP poder reagir no instante em que o navegador muda de estado, em vez de dormir e torcer. Veja [Eventos](../guides/events.md) para o guia prático.
 
