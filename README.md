@@ -23,6 +23,9 @@
     <a href="#support">Support</a>
 </p>
 
+> [!NOTE]
+> **Pydoll 3 is here.** This release brings a synchronous API, a Playwright-compatible layer you enable with one import, new waiting methods and a faster core. It also comes with a few breaking changes, so read the [upgrade guide](https://pydoll.tech/docs/upgrading/) before bumping. We want to hear how it goes: share what works and what breaks in [issue #463](https://github.com/autoscrape-labs/pydoll/issues/463).
+
 ### Top Sponsors
 
 <table>
