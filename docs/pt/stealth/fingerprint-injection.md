@@ -96,7 +96,7 @@ O kernel e a renderização de texto do OS expõem o OS real em camadas que nenh
 
 ### Combine a versão do Chrome com o seu binário
 
-O handshake TLS e o motor JavaScript reportam a versão real do binário; o User-Agent é a única parte que `apply_fingerprint()` muda. Leia a versão do binário e mantenha o major do perfil igual a ela, atualizando a cada upgrade do Chrome.
+O User-Agent e os Client Hints são os únicos lugares onde a versão está escrita, e são o que `apply_fingerprint()` muda; o motor JavaScript e a plataforma web do binário mantêm o conjunto real de recursos, e um detector que sonda APIs descobre o major real por eles ([como vaza](evasion-techniques.md#keep-the-major-equal-to-the-binary)). Leia a versão do binário e mantenha o major do perfil igual a ela, atualizando a cada upgrade do Chrome.
 
 === "Sync"
 

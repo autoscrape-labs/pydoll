@@ -19,7 +19,7 @@
 
 最常见的自动化破绽是一个自相矛盾的 User-Agent：HTTP `User-Agent` 首部说的是一回事，而 `navigator.userAgent`、`navigator.platform` 和 Client Hints（`Sec-CH-UA`、`Sec-CH-UA-Platform`）说的又是另一回事。把 `--user-agent=` 作为普通的 Chrome 标志来设置，只会改变 HTTP 首部，而不会改动 JavaScript 和 Client Hints，这种不匹配会被检测器立刻读出来。
 
-Pydoll 会帮你修正这一点。当它检测到 `--user-agent=` 参数时，会用匹配的 `platform` 和完整的 Client Hints 元数据（greased brand 和 brand 顺序按 Chromium 对那个主版本的算法算出）来应用 `Emulation.setUserAgentOverride`，并暴露真实 Chrome 所报告的精简形式 `Chrome/MAJOR.0.0.0`，使每一层都保持一致，新标签页和 workers 也不例外。没有任何东西被注入页面：`navigator.userAgent`、`platform`、`vendor` 和 `appVersion` 全都来自 override 本身。
+Pydoll 会帮你修正这一点。当它检测到 `--user-agent=` 参数时，会用匹配的 `platform` 和完整的 Client Hints 元数据（greased brand 和 brand 顺序按 Chromium 对那个主版本的算法算出）来应用 `Emulation.setUserAgentOverride`，并暴露真实 Chrome 所报告的精简形式 `Chrome/MAJOR.0.0.0`。于是每一层都一致：网络上的首部、`navigator.userAgent`、`platform`、`vendor` 和 `appVersion`、低熵和高熵的 hints（`Sec-CH-UA`、`brands`、`fullVersionList`），在第一个标签页、之后打开的每个标签页以及 workers 内部都是如此。页面本身不会被注入任何脚本，这些值来自 override 本身。Workers 是唯一会运行一段脚本的地方：CDP 的 override 触及不到 `WorkerNavigator.platform`，也触及不到 shared worker 和 service worker 的 User-Agent，所以 Pydoll 会在每个 worker 的代码开始之前附加上去，在那里设置这两个值。
 
 === "Sync"
 
@@ -31,7 +31,7 @@ Pydoll 会帮你修正这一点。当它检测到 `--user-agent=` 参数时，�
         options.add_argument(
             '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
             'AppleWebKit/537.36 (KHTML, like Gecko) '
-            'Chrome/130.0.0.0 Safari/537.36'
+            'Chrome/154.0.0.0 Safari/537.36'
         )
 
         with Chrome(options=options) as browser:
@@ -54,7 +54,7 @@ Pydoll 会帮你修正这一点。当它检测到 `--user-agent=` 参数时，�
         options.add_argument(
             '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
             'AppleWebKit/537.36 (KHTML, like Gecko) '
-            'Chrome/130.0.0.0 Safari/537.36'
+            'Chrome/154.0.0.0 Safari/537.36'
         )
 
         async with Chrome(options=options) as browser:
@@ -64,7 +64,37 @@ Pydoll 会帮你修正这一点。当它检测到 `--user-agent=` 参数时，�
     asyncio.run(main())
     ```
 
-让字符串中的 `Chrome/<version>` 与你实际运行的 Chrome 保持一致；一个你并未运行的版本本身就是一种不匹配。这个覆盖会应用于第一个标签页、通过 `browser.new_tab()` 创建的标签页，以及通过 `browser.get_opened_tabs()` 获取的标签页。
+`154` 是撰写本页时这台机器上安装的 Chrome 主版本号；请换成你的。下一节解释为什么这个数字是字符串里唯一由不得你选的部分。这个覆盖会应用于第一个标签页、通过 `browser.new_tab()` 创建的标签页，以及通过 `browser.get_opened_tabs()` 获取的标签页。
+
+## 让主版本号与二进制保持一致 {#keep-the-major-equal-to-the-binary}
+
+Override 改写的是浏览器*声称*的版本。它改写不了浏览器*是*什么：你启动的那个二进制的 JavaScript 引擎和 web 平台。每个 Chrome 主版本都会带来新的 API，一个检测器只要从 User-Agent 里解析出主版本号，再探测那个版本尚不存在的函数，就能读出真实的版本。下面是 Chrome 154 在以声称为 130 的 User-Agent 启动时的回答：
+
+| 表面 | 报告 |
+|---|---|
+| `User-Agent` 首部、`navigator.userAgent`、`navigator.appVersion` | Chrome 130 |
+| `Sec-CH-UA`、`navigator.userAgentData.brands`、`fullVersionList` | 130，并带有 Chrome 130 当年使用的 GREASE brand `Not?A_Brand` |
+| `RegExp.escape`（136 引入）、`Float16Array`（135）、`Error.isError`（134）、`Uint8Array.fromBase64`（140）、`Math.sumPrecise`（146） | 全部存在 |
+
+五个在 Chrome 130 里并不存在的函数都在，所以这个页面是一个挂着 130 徽章的 Chrome 146 或更新版本。这么廉价的检查很常见：FingerprintJS 的 BotD 和 CreepJS 这类开源检测器都带有每个 Chromium 主版本增删了哪些 API 和 CSS 属性的表格，据此框定引擎的版本区间，并标记落在区间之外的 User-Agent；有些还会去取当前 Stable 发布号，标记声称比它更新的 User-Agent。Google 的 reCAPTCHA 至少从 2016 年起就把 User-Agent 里过时的引擎版本视为可疑（Sivakorn、Polakis 与 Keromytis，*I am Robot*，EuroS&P 2016）。声称比二进制更新的主版本会以相反的方式失败：承诺的 API 不存在。引擎还会以更安静的方式暴露自己，因为错误消息的文本、某些 `Math` 结果的最后几位以及接受的语法都会随 V8 版本变化。在这一切底下，TLS ClientHello 和 HTTP/2 settings 能识别引擎家族和大致年代，所以声称是 Firefox 或 Safari 在任何 JavaScript 运行之前就已失败。
+
+字符串的其余部分由你决定。Chrome 自己在 User-Agent 里报告的就是精简形式 `Chrome/MAJOR.0.0.0`，完整 build 只保留在高熵 hints 里，而 override 会根据你给的值把它们填得一致。所以 build 是唯一可以变动的部分，而且只有在该平台对这个主版本确实有多个 build 时才行。轮换身份意味着轮换二进制（品牌、build），而不是字符串；一个在 Stable 渠道前进时停止更新的二进制，本身就会变成一个很小的群体。把主版本号保持与 `browser.get_version()` 相同，OS 和设备取自 profile，build 保持 `0.0.0`。一行检查就能在下次 Chrome 升级时抓住不一致：
+
+=== "Sync"
+
+    ```python
+    claimed = 154
+    version = browser.get_version()['product']     # 'Chrome/154.0.8037.58'
+    assert int(version.split('/')[1].split('.')[0]) == claimed, version
+    ```
+
+=== "Async"
+
+    ```python
+    claimed = 154
+    version = (await browser.get_version())['product']     # 'Chrome/154.0.8037.58'
+    assert int(version.split('/')[1].split('.')[0]) == claimed, version
+    ```
 
 ## 让语言、时区和地理位置与 IP 匹配
 
@@ -127,7 +157,7 @@ options.webrtc_leak_protection = True   # --force-webrtc-ip-handling-policy=disa
 
 ### 过时的 User-Agent。
 
-一个来自六个月前 Chrome 版本的 UA，会缺少当前版本才有的功能和 Client Hints。请保持在最近两三个主要版本以内，并与你运行的二进制文件相匹配。
+一个来自六个月前 Chrome 版本的 UA，声称的是二进制早已不是的主版本号，而引擎的功能集合会把这一点暴露出来；见[让主版本号与二进制保持一致](#keep-the-major-equal-to-the-binary)。真实用户的 Chrome 会自动更新，所以当前的主版本号也是大多数流量的样子。
 
 ### 忽视会话行为。
 

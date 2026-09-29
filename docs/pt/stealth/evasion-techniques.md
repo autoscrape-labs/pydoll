@@ -19,7 +19,7 @@ O resto desta página são as camadas que você de fato controla.
 
 O indício de automação mais comum é um User-Agent que discorda de si mesmo: o header HTTP `User-Agent` dizendo uma coisa enquanto `navigator.userAgent`, `navigator.platform` e os Client Hints (`Sec-CH-UA`, `Sec-CH-UA-Platform`) dizem outra. Definir `--user-agent=` como uma flag simples do Chrome muda apenas o header HTTP e deixa o JavaScript e os Client Hints intocados, o que é uma incompatibilidade que um detector lê imediatamente.
 
-O Pydoll corrige isso para você. Quando ele vê um argumento `--user-agent=`, ele aplica `Emulation.setUserAgentOverride` com o `platform` correspondente e os metadados completos de Client Hints (brand greased e ordem das brands calculadas do jeito que o Chromium calcula para aquele major), e expõe a forma reduzida `Chrome/MAJOR.0.0.0` que o Chrome real reporta, de modo que todas as camadas concordem, inclusive em novas abas e workers. Nada é injetado na página: `navigator.userAgent`, `platform`, `vendor` e `appVersion` vêm todos do próprio override.
+O Pydoll corrige isso para você. Quando ele vê um argumento `--user-agent=`, ele aplica `Emulation.setUserAgentOverride` com o `platform` correspondente e os metadados completos de Client Hints (brand greased e ordem das brands calculadas do jeito que o Chromium calcula para aquele major), e expõe a forma reduzida `Chrome/MAJOR.0.0.0` que o Chrome real reporta. Todas as camadas passam a concordar: o header na rede, `navigator.userAgent`, `platform`, `vendor` e `appVersion`, os hints de baixa e alta entropia (`Sec-CH-UA`, `brands`, `fullVersionList`), na primeira aba, em toda aba aberta depois e dentro de workers. A página não recebe script injetado; esses valores vêm do próprio override. Workers são o único lugar onde um script roda: o override do CDP não alcança `WorkerNavigator.platform`, nem o User-Agent de shared e service workers, então o Pydoll se anexa a cada worker antes do código dele começar e define esses dois ali.
 
 === "Sync"
 
@@ -31,7 +31,7 @@ O Pydoll corrige isso para você. Quando ele vê um argumento `--user-agent=`, e
         options.add_argument(
             '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
             'AppleWebKit/537.36 (KHTML, like Gecko) '
-            'Chrome/130.0.0.0 Safari/537.36'
+            'Chrome/154.0.0.0 Safari/537.36'
         )
 
         with Chrome(options=options) as browser:
@@ -54,7 +54,7 @@ O Pydoll corrige isso para você. Quando ele vê um argumento `--user-agent=`, e
         options.add_argument(
             '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
             'AppleWebKit/537.36 (KHTML, like Gecko) '
-            'Chrome/130.0.0.0 Safari/537.36'
+            'Chrome/154.0.0.0 Safari/537.36'
         )
 
         async with Chrome(options=options) as browser:
@@ -64,7 +64,37 @@ O Pydoll corrige isso para você. Quando ele vê um argumento `--user-agent=`, e
     asyncio.run(main())
     ```
 
-Mantenha o `Chrome/<version>` na string igual ao Chrome que você realmente executa; uma versão que você não está rodando é, por si só, uma incompatibilidade. O override se aplica à primeira aba, às abas de `browser.new_tab()` e às abas encontradas via `browser.get_opened_tabs()`.
+`154` é o major do Chrome instalado na máquina em que esta página foi escrita; coloque o seu. A próxima seção explica por que esse número é a única parte da string que você não escolhe. O override se aplica à primeira aba, às abas de `browser.new_tab()` e às abas encontradas via `browser.get_opened_tabs()`.
+
+## Mantenha o major igual ao binário {#keep-the-major-equal-to-the-binary}
+
+O override reescreve tudo o que o browser *diz* sobre a sua versão. Ele não reescreve o que o browser *é*: o motor JavaScript e a plataforma web do binário que você lançou. Cada major do Chrome traz APIs novas, e um detector que extrai o major do User-Agent e depois sonda funções que não existiam naquele major lê o major real. É assim que o Chrome 154 responde quando lançado com um User-Agent que declara 130:
+
+| Superfície | Reporta |
+|---|---|
+| Header `User-Agent`, `navigator.userAgent`, `navigator.appVersion` | Chrome 130 |
+| `Sec-CH-UA`, `navigator.userAgentData.brands`, `fullVersionList` | 130, com a brand GREASE `Not?A_Brand` que o Chrome 130 usava |
+| `RegExp.escape` (lançada no 136), `Float16Array` (135), `Error.isError` (134), `Uint8Array.fromBase64` (140), `Math.sumPrecise` (146) | todas presentes |
+
+Cinco funções que não existiam no Chrome 130 estão lá, então a página é um Chrome 146 ou mais novo com um crachá de 130. Uma checagem tão barata é comum: detectores de código aberto como o BotD do FingerprintJS e o CreepJS carregam tabelas de quais APIs e propriedades CSS cada major do Chromium adicionou ou removeu, delimitam o motor a partir delas e marcam um User-Agent fora da faixa; alguns também buscam o número da release Stable atual e marcam um User-Agent que declara uma mais nova. O reCAPTCHA do Google trata uma versão desatualizada do motor no User-Agent como suspeita desde pelo menos 2016 (Sivakorn, Polakis e Keromytis, *I am Robot*, EuroS&P 2016). Declarar um major mais novo que o binário falha do mesmo jeito, ao contrário: as APIs prometidas não existem. O motor também se entrega de formas mais silenciosas, porque o texto das mensagens de erro, os últimos bits de alguns resultados de `Math` e a sintaxe aceita mudam entre releases do V8. Por baixo de tudo isso, o ClientHello TLS e as configurações HTTP/2 identificam a família do motor e, aproximadamente, a sua época, então declarar Firefox ou Safari falha antes de qualquer JavaScript rodar.
+
+O resto da string é seu para definir. O próprio Chrome reporta a forma reduzida `Chrome/MAJOR.0.0.0` no User-Agent e guarda o build completo só nos hints de alta entropia, que o override preenche de forma coerente a partir do valor que você passa. Então o build é a única parte que você pode variar, e só quando a plataforma tem de fato mais de um build para aquele major. Rotacionar identidades é rotacionar o binário (marca, build), não a string, e um binário que para de atualizar enquanto o canal Stable avança vira, sozinho, uma população pequena. Mantenha o major igual a `browser.get_version()`, tire o OS e o dispositivo do perfil, e deixe o build em `0.0.0`. Uma checagem de uma linha pega a divergência no próximo upgrade do Chrome:
+
+=== "Sync"
+
+    ```python
+    declarado = 154
+    versao = browser.get_version()['product']     # 'Chrome/154.0.8037.58'
+    assert int(versao.split('/')[1].split('.')[0]) == declarado, versao
+    ```
+
+=== "Async"
+
+    ```python
+    declarado = 154
+    versao = (await browser.get_version())['product']     # 'Chrome/154.0.8037.58'
+    assert int(versao.split('/')[1].split('.')[0]) == declarado, versao
+    ```
 
 ## Combine idioma, fuso horário e geolocalização com o IP
 
@@ -127,7 +157,7 @@ Adicionar ruído à saída do canvas sai pela culatra: os detectores amostram o 
 
 ### User-Agents desatualizados
 
-Um UA de uma release do Chrome de seis meses atrás carece de recursos e Client Hints que a versão atual tem. Fique dentro das últimas duas ou três versões principais, e combine com o binário que você executa.
+Um UA de uma release do Chrome de seis meses atrás declara um major que o binário já não é, e o conjunto de recursos do motor entrega isso; veja [Mantenha o major igual ao binário](#keep-the-major-equal-to-the-binary). O Chrome se atualiza sozinho para usuários reais, então um major atual é também a cara da maior parte do tráfego.
 
 ### Ignorar o comportamento da sessão
 

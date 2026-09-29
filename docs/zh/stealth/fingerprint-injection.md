@@ -96,7 +96,7 @@
 
 ### 让 Chrome 版本匹配你的二进制
 
-TLS 握手和 JavaScript 引擎会报告二进制的真实版本；User-Agent 是 `apply_fingerprint()` 唯一改动的部分。读出二进制的版本，把 profile 的主版本号与之保持一致，并在每次 Chrome 升级时更新。
+User-Agent 和 Client Hints 是版本号唯一被写下的地方，也正是 `apply_fingerprint()` 改动的部分；二进制的 JavaScript 引擎和 web 平台保留着真实的功能集合，探测 API 的检测器会从中得知真实的主版本号（[它是怎么泄露的](evasion-techniques.md#keep-the-major-equal-to-the-binary)）。读出二进制的版本，把 profile 的主版本号与之保持一致，并在每次 Chrome 升级时更新。
 
 === "Sync"
 
