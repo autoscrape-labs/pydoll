@@ -1,3 +1,58 @@
+## 3.0.0 (2026-09-29)
+
+### BREAKING CHANGE
+
+- the async properties are now methods (tab.title(),
+tab.current_url(), tab.page_source(), element.text(), element.inner_html(),
+element.bounds(), element.iframe_context(), shadow_root.inner_html()), and
+everything that raised DeprecationWarning in 2.x is removed: Tab.get_frame(),
+the element argument of Tab.execute_script(), WebElement.key_down/key_up/
+press_keyboard_key, type_text(interval=), Browser.start(headless=), the
+custom_selector/time_before_click arguments of the Cloudflare helpers and the
+NotAnIFrame/IFrameNotFound exceptions. _DownloadHandle is now DownloadHandle.
+
+### Feat
+
+- say why the browser failed to start
+- expect_cloudflare_turnstile is the only Turnstile handler
+- humanized mouse inside iframes and shadow roots, moves sent without waiting
+- **fingerprint**: construct declared WebGL extensions and delegate without call/apply lookups
+- waits for element states, URLs, scripts, network idle, and expect_* capture blocks
+- **playwright**: run the layer on Pydoll 3 and test the documented flows
+- **playwright**: Playwright-compatible API layer (async and sync) over pydoll
+- pydoll 3, one API in sync and async form
+- **sync**: emit overloads, setters and every annotation dependency in the generated facades
+- **sync**: generated synchronous API for pydoll
+
+### Fix
+
+- **playwright**: fractional clicks, geolocation accuracy, stale frames, wire headers and console handles
+- settle Runtime enabling before the next page command, and keep the instance for signature-less retry hooks
+- retry hook arity from its signature, and sync runtime fork, cancel and cache fixes
+- **playwright**: report an unreachable http DevTools endpoint as Error on every platform
+- **playwright**: enter an expect block only after its event source is enabled
+- **playwright**: resolve wait_until='commit' on frameNavigated so page.url is already set
+- **sync**: stop leaking a thread per callback and tighten the generated facade
+- **playwright**: navigation, frames, lifecycle and error translation after review
+- harden the waiting API, the event worker and the WebGL override after review
+- **playwright**: make the context locale reach navigator.language
+- keep browser shutdown best effort on locked profile files, and tidy after review
+- **sync**: stop retaining facades, isolate callback threads, make the loop restartable
+
+### Refactor
+
+- make find_or_wait_element private
+- **playwright**: fix the findings the removed suppressions exposed
+- drop narration comments, section banners and the lint suppressions that hid real findings
+- spell unions with the | operator instead of typing.Union and Optional
+- name the Cloudflare helpers after what they do
+
+### Perf
+
+- send a typed string's key events as one batch
+- faster stop, quicker readiness poll, and log calls that cost nothing when off
+- stop sleeping where the browser has already answered
+
 ## 2.27.0 (2026-09-16)
 
 ### Feat
