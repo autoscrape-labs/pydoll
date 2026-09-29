@@ -64,6 +64,7 @@ class Request:
         self._headers: dict[str, str] = {
             key.lower(): value for key, value in raw.get('headers', {}).items()
         }
+        self._extra_headers: dict[str, str] = {}
         self._post_data: str | None = raw.get('postData')
         self._resource_type: str = (params.get('type') or 'other').lower()
         self._frame_id: str | None = params.get('frameId')
@@ -120,14 +121,18 @@ class Request:
     def headers(self) -> dict[str, str]:
         return dict(self._headers)
 
+    def _full_headers(self) -> dict[str, str]:
+        """The headers Chrome actually sent, once ``requestWillBeSentExtraInfo`` told us."""
+        return {**self._headers, **self._extra_headers}
+
     async def all_headers(self) -> dict[str, str]:
-        return dict(self._headers)
+        return self._full_headers()
 
     async def headers_array(self) -> list[dict[str, str]]:
-        return [{'name': name, 'value': value} for name, value in self._headers.items()]
+        return [{'name': name, 'value': value} for name, value in self._full_headers().items()]
 
     async def header_value(self, name: str) -> str | None:
-        return self._headers.get(name.lower())
+        return self._full_headers().get(name.lower())
 
     @property
     def frame(self) -> Frame:
@@ -185,6 +190,7 @@ class Response:
         self._headers: dict[str, str] = {
             key.lower(): value for key, value in raw.get('headers', {}).items()
         }
+        self._extra_headers: dict[str, str] = {}
         self._remote_address = {
             'ipAddress': raw.get('remoteIPAddress'),
             'port': raw.get('remotePort'),
@@ -221,18 +227,26 @@ class Response:
     def headers(self) -> dict[str, str]:
         return dict(self._headers)
 
+    def _full_headers(self) -> dict[str, str]:
+        """The raw response headers, once ``responseReceivedExtraInfo`` told us."""
+        return {**self._headers, **self._extra_headers}
+
     async def all_headers(self) -> dict[str, str]:
-        return dict(self._headers)
+        return self._full_headers()
 
     async def headers_array(self) -> list[dict[str, str]]:
-        return [{'name': name, 'value': value} for name, value in self._headers.items()]
+        return [
+            {'name': name, 'value': value}
+            for name, joined in self._full_headers().items()
+            for value in joined.split('\n')
+        ]
 
     async def header_value(self, name: str) -> str | None:
-        return self._headers.get(name.lower())
+        return self._full_headers().get(name.lower())
 
     async def header_values(self, name: str) -> list[str]:
-        value = self._headers.get(name.lower())
-        return [] if value is None else [value]
+        value = self._full_headers().get(name.lower())
+        return [] if value is None else value.split('\n')
 
     @property
     def from_service_worker(self) -> bool:
@@ -295,6 +309,7 @@ class NetworkManager:
     def __init__(self, page: Page) -> None:
         self._page = page
         self._requests: dict[str, Request] = {}
+        self._response_extra_headers: dict[str, dict[str, str]] = {}
         self._in_flight: set[str] = set()
         self._changed = asyncio.Event()
 
@@ -322,13 +337,33 @@ class NetworkManager:
         self._notify()
         self._page.emit('request', request)
 
+    def on_request_will_be_sent_extra_info(self, params: dict[str, Any]) -> None:
+        request = self._requests.get(params['requestId'])
+        if request is None:
+            return
+        request._extra_headers = _lower_keys(params.get('headers', {}))
+
     def on_response_received(self, params: dict[str, Any]) -> None:
         request = self._requests.get(params['requestId'])
         if request is None:
             return
         response = Response(self._page, request, params)
+        response._extra_headers = self._response_extra_headers.pop(params['requestId'], {})
         self._notify()
         self._page.emit('response', response)
+
+    def on_response_received_extra_info(self, params: dict[str, Any]) -> None:
+        """Attach the raw headers to the response, or hold them until it exists.
+
+        Chrome gives no ordering guarantee between ``responseReceived`` and
+        its extra-info companion, so either side may arrive first.
+        """
+        request = self._requests.get(params['requestId'])
+        headers = _lower_keys(params.get('headers', {}))
+        if request is not None and request._response is not None:
+            request._response._extra_headers = headers
+        else:
+            self._response_extra_headers[params['requestId']] = headers
 
     def on_loading_finished(self, params: dict[str, Any]) -> None:
         request = self._requests.get(params['requestId'])
@@ -773,3 +808,7 @@ async def wait_for_matching(
         raise deadline.error(f'waiting for {event}') from None
     finally:
         page.remove_listener(event, listener)
+
+
+def _lower_keys(headers: dict[str, str]) -> dict[str, str]:
+    return {key.lower(): value for key, value in headers.items()}

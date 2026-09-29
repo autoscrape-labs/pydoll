@@ -170,8 +170,8 @@ class InputCommands:
     @staticmethod
     def dispatch_mouse_event(
         type: MouseEventType,
-        x: int,
-        y: int,
+        x: float,
+        y: float,
         modifiers: KeyModifier | None = None,
         timestamp: float | None = None,
         button: MouseButton | None = None,

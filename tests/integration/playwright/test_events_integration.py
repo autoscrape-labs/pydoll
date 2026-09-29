@@ -82,6 +82,16 @@ class TestConsoleAndErrors:
         assert message.text == 'true null undefined 1 1.5 s -0 NaN'
 
     @pytest.mark.asyncio
+    async def test_console_text_previews_objects_and_arrays(self, page):
+        await page.goto(page_url('test_core_simple.html'))
+        async with page.expect_console_message() as info:
+            await page.evaluate('() => console.log({a: 1, b: "x"}, [1, "two"], new Date(0))')
+        message = await info.value
+        assert message.text.startswith('{a: 1, b: x} [1, two] ')
+        assert await message.args[0].json_value() == {'a': 1, 'b': 'x'}
+        assert await message.args[1].json_value() == [1, 'two']
+
+    @pytest.mark.asyncio
     async def test_page_errors(self, page):
         await page.goto(page_url('test_core_simple.html'))
         errors = []

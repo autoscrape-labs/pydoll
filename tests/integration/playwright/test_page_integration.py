@@ -393,6 +393,39 @@ class TestContext:
         await context.close()
 
     @pytest.mark.asyncio
+    async def test_geolocation_from_context_option_and_setter(self, pw_browser, http_server):
+        context = await pw_browser.new_context(
+            geolocation={'latitude': -23.5505, 'longitude': -46.6333},
+            permissions=['geolocation'],
+        )
+        page = await context.new_page()
+        await page.goto(f'{http_server}/test_core_simple.html')
+        position = (
+            '() => new Promise(resolve => navigator.geolocation.getCurrentPosition('
+            'p => resolve([p.coords.latitude, p.coords.longitude]), e => resolve(e.code)))'
+        )
+        assert await page.evaluate(position) == [-23.5505, -46.6333]
+        await context.set_geolocation({'latitude': 48.8566, 'longitude': 2.3522, 'accuracy': 5})
+        assert await page.evaluate(position) == [48.8566, 2.3522]
+        await context.close()
+
+    @pytest.mark.asyncio
+    async def test_all_headers_include_what_chrome_added_on_the_wire(self, page, http_server):
+        async with page.expect_response('**/set-cookie') as first:
+            await page.goto(f'{http_server}/set-cookie')
+        response = await first.value
+        assert await response.header_value('set-cookie') == 'session=abc; Path=/'
+        assert await response.header_values('set-cookie') == ['session=abc; Path=/']
+        assert {'name': 'set-cookie', 'value': 'session=abc; Path=/'} in await response.headers_array()
+        async with page.expect_request('**/test_core_simple.html') as second:
+            await page.goto(f'{http_server}/test_core_simple.html')
+        request = await second.value
+        assert 'cookie' not in request.headers
+        assert (await request.all_headers())['cookie'] == 'session=abc'
+        assert await request.header_value('Cookie') == 'session=abc'
+        assert {'name': 'cookie', 'value': 'session=abc'} in await request.headers_array()
+
+    @pytest.mark.asyncio
     async def test_extra_headers_reach_the_server(self, pw_browser, http_server):
         context = await pw_browser.new_context(
             extra_http_headers={'X-Test': 'value-1'}, locale='pt-BR'

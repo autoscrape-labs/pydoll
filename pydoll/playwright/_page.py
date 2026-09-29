@@ -152,8 +152,16 @@ class Page(EventEmitter):
             lambda e: self._network.on_request_will_be_sent(e['params']),
         )
         await self._listen(
+            NetworkEvent.REQUEST_WILL_BE_SENT_EXTRA_INFO,
+            lambda e: self._network.on_request_will_be_sent_extra_info(e['params']),
+        )
+        await self._listen(
             NetworkEvent.RESPONSE_RECEIVED,
             lambda e: self._network.on_response_received(e['params']),
+        )
+        await self._listen(
+            NetworkEvent.RESPONSE_RECEIVED_EXTRA_INFO,
+            lambda e: self._network.on_response_received_extra_info(e['params']),
         )
         await self._listen(
             NetworkEvent.LOADING_FINISHED, lambda e: self._network.on_loading_finished(e['params'])
@@ -290,6 +298,19 @@ class Page(EventEmitter):
             for frame in self._frames_by_id.values()
             if frame._parent is parent and not frame._detached
         ]
+
+    def _detach_descendants(self, frame: Frame) -> None:
+        """Drop the child frames of a document that a navigation just replaced.
+
+        Chrome announces the frames of the new document but not the removal
+        of the old one's, so a page that navigated away from an ``<iframe>``
+        would keep listing it until the id was reused.
+        """
+        for child in self._child_frames_of(frame):
+            self._detach_descendants(child)
+            child._detached = True
+            child._mark_ready(None)
+            self._navigation.on_frame_detached({'frameId': child._frame_id}, child)
 
     def _on_frame_attached(self, event: dict[str, Any]) -> None:
         params = event['params']

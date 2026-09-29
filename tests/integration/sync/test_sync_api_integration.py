@@ -137,6 +137,23 @@ class TestPlaywrightSync:
             assert frame_text.text_content() == 'Iframe Content'
             browser.close()
 
+    def test_console_arguments_are_handles_in_the_sync_api(self):
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True, args=['--no-sandbox'], timeout=60_000)
+            page = browser.new_page()
+            page.goto(page_url('test_core_simple.html'))
+            with page.expect_console_message() as message_info:
+                page.evaluate('() => console.log("plain", 7, {nested: true})')
+            message = message_info.value
+            assert message.text == 'plain 7 {nested: true}'
+            assert [argument.json_value() for argument in message.args] == [
+                'plain',
+                7,
+                {'nested': True},
+            ]
+            assert message.args[0].as_element() is None
+            browser.close()
+
     def test_handlers_run_off_the_loop_and_call_back_in(self):
         with sync_playwright() as p:
             browser = p.chromium.launch(headless=True, args=['--no-sandbox'], timeout=60_000)

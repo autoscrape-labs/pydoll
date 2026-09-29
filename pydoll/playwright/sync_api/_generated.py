@@ -132,7 +132,6 @@ from pydoll.playwright._network import RouteEntry
 from pydoll.playwright._network import Router
 from pydoll.commands import PageCommands
 from pydoll.playwright._errors import TRANSPORT_ERRORS, Error, translate
-from pydoll.playwright._dialog import _PrimitiveHandle
 
 
 

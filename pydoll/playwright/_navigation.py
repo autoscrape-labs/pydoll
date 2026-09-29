@@ -92,6 +92,7 @@ class NavigationTracker:
         state.reached.add('commit')
         tracked = self._page._frame_for_id(frame['id'])
         tracked._reset_world()
+        self._page._detach_descendants(tracked)
         if tracked is not self._page._main_frame:
             tracked._name = frame.get('name', '')
         if frame['id'] == self._page._main_frame_id_cache:
