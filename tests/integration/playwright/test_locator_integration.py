@@ -224,6 +224,17 @@ class TestActions:
 
 class TestKeyboardAndMouse:
     @pytest.mark.asyncio
+    async def test_click_lands_inside_a_one_pixel_target(self, page):
+        await page.set_content(
+            '<input id="tiny" type="checkbox" style="position:absolute; left:21px; top:21px;'
+            ' width:1px; height:1px; margin:0; padding:0; appearance:none; opacity:1">'
+        )
+        await page.locator('#tiny').check()
+        assert await page.locator('#tiny').is_checked()
+        await page.locator('#tiny').uncheck()
+        assert not await page.locator('#tiny').is_checked()
+
+    @pytest.mark.asyncio
     async def test_keyboard_events_carry_key_code_and_modifiers(self, page):
         await page.goto(page_url('playwright_events.html'))
         await page.keyboard.press('a')
@@ -330,6 +341,22 @@ class TestFrames:
             await kid.evaluate('location.href')
         with pytest.raises(Error, match='Frame was detached'):
             await kid.locator('#iframe-heading').text_content(timeout=500)
+
+    @pytest.mark.asyncio
+    async def test_navigating_away_drops_the_old_documents_frames(self, page):
+        await page.goto(page_url('playwright_frames.html'))
+        assert len(page.frames) == 3
+        detached = []
+        page.on('framedetached', lambda frame: detached.append(frame))
+        await page.goto(page_url('test_core_simple.html'))
+        assert page.frames == [page.main_frame]
+        assert page.frame(name='kid') is None
+        assert len(detached) == 2 and all(frame.is_detached() for frame in detached)
+        await page.goto(page_url('test_iframe_simple.html'))
+        await page.wait_for_function('() => window.frames.length === 1')
+        assert [frame.url.rsplit('/', 1)[1] for frame in page.frames[1:]] == [
+            'test_iframe_content.html'
+        ]
 
     @pytest.mark.asyncio
     async def test_nested_frames(self, page):

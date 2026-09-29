@@ -10,7 +10,6 @@ from typing import TYPE_CHECKING, Any, Sequence
 from pydoll.commands import PageCommands
 from pydoll.playwright._element_handle import ElementHandle, JSHandle
 from pydoll.playwright._errors import TRANSPORT_ERRORS, Error, translate
-from pydoll.playwright._remote_values import parse_remote_value
 
 if TYPE_CHECKING:
     from pydoll.playwright._page import Page
@@ -64,10 +63,7 @@ class ConsoleMessage:
         self._page = page
         self._type: str = params.get('type', 'log')
         self._args = [
-            page.main_frame._handle_from_remote_object(arg)
-            if arg.get('objectId')
-            else _PrimitiveHandle(arg)
-            for arg in params.get('args', [])
+            page.main_frame._handle_from_remote_object(arg) for arg in params.get('args', [])
         ]
         self._text = ' '.join(_describe(arg) for arg in params.get('args', []))
         frames = params.get('stackTrace', {}).get('callFrames', [])
@@ -107,30 +103,25 @@ class ConsoleMessage:
         return self._text
 
 
-class _PrimitiveHandle:
-    """Stand-in for console arguments that were passed by value."""
-
-    def __init__(self, remote: dict[str, Any]) -> None:
-        self._remote = remote
-
-    async def json_value(self) -> Any:
-        return parse_remote_value(self._remote)
-
-    async def dispose(self) -> None:
-        return None
-
-    def as_element(self) -> None:
-        return None
-
-
 def _describe(remote: dict[str, Any]) -> str:
-    """Render a console argument the way JavaScript's ``String(value)`` would."""
+    """Render a console argument the way Playwright's message text does.
+
+    Primitives print like ``String(value)``; plain objects and arrays use the
+    preview Chrome attaches to the event, so ``console.log({a: 1})`` reads
+    ``{a: 1}`` and not ``Object``.
+    """
     if 'value' in remote:
         return _js_string(remote['value'])
     if remote.get('unserializableValue'):
         return str(remote['unserializableValue'])
     if remote.get('type') == 'undefined':
         return 'undefined'
+    preview = remote.get('preview')
+    if preview and remote.get('description') == 'Object':
+        entries = [f'{prop["name"]}: {prop.get("value", "")}' for prop in preview['properties']]
+        return '{' + ', '.join(entries) + '}'
+    if preview and remote.get('subtype') == 'array':
+        return '[' + ', '.join(prop.get('value', '') for prop in preview['properties']) + ']'
     return remote.get('description') or remote.get('className') or remote.get('type', '')
 
 

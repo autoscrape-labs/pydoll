@@ -225,8 +225,8 @@ class Actions:
             element,
             InputCommands.dispatch_mouse_event(
                 type=event_type,
-                x=int(round(point.input_x)),
-                y=int(round(point.input_y)),
+                x=point.input_x,
+                y=point.input_y,
                 button=button,
                 click_count=click_count or None,
                 modifiers=modifier_bits(list(modifiers or [])),

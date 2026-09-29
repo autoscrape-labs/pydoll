@@ -154,7 +154,7 @@ class BrowserContext(EventEmitter):
                 EmulationCommands.set_timezone_override(timezone_id=options['timezone_id'])
             )
         if self._geolocation:
-            await page._send(EmulationCommands.set_geolocation_override(**self._geolocation))
+            await page._send(_geolocation_override(self._geolocation))
         if self._extra_http_headers:
             await page.set_extra_http_headers(self._extra_http_headers)
         if self._offline:
@@ -373,7 +373,7 @@ class BrowserContext(EventEmitter):
         self._geolocation = dict(geolocation) if geolocation else None
         for page in self._pages:
             if self._geolocation:
-                await page._send(EmulationCommands.set_geolocation_override(**self._geolocation))
+                await page._send(_geolocation_override(self._geolocation))
             else:
                 await page._send(EmulationCommands.set_geolocation_override())
 
@@ -584,3 +584,12 @@ def _cookie_matches(cookie: dict[str, Any], url: str) -> bool:
 
 
 __all__ = ['BrowserContext', 'RuntimeCommands']
+
+
+def _geolocation_override(geolocation: dict[str, float]) -> Any:
+    """Build the override with Playwright's default accuracy of 0.
+
+    Chrome reports ``POSITION_UNAVAILABLE`` when the override carries no
+    accuracy, so a bare ``{'latitude', 'longitude'}`` must be completed.
+    """
+    return EmulationCommands.set_geolocation_override(**{'accuracy': 0, **geolocation})
