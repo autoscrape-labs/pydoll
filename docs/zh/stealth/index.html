@@ -11,7 +11,7 @@
         <link rel="canonical" href="https://pydoll.tech/docs/zh/stealth/">
       
       
-        <link rel="prev" href="../guides/retrying/">
+        <link rel="prev" href="../guides/playwright-api/">
       
       
         <link rel="next" href="evasion-techniques/">
@@ -477,6 +477,10 @@
       
         
       
+        
+      
+        
+      
     
     
     
@@ -587,6 +591,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../playwright/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    带上你的 Playwright 脚本
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../migrating/" class="md-nav__link">
         
   
@@ -595,6 +627,34 @@
     
   
     从 Selenium 和 Playwright 迁移
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../upgrading/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    升级到 Pydoll 3
   
 
     
@@ -749,6 +809,8 @@
       
         
           
+        
+      
         
       
         
@@ -1686,6 +1748,8 @@
       
         
       
+        
+      
     
     
     
@@ -1740,6 +1804,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../guides/waiting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    等待
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../guides/events/" class="md-nav__link">
         
   
@@ -1776,6 +1868,100 @@
     
   
     重试
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_8" id="__nav_4_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    来自 Playwright
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    来自 Playwright
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guides/playwright-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Playwright API
   
 
     
@@ -3231,6 +3417,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#your-playwright-script-is-blocked" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        你的 Playwright 脚本被拦截了
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#_2" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3317,27 +3514,83 @@
 <li><a href="#keep-the-identity-consistent">如何保持浏览器身份的一致性</a></li>
 <li><a href="#interact-like-a-person">如何像真人一样交互</a></li>
 <li><a href="#handle-cloudflare-turnstile">如何处理 Cloudflare Turnstile</a></li>
+<li><a href="#your-playwright-script-is-blocked">当被拦截的正是你的 Playwright 脚本时该怎么办</a></li>
 </ul>
 <h2 id="keep-the-identity-consistent">保持身份一致</h2>
 <p>身份是最难的一层，因为这些信号必须彼此一致，还要与你的 IP 和操作系统一致。User-Agent、Client Hints、语言、时区、WebGL renderer 和字体都会被交叉比对；孤立地覆盖其中一个，通常会让你更容易被检测，而不是更难。Pydoll 已经帮你保持了其中一部分的一致性（当你设置 <code>--user-agent=</code> 时，它会把 User-Agent 和 Client Hints 一起修正），并通过 <code>apply_fingerprint()</code> 应用一套完整且连贯的身份。</p>
 <p>先从 <a href="evasion-techniques/">规避技术</a> 开始，了解你能掌控的各个杠杆（User-Agent、语言、WebRTC、真实的 profile），再看 <a href="fingerprint-injection/">Fingerprint 注入</a>，学习如何从一个 profile 应用一套完整的身份。</p>
 <h2 id="interact-like-a-person">像真人一样交互</h2>
 <p>在元素正中心的瞬间点击，以及每 50ms 一次的按键，都是行为 fingerprint。传入 <code>humanize=True</code>，Pydoll 会在点击前以拟人的节奏沿曲线路径移动光标，并以变化的节奏打字，偶尔还会出现被纠正的拼写错误：</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">search_box</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s1">'search'</span><span class="p">)</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="k">await</span> <span class="n">search_box</span><span class="o">.</span><span class="n">type_text</span><span class="p">(</span><span class="s1">'browser automation'</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Sync</label><label for="__tabbed_1_2">Async</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">search_box</span> <span class="o">=</span> <span class="n">tab</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s1">'search'</span><span class="p">)</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="n">search_box</span><span class="o">.</span><span class="n">type_text</span><span class="p">(</span><span class="s1">'browser automation'</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="n">submit</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">tag_name</span><span class="o">=</span><span class="s1">'button'</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s1">'submit'</span><span class="p">)</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="k">await</span> <span class="n">submit</span><span class="o">.</span><span class="n">click</span><span class="p">(</span><span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="n">submit</span> <span class="o">=</span> <span class="n">tab</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">tag_name</span><span class="o">=</span><span class="s1">'button'</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s1">'submit'</span><span class="p">)</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="n">submit</span><span class="o">.</span><span class="n">click</span><span class="p">(</span><span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span></code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">search_box</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s1">'search'</span><span class="p">)</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="k">await</span> <span class="n">search_box</span><span class="o">.</span><span class="n">type_text</span><span class="p">(</span><span class="s1">'browser automation'</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="n">submit</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">tag_name</span><span class="o">=</span><span class="s1">'button'</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s1">'submit'</span><span class="p">)</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="k">await</span> <span class="n">submit</span><span class="o">.</span><span class="n">click</span><span class="p">(</span><span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span></code></pre></div>
+</div>
+</div>
+</div>
 <p>拟人化是按交互逐个选择启用的，所以你可以在行为被监视的地方保留它，在追求速度的地方跳过它。<a href="human-like-interactions/">拟人化交互</a> 解释了时序模型以及如何调整它。</p>
 <h2 id="handle-cloudflare-turnstile">处理 Cloudflare Turnstile</h2>
 <p>当受保护的页面显示 Turnstile 复选框时，Pydoll 可以帮你检测并点击它：</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">async</span> <span class="k">with</span> <span class="n">tab</span><span class="o">.</span><span class="n">expect_and_bypass_cloudflare_captcha</span><span class="p">():</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">go_to</span><span class="p">(</span><span class="s1">'https://site-protected-by-cloudflare.com'</span><span class="p">)</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="nb">print</span><span class="p">(</span><span class="s1">'Challenge handled, page loaded.'</span><span class="p">)</span>
+<div class="tabbed-set tabbed-alternate" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">Sync</label><label for="__tabbed_2_2">Async</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">with</span> <span class="n">tab</span><span class="o">.</span><span class="n">expect_cloudflare_turnstile</span><span class="p">():</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="n">tab</span><span class="o">.</span><span class="n">go_to</span><span class="p">(</span><span class="s1">'https://site-protected-by-cloudflare.com'</span><span class="p">)</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="nb">print</span><span class="p">(</span><span class="s1">'Challenge handled, page loaded.'</span><span class="p">)</span>
 </span></code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">async</span> <span class="k">with</span> <span class="n">tab</span><span class="o">.</span><span class="n">expect_cloudflare_turnstile</span><span class="p">():</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">go_to</span><span class="p">(</span><span class="s1">'https://site-protected-by-cloudflare.com'</span><span class="p">)</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="nb">print</span><span class="p">(</span><span class="s1">'Challenge handled, page loaded.'</span><span class="p">)</span>
+</span></code></pre></div>
+</div>
+</div>
+</div>
 <p>点击这个控件只是其中一部分：Cloudflare 是否接受这次点击，还取决于你的 IP 信誉，以及浏览器其余部分看起来有多一致。如果挑战一直失败，请仔细阅读 <a href="captcha-bypass/">Captcha 绕过</a>，并考虑 <a href="../guides/proxies/">使用住宅 proxy</a>。</p>
+<h2 id="your-playwright-script-is-blocked">你的 Playwright 脚本被拦截了</h2>
+<p>Playwright 本身会再加上第四层信号：它的驱动会启用 <code>Runtime</code> 域，用 <code>--enable-automation</code> 启动浏览器，并在每次导航时注入脚本。隐身分支事后把这些去掉，要么改驱动（Patchright），要么改浏览器（Camoufox），而且随着两者的演进还得不停地打补丁。</p>
+<p>Pydoll 没有可打补丁的驱动。改一行导入，同一个脚本就跑在 Pydoll 自己的 CDP 连接上，它永远不会为你的代码启用 <code>Runtime</code>，也永远不会添加那些标志：</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="3:2"><input checked="checked" id="__tabbed_3_1" name="__tabbed_3" type="radio" /><input id="__tabbed_3_2" name="__tabbed_3" type="radio" /><div class="tabbed-labels"><label for="__tabbed_3_1">Sync</label><label for="__tabbed_3_2">Async</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.playwright.sync_api</span><span class="w"> </span><span class="kn">import</span> <span class="n">sync_playwright</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="k">with</span> <span class="n">sync_playwright</span><span class="p">()</span> <span class="k">as</span> <span class="n">p</span><span class="p">:</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    <span class="n">browser</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">chromium</span><span class="o">.</span><span class="n">launch</span><span class="p">(</span><span class="n">headless</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    <span class="n">page</span> <span class="o">=</span> <span class="n">browser</span><span class="o">.</span><span class="n">new_page</span><span class="p">()</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>    <span class="k">with</span> <span class="n">page</span><span class="o">.</span><span class="n">tab</span><span class="o">.</span><span class="n">expect_cloudflare_turnstile</span><span class="p">():</span>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>        <span class="n">page</span><span class="o">.</span><span class="n">goto</span><span class="p">(</span><span class="s1">'https://site-protected-by-cloudflare.com'</span><span class="p">)</span>
+</span></code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.playwright.async_api</span><span class="w"> </span><span class="kn">import</span> <span class="n">async_playwright</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="k">async</span> <span class="k">with</span> <span class="n">async_playwright</span><span class="p">()</span> <span class="k">as</span> <span class="n">p</span><span class="p">:</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>    <span class="n">browser</span> <span class="o">=</span> <span class="k">await</span> <span class="n">p</span><span class="o">.</span><span class="n">chromium</span><span class="o">.</span><span class="n">launch</span><span class="p">(</span><span class="n">headless</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>    <span class="n">page</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">new_page</span><span class="p">()</span>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>    <span class="k">async</span> <span class="k">with</span> <span class="n">page</span><span class="o">.</span><span class="n">tab</span><span class="o">.</span><span class="n">expect_cloudflare_turnstile</span><span class="p">():</span>
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>        <span class="k">await</span> <span class="n">page</span><span class="o">.</span><span class="n">goto</span><span class="p">(</span><span class="s1">'https://site-protected-by-cloudflare.com'</span><span class="p">)</span>
+</span></code></pre></div>
+</div>
+</div>
+</div>
+<p>上面三层对这个脚本依然适用：身份、行为和挑战都需要你通过 <code>page.tab</code> 来配置。<a href="../playwright/">带上你的 Playwright 脚本</a> 会带你走一遍。</p>
 <h2 id="_2">下一步</h2>
 <ul>
 <li><a href="evasion-techniques/">规避技术</a>：完整的检测模型以及你能掌控的各个杠杆。</li>

@@ -11,7 +11,7 @@
         <link rel="canonical" href="https://pydoll.tech/docs/pt/basics/async-python/">
       
       
-        <link rel="prev" href="../../migrating/">
+        <link rel="prev" href="../../upgrading/">
       
       
         <link rel="next" href="../selectors/">
@@ -479,6 +479,10 @@
       
         
       
+        
+      
+        
+      
     
     
     
@@ -589,6 +593,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../playwright/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Traga seu script Playwright
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../migrating/" class="md-nav__link">
         
   
@@ -597,6 +629,34 @@
     
   
     Migrando do Selenium e Playwright
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../upgrading/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Atualizando para o Pydoll 3
   
 
     
@@ -747,10 +807,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#por-que-toda-chamada-do-pydoll-e-aguardada-com-await" class="md-nav__link">
+  <a href="#por-que-a-api-assincrona-aguarda-toda-chamada-com-await" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Por que toda chamada do Pydoll é aguardada com await
+        Por que a API assíncrona aguarda toda chamada com await
       
     </span>
   </a>
@@ -889,6 +949,8 @@
       
         
           
+        
+      
         
       
         
@@ -1826,6 +1888,8 @@
       
         
       
+        
+      
     
     
     
@@ -1880,6 +1944,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../guides/waiting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Esperas
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../guides/events/" class="md-nav__link">
         
   
@@ -1916,6 +2008,100 @@
     
   
     Repetição
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_8" id="__nav_4_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Vindo do Playwright
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Vindo do Playwright
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/playwright-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API do Playwright
   
 
     
@@ -3335,10 +3521,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#por-que-toda-chamada-do-pydoll-e-aguardada-com-await" class="md-nav__link">
+  <a href="#por-que-a-api-assincrona-aguarda-toda-chamada-com-await" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Por que toda chamada do Pydoll é aguardada com await
+        Por que a API assíncrona aguarda toda chamada com await
       
     </span>
   </a>
@@ -3491,8 +3677,8 @@
 
 
 <h1 id="async-python-na-pratica">Async Python na prática</h1>
-<p>Toda chamada do Pydoll tem um <code>await</code> na frente. Se essa palavra-chave é novidade para você, esta é a página para ler primeiro. Você não precisa dominar o asyncio; precisa só do suficiente para ficar confortável, e para entender por que o Pydoll é construído em cima dele. Cada exemplo aqui roda por conta própria, então cole eles em um arquivo e veja o que acontece.</p>
-<h2 id="por-que-toda-chamada-do-pydoll-e-aguardada-com-await">Por que toda chamada do Pydoll é aguardada com await</h2>
+<p>Tudo que fala com o navegador na API assíncrona do Pydoll tem um <code>await</code> na frente; só leituras de atributo em objetos que você já tem, como <code>get_attribute()</code>, não têm. Se essa palavra-chave é novidade para você, esta é a página para ler primeiro. Se você usa a API síncrona de <code>pydoll.sync</code>, nada aqui é obrigatório, mas a seção sobre concorrência mostra o que você ganharia ao trocar. Você não precisa dominar o asyncio; precisa só do suficiente para ficar confortável, e para entender por que o Pydoll é construído em cima dele. Cada exemplo aqui roda por conta própria, então cole eles em um arquivo e veja o que acontece.</p>
+<h2 id="por-que-a-api-assincrona-aguarda-toda-chamada-com-await">Por que a API assíncrona aguarda toda chamada com await</h2>
 <p>A automação de navegador passa a maior parte do tempo esperando: uma página carregar, um elemento aparecer, uma requisição de rede voltar. O código Python comum fica parado durante essas esperas. O código async não: enquanto uma tarefa espera, outra pode rodar.</p>
 <p>Essa única ideia é o que torna estes recursos do Pydoll possíveis:</p>
 <ul>
@@ -3569,12 +3755,12 @@
 <p>Troque as tarefas domésticas por páginas reais e nada muda. Carregar três páginas uma de cada vez espera três vezes; carregar elas com <code>gather</code> sobrepõe as esperas.</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
 </span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser.chromium</span><span class="w"> </span><span class="kn">import</span> <span class="n">Chrome</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll</span><span class="w"> </span><span class="kn">import</span> <span class="n">Chrome</span>
 </span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>
 </span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>
 </span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">title_of</span><span class="p">(</span><span class="n">browser</span><span class="p">,</span> <span class="n">url</span><span class="p">):</span>
 </span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    <span class="n">tab</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">new_tab</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
-</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span class="n">title</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">title</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span class="n">title</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">title</span><span class="p">()</span>
 </span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>    <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 </span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>    <span class="k">return</span> <span class="n">title</span>
 </span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>
@@ -3598,10 +3784,10 @@
 <h2 id="dois-erros-que-voce-provavelmente-vai-encontrar">Dois erros que você provavelmente vai encontrar</h2>
 <p>Esses são os tropeços normais quando async é novidade. São rápidos de reconhecer depois que você já os viu.</p>
 <p><strong>Você esqueceu o <code>await</code>.</strong> Sem ele, você obtém o objeto coroutine em vez do resultado dele, e um aviso:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">title</span> <span class="o">=</span> <span class="n">tab</span><span class="o">.</span><span class="n">title</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">title</span> <span class="o">=</span> <span class="n">tab</span><span class="o">.</span><span class="n">title</span><span class="p">()</span>
 </span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="nb">print</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>   <span class="c1"># &lt;coroutine object ...&gt;, e: RuntimeWarning: coroutine was never awaited</span>
 </span></code></pre></div>
-<p>A correção é adicionar <code>await</code>: <code>title = await tab.title</code>.</p>
+<p>A correção é adicionar <code>await</code>: <code>title = await tab.title()</code>.</p>
 <p><strong>Você chamou código async sem iniciar o loop.</strong> <code>await</code> só funciona dentro de um <code>async def</code>, e coroutines só rodam sob <code>asyncio.run()</code> (ou outro loop em execução):</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">main</span><span class="p">()</span>   <span class="c1"># nada acontece; isso só cria uma coroutine</span>
 </span></code></pre></div>

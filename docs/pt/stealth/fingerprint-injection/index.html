@@ -479,6 +479,10 @@
       
         
       
+        
+      
+        
+      
     
     
     
@@ -589,6 +593,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../playwright/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Traga seu script Playwright
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../migrating/" class="md-nav__link">
         
   
@@ -597,6 +629,34 @@
     
   
     Migrando do Selenium e Playwright
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../upgrading/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Atualizando para o Pydoll 3
   
 
     
@@ -751,6 +811,8 @@
       
         
           
+        
+      
         
       
         
@@ -1688,6 +1750,8 @@
       
         
       
+        
+      
     
     
     
@@ -1742,6 +1806,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../guides/waiting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Esperas
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../guides/events/" class="md-nav__link">
         
   
@@ -1778,6 +1870,100 @@
     
   
     Repetição
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_8" id="__nav_4_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Vindo do Playwright
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Vindo do Playwright
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/playwright-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API do Playwright
   
 
     
@@ -3607,24 +3793,49 @@
 </ul>
 <h2 id="quick-start">Quick start</h2>
 <p>Chame <code>apply_fingerprint()</code> antes da primeira navegação. Só os campos presentes no perfil são sobrescritos; o resto mantém os valores reais do navegador.</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser.chromium</span><span class="w"> </span><span class="kn">import</span> <span class="n">Chrome</span>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="kn">from</span><span class="w"> </span><span class="nn">examples.fingerprints</span><span class="w"> </span><span class="kn">import</span> <span class="n">FINGERPRINTS</span>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">spoof_fingerprint</span><span class="p">():</span>
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span class="k">async</span> <span class="k">with</span> <span class="n">Chrome</span><span class="p">()</span> <span class="k">as</span> <span class="n">browser</span><span class="p">:</span>
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>        <span class="n">tab</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
-</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>
-</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>        <span class="c1"># Aplique antes da primeira navegação.</span>
-</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>        <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">apply_fingerprint</span><span class="p">(</span><span class="n">FINGERPRINTS</span><span class="p">[</span><span class="s1">'macos_m3_new_york'</span><span class="p">])</span>
-</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>
-</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>        <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">go_to</span><span class="p">(</span><span class="s1">'https://abrahamjuliot.github.io/creepjs/'</span><span class="p">)</span>
-</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>        <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
-</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>
-</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">spoof_fingerprint</span><span class="p">())</span>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Sync</label><label for="__tabbed_1_2">Async</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="language-python highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.sync</span><span class="w"> </span><span class="kn">import</span> <span class="n">Chrome</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">examples.fingerprints</span><span class="w"> </span><span class="kn">import</span> <span class="n">FINGERPRINTS</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="k">def</span><span class="w"> </span><span class="nf">spoof_fingerprint</span><span class="p">():</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span class="k">with</span> <span class="n">Chrome</span><span class="p">()</span> <span class="k">as</span> <span class="n">browser</span><span class="p">:</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>        <span class="n">tab</span> <span class="o">=</span> <span class="n">browser</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>        <span class="c1"># Aplique antes da primeira navegação.</span>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>        <span class="n">tab</span><span class="o">.</span><span class="n">apply_fingerprint</span><span class="p">(</span><span class="n">FINGERPRINTS</span><span class="p">[</span><span class="s1">'macos_m3_new_york'</span><span class="p">])</span>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>        <span class="n">tab</span><span class="o">.</span><span class="n">go_to</span><span class="p">(</span><span class="s1">'https://abrahamjuliot.github.io/creepjs/'</span><span class="p">)</span>
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>
+</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="n">spoof_fingerprint</span><span class="p">()</span>
 </span></code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll</span><span class="w"> </span><span class="kn">import</span> <span class="n">Chrome</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="kn">from</span><span class="w"> </span><span class="nn">examples.fingerprints</span><span class="w"> </span><span class="kn">import</span> <span class="n">FINGERPRINTS</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">spoof_fingerprint</span><span class="p">():</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    <span class="k">async</span> <span class="k">with</span> <span class="n">Chrome</span><span class="p">()</span> <span class="k">as</span> <span class="n">browser</span><span class="p">:</span>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>        <span class="n">tab</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>        <span class="c1"># Aplique antes da primeira navegação.</span>
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>        <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">apply_fingerprint</span><span class="p">(</span><span class="n">FINGERPRINTS</span><span class="p">[</span><span class="s1">'macos_m3_new_york'</span><span class="p">])</span>
+</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>
+</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>        <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">go_to</span><span class="p">(</span><span class="s1">'https://abrahamjuliot.github.io/creepjs/'</span><span class="p">)</span>
+</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>        <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>
+</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="n">asyncio</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">spoof_fingerprint</span><span class="p">())</span>
+</span></code></pre></div>
+</div>
+</div>
+</div>
 <div class="admonition note">
 <p class="admonition-title">De onde vem <code>FINGERPRINTS</code></p>
 <p>O Pydoll não distribui perfis de fingerprint. <code>FINGERPRINTS</code> fica em <code>examples/fingerprints.py</code> no <a href="https://github.com/autoscrape-labs/pydoll">repositório do pydoll</a>, como perfis de referência para o formato <code>FingerprintConfig</code> (um typed dict de <code>pydoll.protocol.fingerprint.types</code>). Copie esse arquivo para o seu projeto e adapte cada perfil à sua máquina e ao seu IP. Um perfil reusado como está é uma assinatura compartilhada, não um disfarce.</p>
@@ -3692,9 +3903,20 @@
 <p>O kernel e a renderização de texto do OS expõem o OS real em camadas que nenhum override alcança. Rode um perfil macOS no macOS, um perfil Windows no Windows. Um proxy de encaminhamento re-origina a conexão a partir do kernel do proxy, então um perfil Windows passa a exigir um proxy rodando em Windows.</p>
 <h3 id="combine-a-versao-do-chrome-com-o-seu-binario">Combine a versão do Chrome com o seu binário</h3>
 <p>O handshake TLS e o motor JavaScript reportam a versão real do binário; o User-Agent é a única parte que <code>apply_fingerprint()</code> muda. Leia a versão do binário e mantenha o major do perfil igual a ela, atualizando a cada upgrade do Chrome.</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">version</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">get_version</span><span class="p">()</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="nb">print</span><span class="p">(</span><span class="n">version</span><span class="p">[</span><span class="s1">'product'</span><span class="p">])</span>  <span class="c1"># ex.: 'Chrome/152.0.7977.83'</span>
+<div class="tabbed-set tabbed-alternate" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">Sync</label><label for="__tabbed_2_2">Async</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">version</span> <span class="o">=</span> <span class="n">browser</span><span class="o">.</span><span class="n">get_version</span><span class="p">()</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="nb">print</span><span class="p">(</span><span class="n">version</span><span class="p">[</span><span class="s1">'product'</span><span class="p">])</span>  <span class="c1"># ex.: 'Chrome/152.0.7977.83'</span>
 </span></code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">version</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">get_version</span><span class="p">()</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="nb">print</span><span class="p">(</span><span class="n">version</span><span class="p">[</span><span class="s1">'product'</span><span class="p">])</span>  <span class="c1"># ex.: 'Chrome/152.0.7977.83'</span>
+</span></code></pre></div>
+</div>
+</div>
+</div>
 <h3 id="combine-locale-e-fuso-horario-com-o-ip-de-saida">Combine locale e fuso horário com o IP de saída</h3>
 <p><code>Accept-Language</code>, <code>navigator.languages</code>, o fuso horário e a geolocalização são cruzados com o país do IP. Um perfil US atrás de um IP brasileiro fez uma busca simples no Google retornar um captcha; um locale brasileiro, combinando com o IP, removeu o bloqueio sem nenhuma outra mudança.</p>
 <p align="center">
@@ -3704,22 +3926,38 @@
 
 <h3 id="combine-a-gpu-e-as-fontes-com-o-host">Combine a GPU e as fontes com o host</h3>
 <p>As seções <code>webgl</code> e <code>webgpu</code> mudam o que o navegador reporta sobre a GPU; o que a GPU desenha continua real. Nomeie a família de GPU que está de fato na máquina, e capture os limites e as features de um dispositivo real daquela classe em vez de adivinhar. A seção <code>fonts</code> cobre as sondas de fontes em JavaScript; o motor de layout mede as fontes realmente instaladas, então liste exatamente o que está instalado.</p>
+<p>Tire as listas de extensões WebGL da mesma captura. <code>getSupportedExtensions()</code> reporta a lista do perfil na ordem do próprio Chrome: uma extensão que a GPU do host tem passa direto, e uma que o host não tem é construída a partir da definição de interface do Chromium, com as constantes, os métodos, os formatos de textura comprimida e os limites que ela destrava. Um rasterizador por software expõe uma lista mais curta que qualquer GPU dedicada, e é isso que mantém essa diferença fora do perfil. Um nome que o pydoll não conhece só é mantido quando o host realmente o expõe.</p>
 <h3 id="fixe-os-client-hints-que-o-user-agent-nao-consegue-carregar">Fixe os Client Hints que o User-Agent não consegue carregar</h3>
 <p>A string do User-Agent é congelada (<code>Mac OS X 10_15_7</code>, <code>Android 10; K</code>); o Chrome real reporta a versão verdadeira do OS, o modelo do dispositivo e o form factor nos Client Hints. O parser preenche padrões plausíveis; defina <code>client_hints</code> para fixar os valores lidos num dispositivo real.</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">fingerprint</span> <span class="o">=</span> <span class="n">FingerprintConfig</span><span class="p">(</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="n">user_agent</span><span class="o">=</span><span class="n">UA_WINDOWS</span><span class="p">,</span>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    <span class="n">client_hints</span><span class="o">=</span><span class="n">ClientHintsFingerprint</span><span class="p">(</span><span class="n">platform_version</span><span class="o">=</span><span class="s1">'15.0.0'</span><span class="p">),</span>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="p">)</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">fingerprint</span> <span class="o">=</span> <span class="n">FingerprintConfig</span><span class="p">(</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>    <span class="n">user_agent</span><span class="o">=</span><span class="n">UA_WINDOWS</span><span class="p">,</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>    <span class="n">client_hints</span><span class="o">=</span><span class="n">ClientHintsFingerprint</span><span class="p">(</span><span class="n">platform_version</span><span class="o">=</span><span class="s1">'15.0.0'</span><span class="p">),</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="p">)</span>
 </span></code></pre></div>
 <h3 id="um-fingerprint-por-browser-context">Um fingerprint por browser context</h3>
 <p>Um browser context guarda uma identidade. Aplicar um segundo fingerprint, diferente, ao mesmo context levanta <code>FingerprintContextConflict</code>. Rode identidades diferentes em contexts separados.</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">ctx_id</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">create_browser_context</span><span class="p">()</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">tab_us</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="n">tab_br</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">new_tab</span><span class="p">(</span><span class="n">browser_context_id</span><span class="o">=</span><span class="n">ctx_id</span><span class="p">)</span>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="k">await</span> <span class="n">tab_us</span><span class="o">.</span><span class="n">apply_fingerprint</span><span class="p">(</span><span class="n">FINGERPRINTS</span><span class="p">[</span><span class="s1">'windows11_rtx3060_nyc'</span><span class="p">])</span>
-</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="k">await</span> <span class="n">tab_br</span><span class="o">.</span><span class="n">apply_fingerprint</span><span class="p">(</span><span class="n">FINGERPRINTS</span><span class="p">[</span><span class="s1">'android_s24_ultra_sao_paulo'</span><span class="p">])</span>
+<div class="tabbed-set tabbed-alternate" data-tabs="3:2"><input checked="checked" id="__tabbed_3_1" name="__tabbed_3" type="radio" /><input id="__tabbed_3_2" name="__tabbed_3" type="radio" /><div class="tabbed-labels"><label for="__tabbed_3_1">Sync</label><label for="__tabbed_3_2">Async</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">tab_us</span> <span class="o">=</span> <span class="n">browser</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="n">ctx_id</span> <span class="o">=</span> <span class="n">browser</span><span class="o">.</span><span class="n">create_browser_context</span><span class="p">()</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="n">tab_br</span> <span class="o">=</span> <span class="n">browser</span><span class="o">.</span><span class="n">new_tab</span><span class="p">(</span><span class="n">browser_context_id</span><span class="o">=</span><span class="n">ctx_id</span><span class="p">)</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="n">tab_us</span><span class="o">.</span><span class="n">apply_fingerprint</span><span class="p">(</span><span class="n">FINGERPRINTS</span><span class="p">[</span><span class="s1">'windows11_rtx3060_nyc'</span><span class="p">])</span>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="n">tab_br</span><span class="o">.</span><span class="n">apply_fingerprint</span><span class="p">(</span><span class="n">FINGERPRINTS</span><span class="p">[</span><span class="s1">'android_s24_ultra_sao_paulo'</span><span class="p">])</span>
 </span></code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">tab_us</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="n">ctx_id</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">create_browser_context</span><span class="p">()</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="n">tab_br</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">new_tab</span><span class="p">(</span><span class="n">browser_context_id</span><span class="o">=</span><span class="n">ctx_id</span><span class="p">)</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="k">await</span> <span class="n">tab_us</span><span class="o">.</span><span class="n">apply_fingerprint</span><span class="p">(</span><span class="n">FINGERPRINTS</span><span class="p">[</span><span class="s1">'windows11_rtx3060_nyc'</span><span class="p">])</span>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="k">await</span> <span class="n">tab_br</span><span class="o">.</span><span class="n">apply_fingerprint</span><span class="p">(</span><span class="n">FINGERPRINTS</span><span class="p">[</span><span class="s1">'android_s24_ultra_sao_paulo'</span><span class="p">])</span>
+</span></code></pre></div>
+</div>
+</div>
+</div>
 <p>Veja <a href="../../guides/browser-contexts/">Browser contexts</a>.</p>
 <p>Algumas regras menores completam: aplique o fingerprint antes da primeira navegação; se você definir a opção <code>--user-agent</code>, mantenha-a igual à do perfil (um valor diferente registra um warning no log); use um IP residencial limpo; prefira <code>click(humanize=True)</code> e as <a href="../human-like-interactions/">interações humanizadas</a>, porque a entrada é o que muitos alvos mais pesam.</p>
 <h2 id="bring-your-own-profiles">Trazer seus próprios perfis</h2>

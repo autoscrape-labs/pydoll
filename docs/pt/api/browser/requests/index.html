@@ -479,6 +479,10 @@
       
         
       
+        
+      
+        
+      
     
     
     
@@ -589,6 +593,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../playwright/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Traga seu script Playwright
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../migrating/" class="md-nav__link">
         
   
@@ -597,6 +629,34 @@
     
   
     Migrando do Selenium e Playwright
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../upgrading/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Atualizando para o Pydoll 3
   
 
     
@@ -751,6 +811,8 @@
       
         
           
+        
+      
         
       
         
@@ -1688,6 +1750,8 @@
       
         
       
+        
+      
     
     
     
@@ -1742,6 +1806,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../guides/waiting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Esperas
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../guides/events/" class="md-nav__link">
         
   
@@ -1778,6 +1870,100 @@
     
   
     Repetição
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_8" id="__nav_4_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Vindo do Playwright
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Vindo do Playwright
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../guides/playwright-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API do Playwright
   
 
     
@@ -4985,7 +5171,7 @@ and merged with any existing query string in the URL.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<span title="dict">dict</span>[<span title="str">str</span>, <span title="str">str</span>]]</code>
+                      <code><span title="dict">dict</span>[<span title="str">str</span>, <span title="str">str</span>] | None</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -5008,7 +5194,7 @@ Mutually exclusive with 'json' parameter.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<span title="typing.Union">Union</span>[<span title="dict">dict</span>, <span title="list">list</span>, <span title="tuple">tuple</span>, <span title="str">str</span>, <span title="bytes">bytes</span>]]</code>
+                      <code><span title="dict">dict</span> | <span title="list">list</span> | <span title="tuple">tuple</span> | <span title="str">str</span> | <span title="bytes">bytes</span> | None</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -5029,7 +5215,7 @@ Content-Type to application/json. Mutually exclusive with 'data'.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<span title="dict">dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]]</code>
+                      <code><span title="dict">dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>] | None</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -5051,7 +5237,7 @@ Format: [{'name': 'X-Custom', 'value': 'value'}]</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<span title="list">list</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;HeaderEntry&lt;/span&gt; (&lt;code&gt;pydoll.protocol.fetch.types.HeaderEntry&lt;/code&gt;)" href="../../../../api/protocol/fetch/#pydoll.protocol.fetch.types.HeaderEntry">HeaderEntry</a>]]</code>
+                      <code><span title="list">list</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;HeaderEntry&lt;/span&gt; (&lt;code&gt;pydoll.protocol.fetch.types.HeaderEntry&lt;/code&gt;)" href="../../../../api/protocol/fetch/#pydoll.protocol.fetch.types.HeaderEntry">HeaderEntry</a>] | None</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -5208,7 +5394,7 @@ Format: [{'name': 'X-Custom', 'value': 'value'}]</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<span title="dict">dict</span>[<span title="str">str</span>, <span title="str">str</span>]]</code>
+                      <code><span title="dict">dict</span>[<span title="str">str</span>, <span title="str">str</span>] | None</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -5320,7 +5506,7 @@ Format: [{'name': 'X-Custom', 'value': 'value'}]</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<span title="typing.Union">Union</span>[<span title="dict">dict</span>, <span title="list">list</span>, <span title="tuple">tuple</span>, <span title="str">str</span>, <span title="bytes">bytes</span>]]</code>
+                      <code><span title="dict">dict</span> | <span title="list">list</span> | <span title="tuple">tuple</span> | <span title="str">str</span> | <span title="bytes">bytes</span> | None</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -5340,7 +5526,7 @@ Format: [{'name': 'X-Custom', 'value': 'value'}]</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<span title="dict">dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]]</code>
+                      <code><span title="dict">dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>] | None</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -5452,7 +5638,7 @@ Format: [{'name': 'X-Custom', 'value': 'value'}]</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<span title="typing.Union">Union</span>[<span title="dict">dict</span>, <span title="list">list</span>, <span title="tuple">tuple</span>, <span title="str">str</span>, <span title="bytes">bytes</span>]]</code>
+                      <code><span title="dict">dict</span> | <span title="list">list</span> | <span title="tuple">tuple</span> | <span title="str">str</span> | <span title="bytes">bytes</span> | None</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -5472,7 +5658,7 @@ Format: [{'name': 'X-Custom', 'value': 'value'}]</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<span title="dict">dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]]</code>
+                      <code><span title="dict">dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>] | None</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -5584,7 +5770,7 @@ Format: [{'name': 'X-Custom', 'value': 'value'}]</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<span title="typing.Union">Union</span>[<span title="dict">dict</span>, <span title="list">list</span>, <span title="tuple">tuple</span>, <span title="str">str</span>, <span title="bytes">bytes</span>]]</code>
+                      <code><span title="dict">dict</span> | <span title="list">list</span> | <span title="tuple">tuple</span> | <span title="str">str</span> | <span title="bytes">bytes</span> | None</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -5604,7 +5790,7 @@ Format: [{'name': 'X-Custom', 'value': 'value'}]</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<span title="dict">dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]]</code>
+                      <code><span title="dict">dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>] | None</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -6387,7 +6573,7 @@ not affected.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Union">Union</span>[<span title="list">list</span>[<span title="pydoll.browser.requests.request.RequestSentEvent">RequestSentEvent</span>], <span title="list">list</span>[<span title="pydoll.browser.requests.request.RequestReceivedEvent">RequestReceivedEvent</span>]]</code>
+                      <code><span title="list">list</span>[<span title="pydoll.browser.requests.request.RequestSentEvent">RequestSentEvent</span>] | <span title="list">list</span>[<span title="pydoll.browser.requests.request.RequestReceivedEvent">RequestReceivedEvent</span>]</code>
                   </span>
               </p>
             </td>
@@ -7041,7 +7227,7 @@ like Path, Domain, Secure, HttpOnly, etc. Rejects cookies with empty names.</p>
           <tr class="doc-section-item">
             <td>
                 <span class="doc-returns-annotation">
-                    <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;CookieParam&lt;/span&gt; (&lt;code&gt;pydoll.protocol.network.types.CookieParam&lt;/code&gt;)" href="../../../../api/protocol/network/#pydoll.protocol.network.types.CookieParam">CookieParam</a>]</code>
+                    <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;CookieParam&lt;/span&gt; (&lt;code&gt;pydoll.protocol.network.types.CookieParam&lt;/code&gt;)" href="../../../../api/protocol/network/#pydoll.protocol.network.types.CookieParam">CookieParam</a> | None</code>
                 </span>
             </td>
             <td class="doc-returns-details">
@@ -7324,7 +7510,7 @@ If None, json() method will attempt to parse from text on demand.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<span title="dict">dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]]</code>
+                      <code><span title="dict">dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>] | None</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -7345,7 +7531,7 @@ Content-Type, and any custom headers sent by the server.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<span title="list">list</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;HeaderEntry&lt;/span&gt; (&lt;code&gt;pydoll.protocol.fetch.types.HeaderEntry&lt;/code&gt;)" href="../../../../api/protocol/fetch/#pydoll.protocol.fetch.types.HeaderEntry">HeaderEntry</a>]]</code>
+                      <code><span title="list">list</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;HeaderEntry&lt;/span&gt; (&lt;code&gt;pydoll.protocol.fetch.types.HeaderEntry&lt;/code&gt;)" href="../../../../api/protocol/fetch/#pydoll.protocol.fetch.types.HeaderEntry">HeaderEntry</a>] | None</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -7366,7 +7552,7 @@ browser-generated headers (User-Agent, Accept, etc.) and custom headers.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<span title="list">list</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;HeaderEntry&lt;/span&gt; (&lt;code&gt;pydoll.protocol.fetch.types.HeaderEntry&lt;/code&gt;)" href="../../../../api/protocol/fetch/#pydoll.protocol.fetch.types.HeaderEntry">HeaderEntry</a>]]</code>
+                      <code><span title="list">list</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;HeaderEntry&lt;/span&gt; (&lt;code&gt;pydoll.protocol.fetch.types.HeaderEntry&lt;/code&gt;)" href="../../../../api/protocol/fetch/#pydoll.protocol.fetch.types.HeaderEntry">HeaderEntry</a>] | None</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -7387,7 +7573,7 @@ These represent new/updated cookies from this specific request.</p>
               <p>
                   <span class="doc-param-annotation">
                     <b>TYPE:</b>
-                      <code><span title="typing.Optional">Optional</span>[<span title="list">list</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;CookieParam&lt;/span&gt; (&lt;code&gt;pydoll.protocol.network.types.CookieParam&lt;/code&gt;)" href="../../../../api/protocol/network/#pydoll.protocol.network.types.CookieParam">CookieParam</a>]]</code>
+                      <code><span title="list">list</span>[<a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;CookieParam&lt;/span&gt; (&lt;code&gt;pydoll.protocol.network.types.CookieParam&lt;/code&gt;)" href="../../../../api/protocol/network/#pydoll.protocol.network.types.CookieParam">CookieParam</a>] | None</code>
                   </span>
                   <span class="doc-param-default">
                     <b>DEFAULT:</b>
@@ -8178,7 +8364,7 @@ re-parsing the same content multiple times.</p>
           <tr class="doc-section-item">
             <td>
                 <span class="doc-returns-annotation">
-                    <code><span title="typing.Union">Union</span>[<span title="dict">dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>], <span title="list">list</span>]</code>
+                    <code><span title="dict">dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>] | <span title="list">list</span></code>
                 </span>
             </td>
             <td class="doc-returns-details">

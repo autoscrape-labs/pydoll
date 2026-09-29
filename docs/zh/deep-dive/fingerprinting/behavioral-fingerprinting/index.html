@@ -477,6 +477,10 @@
       
         
       
+        
+      
+        
+      
     
     
     
@@ -587,6 +591,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../playwright/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    带上你的 Playwright 脚本
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../migrating/" class="md-nav__link">
         
   
@@ -595,6 +627,34 @@
     
   
     从 Selenium 和 Playwright 迁移
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../upgrading/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    升级到 Pydoll 3
   
 
     
@@ -749,6 +809,8 @@
       
         
           
+        
+      
         
       
         
@@ -1686,6 +1748,8 @@
       
         
       
+        
+      
     
     
     
@@ -1740,6 +1804,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../../guides/waiting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    等待
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../../guides/events/" class="md-nav__link">
         
   
@@ -1776,6 +1868,100 @@
     
   
     重试
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_8" id="__nav_4_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    来自 Playwright
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    来自 Playwright
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../guides/playwright-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Playwright API
   
 
     
@@ -3694,9 +3880,20 @@
 <p>这里的熵衡量的是路径有多不可预测。检测系统把轨迹拆分成若干段，测量每个点上的方向变化，并对这些变化的分布计算 Shannon 熵。直线的熵为零；随机游走的熵最大；人类移动介于两者之间，把意图与不自主的变异结合在一起。在一个会话中，许多移动都呈现低熵，是一个强烈的机器人信号，即使单个移动看起来是貌似合理地弯曲的。</p>
 <h3 id="pydoll">Pydoll 如何拟人化鼠标</h3>
 <p>在 <code>humanize=True</code> 时，Pydoll 生成的移动会回应上面每一个破绽。路径遵循一条控制点随机化的三次 Bezier 曲线，因此它会弯曲而不是走直线。沿路径的速度遵循最小急动度曲线（<code>10t^3 - 15t^4 + 6t^5</code>），给出 Fitts's Law 所预测的钟形曲线，而持续时间正是根据 Fitts's Law 本身计算得出的。生理性震颤被作为与速度成反比缩放的位置噪声加入（当光标缓慢移动时更明显，与真实生理相符），过冲以设定的概率发生并随后修正，偶尔的微停顿模拟短暂的犹豫。</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">await</span> <span class="n">element</span><span class="o">.</span><span class="n">click</span><span class="p">(</span><span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">mouse</span><span class="o">.</span><span class="n">click</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>   <span class="c1"># 坐标形式</span>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Sync</label><label for="__tabbed_1_2">Async</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">element</span><span class="o">.</span><span class="n">click</span><span class="p">(</span><span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="n">tab</span><span class="o">.</span><span class="n">mouse</span><span class="o">.</span><span class="n">click</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>   <span class="c1"># 坐标形式</span>
 </span></code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">await</span> <span class="n">element</span><span class="o">.</span><span class="n">click</span><span class="p">(</span><span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">mouse</span><span class="o">.</span><span class="n">click</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>   <span class="c1"># 坐标形式</span>
+</span></code></pre></div>
+</div>
+</div>
+</div>
 <p>时序模型可以通过赋值给 <code>tab.mouse.timing</code> 的 <code>MouseTimingConfig</code> 进行配置。实用指南请参见 <a href="../../../stealth/human-like-interactions/">Human-like interactions</a>。</p>
 <div class="admonition note">
 <p class="admonition-title">它没有建模的部分</p>
@@ -3721,8 +3918,18 @@
 </ul>
 <h3 id="pydoll_1">Pydoll 如何拟人化打字</h3>
 <p>在 <code>type_text(humanize=True)</code> 时，按键延迟是从一个分布中抽取的，而不是固定间隔。标点会获得额外的延迟，模拟打字者在句子结构处的停顿；偶尔的思考停顿和更罕见的分心停顿模拟思考或被打断的瞬间。真实的打字错误以每字符大约 2% 的概率发生，分为五种错误类型，按现实世界的频率加权（相邻键、换位、双击、漏字符、漏空格），每个错误后都跟着一个自然的修正序列。</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">await</span> <span class="n">element</span><span class="o">.</span><span class="n">type_text</span><span class="p">(</span><span class="s1">'Hello, world!'</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="tabbed-set tabbed-alternate" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">Sync</label><label for="__tabbed_2_2">Async</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">element</span><span class="o">.</span><span class="n">type_text</span><span class="p">(</span><span class="s1">'Hello, world!'</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span></code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">await</span> <span class="n">element</span><span class="o">.</span><span class="n">type_text</span><span class="p">(</span><span class="s1">'Hello, world!'</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span></code></pre></div>
+</div>
+</div>
+</div>
 <p>关于如何调整它，请参见 <a href="../../../stealth/human-like-interactions/">Human-like interactions</a>。</p>
 <div class="admonition note">
 <p class="admonition-title">它没有建模的部分</p>
@@ -3738,10 +3945,22 @@
 <li><strong>没有方向变化。</strong> 人类会过度滚动然后修正，或停下来阅读。单方向恒速滚动是可疑的。</li>
 </ul>
 <p>Pydoll 的拟人化滚动回应了这些：它遵循 Bezier 缓动曲线以实现自然的加速和减速，为 delta 添加逐帧抖动，插入偶尔的微停顿，有时过冲并修正，并把长距离拆分成多个"轻拂"手势而不是一次连续的移动。</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.constants</span><span class="w"> </span><span class="kn">import</span> <span class="n">ScrollPosition</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">scroll</span><span class="o">.</span><span class="n">by</span><span class="p">(</span><span class="n">ScrollPosition</span><span class="o">.</span><span class="n">DOWN</span><span class="p">,</span> <span class="mi">800</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="tabbed-set tabbed-alternate" data-tabs="3:2"><input checked="checked" id="__tabbed_3_1" name="__tabbed_3" type="radio" /><input id="__tabbed_3_2" name="__tabbed_3" type="radio" /><div class="tabbed-labels"><label for="__tabbed_3_1">Sync</label><label for="__tabbed_3_2">Async</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.constants</span><span class="w"> </span><span class="kn">import</span> <span class="n">ScrollPosition</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="n">tab</span><span class="o">.</span><span class="n">scroll</span><span class="o">.</span><span class="n">by</span><span class="p">(</span><span class="n">ScrollPosition</span><span class="o">.</span><span class="n">DOWN</span><span class="p">,</span> <span class="mi">800</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span></code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.constants</span><span class="w"> </span><span class="kn">import</span> <span class="n">ScrollPosition</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">scroll</span><span class="o">.</span><span class="n">by</span><span class="p">(</span><span class="n">ScrollPosition</span><span class="o">.</span><span class="n">DOWN</span><span class="p">,</span> <span class="mi">800</span><span class="p">,</span> <span class="n">humanize</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span></code></pre></div>
+</div>
+</div>
+</div>
 <h2 id="_8">其他行为信号</h2>
 <p>除了鼠标、键盘和滚动之外，一些系统还会关注另外几个信号。</p>
 <p><strong>焦点和可见性。</strong> Page Visibility API（<code>document.visibilityState</code>）和焦点事件揭示了用户是否正在主动查看页面。一个真实的会话会有标签页切换、最小化和空闲时段；一个连续数小时保持焦点、没有一次 blur 的脚本是异常的。</p>

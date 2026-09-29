@@ -11,7 +11,7 @@
         <link rel="canonical" href="https://pydoll.tech/docs/zh/basics/async-python/">
       
       
-        <link rel="prev" href="../../migrating/">
+        <link rel="prev" href="../../upgrading/">
       
       
         <link rel="next" href="../selectors/">
@@ -477,6 +477,10 @@
       
         
       
+        
+      
+        
+      
     
     
     
@@ -587,6 +591,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../playwright/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    带上你的 Playwright 脚本
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../migrating/" class="md-nav__link">
         
   
@@ -595,6 +627,34 @@
     
   
     从 Selenium 和 Playwright 迁移
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../upgrading/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    升级到 Pydoll 3
   
 
     
@@ -745,10 +805,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#pydoll-await" class="md-nav__link">
+  <a href="#api-await" class="md-nav__link">
     <span class="md-ellipsis">
       
-        为什么每次 Pydoll 调用都要 await
+        为什么异步 API 的每次调用都要 await
       
     </span>
   </a>
@@ -887,6 +947,8 @@
       
         
           
+        
+      
         
       
         
@@ -1824,6 +1886,8 @@
       
         
       
+        
+      
     
     
     
@@ -1878,6 +1942,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../guides/waiting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    等待
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../guides/events/" class="md-nav__link">
         
   
@@ -1914,6 +2006,100 @@
     
   
     重试
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_8" id="__nav_4_8_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    来自 Playwright
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    来自 Playwright
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guides/playwright-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Playwright API
   
 
     
@@ -3333,10 +3519,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#pydoll-await" class="md-nav__link">
+  <a href="#api-await" class="md-nav__link">
     <span class="md-ellipsis">
       
-        为什么每次 Pydoll 调用都要 await
+        为什么异步 API 的每次调用都要 await
       
     </span>
   </a>
@@ -3489,8 +3675,8 @@
 
 
 <h1 id="python">异步 Python 实战</h1>
-<p>每一次 Pydoll 调用前面都带着 <code>await</code>。如果这个关键字对你还很陌生，那这一页就是你应该先读的内容。你不需要精通 asyncio，只需要理解到足以运用自如的程度，并明白 Pydoll 为什么构建在它之上。这里的每个示例都能独立运行，把它们粘贴到文件里，看看会发生什么。</p>
-<h2 id="pydoll-await">为什么每次 Pydoll 调用都要 await</h2>
+<p>Pydoll 异步 API 里每一次与浏览器交互的操作前面都带着 <code>await</code>；只有对已持有对象的普通属性读取，比如 <code>get_attribute()</code>，不需要。如果这个关键字对你还很陌生，那这一页就是你应该先读的内容。如果你使用 <code>pydoll.sync</code> 的同步 API，这里的内容都不是必需的，但并发那一节会告诉你切换过去能得到什么。你不需要精通 asyncio，只需要理解到足以运用自如的程度，并明白 Pydoll 为什么构建在它之上。这里的每个示例都能独立运行，把它们粘贴到文件里，看看会发生什么。</p>
+<h2 id="api-await">为什么异步 API 的每次调用都要 await</h2>
 <p>浏览器自动化的大部分时间都花在等待上：等页面加载、等元素出现、等网络请求返回。普通的 Python 代码在这些等待期间只能干等着。异步代码则不然：当一个任务在等待时，另一个任务可以继续运行。</p>
 <p>正是这个想法让 Pydoll 的这些能力成为可能：</p>
 <ul>
@@ -3567,12 +3753,12 @@
 <p>把家务换成真实的页面，什么都不用变。一次加载三个页面，你要等三遍；用 <code>gather</code> 加载它们，则会让等待重叠。</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">import</span><span class="w"> </span><span class="nn">asyncio</span>
 </span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.browser.chromium</span><span class="w"> </span><span class="kn">import</span> <span class="n">Chrome</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll</span><span class="w"> </span><span class="kn">import</span> <span class="n">Chrome</span>
 </span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>
 </span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>
 </span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">title_of</span><span class="p">(</span><span class="n">browser</span><span class="p">,</span> <span class="n">url</span><span class="p">):</span>
 </span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    <span class="n">tab</span> <span class="o">=</span> <span class="k">await</span> <span class="n">browser</span><span class="o">.</span><span class="n">new_tab</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
-</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span class="n">title</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">title</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span class="n">title</span> <span class="o">=</span> <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">title</span><span class="p">()</span>
 </span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>    <span class="k">await</span> <span class="n">tab</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 </span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>    <span class="k">return</span> <span class="n">title</span>
 </span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>
@@ -3596,10 +3782,10 @@
 <h2 id="_2">你多半会遇到的两个错误</h2>
 <p>这些是刚接触异步时常见的绊脚石。一旦见过一次，就很容易认出来。</p>
 <p><strong>你忘了写 <code>await</code>。</strong> 没有它，你拿到的是 coroutine 对象而不是它的结果，还会附带一条警告：</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">title</span> <span class="o">=</span> <span class="n">tab</span><span class="o">.</span><span class="n">title</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">title</span> <span class="o">=</span> <span class="n">tab</span><span class="o">.</span><span class="n">title</span><span class="p">()</span>
 </span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="nb">print</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>   <span class="c1"># &lt;coroutine object ...&gt;, and: RuntimeWarning: coroutine was never awaited</span>
 </span></code></pre></div>
-<p>修复方法是加上 <code>await</code>：<code>title = await tab.title</code>。</p>
+<p>修复方法是加上 <code>await</code>：<code>title = await tab.title()</code>。</p>
 <p><strong>你调用了异步代码，却没有启动事件循环。</strong> <code>await</code> 只在 <code>async def</code> 内部有效，而 coroutine 只有在 <code>asyncio.run()</code>（或另一个正在运行的循环）下才会运行：</p>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">main</span><span class="p">()</span>   <span class="c1"># nothing happens; this just creates a coroutine</span>
 </span></code></pre></div>
