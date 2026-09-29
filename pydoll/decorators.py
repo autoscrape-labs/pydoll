@@ -12,6 +12,26 @@ T = TypeVar('T')
 F = TypeVar('F', bound=Callable[..., Any])
 
 
+def _accepts_one_argument(callback: Callable[..., Any]) -> bool:
+    """Whether ``callback`` can be called with a single positional argument.
+
+    A builtin without an introspectable signature is treated as taking none:
+    CPython's builtins that accept an argument carry a text signature
+    (``list.append``, ``set.add``), and the ones that do not (``dict.clear``,
+    ``threading.Event.set``) are exactly the no-argument methods that get
+    passed as retry hooks.
+    """
+    try:
+        signature = inspect.signature(callback)
+    except (TypeError, ValueError):
+        return False
+    try:
+        signature.bind(object())
+    except TypeError:
+        return False
+    return True
+
+
 class RetryConfig:
     def __init__(
         self,
@@ -34,19 +54,17 @@ class RetryConfig:
 
     def _invoke_on_retry(self, caller_instance: Any) -> Any:
         """Call ``on_retry`` with the decorated method's instance, or with no arguments
-        when the callback does not take one."""
+        when the callback does not take one.
+
+        The form is decided from the callback's signature, never from a caught
+        ``TypeError``, so a ``TypeError`` raised inside the callback propagates
+        as the callback's own error instead of triggering a second call.
+        """
         if not self.on_retry:
             return None
-        try:
+        if _accepts_one_argument(self.on_retry):
             return self.on_retry(caller_instance)
-        except TypeError as e:
-            error_msg = str(e)
-            if (
-                'takes 1 positional argument but 2 were given' in error_msg
-                or 'takes 0 positional arguments but 1 was given' in error_msg
-            ):
-                return self.on_retry()
-            raise
+        return self.on_retry()
 
     async def call_callback(self, caller_instance: Any) -> None:
         result = self._invoke_on_retry(caller_instance)

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import concurrent.futures
 import gc
 import inspect
 import logging
@@ -24,6 +25,10 @@ class Impl:
 
 class Facade(SyncBase):
     pass
+
+
+def _cached_handlers(target: Mapping) -> int:
+    return sum(len(cache) for cache in target._handlers.values())
 
 
 @pytest.fixture
@@ -107,13 +112,53 @@ def test_shutdown_then_reuse_starts_a_fresh_loop() -> None:
     assert run_sync(_value(3)) == 3
 
 
-def test_fork_hook_drops_the_singleton() -> None:
+def test_fork_hook_drops_the_singleton_without_taking_the_inherited_lock() -> None:
+    """A fork can happen while another thread holds the instance lock; the child
+    inherits it locked, so the after-fork reset must not try to acquire it."""
     before = EventLoopThread.instance()
-    EventLoopThread._forget()
+    inherited = EventLoopThread._instance_lock
+    assert inherited.acquire(blocking=False)
+    try:
+        finished = threading.Event()
+        threading.Thread(target=lambda: (EventLoopThread._reset_in_fork_child(), finished.set())).start()
+        assert finished.wait(2)
+    finally:
+        inherited.release()
+    assert EventLoopThread._instance_lock is not inherited
     after = EventLoopThread.instance()
     assert after is not before
     assert run_sync(_value(4)) == 4
     before.shutdown()
+
+
+def test_run_cancels_the_coroutine_when_waiting_fails() -> None:
+    cancelled = threading.Event()
+
+    async def slow() -> None:
+        try:
+            await asyncio.sleep(5)
+        except asyncio.CancelledError:
+            cancelled.set()
+            raise
+
+    with pytest.raises(concurrent.futures.TimeoutError):
+        EventLoopThread.instance().run(slow(), timeout=0.05)
+    assert cancelled.wait(2)
+
+
+def test_a_wrapper_made_before_a_shutdown_is_not_reused_by_the_next_runtime(
+    local_mapping: Mapping,
+) -> None:
+    seen: list[int] = []
+    handler = seen.append
+    first = EventLoopThread.instance()
+    old_wrapper = local_mapping.wrap_handler(handler)
+    first.shutdown()
+    second = EventLoopThread.instance()
+    new_wrapper = local_mapping.wrap_handler(handler)
+    assert new_wrapper is not old_wrapper
+    second.run(new_wrapper(7))
+    assert seen == [7]
 
 
 def test_calls_from_the_loop_thread_are_rejected() -> None:
@@ -162,12 +207,12 @@ def test_removed_callbacks_release_their_wrapper_and_dispatch_thread(fake_tab, f
     assert isinstance(tab, Tab)
     gc.collect()
     threads_before = _callback_threads()
-    handlers_before = len(mapping._handlers)
+    handlers_before = _cached_handlers(mapping)
 
     callback_ids = [tab.on('Page.loadEventFired', lambda event: None) for _ in range(30)]
     wrappers = fake_conn.callbacks_for('Page.loadEventFired')
     assert len(wrappers) == 30
-    assert len(mapping._handlers) == handlers_before + 30
+    assert _cached_handlers(mapping) == handlers_before + 30
     for wrapper in wrappers:
         run_sync(run_sync(_schedule(wrapper, {'method': 'Page.loadEventFired'})))
     assert _callback_threads() >= 30
@@ -180,7 +225,7 @@ def test_removed_callbacks_release_their_wrapper_and_dispatch_thread(fake_tab, f
     while _callback_threads() > threads_before and time.monotonic() < deadline:
         time.sleep(0.01)
     assert _callback_threads() <= threads_before
-    assert len(mapping._handlers) == handlers_before
+    assert _cached_handlers(mapping) == handlers_before
 
 
 def test_wrapper_keeps_the_handler_name_without_pinning_it(local_mapping: Mapping) -> None:
@@ -196,7 +241,7 @@ def test_wrapper_keeps_the_handler_name_without_pinning_it(local_mapping: Mappin
     del wrapper
     gc.collect()
     assert ref() is None
-    assert len(local_mapping._handlers) == 0
+    assert _cached_handlers(local_mapping) == 0
 
 
 def test_async_handlers_are_rejected_instead_of_silently_ignored(local_mapping: Mapping) -> None:

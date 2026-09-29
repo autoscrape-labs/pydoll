@@ -67,9 +67,21 @@ class EventLoopThread:
 
     @classmethod
     def _forget(cls) -> None:
-        """Drop the singleton without touching its threads (fork child, shutdown)."""
+        """Drop the singleton without touching its threads (shutdown)."""
         with cls._instance_lock:
             cls._instance = None
+
+    @classmethod
+    def _reset_in_fork_child(cls) -> None:
+        """Drop the singleton in the child of a fork, without taking the lock.
+
+        The child inherits the parent's lock in whatever state it was at the
+        fork; if another parent thread held it, acquiring it here would block
+        forever. The lock is replaced along with the instance, since no thread
+        of the child can be holding the new one.
+        """
+        cls._instance = None
+        cls._instance_lock = threading.Lock()
 
     @property
     def loop(self) -> asyncio.AbstractEventLoop:
@@ -95,10 +107,13 @@ class EventLoopThread:
                 'The sync API cannot be called from inside an event loop callback. '
                 'Register the callback through the sync API so it runs on the dispatch thread.'
             )
-        if inspect.iscoroutine(awaitable):
-            future = asyncio.run_coroutine_threadsafe(awaitable, self._loop)
+        coroutine = awaitable if inspect.iscoroutine(awaitable) else _await(awaitable)
+        future = asyncio.run_coroutine_threadsafe(coroutine, self._loop)
+        try:
             return future.result(timeout)
-        return asyncio.run_coroutine_threadsafe(_await(awaitable), self._loop).result(timeout)
+        except BaseException:
+            future.cancel()
+            raise
 
     def new_dispatcher(self) -> concurrent.futures.ThreadPoolExecutor:
         """A single-worker executor for one callback: ordered per handler, isolated between them."""
@@ -157,7 +172,7 @@ class EventLoopThread:
 
 
 if hasattr(os, 'register_at_fork'):
-    os.register_at_fork(after_in_child=EventLoopThread._forget)
+    os.register_at_fork(after_in_child=EventLoopThread._reset_in_fork_child)
 
 
 def _log_callback_failure(future: asyncio.Future[object], name: str) -> None:
@@ -183,9 +198,9 @@ class Mapping:
     def __init__(self) -> None:
         self._facades: dict[type, type[SyncBase]] = {}
         self._cache: weakref.WeakValueDictionary[int, SyncBase] = weakref.WeakValueDictionary()
-        self._handlers: weakref.WeakValueDictionary[Any, Callable[..., Any]] = (
-            weakref.WeakValueDictionary()
-        )
+        self._handlers: weakref.WeakKeyDictionary[
+            EventLoopThread, weakref.WeakValueDictionary[Any, Callable[..., Any]]
+        ] = weakref.WeakKeyDictionary()
 
     def register(self, impl_type: type, facade_type: type[SyncBase]) -> None:
         self._facades[impl_type] = facade_type
@@ -249,6 +264,9 @@ class Mapping:
         registered), so ``remove_listener``/``unroute`` find the entry they
         registered. Once the implementation drops the wrapper, the cache entry,
         the handler reference and the wrapper's dispatch thread go with it.
+        The cache is kept per runtime: a wrapper made before a shutdown is bound
+        to that runtime's dispatch thread, so the runtime that replaces it gets
+        wrappers of its own.
 
         The wrapper carries the handler's name, docstring and signature (route
         dispatch reads the signature to decide whether to pass the request),
@@ -263,8 +281,12 @@ class Mapping:
                 'Use the async API (pydoll) to register coroutine callbacks.'
             )
         runtime = EventLoopThread.instance()
+        cache = self._handlers.get(runtime)
+        if cache is None:
+            cache = weakref.WeakValueDictionary()
+            self._handlers[runtime] = cache
         try:
-            cached = self._handlers.get(handler)
+            cached = cache.get(handler)
         except TypeError:
             cached = None
         if cached is not None:
@@ -276,7 +298,7 @@ class Mapping:
             return self.to_impl(handler(*[self.from_impl(arg) for arg in args]))
 
         def wrapper(*args: Any) -> asyncio.Future[Any]:
-            return EventLoopThread.instance().dispatch(executor, call, *args)
+            return runtime.dispatch(executor, call, *args)
 
         metadata: dict[str, object] = {
             attribute: getattr(handler, attribute, None)
@@ -290,7 +312,7 @@ class Mapping:
                 setattr(call, attribute, copied)
         weakref.finalize(wrapper, executor.shutdown, wait=False)
         try:
-            self._handlers[handler] = wrapper
+            cache[handler] = wrapper
         except TypeError:
             pass
         return wrapper
