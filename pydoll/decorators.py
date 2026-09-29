@@ -17,14 +17,15 @@ def _accepts_one_argument(callback: Callable[..., Any]) -> bool:
 
     A builtin without an introspectable signature is treated as taking none:
     CPython's builtins that accept an argument carry a text signature
-    (``list.append``, ``set.add``), and the ones that do not (``dict.clear``,
-    ``threading.Event.set``) are exactly the no-argument methods that get
-    passed as retry hooks.
+    (``list.append``, ``set.add``), and the ones that do not (``dict.clear``)
+    are exactly the no-argument methods that get passed as retry hooks. Any
+    other callable without a signature, such as a mock on Python versions
+    that refuse to introspect it, receives the instance.
     """
     try:
         signature = inspect.signature(callback)
     except (TypeError, ValueError):
-        return False
+        return not inspect.isbuiltin(callback)
     try:
         signature.bind(object())
     except TypeError:

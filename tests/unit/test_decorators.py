@@ -166,6 +166,26 @@ class TestRetryConfigCallCallback:
         assert seen == [instance]
 
     @pytest.mark.asyncio
+    async def test_signature_less_callable_still_receives_the_instance(self, monkeypatch):
+        """Only genuine builtins without a signature are treated as zero-argument."""
+        seen: list[object] = []
+
+        class Recorder:
+            def __call__(self, *args: object) -> None:
+                seen.extend(args)
+
+        def refuse(callback):
+            raise ValueError('no signature found')
+
+        monkeypatch.setattr('pydoll.decorators.inspect.signature', refuse)
+        instance = object()
+        await RetryConfig(on_retry=Recorder()).call_callback(instance)
+        assert seen == [instance]
+        cache = {'a': 1}
+        await RetryConfig(on_retry=cache.clear).call_callback(instance)
+        assert cache == {}
+
+    @pytest.mark.asyncio
     async def test_callback_reraises_inner_error_when_noarg_retry_also_fails(self):
         """When the no-arg retry fallback itself fails, that inner error propagates."""
 

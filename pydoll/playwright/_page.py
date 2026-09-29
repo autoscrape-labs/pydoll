@@ -190,10 +190,24 @@ class Page(EventEmitter):
         """
         if self._closed:
             raise TargetClosedError()
+        await self._settle_event_sources()
         try:
             return await operation()
         except TRANSPORT_ERRORS as error:
             raise translate(error) from error
+
+    async def _settle_event_sources(self) -> None:
+        """Wait for event sources still being enabled before sending a command.
+
+        ``page.on('pageerror', ...)`` only schedules the Runtime domain; the
+        action taken right after it must not outrun that work or its events
+        would be lost. The enabling task itself passes straight through, and
+        a failed enable surfaces where the listener is awaited, not here.
+        """
+        current = asyncio.current_task()
+        for pending in (self._runtime_ready, self._file_chooser_ready):
+            if pending is not None and pending is not current and not pending.done():
+                await asyncio.wait({pending})
 
     def _timeout(self, timeout: float | None) -> float:
         if timeout is not None:

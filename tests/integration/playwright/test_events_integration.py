@@ -93,6 +93,19 @@ class TestConsoleAndErrors:
             await page.wait_for_timeout(20)
         assert errors and 'later' in errors[0].message
 
+    @pytest.mark.asyncio
+    async def test_listener_registered_right_before_the_throw_sees_it(self, page):
+        """``page.on`` followed by the throwing action never loses the error."""
+        await page.goto(page_url('test_core_simple.html'))
+        errors = []
+        page.on('pageerror', lambda error: errors.append(error))
+        with pytest.raises(Exception, match='immediate'):
+            await page.evaluate('() => { throw new Error("immediate") }')
+        async with page.expect_event('pageerror') as info:
+            await page.evaluate('() => setTimeout(() => { throw new Error("queued") }, 0)')
+        assert 'queued' in (await info.value).message
+        assert [error for error in errors if 'queued' in error.message]
+
 
 class TestDownloadsPopupsFiles:
     @pytest.mark.asyncio
