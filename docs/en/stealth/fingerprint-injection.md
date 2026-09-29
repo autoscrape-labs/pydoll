@@ -96,7 +96,7 @@ The kernel and the OS text rendering expose the real OS in layers no override re
 
 ### Match the Chrome version to your binary
 
-The TLS handshake and the JavaScript engine report the real binary version; the User-Agent is the only part `apply_fingerprint()` changes. Read the binary version and keep the profile's major equal to it, updating on every Chrome upgrade.
+The User-Agent and the Client Hints are the only places the version is written, and they are what `apply_fingerprint()` changes; the JavaScript engine and the web platform of the binary keep their real feature set, and a detector that probes for APIs learns the real major from them ([how it leaks](evasion-techniques.md#keep-the-major-equal-to-the-binary)). Read the binary version and keep the profile's major equal to it, updating on every Chrome upgrade.
 
 === "Sync"
 
