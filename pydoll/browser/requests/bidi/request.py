@@ -76,14 +76,10 @@ class BiDiRequest(BaseRequest['BiDiTab']):
         finally:
             await recorder.stop()
 
-    async def _execute_fetch_request(
-        self, url: str, options: dict[str, Any]
-    ) -> dict[str, Any]:
+    async def _execute_fetch_request(self, url: str, options: dict[str, Any]) -> dict[str, Any]:
         """Run the fetch via script.evaluate, returning the JSON-decoded result value."""
         self._target_url = url
-        inner = Scripts.MAKE_REQUEST.format(
-            url=jsonlib.dumps(url), options=jsonlib.dumps(options)
-        )
+        inner = Scripts.MAKE_REQUEST.format(url=jsonlib.dumps(url), options=jsonlib.dumps(options))
         # MAKE_REQUEST is itself an IIFE ending in ';'; strip it so the call can be
         # awaited inside our wrapper and the result serialized to a JSON string
         # (avoids BiDi RemoteValue serialization limits on large response bodies).
@@ -181,9 +177,7 @@ class BiDiRequest(BaseRequest['BiDiTab']):
         seen = set()
         for header_list in header_lists:
             for header in header_list:
-                entry = Header(
-                    name=header['name'], value=cls._header_value(header.get('value'))
-                )
+                entry = Header(name=header['name'], value=cls._header_value(header.get('value')))
                 identity = (entry['name'], entry['value'])
                 if identity not in seen:
                     headers.append(entry)

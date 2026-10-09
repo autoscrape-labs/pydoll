@@ -6,7 +6,7 @@ import asyncio
 import logging
 import types
 from collections.abc import Coroutine, Sequence
-from typing import Optional, Protocol, TypeVar, Union, get_args, get_origin
+from typing import Protocol, TypeVar, Union, get_args, get_origin
 
 from pydoll.elements.protocols import WebElementProtocol
 from pydoll.extractor.exceptions import FieldExtractionFailed
@@ -31,7 +31,7 @@ class _SupportsQuery(Protocol):
         timeout: int = 0,
         find_all: bool = False,
         raise_exc: bool = True,
-    ) -> Union[WebElementProtocol, Sequence[WebElementProtocol], None]: ...
+    ) -> WebElementProtocol | Sequence[WebElementProtocol] | None: ...
 
 
 class ExtractionEngine:
@@ -48,7 +48,7 @@ class ExtractionEngine:
         self,
         model: type[T],
         *,
-        scope: Optional[str] = None,
+        scope: str | None = None,
         timeout: int = 0,
     ) -> T:
         """Extract a single model instance from the page.
@@ -82,7 +82,7 @@ class ExtractionEngine:
         *,
         scope: str,
         timeout: int = 0,
-        limit: Optional[int] = None,
+        limit: int | None = None,
     ) -> list[T]:
         """Extract multiple model instances from repeated containers.
 
@@ -119,7 +119,7 @@ class ExtractionEngine:
         model: type[T],
         context: _SupportsQuery,
         timeout: int,
-    ) -> dict[str, Union[str, int, float, bool, list[str], object]]:
+    ) -> dict[str, str | int | float | bool | list[str] | object]:
         """Extract all fields from the DOM concurrently.
 
         Launches all field extractions in parallel using asyncio.gather,
@@ -134,9 +134,7 @@ class ExtractionEngine:
             Dictionary of field name -> extracted value.
         """
         field_names: list[str] = []
-        coroutines: list[
-            Coroutine[None, None, Union[str, int, float, bool, list[str], object]]
-        ] = []
+        coroutines: list[Coroutine[None, None, str | int | float | bool | list[str] | object]] = []
 
         for name, metadata in model.get_extraction_fields().items():
             if not metadata.has_selector:
@@ -153,7 +151,7 @@ class ExtractionEngine:
 
         results = await asyncio.gather(*coroutines, return_exceptions=True)
 
-        values: dict[str, Union[str, int, float, bool, list[str], object]] = {}
+        values: dict[str, str | int | float | bool | list[str] | object] = {}
         for name, result in zip(field_names, results):
             if isinstance(result, BaseException):
                 field_info = model.model_fields[name]
@@ -173,7 +171,7 @@ class ExtractionEngine:
         annotation: type,
         context: _SupportsQuery,
         timeout: int,
-    ) -> Union[str, int, float, bool, list[str], object]:
+    ) -> str | int | float | bool | list[str] | object:
         """Extract a single field value from the DOM.
 
         Handles scalar types, list types, nested ExtractionModel,
@@ -204,7 +202,7 @@ class ExtractionEngine:
         annotation: type,
         context: _SupportsQuery,
         timeout: int,
-    ) -> list[Union[str, int, float, bool, object]]:
+    ) -> list[str | int | float | bool | object]:
         """Extract a list of values from multiple matching elements."""
         selector = metadata.selector
         if selector is None:
@@ -214,9 +212,7 @@ class ExtractionEngine:
         if found is None or not found:
             return []
 
-        elements: list[WebElementProtocol] = (
-            list(found) if isinstance(found, Sequence) else [found]
-        )
+        elements: list[WebElementProtocol] = list(found) if isinstance(found, Sequence) else [found]
         inner_type = _get_inner_type(annotation)
 
         if _is_extraction_model(inner_type):
@@ -251,7 +247,7 @@ async def _extract_scalar_field(
     metadata: ExtractionMetadata,
     context: _SupportsQuery,
     timeout: int,
-) -> Union[str, int, float, bool, object]:
+) -> str | int | float | bool | object:
     """Extract a single scalar value from the DOM."""
     selector = metadata.selector
     if selector is None:
@@ -271,7 +267,7 @@ async def _extract_value(
     """Read raw string value from a WebElement.
 
     If metadata.attribute is set, reads that HTML attribute.
-    Otherwise reads element.text (innerText).
+    Otherwise reads element.text() (innerText).
 
     Args:
         element: WebElement to read from.
@@ -282,13 +278,13 @@ async def _extract_value(
     """
     if metadata.attribute is not None:
         return element.get_attribute(metadata.attribute) or ''
-    return await element.text
+    return await element.text()
 
 
 def _apply_transform(
     raw: str,
     metadata: ExtractionMetadata,
-) -> Union[str, int, float, bool, object]:
+) -> str | int | float | bool | object:
     """Apply metadata.transform to the raw extracted string.
 
     Args:
@@ -305,7 +301,7 @@ def _apply_transform(
 
 def _build_instance(
     model: type[T],
-    values: dict[str, Union[str, int, float, bool, list[str], object]],
+    values: dict[str, str | int | float | bool | list[str] | object],
 ) -> T:
     """Build model instance from extracted values.
 
@@ -328,7 +324,7 @@ def _build_instance(
 
 
 def _unwrap_optional(annotation: type) -> type:
-    """Unwrap Optional[X] or X | None to X. Returns annotation unchanged otherwise.
+    """Unwrap X | None (or typing.Optional[X]) to X. Returns annotation unchanged otherwise.
 
     Handles both typing.Optional (Union) and PEP 604 syntax (types.UnionType).
     """

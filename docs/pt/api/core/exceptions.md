@@ -1,6 +1,6 @@
 # Exceptions
 
-O módulo de exceções fornece classes de exceção personalizadas que podem ser lançadas por operações do Pydoll.
+As exceções que a Pydoll lança, como `ElementNotFound` e `WaitElementTimeout`. Saiba mais em [Pesquisa de elementos](../../guides/element-finding.md#handle-missing-elements).
 
 ::: pydoll.exceptions
     options:
@@ -8,4 +8,4 @@ O módulo de exceções fornece classes de exceção personalizadas que podem se
       show_source: false
       heading_level: 2
       group_by_category: true
-      members_order: source 
+      members_order: source

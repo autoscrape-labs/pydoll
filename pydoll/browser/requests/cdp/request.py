@@ -8,7 +8,7 @@ import json as jsonlib
 import logging
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-from typing import TYPE_CHECKING, Any, Callable, Union, cast
+from typing import TYPE_CHECKING, Any, Callable, cast
 
 from pydoll.browser.requests.base import BaseRequest
 from pydoll.browser.requests.cdp.har_recorder import HarRecorder
@@ -28,14 +28,8 @@ from pydoll.protocol.types import Header, ResponseCookie
 
 logger = logging.getLogger(__name__)
 
-RequestReceivedEvent = Union[
-    ResponseReceivedEvent,
-    ResponseReceivedExtraInfoEvent,
-]
-RequestSentEvent = Union[
-    RequestWillBeSentEvent,
-    RequestWillBeSentExtraInfoEvent,
-]
+RequestReceivedEvent = ResponseReceivedEvent | ResponseReceivedExtraInfoEvent
+RequestSentEvent = RequestWillBeSentEvent | RequestWillBeSentExtraInfoEvent
 
 if TYPE_CHECKING:
     from pydoll.browser.chromium.tab import Tab
@@ -45,14 +39,8 @@ if TYPE_CHECKING:
         ResponseReceivedEventParams,
     )
 
-    RequestReceivedEventParams = Union[
-        ResponseReceivedEventParams,
-        ResponseReceivedExtraInfoEventParams,
-    ]
-    RequestSentEventParams = Union[
-        RequestWillBeSentEventParams,
-        RequestWillBeSentExtraInfoEventParams,
-    ]
+    RequestReceivedEventParams = ResponseReceivedEventParams | ResponseReceivedExtraInfoEventParams
+    RequestSentEventParams = RequestWillBeSentEventParams | RequestWillBeSentExtraInfoEventParams
 
 
 class Request(BaseRequest['Tab']):
@@ -101,13 +89,9 @@ class Request(BaseRequest['Tab']):
         finally:
             await recorder.stop()
 
-    async def _execute_fetch_request(
-        self, url: str, options: dict[str, Any]
-    ) -> dict[str, Any]:
+    async def _execute_fetch_request(self, url: str, options: dict[str, Any]) -> dict[str, Any]:
         """Run the fetch via Runtime.evaluate and return its result value dict."""
-        script = Scripts.MAKE_REQUEST.format(
-            url=jsonlib.dumps(url), options=jsonlib.dumps(options)
-        )
+        script = Scripts.MAKE_REQUEST.format(url=jsonlib.dumps(url), options=jsonlib.dumps(options))
         result = await self.tab._execute_command(
             RuntimeCommands.evaluate(
                 expression=script,
@@ -120,7 +104,7 @@ class Request(BaseRequest['Tab']):
     async def _register_callbacks(self) -> None:
         """Capture request/response metadata via CDP Network events."""
         if not self.tab._network_events_enabled:
-            await self.tab._enable_network_events()
+            await self.tab.enable_network_events()
             self._network_events_enabled = True
 
         def append_received_request(event: dict) -> None:
@@ -146,7 +130,7 @@ class Request(BaseRequest['Tab']):
             await self.tab.remove_callback(callback_id)
         self._callback_ids.clear()
         if self._network_events_enabled:
-            await self.tab._disable_network_events()
+            await self.tab.disable_network_events()
             self._network_events_enabled = False
 
     def _extract_received_headers(self) -> list[Header]:
@@ -167,7 +151,7 @@ class Request(BaseRequest['Tab']):
 
     @staticmethod
     def _extract_headers_from_events(
-        events: Union[list[RequestSentEvent], list[RequestReceivedEvent]],
+        events: list[RequestSentEvent] | list[RequestReceivedEvent],
         event_extractors: dict[str, Callable[[Any], list[Header]]],
     ) -> list[Header]:
         """Extract and de-duplicate headers from network events."""
@@ -185,9 +169,7 @@ class Request(BaseRequest['Tab']):
                     break
         return headers
 
-    def _extract_request_sent_headers(
-        self, params: RequestWillBeSentEventParams
-    ) -> list[Header]:
+    def _extract_request_sent_headers(self, params: RequestWillBeSentEventParams) -> list[Header]:
         """Headers from the main request event."""
         return self._convert_dict_to_header_entries(params['request'].get('headers', {}))
 

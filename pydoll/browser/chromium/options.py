@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 from contextlib import suppress
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from pydoll.constants import PageLoadState
 from pydoll.exceptions import (
@@ -40,7 +40,7 @@ class ChromiumOptions:
         self._headless = False
         self._webrtc_leak_protection = False
         self._page_load_state = PageLoadState.COMPLETE
-        self._user_agent: Optional[str] = None
+        self._user_agent: str | None = None
 
     @property
     def arguments(self) -> list[str]:
@@ -353,16 +353,15 @@ class ChromiumOptions:
         self._page_load_state = state
 
     @property
-    def user_agent(self) -> Optional[str]:
+    def user_agent(self) -> str | None:
         """User-Agent string to apply at browser start (None = browser default)."""
         return self._user_agent
 
     @user_agent.setter
-    def user_agent(self, user_agent: Optional[str]):
+    def user_agent(self, user_agent: str | None):
         self._user_agent = user_agent
         self._arguments = [
-            argument for argument in self._arguments
-            if not argument.startswith('--user-agent=')
+            argument for argument in self._arguments if not argument.startswith('--user-agent=')
         ]
         if user_agent is not None:
             self._arguments.append(f'--user-agent={user_agent}')
@@ -371,7 +370,7 @@ class ChromiumOptions:
 class ChromiumOptionsManager:
     """Manages browser options configuration for Chromium-based browsers."""
 
-    def __init__(self, options: Optional[OptionsProtocol] = None):
+    def __init__(self, options: OptionsProtocol | None = None):
         self.options = options
 
     def initialize_options(self) -> ChromiumOptions:
@@ -387,9 +386,7 @@ class ChromiumOptionsManager:
             self.options = ChromiumOptions()
 
         if not isinstance(self.options, ChromiumOptions):
-            raise InvalidOptionsObject(
-                f'Expected ChromiumOptions, got {type(self.options)}'
-            )
+            raise InvalidOptionsObject(f'Expected ChromiumOptions, got {type(self.options)}')
 
         self.add_default_arguments()
         return self.options

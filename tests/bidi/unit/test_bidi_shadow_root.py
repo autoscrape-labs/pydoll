@@ -35,11 +35,11 @@ def test_repr_includes_mode_and_shared_id(fake_bidi_conn):
 async def test_inner_html_reads_shadow_content(fake_bidi_conn):
     root = _root(fake_bidi_conn)
     fake_bidi_conn.set_result('script.callFunction', _success({'type': 'string', 'value': '<b>x</b>'}))
-    assert await root.inner_html == '<b>x</b>'
+    assert await root.inner_html() == '<b>x</b>'
 
 
 @pytest.mark.asyncio
 async def test_inner_html_empty_on_failure(fake_bidi_conn):
     root = _root(fake_bidi_conn)
     fake_bidi_conn.set_result('script.callFunction', {'type': 'exception', 'exceptionDetails': {}})
-    assert await root.inner_html == ''
+    assert await root.inner_html() == ''

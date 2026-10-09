@@ -1,25 +1,9 @@
-# Browser Options
+# ChromiumOptions
 
-## ChromiumOptions
+Configures the browser before launch: the binary path, headless mode, command-line flags, and preferences. Learn more in [Browser options](../../guides/browser-options.md).
 
 ::: pydoll.browser.options.ChromiumOptions
     options:
       show_root_heading: true
       show_source: false
-      heading_level: 3
-
-## Options Interface
-
-::: pydoll.browser.interfaces.Options
-    options:
-      show_root_heading: true
-      show_source: false
-      heading_level: 3
-
-## BrowserOptionsManager Interface
-
-::: pydoll.browser.interfaces.BrowserOptionsManager
-    options:
-      show_root_heading: true
-      show_source: false
-      heading_level: 3 
+      heading_level: 2

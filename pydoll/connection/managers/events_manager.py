@@ -3,10 +3,10 @@ from __future__ import annotations
 import asyncio
 import logging
 from contextlib import suppress
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from typing import Any, Callable
+    from typing import Callable
 
 logger = logging.getLogger(__name__)
 
@@ -26,8 +26,9 @@ class EventsManager:
         self._event_callbacks: dict[int, dict] = {}
         self._callback_id = 0
         self._event_queue: asyncio.Queue = asyncio.Queue()
-        self._worker_task: Optional[asyncio.Task] = None
+        self._worker_task: asyncio.Task | None = None
         logger.info('EventsManager initialized')
+        logger.debug('Initial state: callbacks=0')
 
     def start(self) -> None:
         """Start the event-processing worker if not already running.
@@ -83,7 +84,7 @@ class EventsManager:
                 self._event_queue.task_done()
 
     def register_callback(
-        self, event_name: str, callback: Callable[[dict], Any], temporary: bool = False
+        self, event_name: str, callback: Callable[[dict], object], temporary: bool = False
     ) -> int:
         """
         Register callback for specific event type.
@@ -102,27 +103,30 @@ class EventsManager:
             'callback': callback,
             'temporary': temporary,
         }
-        logger.info(f"Registered callback '{event_name}' with ID {self._callback_id}")
+        logger.info("Registered callback '%s' with ID %s", event_name, self._callback_id)
         logger.debug(
-            f'Callback details: temporary={temporary}, total_callbacks={len(self._event_callbacks)}'
+            'Callback details: temporary=%s, total_callbacks=%s',
+            temporary,
+            len(self._event_callbacks),
         )
         return self._callback_id
 
     def remove_callback(self, callback_id: int) -> bool:
         """Remove callback by ID."""
         if callback_id not in self._event_callbacks:
-            logger.warning(f'Callback ID {callback_id} not found')
+            logger.warning('Callback ID %s not found', callback_id)
             return False
 
         del self._event_callbacks[callback_id]
-        logger.info(f'Removed callback ID {callback_id}')
-        logger.debug(f'Remaining callbacks: {len(self._event_callbacks)}')
+        logger.info('Removed callback ID %s', callback_id)
+        logger.debug('Remaining callbacks: %s', len(self._event_callbacks))
         return True
 
     def clear_callbacks(self):
         """Remove all registered callbacks."""
         self._event_callbacks.clear()
         logger.info('All callbacks cleared')
+        logger.debug('Callbacks store is now empty')
 
     async def process_event(self, event_data: dict):
         """
@@ -130,10 +134,30 @@ class EventsManager:
 
         Args:
             event_data: Parsed event message with 'method' and 'params' fields.
+                An event without a method name cannot be routed and is dropped.
         """
-        event_name = event_data.get('method', 'unknown-event')
-        logger.debug(f'Processing event: {event_name}')
+        event_name = event_data.get('method')
+        if not event_name:
+            logger.warning('Discarding event without method: %s', str(event_data)[:200])
+            return
+        logger.debug('Processing event: %s', event_name)
         await self._trigger_callbacks(event_name, event_data)
+
+    @staticmethod
+    def _call_sync_callback(cb_id: int, callback: Callable[[dict], object], event_data: dict):
+        """Run a synchronous callback, keeping a ``CancelledError`` it raises from
+        escaping as the worker's own cancellation.
+
+        A plain function cannot be the target of a task cancellation, so a
+        ``CancelledError`` here comes from the callback itself, typically from
+        reading a future that ``asyncio.wait_for`` already cancelled. Letting it
+        propagate would kill the event worker and stall every later event until
+        the socket reconnects, so it is logged like any other callback error.
+        """
+        try:
+            callback(event_data)
+        except asyncio.CancelledError:
+            logger.error('Callback %s raised CancelledError (a cancelled future was read)', cb_id)
 
     async def _trigger_callbacks(self, event_name: str, event_data: dict):
         """Trigger all registered callbacks for event, removing temporary ones."""
@@ -145,9 +169,9 @@ class EventsManager:
                     if asyncio.iscoroutinefunction(cb_data['callback']):
                         await cb_data['callback'](event_data)
                     else:
-                        cb_data['callback'](event_data)
+                        self._call_sync_callback(cb_id, cb_data['callback'], event_data)
                 except Exception as e:
-                    logger.error(f'Error in callback {cb_id}: {str(e)}')
+                    logger.error('Error in callback %s: %s', cb_id, e)
 
                 if cb_data['temporary']:
                     callbacks_to_remove.append(cb_id)
@@ -155,5 +179,5 @@ class EventsManager:
         for cb_id in callbacks_to_remove:
             self.remove_callback(cb_id)
         logger.debug(
-            f"Triggered callbacks for '{event_name}'. Removed temporaries: {callbacks_to_remove}"
+            "Triggered callbacks for '%s'. Removed temporaries: %s", event_name, callbacks_to_remove
         )

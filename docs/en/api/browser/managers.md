@@ -59,12 +59,12 @@ Managers are typically used internally by browser classes like `Chrome` and `Edg
 
 ```python
 from pydoll.browser.managers.proxy_manager import ProxyManager
-from pydoll.browser.managers.temp_dir_manager import TempDirManager
+from pydoll.browser.managers.temp_dir_manager import TempDirectoryManager
 
 # Managers are used internally by browser classes
 # Direct usage is for advanced scenarios only
 proxy_manager = ProxyManager()
-temp_manager = TempDirManager()
+temp_manager = TempDirectoryManager()
 ```
 
 !!! note "Internal Usage"

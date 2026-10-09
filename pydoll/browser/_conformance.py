@@ -13,9 +13,9 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from pydoll.browser.chromium.base import Browser
-    from pydoll.browser.chromium.tab import Tab, _DownloadHandle
+    from pydoll.browser.chromium.tab import DownloadHandle, Tab
     from pydoll.browser.firefox.base import FirefoxBrowser
-    from pydoll.browser.firefox.tab import BiDiTab, _BiDiDownloadHandle
+    from pydoll.browser.firefox.tab import BiDiDownloadHandle, BiDiTab
     from pydoll.browser.protocols import (
         BrowserProtocol,
         DownloadHandleProtocol,
@@ -36,10 +36,10 @@ if TYPE_CHECKING:
     def _bidi_tab_conforms(tab: BiDiTab) -> TabProtocol:
         return tab
 
-    def _cdp_download_handle_conforms(handle: _DownloadHandle) -> DownloadHandleProtocol:
+    def _cdp_download_handle_conforms(handle: DownloadHandle) -> DownloadHandleProtocol:
         return handle
 
-    def _bidi_download_handle_conforms(handle: _BiDiDownloadHandle) -> DownloadHandleProtocol:
+    def _bidi_download_handle_conforms(handle: BiDiDownloadHandle) -> DownloadHandleProtocol:
         return handle
 
     def _cdp_request_conforms(request: Request) -> RequestProtocol:

@@ -13,28 +13,20 @@ from pathlib import Path
 import pytest
 import pytest_asyncio
 
-from pydoll.browser.chromium import Chrome
 from pydoll.constants import ScrollPosition
-from pydoll.elements.cdp.web_element import WebElement
 
 PAGE_URL = f'file://{(Path(__file__).parents[2] / "pages" / "web_element.html").absolute()}'
 
 
-async def _live(element_or_tab, expression: str):
-    if isinstance(element_or_tab, WebElement):
-        result = await element_or_tab.execute_script(
-            f'return {expression}', return_by_value=True
-        )
-        return result['result']['result']['value']
-    return await element_or_tab.execute_script(f'return {expression}')
+async def _live(tab, expression: str):
+    result = await tab.execute_script(f'return {expression}', return_by_value=True)
+    return result['result']['result']['value']
 
 
 @pytest_asyncio.fixture
-async def page_tab(ci_chrome_options):
-    async with Chrome(options=ci_chrome_options) as browser:
-        tab = await browser.start()
-        await tab.go_to(PAGE_URL)
-        yield tab
+async def page_tab(tab):
+    await tab.go_to(PAGE_URL)
+    return tab
 
 
 @pytest.mark.asyncio
@@ -47,7 +39,7 @@ async def test_humanized_mouse_click_triggers_button(page_tab):
     await page_tab.mouse.click(center_x, center_y, humanize=True)
 
     counter = await page_tab.find(id='clicks')
-    assert (await counter.text) == '1'
+    assert (await counter.text()) == '1'
 
 
 @pytest.mark.asyncio

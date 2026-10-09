@@ -1,0 +1,220 @@
+# Técnicas de evasão
+
+Os sistemas de detecção correlacionam sinais entre camadas: o fingerprint de rede (TCP/TLS/HTTP2), o fingerprint do navegador (canvas, WebGL, navigator) e o comportamento (mouse, teclado, tempo). Passar em uma camada e falhar em outra ainda te sinaliza. Um IP residencial com um fingerprint TCP incompatível, ou um fingerprint de navegador perfeito com cliques robóticos, é pego por qualquer coisa que faça verificação cruzada. Esta página cobre o que o Pydoll te dá de graça e as alavancas que você controla para manter as camadas consistentes.
+
+<iframe scrolling="no" src="/docs/resources/visuals/evasion-layers.html" aria-label="Como as camadas de rede, navegador, comportamento e IP têm todas que permanecer consistentes para passar" style="width: 100%; height: 320px; border: 0;" loading="lazy"></iframe>
+
+## O que você ganha de graça
+
+Como o Pydoll controla um Chrome real via CDP em vez de sintetizar requisições, várias camadas são autênticas sem nenhuma configuração:
+
+- **Fingerprints de rede reais.** A stack TCP/IP do Chrome, o TLS (BoringSSL) e a stack HTTP/2 produzem fingerprints genuínos: o TLS ClientHello, o frame `SETTINGS` do HTTP/2, a ordem dos pseudo-headers e as prioridades de stream, tudo corresponde a um Chrome real. Ferramentas que constroem requisições programaticamente (requests, httpx, curl) não.
+- **Fingerprints de navegador reais.** Canvas, WebGL e AudioContext vêm de hardware de GPU e áudio reais. As propriedades do navigator, os plugins de PDF embutidos e os tipos MIME refletem o estado genuíno do navegador.
+- **`navigator.webdriver` é `false`.** Selenium, Playwright e Puppeteer o definem como `true`. O Pydoll inicia sem flags de automação, então ele reporta `false`, igual a uma sessão normal. Você não precisa aplicar patch nisso.
+- **Sequências completas de eventos de input.** O input despachado via CDP gera a cadeia completa de eventos (`pointermove`, `pointerdown`, `mousedown`, `pointerup`, `mouseup`, `click`) exatamente como um usuário real faria.
+
+O resto desta página são as camadas que você de fato controla.
+
+## Mantenha o User-Agent consistente
+
+O indício de automação mais comum é um User-Agent que discorda de si mesmo: o header HTTP `User-Agent` dizendo uma coisa enquanto `navigator.userAgent`, `navigator.platform` e os Client Hints (`Sec-CH-UA`, `Sec-CH-UA-Platform`) dizem outra. Definir `--user-agent=` como uma flag simples do Chrome muda apenas o header HTTP e deixa o JavaScript e os Client Hints intocados, o que é uma incompatibilidade que um detector lê imediatamente.
+
+O Pydoll corrige isso para você. Quando ele vê um argumento `--user-agent=`, ele aplica `Emulation.setUserAgentOverride` com o `platform` correspondente e os metadados completos de Client Hints (brand greased e ordem das brands calculadas do jeito que o Chromium calcula para aquele major), e expõe a forma reduzida `Chrome/MAJOR.0.0.0` que o Chrome real reporta. Todas as camadas passam a concordar: o header na rede, `navigator.userAgent`, `platform`, `vendor` e `appVersion`, os hints de baixa e alta entropia (`Sec-CH-UA`, `brands`, `fullVersionList`), na primeira aba, em toda aba aberta depois e dentro de workers. A página não recebe script injetado; esses valores vêm do próprio override. Workers são o único lugar onde um script roda: o override do CDP não alcança `WorkerNavigator.platform`, nem o User-Agent de shared e service workers, então o Pydoll se anexa a cada worker antes do código dele começar e define esses dois ali.
+
+=== "Sync"
+
+    ```python
+    from pydoll.sync import Chrome, ChromiumOptions
+
+    def main():
+        options = ChromiumOptions()
+        options.add_argument(
+            '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+            'AppleWebKit/537.36 (KHTML, like Gecko) '
+            'Chrome/154.0.0.0 Safari/537.36'
+        )
+
+        with Chrome(options=options) as browser:
+            tab = browser.start()
+            tab.go_to('https://browserleaks.com/javascript')
+
+    main()
+    ```
+
+=== "Async"
+
+    ```python
+    import asyncio
+
+    from pydoll import Chrome, ChromiumOptions
+
+
+    async def main():
+        options = ChromiumOptions()
+        options.add_argument(
+            '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+            'AppleWebKit/537.36 (KHTML, like Gecko) '
+            'Chrome/154.0.0.0 Safari/537.36'
+        )
+
+        async with Chrome(options=options) as browser:
+            tab = await browser.start()
+            await tab.go_to('https://browserleaks.com/javascript')
+
+    asyncio.run(main())
+    ```
+
+`154` é o major do Chrome instalado na máquina em que esta página foi escrita; coloque o seu. A próxima seção explica por que esse número é a única parte da string que você não escolhe. O override se aplica à primeira aba, às abas de `browser.new_tab()` e às abas encontradas via `browser.get_opened_tabs()`.
+
+## Mantenha o major igual ao binário {#keep-the-major-equal-to-the-binary}
+
+O override reescreve tudo o que o browser *diz* sobre a sua versão. Ele não reescreve o que o browser *é*: o motor JavaScript e a plataforma web do binário que você lançou. Cada major do Chrome traz APIs novas, e um detector que extrai o major do User-Agent e depois sonda funções que não existiam naquele major lê o major real. É assim que o Chrome 154 responde quando lançado com um User-Agent que declara 130:
+
+| Superfície | Reporta |
+|---|---|
+| Header `User-Agent`, `navigator.userAgent`, `navigator.appVersion` | Chrome 130 |
+| `Sec-CH-UA`, `navigator.userAgentData.brands`, `fullVersionList` | 130, com a brand GREASE `Not?A_Brand` que o Chrome 130 usava |
+| `RegExp.escape` (lançada no 136), `Float16Array` (135), `Error.isError` (134), `Uint8Array.fromBase64` (140), `Math.sumPrecise` (146) | todas presentes |
+
+Cinco funções que não existiam no Chrome 130 estão lá, então a página é um Chrome 146 ou mais novo com um crachá de 130. Uma checagem tão barata é comum: detectores de código aberto como o BotD do FingerprintJS e o CreepJS carregam tabelas de quais APIs e propriedades CSS cada major do Chromium adicionou ou removeu, delimitam o motor a partir delas e marcam um User-Agent fora da faixa; alguns também buscam o número da release Stable atual e marcam um User-Agent que declara uma mais nova. O reCAPTCHA do Google trata uma versão desatualizada do motor no User-Agent como suspeita desde pelo menos 2016 (Sivakorn, Polakis e Keromytis, *I am Robot*, EuroS&P 2016). Declarar um major mais novo que o binário falha do mesmo jeito, ao contrário: as APIs prometidas não existem. O motor também se entrega de formas mais silenciosas, porque o texto das mensagens de erro, os últimos bits de alguns resultados de `Math` e a sintaxe aceita mudam entre releases do V8. Por baixo de tudo isso, o ClientHello TLS e as configurações HTTP/2 identificam a família do motor e, aproximadamente, a sua época, então declarar Firefox ou Safari falha antes de qualquer JavaScript rodar.
+
+O resto da string é seu para definir. O próprio Chrome reporta a forma reduzida `Chrome/MAJOR.0.0.0` no User-Agent e guarda o build completo só nos hints de alta entropia, que o override preenche de forma coerente a partir do valor que você passa. Então o build é a única parte que você pode variar, e só quando a plataforma tem de fato mais de um build para aquele major. Rotacionar identidades é rotacionar o binário (marca, build), não a string, e um binário que para de atualizar enquanto o canal Stable avança vira, sozinho, uma população pequena. Mantenha o major igual a `browser.get_version()`, tire o OS e o dispositivo do perfil, e deixe o build em `0.0.0`. Uma checagem de uma linha pega a divergência no próximo upgrade do Chrome:
+
+=== "Sync"
+
+    ```python
+    declarado = 154
+    versao = browser.get_version()['product']     # 'Chrome/154.0.8037.58'
+    assert int(versao.split('/')[1].split('.')[0]) == declarado, versao
+    ```
+
+=== "Async"
+
+    ```python
+    declarado = 154
+    versao = (await browser.get_version())['product']     # 'Chrome/154.0.8037.58'
+    assert int(versao.split('/')[1].split('.')[0]) == declarado, versao
+    ```
+
+## Combine idioma, fuso horário e geolocalização com o IP
+
+Por trás de um proxy, o idioma, o fuso horário e a localização do navegador devem concordar com o país do IP. Um IP em Tóquio com `Accept-Language: en-US` e um fuso `America/New_York` é uma contradição.
+
+O idioma é uma opção independente:
+
+```python
+options = ChromiumOptions()
+options.add_argument('--lang=ja-JP')
+options.set_accept_languages('ja-JP,ja;q=0.9,en;q=0.8')
+```
+
+Isso define tanto o header `Accept-Language` quanto `navigator.language` / `navigator.languages`. O fuso horário e a geolocalização também têm que combinar, e precisam permanecer consistentes com o sistema operacional do User-Agent e com o IP, tudo ao mesmo tempo. Defini-los de forma coerente a partir de um único perfil é para isso que serve `apply_fingerprint()`; veja [Injeção de fingerprint](fingerprint-injection.md).
+
+## Impeça o WebRTC de vazar o seu IP
+
+O WebRTC pode revelar o IP real mesmo por trás de um proxy, através de requisições STUN que pulam o túnel do proxy. Ative a proteção embutida sempre que usar um proxy para stealth:
+
+```python
+options = ChromiumOptions()
+options.webrtc_leak_protection = True   # --force-webrtc-ip-handling-policy=disable_non_proxied_udp
+```
+
+## Comporte-se como uma pessoa
+
+Cliques instantâneos e teclas perfeitamente regulares são um fingerprint comportamental. Passe `humanize=True` para mover o cursor por um caminho curvo, com tempo humano, e digitar com ritmo variável e erros de digitação ocasionais que são corrigidos:
+
+=== "Sync"
+
+    ```python
+    field = tab.find(id='search')
+    field.type_text('browser automation', humanize=True)
+    field.click(humanize=True)
+    ```
+
+=== "Async"
+
+    ```python
+    field = await tab.find(id='search')
+    await field.type_text('browser automation', humanize=True)
+    await field.click(humanize=True)
+    ```
+
+Veja [Interações humanizadas](human-like-interactions.md) para o modelo de tempo e como ajustá-lo.
+
+## Pareça um perfil já usado
+
+Um perfil novinho em folha, sem histórico e com todos os recursos desativados, não se parece em nada com o de um usuário real. Pré-popule o perfil através de `browser_preferences` (timestamps envelhecidos, uma versão do Chrome correspondente, recursos ativados), abordado em [Preferências do navegador](../guides/browser-preferences.md#build-a-realistic-profile-for-stealth).
+
+## Erros comuns
+
+### Randomizar tudo
+
+Um `hardwareConcurrency`, `deviceMemory` e tamanho de tela aleatórios produzem dispositivos impossíveis. Máquinas reais são limitadas: 4 núcleos com 8 GB de RAM e uma tela 1920x1080 é plausível; 17 núcleos com 0,5 GB de RAM e uma tela 4K não é. Use perfis capturados de navegadores reais, não valores aleatórios.
+
+### Injetar ruído no canvas
+
+Adicionar ruído à saída do canvas sai pela culatra: os detectores amostram o fingerprint repetidamente, e um valor que muda entre leituras é, por si só, um sinal de automação. O canvas do Pydoll é autêntico e estável; deixe-o quieto.
+
+### User-Agents desatualizados
+
+Um UA de uma release do Chrome de seis meses atrás declara um major que o binário já não é, e o conjunto de recursos do motor entrega isso; veja [Mantenha o major igual ao binário](#keep-the-major-equal-to-the-binary). O Chrome se atualiza sozinho para usuários reais, então um major atual é também a cara da maior parte do tráfego.
+
+### Ignorar o comportamento da sessão
+
+Mesmo com um fingerprint limpo, carregar 100 páginas num minuto, nunca rolar a página e nunca ficar ocioso são anomalias. Adicione delays de leitura, varie o ritmo e inclua pausas naturais.
+
+## Verifique a sua configuração
+
+Cheque o seu fingerprint nestes sites antes de rodar em escala:
+
+| Ferramenta | URL | Testa |
+|------|-----|-------|
+| BrowserLeaks | `https://browserleaks.com/` | Canvas, WebGL, fontes, IP, WebRTC, HTTP/2 |
+| CreepJS | `https://abrahamjuliot.github.io/creepjs/` | Detecção de mentiras, verificações de consistência |
+| Pixelscan | `https://pixelscan.net/` | Análise de detecção de bots |
+| IPLeak | `https://ipleak.net/` | WebRTC, DNS, vazamentos de IP |
+
+Uma verificação rápida com o Pydoll:
+
+=== "Sync"
+
+    ```python
+    result = tab.execute_script('''
+        return {
+            userAgent: navigator.userAgent,
+            webdriver: navigator.webdriver,
+            languages: navigator.languages,
+            plugins: navigator.plugins.length,
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        };
+    ''')
+    fp = result['result']['result']['value']
+
+    assert fp['webdriver'] is False, 'navigator.webdriver should be false'
+    assert 'HeadlessChrome' not in fp['userAgent'], 'headless leaking in the UA'
+    ```
+
+=== "Async"
+
+    ```python
+    result = await tab.execute_script('''
+        return {
+            userAgent: navigator.userAgent,
+            webdriver: navigator.webdriver,
+            languages: navigator.languages,
+            plugins: navigator.plugins.length,
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        };
+    ''')
+    fp = result['result']['result']['value']
+
+    assert fp['webdriver'] is False, 'navigator.webdriver should be false'
+    assert 'HeadlessChrome' not in fp['userAgent'], 'headless leaking in the UA'
+    ```
+
+## O que vem a seguir
+
+- [Injeção de fingerprint](fingerprint-injection.md): aplique uma identidade coerente (User-Agent, WebGL, fuso horário, locale) a partir de um único perfil.
+- [Interações humanizadas](human-like-interactions.md): a camada comportamental em profundidade.
+- [Proxies](../guides/proxies.md): mude e verifique o seu IP de saída.
+- [Fingerprinting (aprofundamento)](../deep-dive/fingerprinting/index.md): a teoria de detecção por trás dessas alavancas.

@@ -8,8 +8,10 @@ run on a module-scoped event loop (``@pytest.mark.asyncio(loop_scope='module')``
 
 from __future__ import annotations
 
+import os
 from contextlib import suppress
 
+import pytest
 import pytest_asyncio
 
 from pydoll.browser import Firefox
@@ -17,11 +19,22 @@ from pydoll.browser.firefox.options import FirefoxOptions
 
 
 def _firefox_options() -> FirefoxOptions:
-    """Headless Firefox options tuned for CI (matches ci_firefox_options)."""
+    """Headless Firefox options tuned for CI.
+
+    ``PYDOLL_FIREFOX_BINARY`` points the suite at a specific Firefox (for
+    example the one under ``vendor/``); unset, the platform default is used.
+    """
     options = FirefoxOptions()
     options.headless = True
     options.start_timeout = 60
+    options.binary_location = os.environ.get('PYDOLL_FIREFOX_BINARY', '')
     return options
+
+
+@pytest.fixture
+def ci_firefox_options() -> FirefoxOptions:
+    """Per-test Firefox options honouring PYDOLL_FIREFOX_BINARY (overrides tests/conftest)."""
+    return _firefox_options()
 
 
 @pytest_asyncio.fixture(scope='module', loop_scope='module')

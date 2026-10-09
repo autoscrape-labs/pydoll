@@ -14,7 +14,7 @@ from __future__ import annotations
 import json as jsonlib
 import logging
 from abc import ABC, abstractmethod
-from typing import Any, Generic, Optional, TypeVar, Union
+from typing import Any, Generic, TypeVar
 from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 
 from pydoll.browser.requests.response import Response
@@ -47,10 +47,10 @@ class BaseRequest(ABC, Generic[T_Tab]):
         self,
         method: str,
         url: str,
-        params: Optional[dict[str, str]] = None,
-        data: Optional[Union[dict, list, tuple, str, bytes]] = None,
-        json: Optional[dict[str, Any]] = None,
-        headers: Optional[list[Header]] = None,
+        params: dict[str, str] | None = None,
+        data: dict | list | tuple | str | bytes | None = None,
+        json: dict[str, Any] | None = None,
+        headers: list[Header] | None = None,
         **kwargs,
     ) -> Response:
         """Execute an HTTP request in the browser's JavaScript context.
@@ -96,17 +96,15 @@ class BaseRequest(ABC, Generic[T_Tab]):
         finally:
             await self._clear_callbacks()
 
-    async def get(
-        self, url: str, params: Optional[dict[str, str]] = None, **kwargs
-    ) -> Response:
+    async def get(self, url: str, params: dict[str, str] | None = None, **kwargs) -> Response:
         """Execute a GET request."""
         return await self.request('GET', url, params=params, **kwargs)
 
     async def post(
         self,
         url: str,
-        data: Optional[Union[dict, list, tuple, str, bytes]] = None,
-        json: Optional[dict[str, Any]] = None,
+        data: dict | list | tuple | str | bytes | None = None,
+        json: dict[str, Any] | None = None,
         **kwargs,
     ) -> Response:
         """Execute a POST request."""
@@ -115,8 +113,8 @@ class BaseRequest(ABC, Generic[T_Tab]):
     async def put(
         self,
         url: str,
-        data: Optional[Union[dict, list, tuple, str, bytes]] = None,
-        json: Optional[dict[str, Any]] = None,
+        data: dict | list | tuple | str | bytes | None = None,
+        json: dict[str, Any] | None = None,
         **kwargs,
     ) -> Response:
         """Execute a PUT request."""
@@ -125,8 +123,8 @@ class BaseRequest(ABC, Generic[T_Tab]):
     async def patch(
         self,
         url: str,
-        data: Optional[Union[dict, list, tuple, str, bytes]] = None,
-        json: Optional[dict[str, Any]] = None,
+        data: dict | list | tuple | str | bytes | None = None,
+        json: dict[str, Any] | None = None,
         **kwargs,
     ) -> Response:
         """Execute a PATCH request."""
@@ -145,9 +143,7 @@ class BaseRequest(ABC, Generic[T_Tab]):
         return await self.request('OPTIONS', url, **kwargs)
 
     @abstractmethod
-    async def _execute_fetch_request(
-        self, url: str, options: dict[str, Any]
-    ) -> dict[str, Any]:
+    async def _execute_fetch_request(self, url: str, options: dict[str, Any]) -> dict[str, Any]:
         """Run the page's fetch and return the result value dict.
 
         The dict carries ``status``, ``ok``, ``url``, ``content`` (list of byte
@@ -178,7 +174,7 @@ class BaseRequest(ABC, Generic[T_Tab]):
         """Give network events time to arrive before extraction (no-op by default)."""
 
     @staticmethod
-    def _build_url_with_params(url: str, params: Optional[dict[str, str]]) -> str:
+    def _build_url_with_params(url: str, params: dict[str, str] | None) -> str:
         """Build final URL with query parameters."""
         if not params:
             return url
@@ -191,9 +187,9 @@ class BaseRequest(ABC, Generic[T_Tab]):
     def _build_request_options(
         self,
         method: str,
-        headers: Optional[list[Header]],
-        json: Optional[dict[str, Any]],
-        data: Optional[Union[dict, list, tuple, str, bytes]],
+        headers: list[Header] | None,
+        json: dict[str, Any] | None,
+        data: dict | list | tuple | str | bytes | None,
         **kwargs,
     ) -> dict[str, Any]:
         """Build the fetch options dictionary."""
@@ -205,8 +201,8 @@ class BaseRequest(ABC, Generic[T_Tab]):
     def _add_request_body(
         self,
         options: dict[str, Any],
-        json: Optional[dict[str, Any]],
-        data: Optional[Union[dict, list, tuple, str, bytes]],
+        json: dict[str, Any] | None,
+        data: dict | list | tuple | str | bytes | None,
     ) -> None:
         """Add request body and the appropriate Content-Type header."""
         if json is not None:
@@ -215,14 +211,14 @@ class BaseRequest(ABC, Generic[T_Tab]):
             self._handle_data_options(options, data)
 
     @staticmethod
-    def _handle_json_options(options: dict[str, Any], json: Optional[dict[str, Any]]) -> None:
+    def _handle_json_options(options: dict[str, Any], json: dict[str, Any] | None) -> None:
         """Set a JSON body and Content-Type."""
         options['body'] = jsonlib.dumps(json)
         options['headers'].setdefault('Content-Type', 'application/json')
 
     @staticmethod
     def _handle_data_options(
-        options: dict[str, Any], data: Optional[Union[dict, list, tuple, str, bytes]]
+        options: dict[str, Any], data: dict | list | tuple | str | bytes | None
     ) -> None:
         """Set a form-encoded or raw body."""
         if isinstance(data, (dict, list, tuple)):
@@ -252,7 +248,7 @@ class BaseRequest(ABC, Generic[T_Tab]):
         return cookies
 
     @staticmethod
-    def _parse_cookie_line(line: str) -> Optional[ResponseCookie]:
+    def _parse_cookie_line(line: str) -> ResponseCookie | None:
         """Parse one Set-Cookie line to (name, value), ignoring attributes."""
         if '=' not in line:
             return None

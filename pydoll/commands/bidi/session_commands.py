@@ -39,9 +39,7 @@ class SessionCommands:
         capabilities: CapabilitiesRequest | None = None,
     ) -> NewCommand:
         """Generates a command to create a new BiDi session."""
-        params = NewParameters(
-            capabilities=capabilities or CapabilitiesRequest()
-        )
+        params = NewParameters(capabilities=capabilities or CapabilitiesRequest())
         return Command(method=SessionMethod.NEW, params=params)
 
     @staticmethod

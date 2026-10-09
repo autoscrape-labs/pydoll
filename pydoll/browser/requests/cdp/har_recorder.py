@@ -35,6 +35,9 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
+_BODY_FETCH_ATTEMPTS = 5
+_BODY_FETCH_RETRY_DELAY = 0.1
+
 
 class HarRecorder(BaseHarRecorder['Tab']):
     """Listens to CDP Network events and builds HAR 1.2 entries.
@@ -50,7 +53,7 @@ class HarRecorder(BaseHarRecorder['Tab']):
     async def start(self) -> None:
         """Enable network events (if needed) and register the 7 CDP handlers."""
         if not self._tab._network_events_enabled:
-            await self._tab._enable_network_events()
+            await self._tab.enable_network_events()
             self._network_was_enabled = True
             logger.debug('HAR recorder enabled network events')
 
@@ -73,7 +76,7 @@ class HarRecorder(BaseHarRecorder['Tab']):
     async def _teardown(self) -> None:
         """Disable network events if this recorder enabled them."""
         if self._network_was_enabled:
-            await self._tab._disable_network_events()
+            await self._tab.disable_network_events()
             self._network_was_enabled = False
 
     def _on_request_will_be_sent(self, event: RequestWillBeSentEvent) -> None:
@@ -185,7 +188,8 @@ class HarRecorder(BaseHarRecorder['Tab']):
         pending = self._pending.pop(request_id, None)
         if not pending:
             return
-        body, base64_encoded = await self._fetch_response_body(request_id)
+        expects_body = pending.get('body_bytes', -1) > 0
+        body, base64_encoded = await self._fetch_response_body(request_id, expects_body)
         pending['response_body'] = body
         pending['response_body_base64'] = base64_encoded
         self._entries.append(self._build_entry(pending))
@@ -204,17 +208,44 @@ class HarRecorder(BaseHarRecorder['Tab']):
         pending['timing'] = redirect_response.get('timing')
         self._entries.append(self._build_entry(pending))
 
-    async def _fetch_response_body(self, request_id: str) -> tuple[str, bool]:
-        """Fetch the response body via Network.getResponseBody (('', False) on failure)."""
-        try:
-            response: GetResponseBodyResponse = await self._tab._execute_command(
-                NetworkCommands.get_response_body(request_id)
-            )
-            body_result = response['result']
-            return body_result['body'], body_result['base64Encoded']
-        except Exception:
-            logger.debug('HAR: failed to fetch response body for %s', request_id)
-            return '', False
+    async def _fetch_response_body(
+        self, request_id: str, expects_body: bool = False
+    ) -> tuple[str, bool]:
+        """Fetch the response body via Network.getResponseBody.
+
+        The DevTools body buffer is occasionally not ready the instant
+        loadingFinished fires (seen intermittently on Windows). When the
+        dataReceived events already told us a body exists (``expects_body``),
+        retry briefly on an errored or empty result instead of silently
+        recording an empty body.
+
+        Returns:
+            Tuple of (body_text, is_base64_encoded). Returns ('', False) on failure.
+        """
+        attempts = _BODY_FETCH_ATTEMPTS if expects_body else 1
+        for attempt in range(attempts):
+            try:
+                response: GetResponseBodyResponse = await self._tab._execute_command(
+                    NetworkCommands.get_response_body(request_id)
+                )
+                body_result = response['result']
+                body, base64_encoded = body_result['body'], body_result['base64Encoded']
+                if body or not expects_body:
+                    return body, base64_encoded
+            except Exception:
+                logger.debug(
+                    'HAR: failed to fetch response body for %s (attempt %d/%d)',
+                    request_id,
+                    attempt + 1,
+                    attempts,
+                )
+            if attempt + 1 < attempts:
+                await asyncio.sleep(_BODY_FETCH_RETRY_DELAY)
+
+        logger.debug(
+            'HAR: response body unavailable for %s after %d attempt(s)', request_id, attempts
+        )
+        return '', False
 
     def _build_har_timings(self, pending: dict[str, Any]) -> HarTimings:  # noqa: PLR6301
         """Convert CDP ResourceTiming (+ monotonic receive) to HAR timings (ms)."""
@@ -227,9 +258,7 @@ class HarRecorder(BaseHarRecorder['Tab']):
 
         rcv = round(receive_ms, 3) if receive_ms is not None else 0
         if not timing:
-            return HarTimings(
-                blocked=-1, dns=-1, connect=-1, ssl=-1, send=0, wait=0, receive=rcv
-            )
+            return HarTimings(blocked=-1, dns=-1, connect=-1, ssl=-1, send=0, wait=0, receive=rcv)
 
         dns_s: float = timing.get('dnsStart', -1)
         dns_e: float = timing.get('dnsEnd', -1)

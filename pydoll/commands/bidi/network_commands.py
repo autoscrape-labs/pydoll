@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from pydoll.protocol.bidi.base import Command
 from pydoll.protocol.bidi.network.methods import (
@@ -58,9 +58,9 @@ class NetworkCommands:
     def add_data_collector(
         data_types: list[DataType],
         max_encoded_data_size: int,
-        collector_type: Optional[CollectorType] = None,
-        contexts: Optional[list[str]] = None,
-        user_contexts: Optional[list[str]] = None,
+        collector_type: CollectorType | None = None,
+        contexts: list[str] | None = None,
+        user_contexts: list[str] | None = None,
     ) -> AddDataCollectorCommand:
         """Generates a command to add a network data collector."""
         params = AddDataCollectorParameters(
@@ -78,8 +78,8 @@ class NetworkCommands:
     @staticmethod
     def add_intercept(
         phases: list[InterceptPhase],
-        contexts: Optional[list[str]] = None,
-        url_patterns: Optional[list[UrlPattern]] = None,
+        contexts: list[str] | None = None,
+        url_patterns: list[UrlPattern] | None = None,
     ) -> AddInterceptCommand:
         """Generates a command to add a network intercept."""
         params = AddInterceptParameters(phases=phases)
@@ -92,11 +92,11 @@ class NetworkCommands:
     @staticmethod
     def continue_request(
         request: str,
-        body: Optional[BytesValue] = None,
-        cookies: Optional[list[CookieHeader]] = None,
-        headers: Optional[list[Header]] = None,
-        method: Optional[str] = None,
-        url: Optional[str] = None,
+        body: BytesValue | None = None,
+        cookies: list[CookieHeader] | None = None,
+        headers: list[Header] | None = None,
+        method: str | None = None,
+        url: str | None = None,
     ) -> ContinueRequestCommand:
         """Generates a command to continue a blocked request."""
         params = ContinueRequestParameters(request=request)
@@ -115,11 +115,11 @@ class NetworkCommands:
     @staticmethod
     def continue_response(
         request: str,
-        cookies: Optional[list[SetCookieHeader]] = None,
-        credentials: Optional[AuthCredentials] = None,
-        headers: Optional[list[Header]] = None,
-        reason_phrase: Optional[str] = None,
-        status_code: Optional[int] = None,
+        cookies: list[SetCookieHeader] | None = None,
+        credentials: AuthCredentials | None = None,
+        headers: list[Header] | None = None,
+        reason_phrase: str | None = None,
+        status_code: int | None = None,
     ) -> ContinueResponseCommand:
         """Generates a command to continue a blocked response."""
         params = ContinueResponseParameters(request=request)
@@ -138,8 +138,8 @@ class NetworkCommands:
     @staticmethod
     def continue_with_auth(
         request: str,
-        action: Optional[str] = None,
-        credentials: Optional[AuthCredentials] = None,
+        action: str | None = None,
+        credentials: AuthCredentials | None = None,
     ) -> ContinueWithAuthCommand:
         """Generates a command to continue a request blocked at auth phase."""
         params = ContinueWithAuthParameters(request=request)
@@ -159,7 +159,9 @@ class NetworkCommands:
         return Command(
             method=NetworkMethod.DISOWN_DATA,
             params=DisownDataParameters(
-                dataType=data_type, collector=collector, request=request,
+                dataType=data_type,
+                collector=collector,
+                request=request,
             ),
         )
 
@@ -175,8 +177,8 @@ class NetworkCommands:
     def get_data(
         data_type: DataType,
         request: str,
-        collector: Optional[str] = None,
-        disown: Optional[bool] = None,
+        collector: str | None = None,
+        disown: bool | None = None,
     ) -> GetDataCommand:
         """Generates a command to retrieve collected network data."""
         params = GetDataParameters(dataType=data_type, request=request)
@@ -189,11 +191,11 @@ class NetworkCommands:
     @staticmethod
     def provide_response(
         request: str,
-        body: Optional[BytesValue] = None,
-        cookies: Optional[list[SetCookieHeader]] = None,
-        headers: Optional[list[Header]] = None,
-        reason_phrase: Optional[str] = None,
-        status_code: Optional[int] = None,
+        body: BytesValue | None = None,
+        cookies: list[SetCookieHeader] | None = None,
+        headers: list[Header] | None = None,
+        reason_phrase: str | None = None,
+        status_code: int | None = None,
     ) -> ProvideResponseCommand:
         """Generates a command to provide a complete response for a blocked request."""
         params = ProvideResponseParameters(request=request)
@@ -228,7 +230,7 @@ class NetworkCommands:
     @staticmethod
     def set_cache_behavior(
         cache_behavior: str,
-        contexts: Optional[list[str]] = None,
+        contexts: list[str] | None = None,
     ) -> SetCacheBehaviorCommand:
         """Generates a command to configure network cache behavior."""
         params = SetCacheBehaviorParameters(cacheBehavior=cache_behavior)
@@ -239,8 +241,8 @@ class NetworkCommands:
     @staticmethod
     def set_extra_headers(
         headers: list[Header],
-        contexts: Optional[list[str]] = None,
-        user_contexts: Optional[list[str]] = None,
+        contexts: list[str] | None = None,
+        user_contexts: list[str] | None = None,
     ) -> SetExtraHeadersCommand:
         """Generates a command to set extra request headers."""
         params = SetExtraHeadersParameters(headers=headers)

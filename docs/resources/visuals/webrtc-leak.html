@@ -1,0 +1,441 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>WebRTC STUN/ICE IP leak</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" />
+<style>
+  :root{
+    --bg:#0c0d0f;--bg2:#0f1113;--panel:#141618;--panel2:#191c20;
+    --line:rgba(244,245,247,.10);--line2:rgba(244,245,247,.18);
+    --ink:#f4f5f7;--dim:#9aa2ad;--faint:#5b6570;
+    --indigo:#6e7bff;--indigo2:#8f99ff;--indigo-dim:rgba(110,123,255,.13);
+    --pass:#35e0a1;--pass-dim:rgba(53,224,161,.12);
+    --amber:#f5b544;--amber-dim:rgba(245,181,68,.13);
+    --danger:#ff6b6b;--danger-dim:rgba(255,107,107,.12);
+    --sans:"Chivo",system-ui,-apple-system,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  }
+  *{box-sizing:border-box} html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);padding:15px 16px;font-size:13px}
+  .widget{border:1px solid var(--line);padding:16px 18px}
+  .lead{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-bottom:13px;line-height:1.55}
+  .lead b{color:var(--ink)}
+  .lead .grn{color:var(--pass)} .lead .red{color:var(--danger)}
+
+  /* ---- two-lane stage ---- */
+  .stage{position:relative;height:206px;overflow:hidden;border:1px solid var(--line2);background:var(--bg2)}
+  .stage svg.net{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none}
+  .rail{fill:none;stroke-linecap:round;transition:stroke-opacity .3s,stroke-width .3s}
+  .rail.tcp{stroke:var(--pass);stroke-width:1.6;stroke-opacity:.30}
+  .rail.tcp.on{stroke-opacity:.75;stroke-width:2}
+  .rail.udp{stroke:var(--danger);stroke-width:1.6;stroke-opacity:.26;stroke-dasharray:5 5}
+  .rail.udp.on{stroke-opacity:.8;stroke-width:2}
+  .rail.udp.blocked{stroke-opacity:.16}
+  .laneTag{position:absolute;font-family:var(--mono);font-size:8.5px;letter-spacing:.03em;color:var(--faint);
+    background:var(--bg2);padding:0 5px;transform:translate(-50%,-50%);white-space:nowrap;z-index:1}
+  .laneTag.tcp{color:rgba(53,224,161,.7)} .laneTag.udp{color:rgba(255,107,107,.7)}
+
+  .node{position:absolute;transform:translate(-50%,-50%);width:clamp(78px,20vw,104px);text-align:center;
+    border:1px solid var(--line2);background:var(--panel);padding:8px 6px;z-index:3;
+    transition:border-color .3s,box-shadow .3s,opacity .3s}
+  .node .ic{display:grid;place-items:center;height:20px;color:var(--faint);transition:color .3s}
+  .node .ic svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+  .node .nm{font-family:var(--sans);font-weight:700;font-size:11px;margin-top:4px;line-height:1.15}
+  .node .sub{font-family:var(--mono);font-size:8.5px;color:var(--faint);margin-top:3px;line-height:1.25}
+  .node.lit{border-color:var(--indigo);box-shadow:0 0 0 1px rgba(110,123,255,.35)} .node.lit .ic{color:var(--indigo2)}
+  .node.masked{border-color:var(--pass);box-shadow:0 0 0 1px rgba(53,224,161,.30)} .node.masked .ic{color:var(--pass)} .node.masked .sub{color:var(--pass)}
+  .node.exposed{border-color:var(--danger);box-shadow:0 0 0 1px rgba(255,107,107,.30)} .node.exposed .ic{color:var(--danger)} .node.exposed .sub{color:var(--danger)}
+  .node.inert{opacity:.5}
+
+  .boundary{position:absolute;transform:translate(-50%,-50%);z-index:2;pointer-events:none;
+    font-family:var(--mono);font-size:8px;color:var(--faint);text-align:center;opacity:.55}
+  .boundary .ring{width:118px;height:118px;border:1px dashed var(--line2);border-radius:50%;margin:0 auto}
+  .boundary .bl{position:absolute;left:50%;bottom:-4px;transform:translateX(-50%);white-space:nowrap;background:var(--bg2);padding:0 4px}
+
+  .pkt{position:absolute;left:0;top:0;width:13px;height:13px;border-radius:3px;background:var(--pass);
+    box-shadow:0 0 0 4px var(--pass-dim),0 0 12px 2px rgba(53,224,161,.5);z-index:6;opacity:0;
+    transform:translate(-100px,-100px) translate(-50%,-50%);transition:opacity .2s,background .2s,box-shadow .2s}
+  .pkt.red{background:var(--danger);box-shadow:0 0 0 4px var(--danger-dim),0 0 12px 2px rgba(255,107,107,.55)}
+  .pktTag{position:absolute;left:0;top:0;font-family:var(--mono);font-size:8.5px;color:var(--pass);z-index:6;opacity:0;
+    white-space:nowrap;pointer-events:none;transform:translate(-100px,-100px) translate(-50%,-50%) translateY(-15px);transition:opacity .2s,color .2s}
+  .pktTag.red{color:var(--danger)}
+
+  .shield{position:absolute;left:0;top:0;z-index:7;opacity:0;transform:translate(-100px,-100px) translate(-50%,-50%);
+    transition:opacity .2s}
+  .shield svg{width:26px;height:26px;fill:none;stroke:var(--pass);stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+  .shield .sl{position:absolute;left:50%;top:100%;transform:translateX(-50%);margin-top:2px;font-family:var(--mono);
+    font-size:8px;color:var(--pass);white-space:nowrap;background:var(--bg2);padding:0 4px}
+  .noudp{position:absolute;transform:translate(-50%,-50%);z-index:5;opacity:0;transition:opacity .2s;
+    font-family:var(--mono);font-size:8.5px;color:var(--danger);border:1px solid rgba(255,107,107,.4);
+    background:var(--danger-dim);padding:2px 6px;white-space:nowrap}
+
+  /* ---- readout panels ---- */
+  .panels{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.15fr);gap:12px;margin-top:14px}
+  @media(max-width:560px){.panels{grid-template-columns:1fr}}
+  .seen{border:1px solid var(--line);background:var(--bg2);padding:11px 13px;display:flex;flex-direction:column;gap:5px}
+  .seen .k{font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:var(--faint)}
+  .seen .ipbig{font-family:var(--sans);font-weight:800;font-size:20px;line-height:1;color:var(--pass)}
+  .seen .tag{font-family:var(--mono);font-size:10px;color:var(--pass)}
+  .seen .mut{font-family:var(--mono);font-size:9px;color:var(--faint);margin-top:2px}
+
+  .ice{border:1px solid var(--line);background:var(--bg2);padding:10px 12px}
+  .ice-head{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+  .ice-head .k{font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:var(--faint)}
+  .ice-head .fn{font-family:var(--mono);font-size:9px;color:var(--indigo2)}
+  .verdict{margin-left:auto;font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.05em;
+    padding:2px 8px;border:1px solid var(--line2);color:var(--faint);white-space:nowrap}
+  .verdict.exposed{color:var(--danger);border-color:rgba(255,107,107,.45);background:var(--danger-dim)}
+  .verdict.hidden{color:var(--pass);border-color:rgba(53,224,161,.45);background:var(--pass-dim)}
+  .verdict.wait{color:var(--dim)}
+  #iceRows{display:flex;flex-direction:column;gap:5px;min-height:52px}
+  .crow{display:flex;align-items:baseline;gap:8px;font-family:var(--mono);font-size:10px;opacity:0;
+    transform:translateY(4px);transition:opacity .3s,transform .3s}
+  .crow.show{opacity:1;transform:none}
+  .crow .ctype{width:38px;flex:none;font-weight:600}
+  .crow .cval{color:var(--ink);font-weight:600}
+  .crow .cmeta{color:var(--faint);font-size:9px}
+  .crow.host .ctype{color:var(--amber)} .crow.host .cval{color:var(--dim)}
+  .crow.srflx .ctype{color:var(--danger)} .crow.srflx .cval{color:var(--danger)} .crow.srflx .cmeta{color:var(--danger)}
+  .ice-note{font-family:var(--mono);font-size:9.5px;color:var(--faint);margin-top:8px;line-height:1.45;min-height:14px}
+  .ice-note b.red{color:var(--danger)} .ice-note b.grn{color:var(--pass)}
+
+  /* ---- code + controls ---- */
+  .code{margin-top:13px;border:1px solid var(--line);background:var(--panel2);padding:10px 13px;font-family:var(--mono);
+    font-size:11px;color:var(--ink);line-height:1.55;overflow-x:auto}
+  .code .cl{white-space:pre;display:block}
+  .code .cmt{color:var(--faint)}
+  .code .kw{color:var(--indigo2)} .code .val{color:var(--pass)}
+
+  .controls{display:flex;align-items:center;gap:14px;margin-top:14px;flex-wrap:wrap}
+  .seg{display:inline-flex;align-items:center;border:1px solid var(--line2);overflow:hidden}
+  .seg .lbl{font-family:var(--mono);font-size:9px;color:var(--faint);padding:0 9px 0 10px;text-transform:uppercase;letter-spacing:.04em}
+  .seg button{font-family:var(--mono);font-size:11px;font-weight:500;color:var(--dim);background:var(--panel);border:0;
+    border-left:1px solid var(--line2);padding:7px 12px;cursor:pointer;transition:.15s}
+  .seg button:hover{color:var(--ink)}
+  .seg button.on{background:rgba(110,123,255,.16);color:#fff}
+  .legend{display:flex;align-items:center;gap:13px;font-family:var(--mono);font-size:9.5px;color:var(--faint);margin-left:auto}
+  .legend i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:0}
+  .legend i.tcp{background:var(--pass)} .legend i.udp{background:var(--danger)}
+
+  .beat{font-family:var(--mono);font-size:11px;color:var(--dim);margin-top:12px;min-height:16px;line-height:1.5}
+  .beat b{color:var(--ink);font-weight:500} .beat b.red{color:var(--danger)} .beat b.grn{color:var(--pass)}
+  .caveat{font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:6px;line-height:1.5}
+
+  @media (prefers-reduced-motion:reduce){
+    .pkt,.pktTag,.shield,.crow,.rail{transition:none}
+  }
+
+  /* theme-matched thin scrollbars for overflow-x boxes (replaces the default white bar) */
+  ::-webkit-scrollbar{width:8px;height:8px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:var(--line2)}
+  ::-webkit-scrollbar-thumb:hover{background:var(--faint)}
+</style>
+</head>
+<body>
+<div class="widget">
+  <div class="lead">Your HTTP traffic rides the <span class="grn">TCP path through the proxy</span>, so the target page logs the proxy's IP. But WebRTC fires a <span class="red">STUN request over UDP</span> that skips the proxy entirely, and the reply, <b>your real public IP</b>, lands in the ICE candidates any page script can read. Flip on <b>webrtc_leak_protection</b> to block the non-proxied UDP.</div>
+
+  <div class="stage" id="stage">
+    <svg class="net" viewBox="0 0 620 200" preserveAspectRatio="none">
+      <path id="railTcp" class="rail tcp" d="M 108 88 Q 200 46 300 46 L 512 46" />
+      <path id="railUdp" class="rail udp" d="M 108 116 C 210 205, 380 190, 512 150" />
+    </svg>
+
+    <div class="laneTag tcp" style="left:58%;top:12%">TCP / HTTP · through proxy</div>
+    <div class="laneTag udp" style="left:44%;top:95%">UDP · STUN · bypasses proxy</div>
+
+    <div class="boundary" id="bnd" style="left:12.3%;top:50%"><div class="ring"></div><div class="bl">your machine · OS network stack</div></div>
+
+    <div class="node" id="nYou" style="left:12.3%;top:50%">
+      <div class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="1"/><path d="M2 20h20M9 20v-4M15 20v-4"/></svg></div>
+      <div class="nm">pydoll<br>your Chrome</div>
+      <div class="sub">real IP 189.6.44.12</div>
+    </div>
+    <div class="node" id="nProxy" style="left:48.4%;top:23%">
+      <div class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="7" rx="1"/><rect x="3" y="13" width="18" height="7" rx="1"/><line x1="7" y1="7.5" x2="7.01" y2="7.5"/><line x1="7" y1="16.5" x2="7.01" y2="16.5"/></svg></div>
+      <div class="nm">HTTP proxy</div>
+      <div class="sub">74.63.201.8 · TCP only</div>
+    </div>
+    <div class="node" id="nSite" style="left:87.7%;top:23%">
+      <div class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18a15 15 0 0 1 0-18"/></svg></div>
+      <div class="nm">target page</div>
+      <div class="sub">logs proxy IP</div>
+    </div>
+    <div class="node" id="nStun" style="left:87.7%;top:78%">
+      <div class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="1.8"/><path d="M8 8a6 6 0 0 0 0 8M16 8a6 6 0 0 1 0 8M5 5a10 10 0 0 0 0 14M19 5a10 10 0 0 1 0 14"/></svg></div>
+      <div class="nm">STUN server</div>
+      <div class="sub">stun.l.google.com<br>:19302</div>
+    </div>
+
+    <div class="noudp" id="noudp" style="left:48.4%;top:44%">proxy carries no UDP</div>
+    <div class="pkt" id="pkt"></div>
+    <div class="pktTag" id="pktTag"></div>
+    <div class="shield" id="shield"><svg viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.5-3 7.5-7 9c-4-1.5-7-4.5-7-9V6z"/><path d="M9 12l2 2 4-4"/></svg><span class="sl">non-proxied UDP blocked</span></div>
+  </div>
+
+  <div class="panels">
+    <div class="seen" id="seen">
+      <span class="k">target page logs (HTTP)</span>
+      <span class="ipbig" id="siteIp">74.63.201.8</span>
+      <span class="tag" id="siteTag">proxy exit IP · masked</span>
+      <span class="mut">the HTTP proxy works. the leak is elsewhere.</span>
+    </div>
+    <div class="ice">
+      <div class="ice-head">
+        <span class="k">ICE candidates</span><span class="fn">pc.onicecandidate</span>
+        <span class="verdict wait" id="verdict">gathering…</span>
+      </div>
+      <div id="iceRows"></div>
+      <div class="ice-note" id="iceNote"></div>
+    </div>
+  </div>
+
+  <div class="code" id="code"></div>
+
+  <div class="controls">
+    <span class="seg" role="group" aria-label="webrtc ip policy">
+      <span class="lbl">webrtc</span>
+      <button id="bLeak">default (leaks)</button>
+      <button id="bProt">leak_protection = True</button>
+    </span>
+    <span class="legend"><span><i class="tcp"></i>HTTP via proxy</span><span><i class="udp"></i>STUN over UDP</span></span>
+  </div>
+
+  <div class="beat" id="beat"></div>
+  <div class="caveat">Host candidates are Chrome's ephemeral mDNS names (<b>a1b2c3d4.local</b>), so the LAN IP is mostly hidden by default. The server-reflexive (srflx) candidate is the one that leaks. Always verify with browserleaks.com/webrtc or ipleak.net that only the proxy IP appears.</div>
+</div>
+
+<script>
+(function(){
+  var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  var U=function(ms){return reduce?0:ms;};
+  function g(id){return document.getElementById(id);}
+  function wait(ms){return new Promise(function(r){setTimeout(r,ms);});}
+
+  var VW=620, VH=200;
+  var stage=g('stage'), pkt=g('pkt'), pktTag=g('pktTag'), shield=g('shield'), noudp=g('noudp');
+  var railTcp=g('railTcp'), railUdp=g('railUdp');
+  var NYou=g('nYou'), NProxy=g('nProxy'), NSite=g('nSite'), NStun=g('nStun');
+
+  var REAL_IP='189.6.44.12', PROXY_IP='74.63.201.8', PORT='54210', MDNS='a1b2c3d4.local';
+
+  var protection=false;   // false = default (leaks), true = webrtc_leak_protection
+  var gen=0;
+
+  // ---- geometry: sample an SVG path (viewBox space) -> stage pixels ----
+  function toPx(x,y){ return {x:x/VW*stage.clientWidth, y:y/VH*stage.clientHeight}; }
+  function ptAt(pathEl, t){
+    var len=pathEl.getTotalLength();
+    var p=pathEl.getPointAtLength(len*Math.max(0,Math.min(1,t)));
+    return toPx(p.x, p.y);
+  }
+  function placeAt(el, px, extraY){
+    el.style.transform='translate('+px.x+'px,'+px.y+'px) translate(-50%,-50%)'+(extraY?(' translateY('+extraY+'px)'):'');
+  }
+  function easeInOut(t){ return t<.5 ? 2*t*t : 1-Math.pow(-2*t+2,2)/2; }
+
+  function nodeCls(el, cls){ el.className='node'+(cls?(' '+cls):''); }
+
+  // move pkt (+tag) along a path from t0 to t1 over dur
+  function travel(pathEl, t0, t1, dur, my){
+    return new Promise(function(resolve){
+      if(reduce){ var p=ptAt(pathEl,t1); placeAt(pkt,p); placeAt(pktTag,p,-15); resolve(); return; }
+      var start=null;
+      function frame(ts){
+        if(my!==gen){ resolve(); return; }
+        if(start===null) start=ts;
+        var k=Math.min(1,(ts-start)/dur), e=easeInOut(k);
+        var t=t0+(t1-t0)*e, p=ptAt(pathEl,t);
+        placeAt(pkt,p); placeAt(pktTag,p,-15);
+        if(k<1) requestAnimationFrame(frame); else resolve();
+      }
+      requestAnimationFrame(frame);
+    });
+  }
+
+  function setPkt(red, tag){
+    pkt.className='pkt'+(red?' red':''); pktTag.className='pktTag'+(red?' red':'');
+    pktTag.textContent=tag||''; pkt.style.opacity='1'; pktTag.style.opacity=tag?'1':'0';
+  }
+  function hidePkt(){ pkt.style.opacity='0'; pktTag.style.opacity='0'; }
+
+  function beat(html){ g('beat').innerHTML=html; }
+
+  // ---- ICE candidate list ----
+  function clearIce(){ g('iceRows').innerHTML=''; g('iceNote').innerHTML=''; }
+  function addCandidate(type){
+    return new Promise(function(resolve){
+      var row=document.createElement('div');
+      row.className='crow '+type;
+      if(type==='host'){
+        row.innerHTML='<span class="ctype">host</span><span class="cval">'+MDNS+':'+PORT+'</span><span class="cmeta">typ host · mDNS, LAN hidden</span>';
+      }else{
+        row.innerHTML='<span class="ctype">srflx</span><span class="cval">'+REAL_IP+':'+PORT+'</span><span class="cmeta">typ srflx · your real public IP</span>';
+      }
+      g('iceRows').appendChild(row);
+      if(reduce){ row.classList.add('show'); resolve(); return; }
+      requestAnimationFrame(function(){ row.classList.add('show'); });
+      setTimeout(resolve, U(340));
+    });
+  }
+  function setVerdict(state){
+    var v=g('verdict');
+    if(state==='exposed'){ v.className='verdict exposed'; v.textContent='real IP exposed'; }
+    else if(state==='hidden'){ v.className='verdict hidden'; v.textContent='real IP hidden'; }
+    else { v.className='verdict wait'; v.textContent='gathering…'; }
+  }
+
+  function stampSite(){
+    nodeCls(NSite,'masked');
+    g('siteIp').textContent=PROXY_IP; g('siteTag').textContent='proxy exit IP · masked';
+  }
+
+  function renderCode(){
+    if(protection){
+      g('code').innerHTML=
+        '<span class="cl">options = ChromiumOptions()</span>'+
+        '<span class="cl">options.<span class="kw">webrtc_leak_protection</span> = <span class="val">True</span></span>'+
+        '<span class="cl cmt"># --force-webrtc-ip-handling-policy=disable_non_proxied_udp</span>';
+    }else{
+      g('code').innerHTML=
+        '<span class="cl">options = ChromiumOptions()</span>'+
+        '<span class="cl">options.add_argument(<span class="val">\'--proxy-server=http://'+PROXY_IP+':8080\'</span>)</span>'+
+        '<span class="cl cmt"># webrtc_leak_protection not set → non-proxied UDP is allowed to leave</span>';
+    }
+  }
+  function paintControls(){
+    g('bLeak').className=protection?'':'on';
+    g('bProt').className=protection?'on':'';
+  }
+
+  function resetVisual(){
+    clearIce(); setVerdict('wait');
+    railTcp.className='rail tcp'; railUdp.className='rail udp';
+    nodeCls(NYou,'lit'); nodeCls(NProxy); nodeCls(NSite); nodeCls(NStun);
+    noudp.style.opacity='0'; shield.style.opacity='0';
+    hidePkt();
+    var s=ptAt(railTcp,0); placeAt(pkt,s); placeAt(pktTag,s,-15);
+  }
+
+  // ---- the looped scenario (same each cycle; changes only on toggle) ----
+  async function cycle(my){
+    resetVisual();
+
+    // 1) HTTP through the proxy, always works, site logs the proxy IP
+    beat('HTTP leaves through the <b class="grn">HTTP proxy</b>…');
+    setPkt(false,'GET /');
+    railTcp.classList.add('on');
+    await travel(railTcp,0,0.52,U(760),my); if(my!==gen)return;
+    nodeCls(NProxy,'masked');
+    await wait(U(280)); if(my!==gen)return;
+    await travel(railTcp,0.52,1,U(700),my); if(my!==gen)return;
+    stampSite();
+    beat('the target page logs the <b class="grn">proxy exit IP</b>, HTTP is masked.');
+    await wait(U(700)); if(my!==gen)return;
+    hidePkt(); railTcp.classList.remove('on');
+    await wait(U(360)); if(my!==gen)return;
+
+    // 2) WebRTC opens a data channel and gathers ICE candidates
+    beat('WebRTC opens a data channel and starts <b>ICE gathering</b> (RFC 8445).');
+    await addCandidate('host'); if(my!==gen)return;
+    await wait(U(500)); if(my!==gen)return;
+
+    // 3) STUN binding request over UDP
+    railUdp.classList.add('on');
+    var us=ptAt(railUdp,0);
+    if(protection){
+      // blocked at the machine boundary by disable_non_proxied_udp
+      beat('<b class="grn">disable_non_proxied_udp</b> blocks the UDP that would skip the proxy…');
+      setPkt(true,'STUN binding · UDP');
+      placeAt(pkt,us); placeAt(pktTag,us,-15);
+      await travel(railUdp,0,0.2,U(420),my); if(my!==gen)return;
+      var bp=ptAt(railUdp,0.2); placeAt(shield,bp); shield.style.opacity='1';
+      hidePkt();
+      railUdp.classList.add('blocked'); railUdp.classList.remove('on');
+      beat('no STUN request escapes, so <b>no srflx candidate</b> is gathered.');
+      await wait(U(900)); if(my!==gen)return;
+      g('iceNote').innerHTML='only the <b class="grn">host</b> mDNS candidate. no server-reflexive line, your real IP is not in the list.';
+      setVerdict('hidden');
+      nodeCls(NYou,'masked'); nodeCls(NStun,'inert');
+      beat('WebRTC yields <b class="grn">only the proxied path</b>. your real public IP stays hidden.');
+    }else{
+      // escapes around the proxy, straight out to STUN
+      beat('<b class="red">STUN binding request (UDP)</b>, it bypasses the TCP proxy and leaves directly.');
+      setPkt(true,'STUN binding · UDP');
+      placeAt(pkt,us); placeAt(pktTag,us,-15);
+      noudp.style.opacity='1';
+      await travel(railUdp,0,1,U(900),my); if(my!==gen)return;
+      nodeCls(NStun,'exposed'); noudp.style.opacity='0';
+      await wait(U(320)); if(my!==gen)return;
+      // STUN replies with the real public IP (XOR-MAPPED-ADDRESS)
+      beat('STUN answers with your <b class="red">real public IP</b> in XOR-MAPPED-ADDRESS.');
+      setPkt(true,'srflx: '+REAL_IP);
+      await travel(railUdp,1,0,U(820),my); if(my!==gen)return;
+      hidePkt(); railUdp.classList.remove('on');
+      nodeCls(NYou,'exposed');
+      // srflx candidate lands in the list, page can read it
+      await addCandidate('srflx'); if(my!==gen)return;
+      setVerdict('exposed');
+      g('iceNote').innerHTML='<b class="red">srflx</b> carries your real IP. any page can do <b class="red">fetch(`/track?real_ip=${ip}`)</b>.';
+      beat('the <b class="red">srflx candidate</b> exposes your real IP even though every HTTP layer was proxied.');
+    }
+
+    await wait(U(1900)); if(my!==gen)return;
+  }
+
+  async function loop(my){
+    while(my===gen){
+      await cycle(my);
+      if(my!==gen)break;
+      await wait(U(800));
+    }
+  }
+
+  // reduced-motion / initial composed state
+  function renderStatic(){
+    resetVisual();
+    railTcp.classList.add('on');
+    stampSite();
+    clearIce();
+    addCandidate('host');
+    if(protection){
+      railUdp.classList.add('blocked');
+      var bp=ptAt(railUdp,0.2); placeAt(shield,bp); shield.style.opacity='1';
+      nodeCls(NYou,'masked'); nodeCls(NStun,'inert');
+      setVerdict('hidden');
+      g('iceNote').innerHTML='only the <b class="grn">host</b> mDNS candidate. no srflx line, your real IP is not in the list.';
+      beat('<b class="grn">webrtc_leak_protection = True</b>: non-proxied UDP blocked, real IP hidden.');
+    }else{
+      railUdp.classList.add('on');
+      addCandidate('srflx');
+      nodeCls(NYou,'exposed'); nodeCls(NStun,'exposed');
+      setVerdict('exposed');
+      g('iceNote').innerHTML='<b class="red">srflx</b> carries your real IP. any page can read it and phone home.';
+      beat('default: STUN over UDP bypasses the proxy, real IP leaks into ICE.');
+    }
+  }
+
+  function render(){
+    gen++; var my=gen;
+    renderCode(); paintControls();
+    if(reduce){ renderStatic(); }
+    else { resetVisual(); loop(my); }
+  }
+
+  g('bLeak').addEventListener('click',function(){ if(!protection)return; protection=false; render(); });
+  g('bProt').addEventListener('click',function(){ if(protection)return; protection=true; render(); });
+
+  var rt=null;
+  window.addEventListener('resize',function(){ if(rt)clearTimeout(rt); rt=setTimeout(render,220); });
+  window.addEventListener('load',function(){ setTimeout(render,60); });
+  render();
+})();
+</script>
+<script>/*auto-fit iframe to content*/(function(){function fit(){try{if(!window.frameElement)return;var h=Math.max(document.body.scrollHeight,document.documentElement.scrollHeight);window.frameElement.style.height=h+"px";}catch(e){}}window.addEventListener("load",fit);setTimeout(fit,250);setInterval(fit,700);if(window.ResizeObserver){try{new ResizeObserver(fit).observe(document.body);}catch(e){}}})();</script>
+</body>
+</html>

@@ -1,6 +1,6 @@
 # Constants
 
-O módulo de constantes fornece valores predefinidos e configurações padrão para o navegador.
+Enums e constantes usados em toda a Pydoll, incluindo `By`, `Key` e `PermissionType`. Saiba mais em [Seletores](../../basics/selectors.md) e [Controle de teclado](../../guides/keyboard.md).
 
 ::: pydoll.constants
     options:
@@ -8,4 +8,4 @@ O módulo de constantes fornece valores predefinidos e configurações padrão p
       show_source: false
       heading_level: 2
       group_by_category: true
-      members_order: source 
+      members_order: source

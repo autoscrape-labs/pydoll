@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Proxy detection confidence score</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" />
+<style>
+  :root{
+    --bg:#0c0d0f;--bg2:#0f1113;--panel:#141618;--panel2:#191c20;
+    --line:rgba(244,245,247,.10);--line2:rgba(244,245,247,.18);
+    --ink:#f4f5f7;--dim:#9aa2ad;--faint:#5b6570;
+    --indigo:#6e7bff;--indigo2:#8f99ff;--indigo-dim:rgba(110,123,255,.13);
+    --pass:#35e0a1;--pass-dim:rgba(53,224,161,.12);
+    --amber:#f5b544;--amber-dim:rgba(245,181,68,.13);
+    --danger:#ff6b6b;--danger-dim:rgba(255,107,107,.12);
+    --sans:"Chivo",system-ui,-apple-system,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  }
+  *{box-sizing:border-box} html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);padding:15px 16px;font-size:13px}
+  .widget{border:1px solid var(--line);padding:16px 18px}
+  .lead{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-bottom:15px;line-height:1.55}
+  .lead b{color:var(--ink)}
+
+  .sectlbl{font-family:var(--mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--faint);margin:2px 0 8px}
+
+  /* ---- geolocation consistency panel ---- */
+  .geo{display:flex;align-items:stretch;gap:0;border:1px solid var(--line2);background:var(--bg2);flex-wrap:wrap}
+  .anchor{display:flex;align-items:center;gap:11px;padding:13px 15px;border-right:1px solid var(--line);min-width:184px;flex:0 0 auto}
+  @media(max-width:520px){.anchor{border-right:none;border-bottom:1px solid var(--line);width:100%}}
+  .anchor svg{width:34px;height:34px;flex:none;color:var(--indigo2)}
+  .anchor .who{display:flex;flex-direction:column;gap:2px;min-width:0}
+  .anchor .who b{font-family:var(--sans);font-weight:700;font-size:13px}
+  .anchor .who span{font-family:var(--mono);font-size:9.5px;color:var(--faint)}
+  .claims{flex:1;display:flex;flex-direction:column;min-width:210px}
+  .claim{display:flex;align-items:center;gap:10px;padding:9px 14px;position:relative}
+  .claim+.claim{border-top:1px solid var(--line)}
+  .wire{width:26px;height:2px;flex:none;position:relative;background:var(--pass)}
+  .wire:before{content:"";position:absolute;left:-5px;top:50%;width:6px;height:6px;border-radius:50%;transform:translateY(-50%);background:var(--pass)}
+  .cinfo{display:flex;flex-direction:column;gap:1px;min-width:0}
+  .cinfo .ck{font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:var(--faint)}
+  .cinfo .cv{font-family:var(--mono);font-size:12px;color:var(--pass);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .claim.miss .wire{background:var(--danger);animation:wireflare 1.9s ease-in-out infinite}
+  .claim.miss .wire:before{background:var(--danger)}
+  .claim.miss .cv{color:var(--danger)}
+  .claim button{margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--dim);background:var(--panel);border:1px solid var(--line2);padding:5px 9px;cursor:pointer;transition:.15s;white-space:nowrap}
+  .claim button:hover{border-color:var(--indigo);color:#fff}
+  .badge{font-family:var(--mono);font-size:10px;font-weight:600;color:var(--danger);border:1px solid rgba(255,107,107,.4);background:var(--danger-dim);padding:2px 7px;flex:none;opacity:0;transform:scale(.7);transition:.22s}
+  .claim.miss .badge{opacity:1;transform:scale(1);animation:badgepop 1.9s ease-in-out infinite}
+  @keyframes wireflare{0%,100%{opacity:.5}50%{opacity:1}}
+  @keyframes badgepop{0%,100%{box-shadow:0 0 0 0 rgba(255,107,107,0)}50%{box-shadow:0 0 0 4px rgba(255,107,107,.10)}}
+
+  /* ---- signal cards ---- */
+  .cards{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:11px;margin-top:13px}
+  @media(max-width:560px){.cards{grid-template-columns:1fr}}
+  .card{border:1px solid var(--line2);background:var(--bg2);padding:11px 12px;display:flex;flex-direction:column;gap:8px;min-width:0}
+  .card .k{font-family:var(--mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--faint)}
+  .seg{display:flex;border:1px solid var(--line2);overflow:hidden}
+  .seg button{flex:1;font-family:var(--mono);font-size:10px;color:var(--dim);background:var(--panel);border:none;border-right:1px solid var(--line2);padding:6px 4px;cursor:pointer;transition:.15s}
+  .seg button:last-child{border-right:none}
+  .seg button:hover{color:#fff}
+  .seg button.on{color:var(--ink);background:var(--panel2)}
+  .seg button.on[data-tone=danger]{color:var(--danger);box-shadow:inset 0 -2px 0 var(--danger)}
+  .seg button.on[data-tone=amber]{color:var(--amber);box-shadow:inset 0 -2px 0 var(--amber)}
+  .card .note{font-family:var(--mono);font-size:10px;color:var(--faint);line-height:1.45;min-height:28px}
+  .card .note b{color:var(--dim);font-weight:500}
+  .toggle{font-family:var(--mono);font-size:11px;color:var(--dim);background:var(--panel);border:1px solid var(--line2);padding:7px 9px;cursor:pointer;transition:.15s;text-align:left}
+  .toggle:hover{border-color:var(--indigo);color:#fff}
+  .card .val{font-family:var(--sans);font-weight:700;font-size:13px}
+  .card.good .val{color:var(--pass)} .card.bad .val{color:var(--danger)}
+  .card.good{border-color:rgba(53,224,161,.32)} .card.bad{border-color:rgba(255,107,107,.32)}
+  .wtag{font-family:var(--mono);font-size:10px;color:var(--faint);margin-top:auto}
+  .wtag b.d{color:var(--danger)} .wtag b.a{color:var(--amber)} .wtag b.p{color:var(--pass)}
+
+  /* ---- accumulation meter ---- */
+  .mwrap{margin-top:22px}
+  .thlabels{position:relative;height:14px;margin-bottom:2px}
+  .tl{position:absolute;transform:translateX(-50%);font-family:var(--mono);font-size:9px;color:var(--faint);white-space:nowrap}
+  .tl.warn{color:var(--amber)} .tl.stop{color:var(--danger)}
+  .track{position:relative;height:34px;border:1px solid var(--line);overflow:hidden;
+    background:linear-gradient(90deg,var(--pass-dim) 0 40%,var(--amber-dim) 40% 70%,var(--danger-dim) 70% 100%)}
+  .fill{position:absolute;left:0;top:0;bottom:0;width:0;transition:width .5s cubic-bezier(.4,0,.2,1),background-color .5s}
+  .fill.clean{background:rgba(53,224,161,.5)} .fill.susp{background:rgba(245,181,68,.55)} .fill.block{background:rgba(255,107,107,.6)}
+  .divi{position:absolute;top:0;bottom:0;width:1px;background:rgba(12,13,15,.65);z-index:2}
+  .thr{position:absolute;top:-2px;bottom:-2px;width:0;border-left:1.5px dashed;z-index:3}
+  .thr.t40{border-color:rgba(245,181,68,.7);color:var(--amber)} .thr.t70{border-color:rgba(255,107,107,.85);color:var(--danger)}
+  .scan{position:absolute;top:0;bottom:0;width:26%;left:-30%;z-index:1;pointer-events:none;
+    background:linear-gradient(90deg,transparent,rgba(244,245,247,.10),transparent);animation:scan 5.2s linear infinite}
+  .mark{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink);z-index:4;transition:left .5s cubic-bezier(.4,0,.2,1)}
+  .mark .bub{position:absolute;top:-23px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:12px;font-weight:600;
+    color:var(--ink);background:var(--panel2);border:1px solid var(--line2);padding:1px 8px;white-space:nowrap;transition:.3s}
+  .mark.block .bub{color:var(--danger);border-color:rgba(255,107,107,.5)}
+  .mark.susp .bub{color:var(--amber);border-color:rgba(245,181,68,.5)}
+  .mark.clean .bub{color:var(--pass);border-color:rgba(53,224,161,.5)}
+  .zlbls{display:flex;font-family:var(--mono);font-size:9.5px;color:var(--faint);margin-top:6px;text-transform:uppercase;letter-spacing:.05em}
+  .zlbls span{text-align:center}
+  @keyframes scan{0%{left:-30%;opacity:0}10%{opacity:1}52%{left:104%;opacity:.6}60%{left:104%;opacity:0}100%{left:104%;opacity:0}}
+
+  /* ---- breakdown chips ---- */
+  .stack{display:flex;flex-wrap:wrap;gap:7px;align-items:center;margin-top:13px}
+  .stack .lbl{font-family:var(--mono);font-size:10px;color:var(--faint);margin-right:2px}
+  .chip{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10.5px;color:var(--dim);
+    border:1px solid var(--line2);background:var(--bg2);padding:3px 9px}
+  .chip i{width:7px;height:7px;flex:none}
+  .chip.danger i{background:var(--danger)} .chip.amber i{background:var(--amber)}
+  .chip b{color:var(--ink);font-weight:600}
+  .chip .pl{color:var(--faint)}
+
+  /* ---- verdict ---- */
+  .outcome{display:flex;align-items:center;gap:13px;margin-top:16px;padding:13px 15px;border:1px solid var(--line);transition:.35s}
+  .outcome .vchip{font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:5px 12px;border:1px solid;flex:none}
+  .outcome .txt{font-family:var(--mono);font-size:11.5px;color:var(--dim);line-height:1.55}
+  .outcome .txt b{color:var(--ink)}
+  .outcome.clean{background:var(--pass-dim);border-color:rgba(53,224,161,.3)}
+  .outcome.clean .vchip{color:var(--pass);border-color:rgba(53,224,161,.5)} .outcome.clean .txt b{color:var(--pass)}
+  .outcome.susp{background:var(--amber-dim);border-color:rgba(245,181,68,.3)}
+  .outcome.susp .vchip{color:var(--amber);border-color:rgba(245,181,68,.5)} .outcome.susp .txt b{color:var(--amber)}
+  .outcome.block{background:var(--danger-dim);border-color:rgba(255,107,107,.3)}
+  .outcome.block .vchip{color:var(--danger);border-color:rgba(255,107,107,.5)} .outcome.block .txt b{color:var(--danger)}
+  .outcome.block.breathe{animation:breathe 2.4s ease-in-out infinite}
+  @keyframes breathe{0%,100%{box-shadow:0 0 0 0 rgba(255,107,107,0)}50%{box-shadow:0 0 0 3px rgba(255,107,107,.08)}}
+
+  .foot{font-family:var(--mono);font-size:10px;color:var(--faint);line-height:1.5;margin-top:12px}
+
+  .controls{display:flex;align-items:center;gap:9px;margin-top:14px;flex-wrap:wrap}
+  button.run{font-family:var(--mono);font-size:11.5px;font-weight:500;color:var(--ink);background:var(--panel);border:1px solid var(--line2);padding:8px 13px;cursor:pointer;transition:.15s}
+  button.run:hover{border-color:var(--indigo);color:#fff}
+  button.run.primary{border-color:rgba(110,123,255,.45);color:var(--indigo2)}
+  button.run.primary:hover{border-color:var(--indigo);color:#fff}
+  .controls .sp{margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--faint)}
+
+  @media (prefers-reduced-motion:reduce){
+    *{transition:none!important}
+    .scan,.claim.miss .wire,.claim.miss .badge,.outcome.block.breathe{animation:none!important}
+    .scan{display:none}
+  }
+
+  /* theme-matched thin scrollbars for overflow-x boxes (replaces the default white bar) */
+  ::-webkit-scrollbar{width:8px;height:8px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:var(--line2)}
+  ::-webkit-scrollbar-thumb:hover{background:var(--faint)}
+</style>
+</head>
+<body>
+<div class="widget">
+  <div class="lead">Detectors do not trust one signal. Each weak tell adds weight to a single <b>0 to 100</b> confidence score, and only when enough of them stack does the score cross the block line. Flip the signals below and watch it climb. <b>No one signal blocks you</b>, but a datacenter ASN comes close on its own.</div>
+
+  <div class="sectlbl">geolocation consistency &nbsp;·&nbsp; the IP location, the browser timezone, and the language must agree</div>
+  <div class="geo">
+    <div class="anchor">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="12" cy="12" r="9.2"/><ellipse cx="12" cy="12" rx="4" ry="9.2"/><path d="M2.8 9.2h18.4M2.8 14.8h18.4"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/></svg>
+      <div class="who"><b>New York, US</b><span>IP geolocation · UTC-4</span></div>
+    </div>
+    <div class="claims">
+      <div class="claim" id="claimTz">
+        <span class="wire"></span>
+        <div class="cinfo"><span class="ck">browser timezone</span><span class="cv" id="tzVal">America/New_York</span></div>
+        <span class="badge" id="tzBadge">+16</span>
+        <button id="tzBtn">set Europe/Berlin</button>
+      </div>
+      <div class="claim" id="claimLang">
+        <span class="wire"></span>
+        <div class="cinfo"><span class="ck">accept-language</span><span class="cv" id="langVal">en-US</span></div>
+        <span class="badge" id="langBadge">+12</span>
+        <button id="langBtn">set de-DE</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="cards">
+    <div class="card" id="asnCard">
+      <div class="k">ASN reputation</div>
+      <div class="seg" id="asnSeg">
+        <button data-asn="datacenter" data-tone="danger">datacenter</button>
+        <button data-asn="residential" data-tone="amber">residential</button>
+        <button data-asn="mobile" data-tone="amber">mobile</button>
+      </div>
+      <div class="note" id="asnNote"></div>
+      <div class="wtag" id="asnW"></div>
+    </div>
+    <div class="card" id="blockCard">
+      <div class="k">known-proxy database</div>
+      <div class="val" id="blockVal"></div>
+      <button class="toggle" id="blockBtn"></button>
+      <div class="wtag" id="blockW"></div>
+    </div>
+    <div class="card" id="leakCard">
+      <div class="k">WebRTC / DNS leak</div>
+      <div class="val" id="leakVal"></div>
+      <button class="toggle" id="leakBtn"></button>
+      <div class="wtag" id="leakW"></div>
+    </div>
+  </div>
+
+  <div class="mwrap">
+    <div class="thlabels">
+      <div class="tl warn" style="left:40%">suspect ≥ 40</div>
+      <div class="tl stop" style="left:70%">block ≥ 70</div>
+    </div>
+    <div class="track" id="track">
+      <div class="scan"></div>
+      <div class="fill clean" id="fill"></div>
+      <div class="thr t40" style="left:40%"></div>
+      <div class="thr t70" style="left:70%"></div>
+      <div class="mark clean" id="mark"><span class="bub" id="bub">0</span></div>
+    </div>
+    <div class="zlbls"><span style="width:40%">clean</span><span style="width:30%">suspicious</span><span style="width:30%">blocked</span></div>
+  </div>
+
+  <div class="stack" id="stack"><span class="lbl">score = sum of active signals</span></div>
+
+  <div class="outcome clean" id="outcome">
+    <span class="vchip" id="vchip">clean</span>
+    <span class="txt" id="verdict"></span>
+  </div>
+
+  <div class="foot">Thresholds move with the site: banking blocks early, content sites stay permissive. Good systems risk-score rather than hard-block, because travelers on VPNs and expats keeping home settings trip the same alarms. Weights here are illustrative but keep the page's ordering: IP reputation dominates, consistency and leaks corroborate.</div>
+
+  <div class="controls">
+    <button class="run primary" id="runBtn">▸ Run detection</button>
+    <button class="run" id="pDc">datacenter, otherwise clean</button>
+    <button class="run" id="pRes">residential, weak tells stacked</button>
+    <button class="run" id="reset">reset to clean</button>
+    <span class="sp">toggle anything to recompute</span>
+  </div>
+</div>
+
+<script>
+(function(){
+  var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  function g(id){return document.getElementById(id);}
+
+  var S={asn:'residential',tz:true,lang:false,block:false,leak:false};
+
+  var ASN={
+    datacenter:{w:62,flag:'~95% flagged',note:'cloud/hosting ASN. Real users do not browse from datacenter servers.'},
+    residential:{w:18,flag:'~40-70% flagged',note:'genuine ISP IP. Hard to catch alone, needs corroboration.'},
+    mobile:{w:8,flag:'~20-40% flagged',note:'carrier NAT hides it among real mobile users. Hardest to catch.'}
+  };
+  var W={tz:16,lang:12,block:22,leak:18};
+
+  var TZ={match:'America/New_York',miss:'Europe/Berlin'};
+  var LANG={match:'en-US',miss:'de-DE'};
+
+  function parts(){
+    var p=[{key:'asn',name:S.asn+' ASN',w:ASN[S.asn].w,tone:S.asn==='datacenter'?'danger':'amber'}];
+    if(S.tz)   p.push({key:'tz',   name:'IP vs timezone',   w:W.tz,   tone:'amber'});
+    if(S.lang) p.push({key:'lang', name:'IP vs language',   w:W.lang, tone:'amber'});
+    if(S.block)p.push({key:'block',name:'blocklist hit',    w:W.block,tone:'danger'});
+    if(S.leak) p.push({key:'leak', name:'WebRTC/DNS leak',  w:W.leak, tone:'danger'});
+    return p;
+  }
+  function rawSum(){var s=0;parts().forEach(function(x){s+=x.w;});return s;}
+  function score(){return Math.min(100,rawSum());}
+  function zoneOf(sc){return sc>=70?'block':sc>=40?'susp':'clean';}
+
+  var track=g('track'),fill=g('fill'),mark=g('mark'),bub=g('bub'),outcome=g('outcome'),vchip=g('vchip'),verdict=g('verdict');
+
+  function clampL(sc){return Math.max(1.5,Math.min(98.5,sc));}
+
+  function drawDividers(sc){
+    Array.prototype.forEach.call(track.querySelectorAll('.divi'),function(d){d.remove();});
+    var p=parts(),cum=0;
+    for(var i=0;i<p.length-1;i++){
+      cum+=p[i].w;
+      if(cum>=sc-0.5) break;
+      var d=document.createElement('span');
+      d.className='divi';d.style.left=Math.min(100,cum)+'%';
+      track.appendChild(d);
+    }
+  }
+
+  function setMeter(sc){
+    var z=zoneOf(sc);
+    fill.className='fill '+z;
+    fill.style.width=Math.min(100,sc)+'%';
+    mark.className='mark '+z;
+    mark.style.left=clampL(sc)+'%';
+    bub.textContent=sc;
+    drawDividers(sc);
+  }
+
+  function renderGeo(){
+    g('claimTz').className='claim'+(S.tz?' miss':'');
+    g('tzVal').textContent=S.tz?TZ.miss:TZ.match;
+    g('tzBtn').textContent=S.tz?'set America/New_York':'set Europe/Berlin';
+    g('claimLang').className='claim'+(S.lang?' miss':'');
+    g('langVal').textContent=S.lang?LANG.miss:LANG.match;
+    g('langBtn').textContent=S.lang?'set en-US':'set de-DE';
+  }
+
+  function renderCards(){
+    Array.prototype.forEach.call(g('asnSeg').children,function(b){
+      b.classList.toggle('on',b.getAttribute('data-asn')===S.asn);
+    });
+    var a=ASN[S.asn];
+    g('asnNote').innerHTML='<b>'+a.flag+'</b> &middot; '+a.note;
+    g('asnW').innerHTML='weight <b class="'+(S.asn==='datacenter'?'d':'a')+'">+'+a.w+'</b>';
+
+    g('blockCard').className='card '+(S.block?'bad':'good');
+    g('blockVal').textContent=S.block?'listed':'clean';
+    g('blockBtn').textContent=S.block?'clear the listing':'flag: Tor exit / open port';
+    g('blockW').innerHTML=S.block?'weight <b class="d">+'+W.block+'</b>':'weight <b class="p">0</b>';
+
+    g('leakCard').className='card '+(S.leak?'bad':'good');
+    g('leakVal').textContent=S.leak?'leaking real IP':'protected';
+    g('leakBtn').textContent=S.leak?'seal the leak':'leak via WebRTC / DNS';
+    g('leakW').innerHTML=S.leak?'weight <b class="d">+'+W.leak+'</b>':'weight <b class="p">0</b>';
+  }
+
+  function renderStack(){
+    var st=g('stack');
+    st.innerHTML='<span class="lbl">score = sum of active signals</span>';
+    parts().forEach(function(x){
+      var c=document.createElement('span');
+      c.className='chip '+x.tone;
+      c.innerHTML='<i></i>'+x.name+' <b>+'+x.w+'</b>';
+      st.appendChild(c);
+    });
+  }
+
+  function renderVerdict(sc){
+    var z=zoneOf(sc),n=parts().length;
+    outcome.className='outcome '+z+(z==='block'&&!reduce?' breathe':'');
+    var driver='';
+    if(z==='clean'){
+      vchip.textContent='clean';
+      driver=(sc<20)?'Add a mismatch or a leak to see the score climb.':'One or two weak tells are not enough on their own.';
+      verdict.innerHTML='Confidence <b>'+sc+'</b>/100 &middot; below the suspicion line. This profile reads as a real user. '+driver;
+    }else if(z==='susp'){
+      vchip.textContent='suspicious';
+      if(S.asn==='datacenter') driver='A <b>datacenter ASN alone is nearly damning</b>. One more weak tell tips it over the block line.';
+      else driver='Not blocked yet. Stack one more signal and it crosses.';
+      verdict.innerHTML='Confidence <b>'+sc+'</b>/100 &middot; grey zone. Expect a CAPTCHA or extra checks, not an outright block. '+driver;
+    }else{
+      vchip.textContent='blocked';
+      if(S.asn==='datacenter') driver='The <b>datacenter ASN</b> carries most of this by itself.';
+      else if(n>=3) driver='No single one of these would block you. <b>Stacked, they cross the line.</b>';
+      else driver='Enough weight has piled up to refuse the request.';
+      verdict.innerHTML='Confidence <b>'+sc+'</b>/100 &middot; past the block threshold. The request is refused. '+driver;
+    }
+  }
+
+  function render(){
+    renderGeo();renderCards();renderStack();
+    var sc=score();
+    setMeter(sc);
+    renderVerdict(sc);
+  }
+
+  // ---- staggered "Run detection": climb the score as signals stack ----
+  var timers=[];
+  function clearTimers(){timers.forEach(clearTimeout);timers=[];}
+  function flashThr(which){
+    var el=g(which);el.style.transition='none';el.style.filter='drop-shadow(0 0 5px currentColor)';el.style.opacity='1';
+    timers.push(setTimeout(function(){el.style.transition='.5s';el.style.filter='none';},260));
+  }
+  function runDetection(){
+    clearTimers();
+    renderGeo();renderCards();renderStack();
+    var sc=score();
+    if(reduce){setMeter(sc);renderVerdict(sc);return;}
+    var p=parts(),cum=0,i=0,prev=0;
+    setMeter(0);outcome.className='outcome clean';vchip.textContent='scoring';verdict.innerHTML='Stacking signals &hellip;';
+    (function step(){
+      if(i>=p.length){renderVerdict(sc);return;}
+      cum=Math.min(100,cum+p[i].w);
+      setMeter(cum);
+      if(prev<40&&cum>=40) flashThr('t40');
+      if(prev<70&&cum>=70) flashThr('t70');
+      prev=cum;i++;
+      timers.push(setTimeout(step,reduce?0:440));
+    })();
+  }
+
+  // ---- wiring ----
+  g('tzBtn').addEventListener('click',function(){S.tz=!S.tz;render();});
+  g('langBtn').addEventListener('click',function(){S.lang=!S.lang;render();});
+  g('blockBtn').addEventListener('click',function(){S.block=!S.block;render();});
+  g('leakBtn').addEventListener('click',function(){S.leak=!S.leak;render();});
+  Array.prototype.forEach.call(g('asnSeg').children,function(b){
+    b.addEventListener('click',function(){S.asn=b.getAttribute('data-asn');render();});
+  });
+
+  g('runBtn').addEventListener('click',runDetection);
+  g('pDc').addEventListener('click',function(){S={asn:'datacenter',tz:false,lang:false,block:false,leak:false};render();runDetection();});
+  g('pRes').addEventListener('click',function(){S={asn:'residential',tz:true,lang:true,block:true,leak:true};render();runDetection();});
+  g('reset').addEventListener('click',function(){S={asn:'residential',tz:false,lang:false,block:false,leak:false};clearTimers();render();});
+
+  render();
+})();
+</script>
+<script>/*auto-fit iframe to content*/(function(){function fit(){try{if(!window.frameElement)return;var h=Math.max(document.body.scrollHeight,document.documentElement.scrollHeight);window.frameElement.style.height=h+"px";}catch(e){}}window.addEventListener("load",fit);setTimeout(fit,250);setInterval(fit,700);if(window.ResizeObserver){try{new ResizeObserver(fit).observe(document.body);}catch(e){}}})();</script>
+</body>
+</html>

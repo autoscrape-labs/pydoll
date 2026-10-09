@@ -13,7 +13,8 @@ from __future__ import annotations
 import pytest
 
 from pydoll.browser.firefox.tab import BiDiTab
-from pydoll.protocol.types import DownloadBehavior, Permission
+from pydoll.exceptions import UnsupportedOperation
+from pydoll.protocol.cdp.browser.types import DownloadBehavior, PermissionType
 
 
 @pytest.mark.asyncio
@@ -29,6 +30,22 @@ async def test_set_download_behavior_deny(fake_bidi_browser, fake_bidi_conn):
     await fake_bidi_browser.set_download_behavior(DownloadBehavior.DENY)
     behavior = fake_bidi_conn.last_command('browser.setDownloadBehavior')['params']['downloadBehavior']
     assert behavior['type'] == 'denied'
+
+
+@pytest.mark.asyncio
+async def test_set_download_behavior_default_clears_override(fake_bidi_browser, fake_bidi_conn):
+    await fake_bidi_browser.set_download_behavior(DownloadBehavior.DEFAULT)
+    params = fake_bidi_conn.last_command('browser.setDownloadBehavior')['params']
+    assert params['downloadBehavior'] is None
+
+
+@pytest.mark.asyncio
+async def test_execute_command_sends_raw_bidi_command(fake_bidi_browser, fake_bidi_conn):
+    from pydoll.commands.bidi.browser_commands import BrowserCommands
+
+    fake_bidi_conn.set_result('browser.getUserContexts', {'userContexts': []})
+    response = await fake_bidi_browser.execute_command(BrowserCommands.get_user_contexts())
+    assert response['result'] == {'userContexts': []}
 
 
 @pytest.mark.asyncio
@@ -127,9 +144,9 @@ async def test_get_version_reads_cached_capabilities(fake_bidi_browser):
         'browserName': 'Firefox', 'browserVersion': '142.0', 'userAgent': 'UA/1',
     }
     version = await fake_bidi_browser.get_version()
-    assert version['browserName'] == 'Firefox'
-    assert version['browserVersion'] == '142.0'
+    assert version['product'] == 'Firefox/142.0'
     assert version['userAgent'] == 'UA/1'
+    assert version['protocolVersion'] == ''
 
 
 @pytest.mark.asyncio
@@ -148,16 +165,19 @@ async def test_set_window_bounds_carries_dimensions(fake_bidi_browser, fake_bidi
     fake_bidi_conn.set_result(
         'browser.getClientWindows', {'clientWindows': [{'clientWindow': 'w1'}]}
     )
-    await fake_bidi_browser.set_window_bounds({'width': 800, 'height': 600})
+    await fake_bidi_browser.set_window_bounds({'width': 800, 'height': 600, 'left': 10, 'top': 20})
     params = fake_bidi_conn.last_command('browser.setClientWindowState')['params']
     assert params['width'] == 800
     assert params['height'] == 600
+    assert params['x'] == 10
+    assert params['y'] == 20
+    assert params['state'] == 'normal'
 
 
 @pytest.mark.asyncio
 async def test_grant_permissions_maps_name_and_requires_origin(fake_bidi_browser, fake_bidi_conn):
     await fake_bidi_browser.grant_permissions(
-        [Permission.GEOLOCATION], origin='https://example.com'
+        [PermissionType.GEOLOCATION], origin='https://example.com'
     )
     params = fake_bidi_conn.last_command('permissions.setPermission')['params']
     assert params['descriptor']['name'] == 'geolocation'
@@ -168,21 +188,21 @@ async def test_grant_permissions_maps_name_and_requires_origin(fake_bidi_browser
 @pytest.mark.asyncio
 async def test_grant_permissions_without_origin_raises(fake_bidi_browser):
     with pytest.raises(ValueError):
-        await fake_bidi_browser.grant_permissions([Permission.GEOLOCATION])
+        await fake_bidi_browser.grant_permissions([PermissionType.GEOLOCATION])
 
 
 @pytest.mark.asyncio
-async def test_grant_permissions_warns_on_unsupported(fake_bidi_browser):
-    with pytest.warns(UserWarning):
+async def test_grant_permissions_raises_on_unsupported(fake_bidi_browser):
+    with pytest.raises(UnsupportedOperation):
         await fake_bidi_browser.grant_permissions(
-            [Permission.PROTECTED_MEDIA_IDENTIFIER], origin='https://example.com'
+            [PermissionType.PROTECTED_MEDIA_IDENTIFIER], origin='https://example.com'
         )
 
 
 @pytest.mark.asyncio
 async def test_reset_permissions_resets_previously_granted(fake_bidi_browser, fake_bidi_conn):
     await fake_bidi_browser.grant_permissions(
-        [Permission.GEOLOCATION], origin='https://example.com'
+        [PermissionType.GEOLOCATION], origin='https://example.com'
     )
     await fake_bidi_browser.reset_permissions()
     states = [c['params']['state'] for c in fake_bidi_conn.commands_for('permissions.setPermission')]
@@ -262,7 +282,7 @@ async def test_remove_intercept_unsubscribes_on_last(fake_bidi_browser, fake_bid
 async def test_browser_set_cookies_carries_optional_attributes(fake_bidi_browser, fake_bidi_conn):
     await fake_bidi_browser.set_cookies([{
         'name': 'a', 'value': '1', 'domain': 'example.com',
-        'path': '/p', 'httpOnly': True, 'secure': True, 'expiry': 99, 'sameSite': 'Lax',
+        'path': '/p', 'httpOnly': True, 'secure': True, 'expires': 99.0, 'sameSite': 'Lax',
     }])
     cookie = fake_bidi_conn.last_command('storage.setCookie')['params']['cookie']
     assert cookie['path'] == '/p'
@@ -306,10 +326,10 @@ async def test_create_browser_context_warns_on_proxy_bypass(fake_bidi_browser, f
 @pytest.mark.asyncio
 async def test_reset_permissions_filters_by_context(fake_bidi_browser, fake_bidi_conn):
     await fake_bidi_browser.grant_permissions(
-        [Permission.GEOLOCATION], origin='https://a.com', browser_context_id='ctx-1'
+        [PermissionType.GEOLOCATION], origin='https://a.com', browser_context_id='ctx-1'
     )
     await fake_bidi_browser.grant_permissions(
-        [Permission.NOTIFICATIONS], origin='https://b.com', browser_context_id='ctx-2'
+        [PermissionType.NOTIFICATIONS], origin='https://b.com', browser_context_id='ctx-2'
     )
     fake_bidi_conn.commands.clear()
     await fake_bidi_browser.reset_permissions(browser_context_id='ctx-1')

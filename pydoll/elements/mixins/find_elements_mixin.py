@@ -2,11 +2,12 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from typing import TYPE_CHECKING, Generic, Optional, TypeVar, Union, overload
+from typing import TYPE_CHECKING, Generic, TypeVar, cast, overload
 
 from pydoll.constants import By
 from pydoll.elements.utils import SelectorParser
 from pydoll.exceptions import ElementNotFound, WaitElementTimeout
+from pydoll.utils import PollInterval
 
 if TYPE_CHECKING:
     from typing import Literal
@@ -27,35 +28,71 @@ class FindElementsMixin(Generic[T_Element]):
     with support for single/multiple element finding and configurable waiting.
     Classes using this mixin gain powerful element discovery without implementing
     complex location logic themselves.
+
+    The mixin is protocol-agnostic: the search itself is delegated to
+    ``_find_element`` / ``_find_elements``, implemented per protocol
+    (``CDPFindElementsMixin`` for Chromium, ``BidiFindElementsMixin`` for Firefox).
     """
 
     _css_only: bool = False
 
-    async def _find_element(
-        self, by: By, value: str, raise_exc: bool = True
-    ) -> Optional[T_Element]:
-        """Locate the first matching element. Implemented per protocol (CDP/BiDi)."""
+    async def _find_element(self, by: By, value: str, raise_exc: bool = True) -> T_Element | None:
+        """
+        Find first element matching selector.
+
+        Internal method performing the actual element search. Searches in the
+        document context or relative to the current element (when used from an
+        element). Implemented per protocol (CDP/BiDi).
+
+        Args:
+            by: Selector strategy (CSS_SELECTOR, XPATH, ID, etc.).
+            value: Selector value to locate element.
+            raise_exc: Whether to raise ElementNotFound if not found.
+
+        Returns:
+            Element instance or None if not found and raise_exc=False.
+
+        Raises:
+            ElementNotFound: If element not found and raise_exc=True.
+        """
         raise NotImplementedError
 
-    async def _find_elements(
-        self, by: By, value: str, raise_exc: bool = True
-    ) -> list[T_Element]:
-        """Locate all matching elements. Implemented per protocol (CDP/BiDi)."""
+    async def _find_elements(self, by: By, value: str, raise_exc: bool = True) -> list[T_Element]:
+        """
+        Find all elements matching selector.
+
+        Internal method performing the actual multi-element search. Searches in
+        the document context or relative to the current element (when used from
+        an element). Implemented per protocol (CDP/BiDi).
+
+        Args:
+            by: Selector strategy (CSS_SELECTOR, XPATH, ID, etc.).
+            value: Selector value to locate elements.
+            raise_exc: Whether to raise ElementNotFound if none found.
+
+        Returns:
+            List of element instances (empty if none found and raise_exc=False).
+
+        Raises:
+            ElementNotFound: If no elements found and raise_exc=True.
+        """
         raise NotImplementedError
 
     @staticmethod
-    def _build_text_expression(selector: str, method: str) -> Optional[str]:
-        """Build JS expression for text extraction based on selector type."""
+    def _build_text_expression(selector: str, method: str) -> str | None:
+        """
+        Build JS expression using Scripts to extract textContent based on selector type.
+        """
         return SelectorParser.build_text_expression(selector, method)
 
     @overload
     async def find(
         self,
-        id: Optional[str] = ...,
-        class_name: Optional[str] = ...,
-        name: Optional[str] = ...,
-        tag_name: Optional[str] = ...,
-        text: Optional[str] = ...,
+        id: str | None = ...,
+        class_name: str | None = ...,
+        name: str | None = ...,
+        tag_name: str | None = ...,
+        text: str | None = ...,
         timeout: int = ...,
         find_all: Literal[False] = False,
         raise_exc: Literal[True] = True,
@@ -65,25 +102,25 @@ class FindElementsMixin(Generic[T_Element]):
     @overload
     async def find(
         self,
-        id: Optional[str] = ...,
-        class_name: Optional[str] = ...,
-        name: Optional[str] = ...,
-        tag_name: Optional[str] = ...,
-        text: Optional[str] = ...,
+        id: str | None = ...,
+        class_name: str | None = ...,
+        name: str | None = ...,
+        tag_name: str | None = ...,
+        text: str | None = ...,
         timeout: int = ...,
         find_all: Literal[False] = False,
         raise_exc: Literal[False] = False,
         **attributes,
-    ) -> Optional[T_Element]: ...
+    ) -> T_Element | None: ...
 
     @overload
     async def find(
         self,
-        id: Optional[str] = ...,
-        class_name: Optional[str] = ...,
-        name: Optional[str] = ...,
-        tag_name: Optional[str] = ...,
-        text: Optional[str] = ...,
+        id: str | None = ...,
+        class_name: str | None = ...,
+        name: str | None = ...,
+        tag_name: str | None = ...,
+        text: str | None = ...,
         timeout: int = ...,
         find_all: Literal[True] = True,
         raise_exc: Literal[True] = True,
@@ -93,43 +130,43 @@ class FindElementsMixin(Generic[T_Element]):
     @overload
     async def find(
         self,
-        id: Optional[str] = ...,
-        class_name: Optional[str] = ...,
-        name: Optional[str] = ...,
-        tag_name: Optional[str] = ...,
-        text: Optional[str] = ...,
+        id: str | None = ...,
+        class_name: str | None = ...,
+        name: str | None = ...,
+        tag_name: str | None = ...,
+        text: str | None = ...,
         timeout: int = ...,
         find_all: Literal[True] = True,
         raise_exc: Literal[False] = False,
         **attributes,
-    ) -> Optional[list[T_Element]]: ...
+    ) -> list[T_Element] | None: ...
 
     @overload
     async def find(
         self,
-        id: Optional[str] = ...,
-        class_name: Optional[str] = ...,
-        name: Optional[str] = ...,
-        tag_name: Optional[str] = ...,
-        text: Optional[str] = ...,
+        id: str | None = ...,
+        class_name: str | None = ...,
+        name: str | None = ...,
+        tag_name: str | None = ...,
+        text: str | None = ...,
         timeout: int = ...,
         find_all: bool = ...,
         raise_exc: bool = ...,
         **attributes,
-    ) -> Union[T_Element, list[T_Element], None]: ...
+    ) -> T_Element | list[T_Element] | None: ...
 
     async def find(
         self,
-        id: Optional[str] = None,
-        class_name: Optional[str] = None,
-        name: Optional[str] = None,
-        tag_name: Optional[str] = None,
-        text: Optional[str] = None,
+        id: str | None = None,
+        class_name: str | None = None,
+        name: str | None = None,
+        tag_name: str | None = None,
+        text: str | None = None,
         timeout: int = 0,
         find_all: bool = False,
         raise_exc: bool = True,
         **attributes: dict[str, str],
-    ) -> Union[T_Element, list[T_Element], None]:
+    ) -> T_Element | list[T_Element] | None:
         """
         Find element(s) using combination of common HTML attributes.
 
@@ -162,9 +199,17 @@ class FindElementsMixin(Generic[T_Element]):
             )
 
         logger.debug(
-            f'find() called with id={id}, class_name={class_name}, name={name}, '
-            f'tag_name={tag_name}, text={text}, timeout={timeout}, '
-            f'find_all={find_all}, raise_exc={raise_exc}, attrs={attributes}'
+            'find() called with id=%s, class_name=%s, name=%s, tag_name=%s, text=%s, '
+            'timeout=%s, find_all=%s, raise_exc=%s, attrs=%s',
+            id,
+            class_name,
+            name,
+            tag_name,
+            text,
+            timeout,
+            find_all,
+            raise_exc,
+            attributes,
         )
         if not any([id, class_name, name, tag_name, text, *attributes.keys()]):
             raise ValueError(
@@ -182,7 +227,7 @@ class FindElementsMixin(Generic[T_Element]):
         by, value = self._get_by_and_value(
             by_map, id, class_name, name, tag_name, text, **attributes
         )
-        logger.debug(f'find() resolved to by={by} value={value}')
+        logger.debug('find() resolved to by=%s value=%s', by, value)
         return await self._find_or_wait_element(
             by, value, timeout=timeout, find_all=find_all, raise_exc=raise_exc
         )
@@ -203,7 +248,7 @@ class FindElementsMixin(Generic[T_Element]):
         timeout: int = ...,
         find_all: Literal[False] = False,
         raise_exc: Literal[False] = False,
-    ) -> Optional[T_Element]: ...
+    ) -> T_Element | None: ...
 
     @overload
     async def query(
@@ -221,7 +266,7 @@ class FindElementsMixin(Generic[T_Element]):
         timeout: int = ...,
         find_all: Literal[True] = True,
         raise_exc: Literal[False] = False,
-    ) -> Optional[list[T_Element]]: ...
+    ) -> list[T_Element] | None: ...
 
     @overload
     async def query(
@@ -230,11 +275,11 @@ class FindElementsMixin(Generic[T_Element]):
         timeout: int = ...,
         find_all: bool = ...,
         raise_exc: bool = ...,
-    ) -> Union[T_Element, list[T_Element], None]: ...
+    ) -> T_Element | list[T_Element] | None: ...
 
     async def query(
         self, expression: str, timeout: int = 0, find_all: bool = False, raise_exc: bool = True
-    ) -> Union[T_Element, list[T_Element], None]:
+    ) -> T_Element | list[T_Element] | None:
         """
         Find element(s) using raw CSS selector or XPath expression.
 
@@ -261,11 +306,14 @@ class FindElementsMixin(Generic[T_Element]):
             )
 
         logger.debug(
-            f'query() called with expression={expression}, timeout={timeout}, '
-            f'find_all={find_all}, raise_exc={raise_exc}'
+            'query() called with expression=%s, timeout=%s, find_all=%s, raise_exc=%s',
+            expression,
+            timeout,
+            find_all,
+            raise_exc,
         )
         by = self._get_expression_type(expression)
-        logger.debug(f'query() resolved to by={by}')
+        logger.debug('query() resolved to by=%s', by)
         return await self._find_or_wait_element(
             by=by, value=expression, timeout=timeout, find_all=find_all, raise_exc=raise_exc
         )
@@ -277,13 +325,13 @@ class FindElementsMixin(Generic[T_Element]):
         timeout: int = 0,
         find_all: bool = False,
         raise_exc: bool = True,
-    ) -> Union[T_Element, list[T_Element], None]:
+    ) -> T_Element | list[T_Element] | None:
         """
         Core element finding method with optional waiting capability.
 
-        Searches for elements with flexible waiting. If timeout specified,
-        repeatedly attempts to find elements with 0.5s delays until success or timeout.
-        Used by higher-level find() and query() methods.
+        Searches for elements with flexible waiting. If a timeout is given, it
+        polls with a short, growing pause until success or timeout. This is the
+        engine behind ``find()`` and ``query()``; those two are the public way in.
 
         Args:
             by: Selector strategy (CSS_SELECTOR, XPATH, ID, etc.).
@@ -300,8 +348,12 @@ class FindElementsMixin(Generic[T_Element]):
             WaitElementTimeout: If elements not found within timeout and raise_exc=True.
         """
         logger.debug(
-            f'_find_or_wait_element(): by={by}, value={value}, timeout={timeout}, '
-            f'find_all={find_all}, raise_exc={raise_exc}'
+            '_find_or_wait_element(): by=%s, value=%s, timeout=%s, find_all=%s, raise_exc=%s',
+            by,
+            value,
+            timeout,
+            find_all,
+            raise_exc,
         )
 
         if by == By.XPATH:
@@ -315,22 +367,23 @@ class FindElementsMixin(Generic[T_Element]):
             return await self._find_across_iframes(segments, timeout, find_all, raise_exc)
 
         find_method = self._find_element if not find_all else self._find_elements
-        start_time = asyncio.get_event_loop().time()
+        start_time = asyncio.get_running_loop().time()
 
         if not timeout:
             logger.debug('No timeout specified; performing single attempt')
             return await find_method(by, value, raise_exc=raise_exc)
 
+        interval = PollInterval()
         while True:
             element = await find_method(by, value, raise_exc=False)
             if element:
                 if isinstance(element, list):
-                    logger.debug(f'Found {len(element)} elements within timeout window')
+                    logger.debug('Found %s elements within timeout window', len(element))
                 else:
                     logger.debug('Found 1 element within timeout window')
                 return element
 
-            if asyncio.get_event_loop().time() - start_time > timeout:
+            if asyncio.get_running_loop().time() - start_time > timeout:
                 if raise_exc:
                     logger.error('Timeout while waiting for elements')
                     raise WaitElementTimeout(
@@ -339,7 +392,7 @@ class FindElementsMixin(Generic[T_Element]):
                     )
                 return None
 
-            await asyncio.sleep(0.5)
+            await interval.wait()
 
     async def _find_across_iframes(
         self,
@@ -347,7 +400,7 @@ class FindElementsMixin(Generic[T_Element]):
         timeout: int,
         find_all: bool,
         raise_exc: bool,
-    ) -> Union[T_Element, list[T_Element], None]:
+    ) -> T_Element | list[T_Element] | None:
         """
         Retry loop for iframe-crossing element searches.
 
@@ -355,7 +408,7 @@ class FindElementsMixin(Generic[T_Element]):
         element is found or the *timeout* expires.
 
         Args:
-            segments: Ordered ``(By, selector)`` pairs — one per iframe boundary
+            segments: Ordered ``(By, selector)`` pairs, one per iframe boundary
                 plus a final selector for the target element(s).
             timeout: Maximum seconds to wait (0 = single attempt).
             find_all: If ``True``, the last segment uses ``_find_elements``.
@@ -368,8 +421,9 @@ class FindElementsMixin(Generic[T_Element]):
             ElementNotFound: If ``timeout=0``, nothing found, and ``raise_exc=True``.
             WaitElementTimeout: If timeout expires and ``raise_exc=True``.
         """
-        start_time = asyncio.get_event_loop().time()
+        start_time = asyncio.get_running_loop().time()
         selector_repr = ' -> '.join(seg for _, seg in segments)
+        interval = PollInterval()
 
         while True:
             result = await self._attempt_find_across_iframes(segments, find_all)
@@ -381,7 +435,7 @@ class FindElementsMixin(Generic[T_Element]):
                     raise ElementNotFound(f'Element not found across iframes: {selector_repr}')
                 return [] if find_all else None
 
-            if asyncio.get_event_loop().time() - start_time > timeout:
+            if asyncio.get_running_loop().time() - start_time > timeout:
                 if raise_exc:
                     raise WaitElementTimeout(
                         f'Timed out after {timeout}s waiting for element '
@@ -389,13 +443,13 @@ class FindElementsMixin(Generic[T_Element]):
                     )
                 return [] if find_all else None
 
-            await asyncio.sleep(0.5)
+            await interval.wait()
 
     async def _attempt_find_across_iframes(
         self,
         segments: list[tuple[By, str]],
         find_all: bool,
-    ) -> Union[T_Element, list[T_Element], None]:
+    ) -> T_Element | list[T_Element] | None:
         """
         Single attempt to walk iframe segments and find the target element.
 
@@ -410,7 +464,7 @@ class FindElementsMixin(Generic[T_Element]):
         Returns:
             Found element(s) or ``None`` / ``[]`` if any intermediate step fails.
         """
-        current_context: FindElementsMixin = self
+        current_context: FindElementsMixin[T_Element] = self
         for i, (by, selector) in enumerate(segments):
             is_last = i == len(segments) - 1
             if is_last:
@@ -422,22 +476,37 @@ class FindElementsMixin(Generic[T_Element]):
             element = await current_context._find_element(by, selector, raise_exc=False)
             if not element or not getattr(element, 'is_iframe', False):
                 return None
-            current_context = element
+            current_context = cast('FindElementsMixin[T_Element]', element)
         return None
 
-    @staticmethod
     def _get_by_and_value(
+        self,
         by_map: dict[str, By],
-        id: Optional[str] = None,
-        class_name: Optional[str] = None,
-        name: Optional[str] = None,
-        tag_name: Optional[str] = None,
-        text: Optional[str] = None,
+        id: str | None = None,
+        class_name: str | None = None,
+        name: str | None = None,
+        tag_name: str | None = None,
+        text: str | None = None,
         **attributes,
     ) -> tuple[By, str]:
-        """Determine selector strategy and value from provided arguments."""
+        """
+        Determine appropriate selector strategy and value from provided arguments.
+
+        For single attribute: uses direct selector strategy.
+        For multiple attributes: builds XPath expression.
+        """
+        logger.debug(
+            '_get_by_and_value(): id=%s, class_name=%s, name=%s, tag_name=%s, text=%s, attrs=%s',
+            id,
+            class_name,
+            name,
+            tag_name,
+            text,
+            attributes,
+        )
         xpath_raw = attributes.get('xpath')
         if isinstance(xpath_raw, str) and xpath_raw:
+            logger.debug('Explicit XPath provided; using raw expression: %s', xpath_raw)
             return By.XPATH, xpath_raw
 
         simple_selectors = {
@@ -451,29 +520,51 @@ class FindElementsMixin(Generic[T_Element]):
         if len(provided_selectors) == 1 and not text and not attributes:
             key, value = next(iter(provided_selectors.items()))
             by = by_map[key]
+            logger.debug('Simple selector resolved: by=%s, value=%s', by, value)
             return by, value
 
-        xpath = SelectorParser.build_xpath(id, class_name, name, tag_name, text, **attributes)
+        xpath = self._build_xpath(id, class_name, name, tag_name, text, **attributes)
+        logger.debug('Complex selector resolved to XPath: %s', xpath)
         return By.XPATH, xpath
 
     @staticmethod
-    def _get_expression_type(expression: str) -> By:
-        """Auto-detect selector type (CSS vs XPath) from expression syntax."""
-        return SelectorParser.get_expression_type(expression)
-
-    @staticmethod
     def _build_xpath(
-        id: Optional[str] = None,
-        class_name: Optional[str] = None,
-        name: Optional[str] = None,
-        tag_name: Optional[str] = None,
-        text: Optional[str] = None,
+        id: str | None = None,
+        class_name: str | None = None,
+        name: str | None = None,
+        tag_name: str | None = None,
+        text: str | None = None,
         **attributes: str,
     ) -> str:
-        """Build XPath expression from multiple attribute criteria."""
+        """
+        Build XPath expression from multiple attribute criteria.
+
+        Constructs complex XPath combining multiple conditions with 'and' operators.
+        Handles class names correctly for space-separated class lists.
+        Uses contains() for text matching (partial text support).
+
+        Note:
+            Attribute names with underscores are automatically converted to hyphens
+            to match HTML attribute naming conventions (e.g., data_test -> data-test).
+        """
         return SelectorParser.build_xpath(id, class_name, name, tag_name, text, **attributes)
 
     @staticmethod
+    def _get_expression_type(expression: str) -> By:
+        """
+        Auto-detect selector type from expression syntax.
+
+        Patterns:
+        - XPath: starts with ./, or /
+        - Default: CSS_SELECTOR
+        """
+        return SelectorParser.get_expression_type(expression)
+
+    @staticmethod
     def _ensure_relative_xpath(xpath: str) -> str:
-        """Ensure XPath is relative by prepending dot if needed."""
+        """
+        Ensure XPath is relative by prepending dot if needed.
+
+        Converts absolute XPath to relative for context-based searches.
+        """
         return SelectorParser.ensure_relative_xpath(xpath)

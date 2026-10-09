@@ -14,9 +14,7 @@ import base64
 from pathlib import Path
 
 import pytest
-import pytest_asyncio
 
-from pydoll.browser.chromium import Chrome
 from pydoll.exceptions import (
     InvalidFileExtension,
     MissingScreenshotPath,
@@ -32,13 +30,6 @@ PDF_MAGIC = b'%PDF'
 
 def _file_url(name: str) -> str:
     return f'file://{(PAGES / name).absolute()}'
-
-
-@pytest_asyncio.fixture
-async def tab(ci_chrome_options):
-    async with Chrome(options=ci_chrome_options) as browser:
-        page = await browser.start()
-        yield page
 
 
 class TestScreenshots:

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from pydoll.protocol.bidi.base import Command
 from pydoll.protocol.bidi.permissions.methods import (
@@ -21,7 +21,7 @@ class PermissionsCommands:
         descriptor: PermissionDescriptor,
         state: str,
         origin: str,
-        user_context: Optional[str] = None,
+        user_context: str | None = None,
     ) -> SetPermissionCommand:
         """Generates a command to set a permission state for an origin."""
         params = SetPermissionParameters(

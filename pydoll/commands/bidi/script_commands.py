@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from pydoll.protocol.bidi.base import Command
 from pydoll.protocol.bidi.script.methods import (
@@ -37,15 +37,13 @@ class ScriptCommands:
     @staticmethod
     def add_preload_script(
         function_declaration: str,
-        arguments: Optional[list[ChannelValue]] = None,
-        contexts: Optional[list[str]] = None,
-        user_contexts: Optional[list[str]] = None,
-        sandbox: Optional[str] = None,
+        arguments: list[ChannelValue] | None = None,
+        contexts: list[str] | None = None,
+        user_contexts: list[str] | None = None,
+        sandbox: str | None = None,
     ) -> AddPreloadScriptCommand:
         """Generates a command to add a preload script."""
-        params = AddPreloadScriptParameters(
-            functionDeclaration=function_declaration
-        )
+        params = AddPreloadScriptParameters(functionDeclaration=function_declaration)
         if arguments is not None:
             params['arguments'] = arguments
         if contexts is not None:
@@ -69,11 +67,11 @@ class ScriptCommands:
         function_declaration: str,
         await_promise: bool,
         target: Target,
-        arguments: Optional[list[LocalValue]] = None,
-        result_ownership: Optional[ResultOwnership] = None,
-        serialization_options: Optional[SerializationOptions] = None,
-        this: Optional[LocalValue] = None,
-        user_activation: Optional[bool] = None,
+        arguments: list[LocalValue] | None = None,
+        result_ownership: ResultOwnership | None = None,
+        serialization_options: SerializationOptions | None = None,
+        this: LocalValue | None = None,
+        user_activation: bool | None = None,
     ) -> CallFunctionCommand:
         """Generates a command to call a function in a realm."""
         params = CallFunctionParameters(
@@ -98,9 +96,9 @@ class ScriptCommands:
         expression: str,
         target: Target,
         await_promise: bool,
-        result_ownership: Optional[ResultOwnership] = None,
-        serialization_options: Optional[SerializationOptions] = None,
-        user_activation: Optional[bool] = None,
+        result_ownership: ResultOwnership | None = None,
+        serialization_options: SerializationOptions | None = None,
+        user_activation: bool | None = None,
     ) -> EvaluateCommand:
         """Generates a command to evaluate an expression in a realm."""
         params = EvaluateParameters(
@@ -118,8 +116,8 @@ class ScriptCommands:
 
     @staticmethod
     def get_realms(
-        context: Optional[str] = None,
-        type: Optional[RealmType] = None,
+        context: str | None = None,
+        type: RealmType | None = None,
     ) -> GetRealmsCommand:
         """Generates a command to get all realms."""
         params = GetRealmsParameters()

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from pydoll.commands.bidi.browsing_context_commands import BrowsingContextCommands
 from pydoll.connection.bidi_connection_handler import BiDiConnectionHandler
@@ -40,7 +40,7 @@ class BidiFindElementsMixin(FindElementsMixin['BiDiWebElement']):
         _connection_handler: BiDiConnectionHandler
         _context_id: str
 
-    async def _resolve_locate_target(self) -> tuple[str, Optional[list[SharedReference]]]:
+    async def _resolve_locate_target(self) -> tuple[str, list[SharedReference] | None]:
         """Return the (browsing-context id, start nodes) to run locateNodes against.
 
         Default: this finder's own context, scoped to its sharedId when it is an
@@ -51,7 +51,7 @@ class BidiFindElementsMixin(FindElementsMixin['BiDiWebElement']):
 
     async def _find_element(
         self, by: By, value: str, raise_exc: bool = True
-    ) -> Optional[BiDiWebElement]:
+    ) -> BiDiWebElement | None:
         """Find first element matching selector using BiDi locateNodes."""
         context, start_nodes = await self._resolve_locate_target()
         response = await self._execute_command(
@@ -115,7 +115,7 @@ class BidiFindElementsMixin(FindElementsMixin['BiDiWebElement']):
             case _:
                 return CssLocator(type='css', value=value)
 
-    def _get_start_nodes(self) -> Optional[list[SharedReference]]:
+    def _get_start_nodes(self) -> list[SharedReference] | None:
         """Get start nodes for scoped search.
 
         Returns None for document-level search (Tab),

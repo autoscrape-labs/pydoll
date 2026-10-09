@@ -11,6 +11,7 @@ from __future__ import annotations
 import pytest
 
 from pydoll.browser.chromium import Chrome
+from pydoll.protocol.cdp.network.types import ErrorReason
 from pydoll.browser.chromium.tab import Tab
 from pydoll.exceptions import InvalidWebSocketAddress
 from pydoll.protocol.cdp.browser.types import Bounds, DownloadBehavior, PermissionType, WindowState
@@ -70,15 +71,29 @@ async def test_reset_permissions_sends_command(browser, fake_conn):
 @pytest.mark.asyncio
 async def test_get_window_id_for_target_parses_and_carries_target(browser, fake_conn):
     fake_conn.set_response('Browser.getWindowForTarget', {'windowId': 42})
-    assert await browser._get_window_id_for_target('target-1') == 42
+    assert await browser.get_window_id_for_target('target-1') == 42
     sent = fake_conn.last_command('Browser.getWindowForTarget')
     assert sent['params']['targetId'] == 'target-1'
 
 
 @pytest.mark.asyncio
 async def test_continue_request_carries_request_id(browser, fake_conn):
-    await browser._continue_request(request_id='r1')
+    await browser.continue_request(request_id='r1')
     assert fake_conn.last_command('Fetch.continueRequest')['params']['requestId'] == 'r1'
+
+
+@pytest.mark.asyncio
+async def test_fail_request_carries_error_reason(browser, fake_conn):
+    await browser.fail_request('r1', ErrorReason.FAILED)
+    sent = fake_conn.last_command('Fetch.failRequest')
+    assert sent['params']['requestId'] == 'r1'
+    assert sent['params']['errorReason'] == 'Failed'
+
+
+@pytest.mark.asyncio
+async def test_fulfill_request_carries_response_code(browser, fake_conn):
+    await browser.fulfill_request(request_id='r1', response_code=204)
+    assert fake_conn.last_command('Fetch.fulfillRequest')['params']['responseCode'] == 204
 
 
 @pytest.mark.asyncio
@@ -118,7 +133,7 @@ async def test_get_version_returns_result(browser, fake_conn):
         },
     )
     version = await browser.get_version()
-    assert version['browserName'] == 'Chrome/120'
+    assert version['product'] == 'Chrome/120'
 
 
 @pytest.mark.asyncio
@@ -164,7 +179,7 @@ async def test_delete_all_cookies_clears_storage(browser, fake_conn):
 
 @pytest.mark.asyncio
 async def test_get_window_id_resolves_via_valid_target(window_browser):
-    assert await window_browser._get_window_id() == 7
+    assert await window_browser.get_window_id() == 7
 
 
 @pytest.mark.asyncio
@@ -192,21 +207,21 @@ async def test_set_window_bounds_carries_dimensions(window_browser, fake_conn):
 
 @pytest.mark.asyncio
 async def test_enable_fetch_events_carries_auth_and_resource_type(browser, fake_conn):
-    await browser._enable_fetch_events(handle_auth_requests=True, resource_type=ResourceType.XHR)
+    await browser.enable_fetch_events(handle_auth_requests=True, resource_type=ResourceType.XHR)
     sent = fake_conn.last_command('Fetch.enable')
     assert sent['params']['handleAuthRequests'] is True
 
 
 @pytest.mark.asyncio
 async def test_disable_fetch_events_sends_disable(browser, fake_conn):
-    await browser._disable_fetch_events()
+    await browser.disable_fetch_events()
     assert fake_conn.commands_for('Fetch.disable')
 
 
 @pytest.mark.asyncio
 async def test_enable_and_disable_runtime_events(browser, fake_conn):
-    await browser._enable_runtime_events()
-    await browser._disable_runtime_events()
+    await browser.enable_runtime_events()
+    await browser.disable_runtime_events()
     assert fake_conn.commands_for('Runtime.enable')
     assert fake_conn.commands_for('Runtime.disable')
 
@@ -300,7 +315,7 @@ async def test_worker_user_agent_handler_overrides_attached_worker(fake_conn):
         '(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
     )
     parsed = UserAgentParser.parse(user_agent)
-    handler = Chrome._build_worker_user_agent_handler(parsed, user_agent, fake_conn)
+    handler = Chrome._build_worker_user_agent_handler(parsed, fake_conn)
 
     await handler({'params': {
         'sessionId': 's1',

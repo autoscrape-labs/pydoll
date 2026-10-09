@@ -1,8 +1,10 @@
 from pydoll.utils.general import (
+    PollInterval,
     TextExtractor,
     clean_script_for_analysis,
     decode_base64_to_bytes,
     extract_text_from_html,
+    find_free_port,
     get_browser_ws_address,
     has_return_outside_function,
     is_script_already_function,
@@ -10,6 +12,7 @@ from pydoll.utils.general import (
     validate_browser_paths,
 )
 from pydoll.utils.socks5_proxy_forwarder import SOCKS5Forwarder
+from pydoll.utils.url_match import UrlPattern, glob_to_regex_pattern, url_matcher
 from pydoll.utils.user_agent_parser import UserAgentParser
 
 __all__ = [
@@ -18,6 +21,11 @@ __all__ = [
     'decode_base64_to_bytes',
     'extract_text_from_html',
     'get_browser_ws_address',
+    'find_free_port',
+    'PollInterval',
+    'UrlPattern',
+    'glob_to_regex_pattern',
+    'url_matcher',
     'has_return_outside_function',
     'is_script_already_function',
     'normalize_synthetic_xpath',

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from pydoll.protocol.bidi.base import Command
 from pydoll.protocol.bidi.browsing_context.methods import (
@@ -63,9 +63,9 @@ class BrowsingContextCommands:
     @staticmethod
     def capture_screenshot(
         context: str,
-        origin: Optional[str] = None,
-        format: Optional[ImageFormat] = None,
-        clip: Optional[ClipRectangle] = None,
+        origin: str | None = None,
+        format: ImageFormat | None = None,
+        clip: ClipRectangle | None = None,
     ) -> CaptureScreenshotCommand:
         """Generates a command to capture a screenshot."""
         params = CaptureScreenshotParameters(context=context)
@@ -80,7 +80,7 @@ class BrowsingContextCommands:
     @staticmethod
     def close(
         context: str,
-        prompt_unload: Optional[bool] = None,
+        prompt_unload: bool | None = None,
     ) -> CloseCommand:
         """Generates a command to close a top-level context."""
         params = CloseParameters(context=context)
@@ -91,9 +91,9 @@ class BrowsingContextCommands:
     @staticmethod
     def create(
         type: CreateType,
-        reference_context: Optional[str] = None,
-        background: Optional[bool] = None,
-        user_context: Optional[str] = None,
+        reference_context: str | None = None,
+        background: bool | None = None,
+        user_context: str | None = None,
     ) -> CreateCommand:
         """Generates a command to create a new tab or window."""
         params = CreateParameters(type=type)
@@ -107,8 +107,8 @@ class BrowsingContextCommands:
 
     @staticmethod
     def get_tree(
-        max_depth: Optional[int] = None,
-        root: Optional[str] = None,
+        max_depth: int | None = None,
+        root: str | None = None,
     ) -> GetTreeCommand:
         """Generates a command to get the tree of browsing contexts."""
         params = GetTreeParameters()
@@ -121,8 +121,8 @@ class BrowsingContextCommands:
     @staticmethod
     def handle_user_prompt(
         context: str,
-        accept: Optional[bool] = None,
-        user_text: Optional[str] = None,
+        accept: bool | None = None,
+        user_text: str | None = None,
     ) -> HandleUserPromptCommand:
         """Generates a command to handle a user prompt (alert/confirm/prompt)."""
         params = HandleUserPromptParameters(context=context)
@@ -136,9 +136,9 @@ class BrowsingContextCommands:
     def locate_nodes(
         context: str,
         locator: Locator,
-        max_node_count: Optional[int] = None,
-        serialization_options: Optional[SerializationOptions] = None,
-        start_nodes: Optional[list[SharedReference]] = None,
+        max_node_count: int | None = None,
+        serialization_options: SerializationOptions | None = None,
+        start_nodes: list[SharedReference] | None = None,
     ) -> LocateNodesCommand:
         """Generates a command to locate nodes matching a locator."""
         params = LocateNodesParameters(context=context, locator=locator)
@@ -154,7 +154,7 @@ class BrowsingContextCommands:
     def navigate(
         context: str,
         url: str,
-        wait: Optional[ReadinessState] = None,
+        wait: ReadinessState | None = None,
     ) -> NavigateCommand:
         """Generates a command to navigate to a URL."""
         params = NavigateParameters(context=context, url=url)
@@ -165,13 +165,13 @@ class BrowsingContextCommands:
     @staticmethod
     def print(
         context: str,
-        background: Optional[bool] = None,
-        margin: Optional[PrintMarginParameters] = None,
-        orientation: Optional[str] = None,
-        page: Optional[PrintPageParameters] = None,
-        page_ranges: Optional[list[int | str]] = None,
-        scale: Optional[float] = None,
-        shrink_to_fit: Optional[bool] = None,
+        background: bool | None = None,
+        margin: PrintMarginParameters | None = None,
+        orientation: str | None = None,
+        page: PrintPageParameters | None = None,
+        page_ranges: list[int | str] | None = None,
+        scale: float | None = None,
+        shrink_to_fit: bool | None = None,
     ) -> PrintCommand:
         """Generates a command to print a page as PDF."""
         params = PrintParameters(context=context)
@@ -194,8 +194,8 @@ class BrowsingContextCommands:
     @staticmethod
     def reload(
         context: str,
-        ignore_cache: Optional[bool] = None,
-        wait: Optional[ReadinessState] = None,
+        ignore_cache: bool | None = None,
+        wait: ReadinessState | None = None,
     ) -> ReloadCommand:
         """Generates a command to reload the current page."""
         params = ReloadParameters(context=context)
@@ -208,8 +208,8 @@ class BrowsingContextCommands:
     @staticmethod
     def set_bypass_csp(
         bypass: bool | None,
-        contexts: Optional[list[str]] = None,
-        user_contexts: Optional[list[str]] = None,
+        contexts: list[str] | None = None,
+        user_contexts: list[str] | None = None,
     ) -> SetBypassCSPCommand:
         """Generates a command to bypass Content Security Policy."""
         params = SetBypassCSPParameters(bypass=bypass)
@@ -221,10 +221,10 @@ class BrowsingContextCommands:
 
     @staticmethod
     def set_viewport(
-        context: Optional[str] = None,
-        viewport: Optional[Viewport] = None,
-        device_pixel_ratio: Optional[float] = None,
-        user_contexts: Optional[list[str]] = None,
+        context: str | None = None,
+        viewport: Viewport | None = None,
+        device_pixel_ratio: float | None = None,
+        user_contexts: list[str] | None = None,
     ) -> SetViewportCommand:
         """Generates a command to set viewport dimensions."""
         params = SetViewportParameters()

@@ -169,3 +169,9 @@ dev_test_file.py
 bidi_spec.md
 bidi_spec_full.md
 debug_bidi.py
+
+# Internal tooling and private studies
+tools/
+private-studies/
+FINGERPRINT_AUDIT_*
+FINGERPRINT_TRACES_*

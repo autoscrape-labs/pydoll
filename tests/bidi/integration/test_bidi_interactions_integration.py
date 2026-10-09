@@ -22,7 +22,7 @@ async def page_tab(tab, page_url):
 
 
 async def _live(tab, expression: str):
-    return await tab.execute_script(f'return {expression}')
+    return await tab.evaluate(f'return {expression}')
 
 
 @pytest.mark.asyncio(loop_scope='module')
@@ -34,7 +34,7 @@ async def test_humanized_mouse_click_triggers_button(page_tab):
 
     await page_tab.mouse.click(center_x, center_y, humanize=True)
 
-    assert (await (await page_tab.find(id='clicks')).text) == '1'
+    assert (await (await page_tab.find(id='clicks')).text()) == '1'
 
 
 @pytest.mark.asyncio(loop_scope='module')

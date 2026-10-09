@@ -14,10 +14,8 @@ from pathlib import Path
 import pytest
 import pytest_asyncio
 
-from pydoll.browser.chromium import Chrome
-from pydoll.constants import Key
-from pydoll.elements.cdp.web_element import WebElement
 from pydoll.exceptions import (
+    CommandFailed,
     ElementNotFound,
     ElementNotInteractable,
     ElementNotVisible,
@@ -30,20 +28,14 @@ PAGE_URL = f'file://{(Path(__file__).parents[2] / "pages" / "web_element.html").
 
 async def _live(element_or_tab, expression: str):
     """Read a live JS value from an element or tab via execute_script."""
-    if isinstance(element_or_tab, WebElement):
-        result = await element_or_tab.execute_script(
-            f'return {expression}', return_by_value=True
-        )
-        return result['result']['result']['value']
-    return await element_or_tab.execute_script(f'return {expression}')
+    result = await element_or_tab.execute_script(f'return {expression}', return_by_value=True)
+    return result['result']['result']['value']
 
 
 @pytest_asyncio.fixture
-async def element_tab(ci_chrome_options):
-    async with Chrome(options=ci_chrome_options) as browser:
-        tab = await browser.start()
-        await tab.go_to(PAGE_URL)
-        yield tab
+async def element_tab(tab):
+    await tab.go_to(PAGE_URL)
+    return tab
 
 
 @pytest.mark.asyncio
@@ -51,7 +43,7 @@ async def test_click_triggers_dom_side_effect(element_tab):
     button = await element_tab.find(id='btn')
     await button.click()
     counter = await element_tab.find(id='clicks')
-    assert (await counter.text) == '1'
+    assert (await counter.text()) == '1'
 
 
 @pytest.mark.asyncio
@@ -59,7 +51,7 @@ async def test_click_using_js_triggers_handler(element_tab):
     button = await element_tab.find(id='js-btn')
     await button.click_using_js()
     result = await element_tab.find(id='js-clicks')
-    assert (await result.text) == 'clicked'
+    assert (await result.text()) == 'clicked'
 
 
 @pytest.mark.asyncio
@@ -83,12 +75,6 @@ async def test_insert_text_and_clear_update_value(element_tab):
     assert await _live(field, 'this.value') == ''
 
 
-@pytest.mark.xfail(
-    reason='insert_text caches the inserted text as the whole value; on a non-empty '
-    'field the real DOM value is the existing text plus the insertion, so the '
-    'cached element.value diverges from the DOM',
-    strict=False,
-)
 @pytest.mark.asyncio
 async def test_insert_text_cached_value_matches_dom_on_nonempty_field(element_tab):
     field = await element_tab.find(id='text-input')
@@ -155,7 +141,7 @@ async def test_clicking_option_selects_it(element_tab):
     option = await element_tab.find(id='opt-b')
     await option.click()
     selected = await element_tab.find(id='select-value')
-    assert (await selected.text) == 'b'
+    assert (await selected.text()) == 'b'
 
 
 @pytest.mark.asyncio
@@ -166,24 +152,15 @@ async def test_set_input_files_attaches_file(element_tab):
 
 
 @pytest.mark.asyncio
-async def test_press_keyboard_key_dispatches_to_focused_element(element_tab):
-    key_input = await element_tab.find(id='key-input')
-    await key_input.click()
-    with pytest.warns(DeprecationWarning):
-        await key_input.press_keyboard_key(Key.ENTER)
-    assert 'Enter' in await _live(element_tab, "document.getElementById('key-log').textContent")
-
-
-@pytest.mark.asyncio
 async def test_text_inner_html_and_bounds(element_tab):
     title = await element_tab.find(id='title')
-    assert (await title.text) == 'WebElement Test Page'
-    assert '<h1' in (await title.inner_html)
+    assert (await title.text()) == 'WebElement Test Page'
+    assert '<h1' in (await title.inner_html())
 
     bounds = await title.get_bounds_using_js()
     assert bounds['width'] > 0
     assert bounds['height'] > 0
-    assert isinstance(await title.bounds, list)
+    assert isinstance(await title.bounds(), list)
 
 
 @pytest.mark.asyncio
@@ -191,7 +168,7 @@ async def test_get_shadow_root_returns_traversable_root(element_tab):
     host = await element_tab.find(id='shadow-host')
     shadow_root = await host.get_shadow_root()
     inner = await shadow_root.query('#shadow-btn')
-    assert (await inner.text) == 'inside shadow'
+    assert (await inner.text()) == 'inside shadow'
 
 
 @pytest.mark.asyncio
@@ -206,7 +183,7 @@ async def test_get_shadow_root_with_timeout_waits_for_late_attachment(element_ta
     host = await element_tab.find(id='shadow-host-late')
     shadow_root = await host.get_shadow_root(timeout=3)
     inner = await shadow_root.query('#late-shadow')
-    assert (await inner.text) == 'late shadow content'
+    assert (await inner.text()) == 'late shadow content'
 
 
 @pytest.mark.asyncio
@@ -228,7 +205,7 @@ async def test_humanized_click_triggers_dom_side_effect(element_tab):
     button = await element_tab.find(id='btn')
     await button.click(humanize=True)
     counter = await element_tab.find(id='clicks')
-    assert (await counter.text) == '1'
+    assert (await counter.text()) == '1'
 
 
 @pytest.mark.asyncio
@@ -332,11 +309,106 @@ async def test_state_flags_false_after_context_invalidated(element_tab):
 @pytest.mark.asyncio
 async def test_iframe_context_is_none_for_non_iframe(element_tab):
     title = await element_tab.find(id='title')
-    assert await title.iframe_context is None
+    assert await title.iframe_context() is None
 
 
 @pytest.mark.asyncio
-async def test_bounds_raises_key_error_for_element_without_box_model(element_tab):
+async def test_bounds_raises_command_failed_for_element_without_box_model(element_tab):
     contents_only = await element_tab.find(id='contents-only')
-    with pytest.raises(KeyError):
-        await contents_only.bounds
+    with pytest.raises(CommandFailed):
+        await contents_only.bounds()
+
+
+# --- insert_text on input types where selectionStart/selectionEnd throw ---
+
+
+@pytest.mark.asyncio
+async def test_insert_text_on_number_input_does_not_raise(element_tab):
+    """type=number inputs throw InvalidStateError on selectionStart/selectionEnd.
+
+    The guarded INSERT_TEXT JS must catch this and still update the value.
+    """
+    field = await element_tab.find(id='number-input')
+    await field.insert_text('99')
+    assert await _live(field, 'this.value') == '4299'
+    assert field.value == '4299'
+
+
+@pytest.mark.asyncio
+async def test_insert_text_on_email_input_does_not_raise(element_tab):
+    """type=email inputs also lack selection APIs in some browsers."""
+    field = await element_tab.find(id='email-input')
+    await field.insert_text('+tag')
+    assert await _live(field, 'this.value') == 'user@example.com+tag'
+    assert field.value == 'user@example.com+tag'
+
+
+@pytest.mark.asyncio
+async def test_insert_text_on_text_input_still_restores_selection(element_tab):
+    """Normal text inputs must continue to support selection restoration."""
+    field = await element_tab.find(id='text-input')
+    await field.clear()
+    await field.insert_text('hello')
+    # Place cursor in the middle, then insert
+    await field.execute_script(
+        "this.selectionStart = this.selectionEnd = 2; return null",
+        return_by_value=True,
+    )
+    await field.insert_text('XY')
+    live = await _live(field, 'this.value')
+    assert live == 'heXYllo'
+    assert field.value == 'heXYllo'
+
+
+@pytest.mark.asyncio
+async def test_insert_text_empty_on_number_input_clears_via_select_all(element_tab):
+    """Empty insert on a non-selectable input still runs the select-all path.
+
+    el.select() is a no-op on number inputs, so start=0/end=length causes
+    the value to be replaced with '' (before='' + text='' + after='').
+    """
+    field = await element_tab.find(id='number-input')
+    # Reset to known value via JS directly (can't clear() on number input)
+    await field.execute_script("this.value = '7'", return_by_value=True)
+    await field.insert_text('')
+    live = await _live(field, 'this.value')
+    assert live == ''
+    assert field.value == ''
+
+
+@pytest.mark.asyncio
+async def test_insert_text_falls_back_to_append_when_selection_read_throws(element_tab):
+    """Simulate browsers that throw on reading selectionStart/selectionEnd.
+
+    Chromium returns null for non-selectable inputs, but some browsers (e.g.
+    Firefox) throw InvalidStateError on the read. Shadow the getters to throw,
+    then verify insert_text falls back to the append-only path (first catch
+    block, constants.py lines 414-419).
+    """
+    field = await element_tab.find(id='text-input')
+    await field.clear()
+    await field.execute_script("this.value = 'before'", return_by_value=True)
+
+    # Shadow selectionStart/selectionEnd with throwing getters
+    await field.execute_script(r"""
+        Object.defineProperty(this, 'selectionStart', {
+            get: function() { throw new DOMException('no selection', 'InvalidStateError'); },
+            configurable: true
+        });
+        Object.defineProperty(this, 'selectionEnd', {
+            get: function() { throw new DOMException('no selection', 'InvalidStateError'); },
+            configurable: true
+        });
+    """)
+
+    await field.insert_text(' after')
+
+    live = await _live(field, 'this.value')
+    assert live == 'before after'
+    assert field.value == 'before after'
+
+    # Empty text should clear the field, not leave it unchanged
+    await field.insert_text('')
+    live = await _live(field, 'this.value')
+    assert live == ''
+    assert field.value == ''

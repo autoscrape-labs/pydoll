@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Events fixtures</title>
+</head>
+<body>
+    <h1 id="title">Events fixtures</h1>
+    <button id="alert-btn" onclick="alert('hi there')">Alert</button>
+    <button id="confirm-btn" onclick="document.getElementById('confirm-result').textContent = String(confirm('sure?'))">Confirm</button>
+    <button id="prompt-btn" onclick="document.getElementById('prompt-result').textContent = String(prompt('name?', 'dflt'))">Prompt</button>
+    <span id="confirm-result"></span>
+    <span id="prompt-result"></span>
+
+    <a id="download-link" href="data:text/plain;charset=utf-8,hello%20download" download="hello.txt">Download</a>
+    <button id="popup-btn" onclick="window.open('about:blank', '_blank')">Popup</button>
+    <input id="file-input" type="file">
+    <input id="file-input-multi" type="file" multiple>
+    <span id="file-result"></span>
+
+    <form id="form" onsubmit="event.preventDefault(); document.getElementById('submitted').textContent = 'submitted:' + document.getElementById('name').value">
+        <input id="name" name="name" type="text">
+        <button id="submit" type="submit">Send</button>
+    </form>
+    <span id="submitted"></span>
+
+    <div id="keys"></div>
+    <div id="mouse"></div>
+    <div id="hover-target" style="width:120px;height:60px;background:#ddd">hover me</div>
+    <div id="hover-result"></div>
+    <div id="scroll-box" style="height:120px;overflow:auto;border:1px solid #999">
+        <div style="height:600px"></div>
+        <button id="deep-btn">Deep</button>
+    </div>
+    <div id="wheel-result"></div>
+    <div id="drag-source" draggable="true" style="width:80px;height:40px;background:#9cf">drag</div>
+    <div id="drop-target" style="width:120px;height:80px;background:#fc9">drop</div>
+    <div id="drop-result"></div>
+    <a id="hash-link" href="#section">Go to section</a>
+    <a id="page-link" href="test_core_simple.html">Other page</a>
+    <div id="section">Section</div>
+    <button id="delayed-btn" style="display:none">Appears later</button>
+    <button id="reveal" onclick="setTimeout(() => document.getElementById('delayed-btn').style.display = '', 300)">Reveal</button>
+
+    <script>
+        document.getElementById('file-input').addEventListener('change', e => {
+            document.getElementById('file-result').textContent = [...e.target.files].map(f => f.name).join(',');
+        });
+        document.getElementById('file-input-multi').addEventListener('change', e => {
+            document.getElementById('file-result').textContent = [...e.target.files].map(f => f.name).join(',');
+        });
+        document.addEventListener('keydown', e => {
+            document.getElementById('keys').textContent += `${e.key}:${e.code}:${e.ctrlKey ? 'c' : ''}${e.shiftKey ? 's' : ''};`;
+        });
+        document.getElementById('mouse').addEventListener('click', e => {
+            e.currentTarget.textContent = `${e.button}:${e.detail}`;
+        });
+        document.getElementById('mouse').style.cssText = 'width:100px;height:100px;background:#cfc';
+        document.getElementById('mouse').addEventListener('contextmenu', e => { e.preventDefault(); e.currentTarget.textContent = 'context'; });
+        document.getElementById('mouse').addEventListener('dblclick', e => { e.currentTarget.textContent = 'dbl:' + e.detail; });
+        document.getElementById('hover-target').addEventListener('mouseenter', () => {
+            document.getElementById('hover-result').textContent = 'hovered';
+        });
+        document.getElementById('scroll-box').addEventListener('wheel', e => {
+            document.getElementById('wheel-result').textContent = 'wheel:' + Math.sign(e.deltaY);
+        });
+        const source = document.getElementById('drag-source');
+        const target = document.getElementById('drop-target');
+        source.addEventListener('dragstart', e => e.dataTransfer.setData('text/plain', 'payload'));
+        target.addEventListener('dragover', e => e.preventDefault());
+        target.addEventListener('drop', e => {
+            e.preventDefault();
+            document.getElementById('drop-result').textContent = 'dropped:' + e.dataTransfer.getData('text/plain');
+        });
+        window.addEventListener('load', () => { window.__loaded = true; });
+    </script>
+</body>
+</html>

@@ -117,13 +117,7 @@ class XPathLocator(TypedDict):
     value: str
 
 
-Locator = (
-    AccessibilityLocator
-    | CssLocator
-    | ContextLocator
-    | InnerTextLocator
-    | XPathLocator
-)
+Locator = AccessibilityLocator | CssLocator | ContextLocator | InnerTextLocator | XPathLocator
 
 
 class ImageFormat(TypedDict):

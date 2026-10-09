@@ -1,7 +1,7 @@
 """Unit tests for the humanized movement engine of Mouse.
 
-A FakeMouseTab records the dispatched CDP mouse events (and any debug scripts),
-playing the role of the browser. The humanized paths run real physics — Bezier
+A FakeMouseConnection records the dispatched CDP mouse events (and any debug
+scripts), playing the role of the browser connection. The humanized paths run real physics — Bezier
 curves, Fitts's-law timing, overshoot/correction, tremor — so the assertions
 target the observable outcome: the cursor ends on the target, a click presses
 and releases there, a drag presses at the start and releases at the end, and an
@@ -37,20 +37,25 @@ FAST = MouseTimingConfig(
 )
 
 
-class FakeMouseTab:
-    """Stand-in browser that records dispatched mouse events and debug scripts."""
+class FakeMouseConnection:
+    """Stand-in connection that records dispatched mouse events and debug scripts."""
 
     def __init__(self):
         self.events: list[dict] = []
         self.scripts: list[str] = []
+        self.unawaited: int = 0
 
-    async def _execute_command(self, command):
+    async def execute_command(self, command, timeout: int = 60):
         method = command['method']
         if method == 'Input.dispatchMouseEvent':
             self.events.append(command['params'])
         elif method == 'Runtime.evaluate':
             self.scripts.append(command['params']['expression'])
         return {'result': {'result': {'value': ''}}}
+
+    async def execute_command_nowait(self, command) -> None:
+        self.unawaited += 1
+        await self.execute_command(command)
 
 
 def _of_type(events, event_type):
@@ -59,7 +64,7 @@ def _of_type(events, event_type):
 
 @pytest.fixture
 def fake_tab():
-    return FakeMouseTab()
+    return FakeMouseConnection()
 
 
 @pytest.mark.asyncio
@@ -166,3 +171,64 @@ async def test_debug_overlay_recreated_on_every_draw_so_it_survives_navigation(f
     overlay_scripts = [script for script in fake_tab.scripts if '__pydoll_mouse_debug' in script]
     assert overlay_scripts
     assert all('createElement' in script for script in overlay_scripts)
+
+
+@pytest.mark.asyncio
+async def test_press_carries_buttons_and_pressure(fake_tab):
+    mouse = Mouse(fake_tab, timing=FAST)
+    await mouse.click(60, 40)
+
+    pressed = _of_type(fake_tab.events, 'mousePressed')[0]
+    released = _of_type(fake_tab.events, 'mouseReleased')[0]
+    assert pressed['buttons'] == 1
+    assert pressed['force'] == 0.5
+    assert 'buttons' not in released
+    assert 'force' not in released
+
+
+@pytest.mark.asyncio
+async def test_drag_moves_carry_the_held_button(fake_tab):
+    mouse = Mouse(fake_tab, timing=FAST)
+    await mouse.move(10, 10, humanize=True)
+    await mouse.drag(10, 10, 200, 120, humanize=True)
+    await mouse.move(250, 150, humanize=True)
+
+    events = fake_tab.events
+    press = next(i for i, e in enumerate(events) if e['type'] == 'mousePressed')
+    release = next(i for i, e in enumerate(events) if e['type'] == 'mouseReleased')
+    before = [e for e in events[:press] if e['type'] == 'mouseMoved']
+    during = [e for e in events[press + 1 : release] if e['type'] == 'mouseMoved']
+    after = [e for e in events[release + 1 :] if e['type'] == 'mouseMoved']
+    assert during
+    assert all(e['button'] == 'left' and e['buttons'] == 1 and e['force'] == 0.5 for e in during)
+    assert all('buttons' not in e and 'force' not in e for e in before + after)
+
+
+@pytest.mark.asyncio
+async def test_intermediate_moves_are_sent_without_waiting_and_the_last_one_waits(fake_tab):
+    mouse = Mouse(fake_tab, timing=FAST)
+    await mouse.move(200, 150, humanize=True)
+
+    moves = _of_type(fake_tab.events, 'mouseMoved')
+    assert fake_tab.unawaited == len(moves) - 1
+    assert (moves[-1]['x'], moves[-1]['y']) == (200, 150)
+
+
+@pytest.mark.asyncio
+async def test_a_session_bound_mouse_stamps_every_event_with_its_session(fake_tab):
+    class Recording(FakeMouseConnection):
+        def __init__(self):
+            super().__init__()
+            self.sessions: list[str | None] = []
+
+        async def execute_command(self, command, timeout: int = 60):
+            self.sessions.append(command.get('sessionId'))
+            return await super().execute_command(command, timeout)
+
+    connection = Recording()
+    mouse = Mouse(connection, session_id='frame-session', timing=FAST)
+    await mouse.click(40, 30, humanize=True)
+
+    assert connection.sessions
+    assert set(connection.sessions) == {'frame-session'}
+    assert _of_type(connection.events, 'mousePressed')[0]['x'] == 40

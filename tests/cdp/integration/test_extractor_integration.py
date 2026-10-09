@@ -7,7 +7,6 @@ from typing import Optional
 
 import pytest
 
-from pydoll.browser.chromium import Chrome
 from pydoll.extractor import (
     ExtractionModel,
     Field,
@@ -214,188 +213,148 @@ class TestExtractSingle:
     """Tests for tab.extract() — single item extraction."""
 
     @pytest.mark.asyncio
-    async def test_extract_simple_text_fields(self, ci_chrome_options):
-        async with Chrome(options=ci_chrome_options) as browser:
-            tab = await browser.start()
-            await tab.go_to(FILE_URL)
+    async def test_extract_simple_text_fields(self, tab):
+        await tab.go_to(FILE_URL)
 
-            article = await tab.extract(SimpleArticle, timeout=5)
-            assert article.title == 'Understanding Web Scraping'
-            assert 'extracting data' in article.body
+        article = await tab.extract(SimpleArticle, timeout=5)
+        assert article.title == 'Understanding Web Scraping'
+        assert 'extracting data' in article.body
 
     @pytest.mark.asyncio
-    async def test_extract_multiple_attributes(self, ci_chrome_options):
-        async with Chrome(options=ci_chrome_options) as browser:
-            tab = await browser.start()
-            await tab.go_to(FILE_URL)
+    async def test_extract_multiple_attributes(self, tab):
+        await tab.go_to(FILE_URL)
 
-            article = await tab.extract(ArticleWithAttributes, timeout=5)
-            assert article.published_at == '2025-03-15'
-            assert article.image_src == 'https://example.com/hero.jpg'
-            assert article.image_alt == 'Hero image'
-            assert article.image_data_id == 'img-42'
-            assert article.link_href == 'https://example.com/article/1'
+        article = await tab.extract(ArticleWithAttributes, timeout=5)
+        assert article.published_at == '2025-03-15'
+        assert article.image_src == 'https://example.com/hero.jpg'
+        assert article.image_alt == 'Hero image'
+        assert article.image_data_id == 'img-42'
+        assert article.link_href == 'https://example.com/article/1'
 
     @pytest.mark.asyncio
-    async def test_extract_list_of_strings(self, ci_chrome_options):
-        async with Chrome(options=ci_chrome_options) as browser:
-            tab = await browser.start()
-            await tab.go_to(FILE_URL)
+    async def test_extract_list_of_strings(self, tab):
+        await tab.go_to(FILE_URL)
 
-            article = await tab.extract(ArticleWithTags, timeout=5)
-            assert article.tags == ['python', 'automation', 'web']
+        article = await tab.extract(ArticleWithTags, timeout=5)
+        assert article.tags == ['python', 'automation', 'web']
 
     @pytest.mark.asyncio
-    async def test_extract_with_transform(self, ci_chrome_options):
-        async with Chrome(options=ci_chrome_options) as browser:
-            tab = await browser.start()
-            await tab.go_to(FILE_URL)
+    async def test_extract_with_transform(self, tab):
+        await tab.go_to(FILE_URL)
 
-            article = await tab.extract(ArticleWithTransform, timeout=5)
-            assert article.price == 1234.56
+        article = await tab.extract(ArticleWithTransform, timeout=5)
+        assert article.price == 1234.56
 
     @pytest.mark.asyncio
-    async def test_extract_nested_model(self, ci_chrome_options):
-        async with Chrome(options=ci_chrome_options) as browser:
-            tab = await browser.start()
-            await tab.go_to(FILE_URL)
+    async def test_extract_nested_model(self, tab):
+        await tab.go_to(FILE_URL)
 
-            article = await tab.extract(ArticleWithNestedAuthor, timeout=5)
-            assert article.title == 'Understanding Web Scraping'
-            assert article.author.name == 'Jane Doe'
-            assert article.author.avatar_url == 'https://example.com/jane.jpg'
-            assert 'open source' in article.author.bio
+        article = await tab.extract(ArticleWithNestedAuthor, timeout=5)
+        assert article.title == 'Understanding Web Scraping'
+        assert article.author.name == 'Jane Doe'
+        assert article.author.avatar_url == 'https://example.com/jane.jpg'
+        assert 'open source' in article.author.bio
 
     @pytest.mark.asyncio
-    async def test_extract_optional_missing_fields(self, ci_chrome_options):
-        async with Chrome(options=ci_chrome_options) as browser:
-            tab = await browser.start()
-            await tab.go_to(FILE_URL)
+    async def test_extract_optional_missing_fields(self, tab):
+        await tab.go_to(FILE_URL)
 
-            article = await tab.extract(ArticleWithOptional, timeout=5)
-            assert article.title == 'Understanding Web Scraping'
-            assert article.subtitle is None
-            assert article.missing_with_default == 'fallback_value'
+        article = await tab.extract(ArticleWithOptional, timeout=1)
+        assert article.title == 'Understanding Web Scraping'
+        assert article.subtitle is None
+        assert article.missing_with_default == 'fallback_value'
 
     @pytest.mark.asyncio
-    async def test_extract_with_xpath_selector(self, ci_chrome_options):
-        async with Chrome(options=ci_chrome_options) as browser:
-            tab = await browser.start()
-            await tab.go_to(FILE_URL)
+    async def test_extract_with_xpath_selector(self, tab):
+        await tab.go_to(FILE_URL)
 
-            result = await tab.extract(XPathModel, timeout=5)
-            assert result.value == 'Found via XPath'
+        result = await tab.extract(XPathModel, timeout=5)
+        assert result.value == 'Found via XPath'
 
     @pytest.mark.asyncio
-    async def test_extract_with_scope(self, ci_chrome_options):
-        async with Chrome(options=ci_chrome_options) as browser:
-            tab = await browser.start()
-            await tab.go_to(FILE_URL)
+    async def test_extract_with_scope(self, tab):
+        await tab.go_to(FILE_URL)
 
-            article = await tab.extract(
-                SimpleArticle, scope='#main-article', timeout=5
-            )
-            assert article.title == 'Understanding Web Scraping'
+        article = await tab.extract(SimpleArticle, scope='#main-article', timeout=5)
+        assert article.title == 'Understanding Web Scraping'
 
     @pytest.mark.asyncio
-    async def test_extract_description_only_field_uses_default(self, ci_chrome_options):
-        async with Chrome(options=ci_chrome_options) as browser:
-            tab = await browser.start()
-            await tab.go_to(FILE_URL)
+    async def test_extract_description_only_field_uses_default(self, tab):
+        await tab.go_to(FILE_URL)
 
-            article = await tab.extract(DescriptionOnlyField, timeout=5)
-            assert article.title == 'Understanding Web Scraping'
-            assert article.sentiment == 'unknown'
+        article = await tab.extract(DescriptionOnlyField, timeout=5)
+        assert article.title == 'Understanding Web Scraping'
+        assert article.sentiment == 'unknown'
 
     @pytest.mark.asyncio
-    async def test_extract_required_field_missing_raises(self, ci_chrome_options):
-        async with Chrome(options=ci_chrome_options) as browser:
-            tab = await browser.start()
-            await tab.go_to(FILE_URL)
+    async def test_extract_required_field_missing_raises(self, tab):
+        await tab.go_to(FILE_URL)
 
-            with pytest.raises(FieldExtractionFailed):
-                await tab.extract(RequiredFieldMissing, timeout=5)
+        with pytest.raises(FieldExtractionFailed):
+            await tab.extract(RequiredFieldMissing, timeout=1)
 
     @pytest.mark.asyncio
-    async def test_extract_model_dump(self, ci_chrome_options):
+    async def test_extract_model_dump(self, tab):
         """Verify pydantic serialization works on extracted models."""
-        async with Chrome(options=ci_chrome_options) as browser:
-            tab = await browser.start()
-            await tab.go_to(FILE_URL)
+        await tab.go_to(FILE_URL)
 
-            article = await tab.extract(ArticleWithNestedAuthor, timeout=5)
-            data = article.model_dump()
-            assert isinstance(data, dict)
-            assert data['title'] == 'Understanding Web Scraping'
-            assert isinstance(data['author'], dict)
-            assert data['author']['name'] == 'Jane Doe'
+        article = await tab.extract(ArticleWithNestedAuthor, timeout=5)
+        data = article.model_dump()
+        assert isinstance(data, dict)
+        assert data['title'] == 'Understanding Web Scraping'
+        assert isinstance(data['author'], dict)
+        assert data['author']['name'] == 'Jane Doe'
 
 
 class TestExtractAll:
     """Tests for tab.extract_all() — multiple item extraction."""
 
     @pytest.mark.asyncio
-    async def test_extract_all_basic(self, ci_chrome_options):
-        async with Chrome(options=ci_chrome_options) as browser:
-            tab = await browser.start()
-            await tab.go_to(FILE_URL)
+    async def test_extract_all_basic(self, tab):
+        await tab.go_to(FILE_URL)
 
-            quotes = await tab.extract_all(QuoteModel, scope='.quote', timeout=5)
-            assert len(quotes) == 3
-            assert quotes[0].text == 'The only way to do great work is to love what you do.'
-            assert quotes[0].author == 'Steve Jobs'
-            assert quotes[2].text == 'Stay hungry, stay foolish.'
+        quotes = await tab.extract_all(QuoteModel, scope='.quote', timeout=5)
+        assert len(quotes) == 3
+        assert quotes[0].text == 'The only way to do great work is to love what you do.'
+        assert quotes[0].author == 'Steve Jobs'
+        assert quotes[2].text == 'Stay hungry, stay foolish.'
 
     @pytest.mark.asyncio
-    async def test_extract_all_with_transform(self, ci_chrome_options):
-        async with Chrome(options=ci_chrome_options) as browser:
-            tab = await browser.start()
-            await tab.go_to(FILE_URL)
+    async def test_extract_all_with_transform(self, tab):
+        await tab.go_to(FILE_URL)
 
-            quotes = await tab.extract_all(QuoteWithYear, scope='.quote', timeout=5)
-            assert len(quotes) == 3
-            assert quotes[0].year == 2005
-            assert quotes[1].year == 2001
-            assert isinstance(quotes[0].year, int)
+        quotes = await tab.extract_all(QuoteWithYear, scope='.quote', timeout=5)
+        assert len(quotes) == 3
+        assert quotes[0].year == 2005
+        assert quotes[1].year == 2001
+        assert isinstance(quotes[0].year, int)
 
     @pytest.mark.asyncio
-    async def test_extract_all_with_limit(self, ci_chrome_options):
-        async with Chrome(options=ci_chrome_options) as browser:
-            tab = await browser.start()
-            await tab.go_to(FILE_URL)
+    async def test_extract_all_with_limit(self, tab):
+        await tab.go_to(FILE_URL)
 
-            quotes = await tab.extract_all(
-                QuoteModel, scope='.quote', limit=2, timeout=5
-            )
-            assert len(quotes) == 2
+        quotes = await tab.extract_all(QuoteModel, scope='.quote', limit=2, timeout=5)
+        assert len(quotes) == 2
 
     @pytest.mark.asyncio
-    async def test_extract_all_with_nested_model(self, ci_chrome_options):
-        async with Chrome(options=ci_chrome_options) as browser:
-            tab = await browser.start()
-            await tab.go_to(FILE_URL)
+    async def test_extract_all_with_nested_model(self, tab):
+        await tab.go_to(FILE_URL)
 
-            products = await tab.extract_all(
-                ProductModel, scope='.product-card', timeout=5
-            )
-            assert len(products) == 2
-            assert products[0].name == 'Laptop Pro'
-            assert products[0].price == 5999.00
-            assert products[0].meta.brand == 'TechCorp'
-            assert products[0].meta.sku == 'SKU-001'
-            assert products[1].name == 'Mouse Wireless'
-            assert products[1].meta.brand == 'PeripheralCo'
+        products = await tab.extract_all(ProductModel, scope='.product-card', timeout=5)
+        assert len(products) == 2
+        assert products[0].name == 'Laptop Pro'
+        assert products[0].price == 5999.00
+        assert products[0].meta.brand == 'TechCorp'
+        assert products[0].meta.sku == 'SKU-001'
+        assert products[1].name == 'Mouse Wireless'
+        assert products[1].meta.brand == 'PeripheralCo'
 
     @pytest.mark.asyncio
-    async def test_extract_all_no_matches_returns_empty(self, ci_chrome_options):
-        async with Chrome(options=ci_chrome_options) as browser:
-            tab = await browser.start()
-            await tab.go_to(FILE_URL)
+    async def test_extract_all_no_matches_returns_empty(self, tab):
+        await tab.go_to(FILE_URL)
 
-            results = await tab.extract_all(
-                QuoteModel, scope='.nonexistent-container', timeout=5
-            )
-            assert results == []
+        results = await tab.extract_all(QuoteModel, scope='.nonexistent-container', timeout=1)
+        assert results == []
 
 
 class TestValidation:
@@ -419,43 +378,36 @@ class TestEdgeCases:
     """Tests for edge cases and inheritance."""
 
     @pytest.mark.asyncio
-    async def test_model_inheritance_includes_parent_fields(self, ci_chrome_options):
+    async def test_model_inheritance_includes_parent_fields(self, tab):
         """ExtendedArticle should have both parent's title and own body fields."""
-        async with Chrome(options=ci_chrome_options) as browser:
-            tab = await browser.start()
-            await tab.go_to(FILE_URL)
+        await tab.go_to(FILE_URL)
 
-            article = await tab.extract(ExtendedArticle, timeout=5)
-            assert article.title == 'Understanding Web Scraping'
-            assert 'extracting data' in article.body
+        article = await tab.extract(ExtendedArticle, timeout=5)
+        assert article.title == 'Understanding Web Scraping'
+        assert 'extracting data' in article.body
 
     @pytest.mark.asyncio
-    async def test_failed_transform_on_optional_field_uses_default(self, ci_chrome_options):
+    async def test_failed_transform_on_optional_field_uses_default(self, tab):
         """Transform that throws on Optional field should fall back to default."""
-        async with Chrome(options=ci_chrome_options) as browser:
-            tab = await browser.start()
-            await tab.go_to(FILE_URL)
+        await tab.go_to(FILE_URL)
 
-            article = await tab.extract(ArticleWithBadTransform, timeout=5)
-            assert article.title == 'Understanding Web Scraping'
-            assert article.broken_price is None
+        article = await tab.extract(ArticleWithBadTransform, timeout=5)
+        assert article.title == 'Understanding Web Scraping'
+        assert article.broken_price is None
 
     @pytest.mark.asyncio
-    async def test_extract_all_with_scope_returns_correct_count(self, ci_chrome_options):
+    async def test_extract_all_with_scope_returns_correct_count(self, tab):
         """extract_all should only match elements within the page."""
-        async with Chrome(options=ci_chrome_options) as browser:
-            tab = await browser.start()
-            await tab.go_to(FILE_URL)
+        await tab.go_to(FILE_URL)
 
-            products = await tab.extract_all(ProductModel, scope='.product-card', timeout=5)
-            assert len(products) == 2
-            # Verify each product has correct nested data
-            for product in products:
-                assert product.meta.brand
-                assert product.meta.sku
+        products = await tab.extract_all(ProductModel, scope='.product-card', timeout=5)
+        assert len(products) == 2
+        for product in products:
+            assert product.meta.brand
+            assert product.meta.sku
 
     @pytest.mark.asyncio
-    async def test_empty_list_field(self, ci_chrome_options):
+    async def test_empty_list_field(self, tab):
         """list field with no matching elements should return empty list."""
 
         class ModelWithEmptyList(ExtractionModel):
@@ -465,50 +417,42 @@ class TestEdgeCases:
                 description='Items that do not exist',
             )
 
-        async with Chrome(options=ci_chrome_options) as browser:
-            tab = await browser.start()
-            await tab.go_to(FILE_URL)
+        await tab.go_to(FILE_URL)
 
-            result = await tab.extract(ModelWithEmptyList, timeout=5)
-            assert result.title == 'Understanding Web Scraping'
-            assert result.items == []
+        result = await tab.extract(ModelWithEmptyList, timeout=1)
+        assert result.title == 'Understanding Web Scraping'
+        assert result.items == []
 
     @pytest.mark.asyncio
-    async def test_pep604_optional_syntax(self, ci_chrome_options):
+    async def test_pep604_optional_syntax(self, tab):
         """str | None (PEP 604) should be handled the same as Optional[str]."""
-        async with Chrome(options=ci_chrome_options) as browser:
-            tab = await browser.start()
-            await tab.go_to(FILE_URL)
+        await tab.go_to(FILE_URL)
 
-            result = await tab.extract(PEP604OptionalModel, timeout=5)
-            assert result.title == 'Understanding Web Scraping'
-            assert result.subtitle is None
+        result = await tab.extract(PEP604OptionalModel, timeout=1)
+        assert result.title == 'Understanding Web Scraping'
+        assert result.subtitle is None
 
     @pytest.mark.asyncio
-    async def test_list_of_nested_models(self, ci_chrome_options):
+    async def test_list_of_nested_models(self, tab):
         """list[ExtractionModel] should extract each item as a nested model."""
-        async with Chrome(options=ci_chrome_options) as browser:
-            tab = await browser.start()
-            await tab.go_to(FILE_URL)
+        await tab.go_to(FILE_URL)
 
-            article = await tab.extract(
-                MultiAuthorArticle, scope='#multi-author-article', timeout=5
-            )
-            assert article.title == 'Collaborative Research Paper'
-            assert len(article.contributors) == 3
-            assert article.contributors[0].name == 'Alice Smith'
-            assert article.contributors[0].role == 'Lead Researcher'
-            assert article.contributors[1].name == 'Bob Johnson'
-            assert article.contributors[1].role == 'Data Analyst'
-            assert article.contributors[2].name == 'Carol Williams'
-            assert article.contributors[2].role == 'Reviewer'
+        article = await tab.extract(MultiAuthorArticle, scope='#multi-author-article', timeout=5)
+        assert article.title == 'Collaborative Research Paper'
+        assert len(article.contributors) == 3
+        assert article.contributors[0].name == 'Alice Smith'
+        assert article.contributors[0].role == 'Lead Researcher'
+        assert article.contributors[1].name == 'Bob Johnson'
+        assert article.contributors[1].role == 'Data Analyst'
+        assert article.contributors[2].name == 'Carol Williams'
+        assert article.contributors[2].role == 'Reviewer'
 
 
 class TestConcurrentExtraction:
     """Tests that validate concurrent field and container extraction."""
 
     @pytest.mark.asyncio
-    async def test_many_fields_extracted_concurrently(self, ci_chrome_options):
+    async def test_many_fields_extracted_concurrently(self, tab):
         """Model with many fields should extract them all concurrently."""
 
         class FullArticle(ExtractionModel):
@@ -544,52 +488,44 @@ class TestConcurrentExtraction:
             )
             tags: list[str] = Field(selector='.tag-list .tag', description='Tags')
 
-        async with Chrome(options=ci_chrome_options) as browser:
-            tab = await browser.start()
-            await tab.go_to(FILE_URL)
+        await tab.go_to(FILE_URL)
 
-            article = await tab.extract(FullArticle, timeout=5)
-            assert article.title == 'Understanding Web Scraping'
-            assert article.author_name == 'Jane Doe'
-            assert article.published == '2025-03-15'
-            assert article.image_src == 'https://example.com/hero.jpg'
-            assert article.image_alt == 'Hero image'
-            assert 'R$' in article.price
-            assert len(article.tags) == 3
+        article = await tab.extract(FullArticle, timeout=5)
+        assert article.title == 'Understanding Web Scraping'
+        assert article.author_name == 'Jane Doe'
+        assert article.published == '2025-03-15'
+        assert article.image_src == 'https://example.com/hero.jpg'
+        assert article.image_alt == 'Hero image'
+        assert 'R$' in article.price
+        assert len(article.tags) == 3
 
     @pytest.mark.asyncio
-    async def test_extract_all_containers_concurrently(self, ci_chrome_options):
+    async def test_extract_all_containers_concurrently(self, tab):
         """extract_all should process all containers concurrently."""
-        async with Chrome(options=ci_chrome_options) as browser:
-            tab = await browser.start()
-            await tab.go_to(FILE_URL)
+        await tab.go_to(FILE_URL)
 
-            quotes = await tab.extract_all(QuoteWithYear, scope='.quote', timeout=5)
-            assert len(quotes) == 3
-            # All quotes should have been extracted correctly
-            assert quotes[0].year == 2005
-            assert quotes[1].year == 2001
-            assert quotes[2].year == 2005
-            assert quotes[0].author == 'Steve Jobs'
-            assert quotes[1].author == 'Steve Jobs'
+        quotes = await tab.extract_all(QuoteWithYear, scope='.quote', timeout=5)
+        assert len(quotes) == 3
+        assert quotes[0].year == 2005
+        assert quotes[1].year == 2001
+        assert quotes[2].year == 2005
+        assert quotes[0].author == 'Steve Jobs'
+        assert quotes[1].author == 'Steve Jobs'
 
     @pytest.mark.asyncio
-    async def test_concurrent_nested_with_multiple_containers(self, ci_chrome_options):
+    async def test_concurrent_nested_with_multiple_containers(self, tab):
         """extract_all with nested models should handle concurrency correctly."""
-        async with Chrome(options=ci_chrome_options) as browser:
-            tab = await browser.start()
-            await tab.go_to(FILE_URL)
+        await tab.go_to(FILE_URL)
 
-            products = await tab.extract_all(ProductModel, scope='.product-card', timeout=5)
-            assert len(products) == 2
-            # Both products extracted concurrently with nested meta
-            assert products[0].name == 'Laptop Pro'
-            assert products[0].meta.brand == 'TechCorp'
-            assert products[1].name == 'Mouse Wireless'
-            assert products[1].meta.brand == 'PeripheralCo'
+        products = await tab.extract_all(ProductModel, scope='.product-card', timeout=5)
+        assert len(products) == 2
+        assert products[0].name == 'Laptop Pro'
+        assert products[0].meta.brand == 'TechCorp'
+        assert products[1].name == 'Mouse Wireless'
+        assert products[1].meta.brand == 'PeripheralCo'
 
     @pytest.mark.asyncio
-    async def test_concurrent_with_mixed_required_optional(self, ci_chrome_options):
+    async def test_concurrent_with_mixed_required_optional(self, tab):
         """Concurrent extraction with mix of required and optional fields."""
 
         class MixedModel(ExtractionModel):
@@ -603,13 +539,11 @@ class TestConcurrentExtraction:
             )
             tags: list[str] = Field(selector='.tag-list .tag', description='Tags')
 
-        async with Chrome(options=ci_chrome_options) as browser:
-            tab = await browser.start()
-            await tab.go_to(FILE_URL)
+        await tab.go_to(FILE_URL)
 
-            result = await tab.extract(MixedModel, timeout=5)
-            assert result.title == 'Understanding Web Scraping'
-            assert result.missing_1 is None
-            assert 'extracting data' in result.body
-            assert result.missing_2 is None
-            assert len(result.tags) == 3
+        result = await tab.extract(MixedModel, timeout=1)
+        assert result.title == 'Understanding Web Scraping'
+        assert result.missing_1 is None
+        assert 'extracting data' in result.body
+        assert result.missing_2 is None
+        assert len(result.tags) == 3

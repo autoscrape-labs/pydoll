@@ -17,7 +17,7 @@ from abc import ABC, abstractmethod
 from datetime import datetime, timezone
 from importlib.metadata import version as _pkg_version
 from pathlib import Path
-from typing import Any, Generic, Optional, Protocol, TypeVar
+from typing import Any, Generic, Protocol, TypeVar
 from urllib.parse import parse_qs, urlparse
 
 from pydoll.protocol.har_types import (
@@ -65,7 +65,7 @@ class BaseHarRecorder(ABC, Generic[T_Tab]):
     HarCapture.
     """
 
-    def __init__(self, tab: T_Tab, resource_types: Optional[frozenset[str]] = None):
+    def __init__(self, tab: T_Tab, resource_types: frozenset[str] | None = None):
         self._tab = tab
         self._resource_types = resource_types
         self._callback_ids: list[int] = []

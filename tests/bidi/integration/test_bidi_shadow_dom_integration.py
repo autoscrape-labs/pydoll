@@ -32,7 +32,7 @@ async def tab(firefox_browser):
     context_id = await firefox_browser.create_browser_context()
     page = await firefox_browser.new_tab(browser_context_id=context_id)
     await page.go_to('data:text/html,<body></body>')
-    await page.execute_script(SETUP)
+    await page.evaluate(SETUP)
     try:
         yield page
     finally:
@@ -47,7 +47,7 @@ class TestShadowDom:
         root = await host.get_shadow_root()
         assert root.mode == 'open'
         inner = await root.query('#open-inner', timeout=5)
-        assert (await inner.text) == 'open'
+        assert (await inner.text()) == 'open'
 
     @pytest.mark.asyncio(loop_scope='module')
     async def test_query_inside_closed_shadow_root(self, tab):
@@ -55,7 +55,7 @@ class TestShadowDom:
         root = await host.get_shadow_root()
         assert root.mode == 'closed'
         inner = await root.query('#closed-inner', timeout=5)
-        assert (await inner.text) == 'closed'
+        assert (await inner.text()) == 'closed'
 
     @pytest.mark.asyncio(loop_scope='module')
     async def test_find_all_inside_shadow_root(self, tab):
@@ -66,7 +66,7 @@ class TestShadowDom:
 
     @pytest.mark.asyncio(loop_scope='module')
     async def test_get_shadow_root_raises_without_shadow(self, tab):
-        await tab.execute_script(
+        await tab.evaluate(
             "document.body.insertAdjacentHTML('beforeend', '<div id=\"plain\">x</div>')"
         )
         plain = await tab.find(id='plain')

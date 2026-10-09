@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from pydoll.protocol.bidi.base import Command
 from pydoll.protocol.bidi.browser.methods import (
@@ -41,9 +41,9 @@ class BrowserCommands:
 
     @staticmethod
     def create_user_context(
-        accept_insecure_certs: Optional[bool] = None,
-        proxy: Optional[ProxyConfiguration] = None,
-        unhandled_prompt_behavior: Optional[UserPromptHandler] = None,
+        accept_insecure_certs: bool | None = None,
+        proxy: ProxyConfiguration | None = None,
+        unhandled_prompt_behavior: UserPromptHandler | None = None,
     ) -> CreateUserContextCommand:
         """Generates a command to create a new user context."""
         params = CreateUserContextParameters()
@@ -75,10 +75,10 @@ class BrowserCommands:
     def set_client_window_state(
         client_window: str,
         state: ClientWindowState,
-        width: Optional[int] = None,
-        height: Optional[int] = None,
-        x: Optional[int] = None,
-        y: Optional[int] = None,
+        width: int | None = None,
+        height: int | None = None,
+        x: int | None = None,
+        y: int | None = None,
     ) -> SetClientWindowStateCommand:
         """Generates a command to set the state of a client window."""
         params = SetClientWindowStateParameters(
@@ -98,7 +98,7 @@ class BrowserCommands:
     @staticmethod
     def set_download_behavior(
         download_behavior: DownloadBehavior | None,
-        user_contexts: Optional[list[str]] = None,
+        user_contexts: list[str] | None = None,
     ) -> SetDownloadBehaviorCommand:
         """Generates a command to set the download behavior."""
         params = SetDownloadBehaviorParameters(

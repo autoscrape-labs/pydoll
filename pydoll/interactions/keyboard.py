@@ -3,9 +3,8 @@ from __future__ import annotations
 import asyncio
 import logging
 import random
-import warnings
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Optional, Protocol, cast
+from typing import TYPE_CHECKING, Any, Protocol, cast
 
 from pydoll.commands import InputCommands
 from pydoll.commands.bidi.input_commands import InputCommands as BiDiInputCommands
@@ -20,6 +19,7 @@ from pydoll.protocol.cdp.input.types import KeyEventType, KeyModifier
 
 if TYPE_CHECKING:
     from pydoll.protocol.bidi.input.types import KeyAction, KeySourceActions
+    from pydoll.protocol.cdp.base import Command
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +31,7 @@ class CommandExecutor(Protocol):
 
 
 class BiDiCommandExecutor(CommandExecutor, Protocol):
-    """Executor that also exposes a BiDi browsing-context id (Tab or element)."""
+    """Executor that also exposes a BiDi browsing-context id (BiDiTab or BiDiWebElement)."""
 
     _context_id: str
 
@@ -46,8 +46,13 @@ class TypoResult:
 
 @dataclass(frozen=True)
 class TimingConfig:
-    """Configuration for realistic typing timing."""
+    """Configuration for realistic typing timing.
 
+    ``key_hold_*`` bound the time a key stays down (keydown to keyup).
+    """
+
+    key_hold_min: float = 0.06
+    key_hold_max: float = 0.14
     keystroke_min: float = 0.03
     keystroke_max: float = 0.12
     punctuation_min: float = 0.08
@@ -93,8 +98,8 @@ class Keyboard:
     def __init__(
         self,
         executor: CommandExecutor,
-        timing: Optional[TimingConfig] = None,
-        typo_config: Optional[TypoConfig] = None,
+        timing: TimingConfig | None = None,
+        typo_config: TypoConfig | None = None,
     ):
         """
         Initialize keyboard controller.
@@ -117,27 +122,29 @@ class Keyboard:
     async def press(
         self,
         key: Key,
-        modifiers: Optional[KeyModifier] = None,
-        interval: float = 0.1,
+        modifiers: KeyModifier | None = None,
+        interval: float = 0,
     ):
         """
-        Press and release a key (down + wait + up).
+        Press and release a key (down + optional hold + up).
 
         Args:
             key: Key to press (from Key enum).
             modifiers: Optional key modifiers (Alt=1, Ctrl=2, Meta=4, Shift=8).
-            interval: Time to hold the key down in seconds.
+            interval: Seconds to keep the key down. Zero by default, so the
+                release follows the press immediately.
 
         Example:
             await tab.keyboard.press(Key.ENTER)
             await tab.keyboard.press(Key.A, modifiers=KeyModifier.CTRL)
         """
-        logger.info(f'Pressing key: {key} with modifiers: {modifiers}')
+        logger.info('Pressing key: %s with modifiers: %s', key, modifiers)
         await self.down(key, modifiers)
-        await asyncio.sleep(interval)
+        if interval > 0:
+            await asyncio.sleep(interval)
         await self.up(key)
 
-    async def down(self, key: Key, modifiers: Optional[KeyModifier] = None):
+    async def down(self, key: Key, modifiers: KeyModifier | None = None):
         """
         Press a key down (without releasing).
 
@@ -146,7 +153,7 @@ class Keyboard:
             modifiers: Optional key modifiers.
         """
         key_name, code = key
-        logger.debug(f'Key down: {key_name}')
+        logger.debug('Key down: %s', key_name)
         command = InputCommands.dispatch_key_event(
             type=KeyEventType.KEY_DOWN,
             key=key_name,
@@ -164,7 +171,7 @@ class Keyboard:
             key: Key to release (from Key enum).
         """
         key_name, code = key
-        logger.debug(f'Key up: {key_name}')
+        logger.debug('Key up: %s', key_name)
         command = InputCommands.dispatch_key_event(
             type=KeyEventType.KEY_UP,
             key=key_name,
@@ -173,7 +180,7 @@ class Keyboard:
         )
         await self._executor._execute_command(command)
 
-    async def hotkey(self, key1: Key, key2: Key, key3: Optional[Key] = None):
+    async def hotkey(self, key1: Key, key2: Key, key3: Key | None = None):
         """
         Execute a key combination (hotkey) with up to 3 keys.
 
@@ -203,40 +210,36 @@ class Keyboard:
             await self.up(key)
             await asyncio.sleep(0.05)
 
-    async def type_text(
-        self,
-        text: str,
-        humanize: bool = False,
-        interval: Optional[float] = None,
-    ):
+    async def type_text(self, text: str, humanize: bool = False):
         """
         Type text character by character.
+
+        The plain path focuses the element once and sends every key event in
+        one batch, so a page that moves focus mid-typing receives the rest of
+        the text wherever focus went; the humanized path re-focuses before
+        each character.
 
         Args:
             text: Text to type.
             humanize: When True, simulates human-like typing with
                 variable delays and occasional typos (~2%).
-            interval: Deprecated. Use humanize=True instead.
 
         Example:
             await tab.keyboard.type_text("Hello World", humanize=True)
             await tab.keyboard.type_text("Hello World")
         """
-        if interval is not None:
-            warnings.warn(
-                'The "interval" parameter is deprecated and will be removed '
-                'in a future version. Use "humanize=True" for realistic typing.',
-                DeprecationWarning,
-                stacklevel=2,
-            )
-
         if humanize:
             await self._type_text_humanized(text)
             return
 
-        for current_char in text:
-            await self._type_char(current_char)
-            await asyncio.sleep(0.05)
+        await self._ensure_focus()
+        commands = [command for char in text for command in self._key_event_commands(char)]
+        batch = getattr(self._executor, '_execute_commands', None)
+        if batch is not None:
+            await batch(commands)
+            return
+        for command in commands:
+            await self._executor._execute_command(command)
 
     async def _type_text_humanized(self, text: str):
         """Type text with realistic human-like behavior."""
@@ -253,8 +256,37 @@ class Keyboard:
             await self._apply_realistic_delay(current_char)
             char_index += 1
 
-    async def _type_char(self, char: str):
-        """Type a single character, re-focusing the element before each keystroke."""
+    def _key_hold(self) -> float:
+        return random.uniform(self._timing.key_hold_min, self._timing.key_hold_max)
+
+    @staticmethod
+    def _key_event_commands(char: str) -> tuple[Command, Command]:
+        """The keydown and keyup commands that type one character."""
+        key, code, keycode = CHAR_TO_KEY_INFO.get(char, (char, '', 0))
+        down = InputCommands.dispatch_key_event(
+            type=KeyEventType.KEY_DOWN,
+            key=key,
+            code=code,
+            text=char,
+            unmodified_text=char,
+            windows_virtual_key_code=keycode,
+            native_virtual_key_code=keycode,
+        )
+        up = InputCommands.dispatch_key_event(
+            type=KeyEventType.KEY_UP,
+            key=key,
+            code=code,
+            windows_virtual_key_code=keycode,
+            native_virtual_key_code=keycode,
+        )
+        return down, up
+
+    async def _type_char(self, char: str, hold: float | None = None):
+        """Type a single character on the humanized path, re-focusing the element first.
+
+        ``hold`` is the keydown-to-keyup time: a random human dwell when None,
+        none at all when 0.
+        """
         await self._ensure_focus()
         key, code, keycode = CHAR_TO_KEY_INFO.get(char, (char, '', 0))
         command_down = InputCommands.dispatch_key_event(
@@ -267,6 +299,9 @@ class Keyboard:
             native_virtual_key_code=keycode,
         )
         await self._executor._execute_command(command_down)
+        dwell = self._key_hold() if hold is None else hold
+        if dwell > 0:
+            await asyncio.sleep(dwell)
 
         command_up = InputCommands.dispatch_key_event(
             type=KeyEventType.KEY_UP,
@@ -281,12 +316,13 @@ class Keyboard:
         """Send backspace keypress."""
         await self._ensure_focus()
         await self.down(Key.BACKSPACE)
+        await asyncio.sleep(self._key_hold())
         await self.up(Key.BACKSPACE)
 
     async def _process_char_with_typo(
         self,
         current_char: str,
-        next_char: Optional[str],
+        next_char: str | None,
     ) -> bool:
         """Process character, potentially with typo. Returns True if next should be skipped."""
         if not self._should_make_typo():
@@ -299,7 +335,7 @@ class Keyboard:
     async def _handle_typo(
         self,
         current_char: str,
-        next_char: Optional[str],
+        next_char: str | None,
         typo: TypoResult,
     ) -> bool:
         """Handle typo. Returns True if next char should be skipped."""
@@ -406,7 +442,7 @@ class Keyboard:
         """Determine if a typo should occur."""
         return random.random() < DEFAULT_TYPO_PROBABILITY
 
-    def _generate_typo(self, current_char: str, next_char: Optional[str]) -> TypoResult:
+    def _generate_typo(self, current_char: str, next_char: str | None) -> TypoResult:
         """Generate a realistic typo based on QWERTY layout."""
         typo_type = self._select_typo_type()
         return self._create_typo(typo_type, current_char, next_char)
@@ -434,7 +470,7 @@ class Keyboard:
         self,
         typo_type: TypoType,
         current_char: str,
-        next_char: Optional[str],
+        next_char: str | None,
     ) -> TypoResult:
         """Create typo result based on type."""
         typo_handlers = {
@@ -447,7 +483,7 @@ class Keyboard:
         handler = typo_handlers.get(typo_type, typo_handlers[TypoType.SKIP])
         return handler()
 
-    def _create_transpose_typo(self, current_char: str, next_char: Optional[str]) -> TypoResult:
+    def _create_transpose_typo(self, current_char: str, next_char: str | None) -> TypoResult:
         """Create transpose typo, falling back to adjacent if not possible."""
         if next_char and next_char.isalpha():
             return TypoResult(typo_type=TypoType.TRANSPOSE, wrong_char=next_char)
@@ -483,7 +519,7 @@ class Keyboard:
         return modifiers, non_modifiers
 
     @staticmethod
-    def _calculate_modifier_value(modifiers: list[Key]) -> Optional[KeyModifier]:
+    def _calculate_modifier_value(modifiers: list[Key]) -> KeyModifier | None:
         """Calculate KeyModifier value from modifier keys."""
         if not modifiers:
             return None
@@ -578,7 +614,7 @@ def _bidi_key_value(key: Key) -> str:
     raise ValueError(f'Key {name!r} has no WebDriver BiDi key value mapping')
 
 
-def _bidi_modifier_values(modifiers: Optional[KeyModifier]) -> list[str]:
+def _bidi_modifier_values(modifiers: KeyModifier | None) -> list[str]:
     """Decode a CDP modifier bitmask into the WebDriver modifier key values."""
     if not modifiers:
         return []
@@ -599,14 +635,30 @@ class BiDiKeyboard(Keyboard):
     """Keyboard controller for Firefox via WebDriver BiDi input.performActions.
 
     Reuses every humanized-typing primitive from Keyboard (typo simulation,
-    variable delays, timing) unchanged and only swaps the dispatch backend, so
+    variable delays, timing) unchanged and only swaps the dispatch points, so
     the resulting key events report isTrusted=true. BiDi has no modifier
     bitmask, so modifiers are pressed and released as real keys around the
-    target key.
+    target key, and a key's hold time is a pause action inside the sequence.
     """
 
     if TYPE_CHECKING:
         _executor: BiDiCommandExecutor
+
+    def __init__(
+        self,
+        executor: BiDiCommandExecutor,
+        timing: TimingConfig | None = None,
+        typo_config: TypoConfig | None = None,
+    ):
+        """
+        Initialize a BiDi keyboard controller.
+
+        Args:
+            executor: BiDiTab or BiDiWebElement the key actions are sent through.
+            timing: Optional custom timing configuration for humanized typing.
+            typo_config: Optional typo simulation configuration.
+        """
+        super().__init__(executor, timing=timing, typo_config=typo_config)
 
     async def _dispatch_keys(self, actions: list[KeyAction]) -> None:
         """Send a key-source action list through input.performActions."""
@@ -618,24 +670,33 @@ class BiDiKeyboard(Keyboard):
             )
         )
 
+    @staticmethod
+    def _key_actions(char: str, hold: float = 0) -> list[KeyAction]:
+        """The keyDown, optional pause and keyUp actions that type one character."""
+        actions: list[KeyAction] = [{'type': 'keyDown', 'value': char}]
+        if hold > 0:
+            actions.append({'type': 'pause', 'duration': int(hold * 1000)})
+        actions.append({'type': 'keyUp', 'value': char})
+        return actions
+
     async def press(
         self,
         key: Key,
-        modifiers: Optional[KeyModifier] = None,
-        interval: float = 0.1,
+        modifiers: KeyModifier | None = None,
+        interval: float = 0,
     ) -> None:
         """Press and release a key, holding any modifiers around it."""
+        logger.info('Pressing key: %s with modifiers: %s', key, modifiers)
         mods = _bidi_modifier_values(modifiers)
         value = _bidi_key_value(key)
         actions: list[KeyAction] = [{'type': 'keyDown', 'value': m} for m in mods]
-        actions.append({'type': 'keyDown', 'value': value})
-        actions.append({'type': 'pause', 'duration': int(interval * 1000)})
-        actions.append({'type': 'keyUp', 'value': value})
+        actions.extend(self._key_actions(value, interval))
         actions.extend({'type': 'keyUp', 'value': m} for m in reversed(mods))
         await self._dispatch_keys(actions)
 
-    async def down(self, key: Key, modifiers: Optional[KeyModifier] = None) -> None:
+    async def down(self, key: Key, modifiers: KeyModifier | None = None) -> None:
         """Press a key (and any modifiers) down without releasing."""
+        logger.debug('Key down: %s', key[0])
         actions: list[KeyAction] = [
             {'type': 'keyDown', 'value': m} for m in _bidi_modifier_values(modifiers)
         ]
@@ -644,9 +705,10 @@ class BiDiKeyboard(Keyboard):
 
     async def up(self, key: Key) -> None:
         """Release a previously pressed key."""
+        logger.debug('Key up: %s', key[0])
         await self._dispatch_keys([{'type': 'keyUp', 'value': _bidi_key_value(key)}])
 
-    async def hotkey(self, key1: Key, key2: Key, key3: Optional[Key] = None) -> None:
+    async def hotkey(self, key1: Key, key2: Key, key3: Key | None = None) -> None:
         """Execute a key combination, pressing modifiers as real keys."""
         keys = [key1, key2]
         if key3 is not None:
@@ -659,18 +721,39 @@ class BiDiKeyboard(Keyboard):
         actions.extend(
             {'type': 'keyUp', 'value': _bidi_key_value(k)} for k in reversed(non_modifiers)
         )
-        actions.extend(
-            {'type': 'keyUp', 'value': _bidi_key_value(k)} for k in reversed(modifiers)
-        )
+        actions.extend({'type': 'keyUp', 'value': _bidi_key_value(k)} for k in reversed(modifiers))
         await self._dispatch_keys(actions)
 
-    async def _type_char(self, char: str) -> None:
-        """Type a single character via a trusted keyDown/keyUp pair."""
+    async def type_text(self, text: str, humanize: bool = False) -> None:
+        """
+        Type text character by character.
+
+        The plain path focuses the element once and sends every key action in
+        one performActions call; the humanized path re-focuses before each
+        character.
+
+        Args:
+            text: Text to type.
+            humanize: When True, simulates human-like typing with
+                variable delays and occasional typos (~2%).
+        """
+        if humanize:
+            await self._type_text_humanized(text)
+            return
+
         await self._ensure_focus()
-        await self._dispatch_keys([
-            {'type': 'keyDown', 'value': char},
-            {'type': 'keyUp', 'value': char},
-        ])
+        actions = [action for char in text for action in self._key_actions(char)]
+        await self._dispatch_keys(actions)
+
+    async def _type_char(self, char: str, hold: float | None = None) -> None:
+        """Type a single character on the humanized path, re-focusing the element first.
+
+        ``hold`` is the keydown-to-keyup time: a random human dwell when None,
+        none at all when 0.
+        """
+        await self._ensure_focus()
+        dwell = self._key_hold() if hold is None else hold
+        await self._dispatch_keys(self._key_actions(char, dwell))
 
 
 KeyboardAPI = Keyboard

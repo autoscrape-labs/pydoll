@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from pydoll.constants import PageLoadState
 from pydoll.exceptions import (
@@ -23,7 +23,7 @@ class FirefoxOptions:
         self._browser_preferences: dict = {}
         self._headless = False
         self._page_load_state = PageLoadState.COMPLETE
-        self._user_agent: Optional[str] = None
+        self._user_agent: str | None = None
 
     @property
     def arguments(self) -> list[str]:
@@ -51,16 +51,12 @@ class FirefoxOptions:
 
     def add_argument(self, argument: str):
         if argument in self._arguments:
-            raise ArgumentAlreadyExistsInOptions(
-                f'Argument already exists: {argument}'
-            )
+            raise ArgumentAlreadyExistsInOptions(f'Argument already exists: {argument}')
         self._arguments.append(argument)
 
     def remove_argument(self, argument: str):
         if argument not in self._arguments:
-            raise ArgumentNotFoundInOptions(
-                f'Argument not found: {argument}'
-            )
+            raise ArgumentNotFoundInOptions(f'Argument not found: {argument}')
         self._arguments.remove(argument)
 
     @property
@@ -93,19 +89,19 @@ class FirefoxOptions:
         self._page_load_state = state
 
     @property
-    def user_agent(self) -> Optional[str]:
+    def user_agent(self) -> str | None:
         """User-Agent string to apply at browser start (None = browser default)."""
         return self._user_agent
 
     @user_agent.setter
-    def user_agent(self, user_agent: Optional[str]):
+    def user_agent(self, user_agent: str | None):
         self._user_agent = user_agent
 
 
 class FirefoxOptionsManager:
     """Manages browser options configuration for Firefox."""
 
-    def __init__(self, options: Optional[OptionsProtocol] = None):
+    def __init__(self, options: OptionsProtocol | None = None):
         self.options = options
 
     def initialize_options(self) -> FirefoxOptions:
@@ -114,9 +110,7 @@ class FirefoxOptionsManager:
             self.options = FirefoxOptions()
 
         if not isinstance(self.options, FirefoxOptions):
-            raise InvalidOptionsObject(
-                f'Expected FirefoxOptions, got {type(self.options)}'
-            )
+            raise InvalidOptionsObject(f'Expected FirefoxOptions, got {type(self.options)}')
 
         self.add_default_arguments()
         return self.options

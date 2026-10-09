@@ -11,22 +11,35 @@ from __future__ import annotations
 
 import pytest
 
+from pydoll.browser.chromium import Chrome
 from pydoll.browser.requests import Request
-from pydoll.exceptions import NetworkEventsNotEnabled, NoDialogPresent
+from pydoll.browser.chromium.tab import Tab
+from pydoll.exceptions import NetworkEventsNotEnabled, NoDialogPresent, ScriptEvaluationError
 from pydoll.interactions import KeyboardAPI, MouseAPI, ScrollAPI
 from pydoll.protocol.cdp.fetch.types import AuthChallengeResponseType
 from pydoll.protocol.cdp.network.types import ErrorReason
+from tests.cdp.unit.conftest import FakeConnection
 
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     'enable_method, disable_method, command, flag',
     [
-        ('_enable_page_events', '_disable_page_events', 'Page.disable', '_page_events_enabled'),
-        ('_enable_network_events', '_disable_network_events', 'Network.disable', '_network_events_enabled'),
-        ('_enable_dom_events', '_disable_dom_events', 'DOM.disable', '_dom_events_enabled'),
-        ('_enable_runtime_events', '_disable_runtime_events', 'Runtime.disable', '_runtime_events_enabled'),
-        ('_enable_fetch_events', '_disable_fetch_events', 'Fetch.disable', '_fetch_events_enabled'),
+        ('enable_page_events', 'disable_page_events', 'Page.disable', 'page_events_enabled'),
+        (
+            'enable_network_events',
+            'disable_network_events',
+            'Network.disable',
+            'network_events_enabled',
+        ),
+        ('enable_dom_events', 'disable_dom_events', 'DOM.disable', 'dom_events_enabled'),
+        (
+            'enable_runtime_events',
+            'disable_runtime_events',
+            'Runtime.disable',
+            'runtime_events_enabled',
+        ),
+        ('enable_fetch_events', 'disable_fetch_events', 'Fetch.disable', 'fetch_events_enabled'),
     ],
 )
 async def test_disable_event_domain_clears_flag_and_sends_command(
@@ -40,20 +53,22 @@ async def test_disable_event_domain_clears_flag_and_sends_command(
 
 @pytest.mark.asyncio
 async def test_enable_fetch_events_carries_handle_auth(fake_conn, fake_tab):
-    await fake_tab._enable_fetch_events(handle_auth=True)
+    await fake_tab.enable_fetch_events(handle_auth=True)
     assert fake_tab._fetch_events_enabled is True
     assert fake_conn.last_command('Fetch.enable')['params']['handleAuthRequests'] is True
 
 
 @pytest.mark.asyncio
 async def test_intercept_file_chooser_toggles_flag_and_carries_enabled(fake_conn, fake_tab):
-    await fake_tab._enable_intercept_file_chooser_dialog()
+    await fake_tab.enable_intercept_file_chooser_dialog()
     assert fake_tab._intercept_file_chooser_dialog_enabled is True
     assert fake_conn.last_command('Page.setInterceptFileChooserDialog')['params']['enabled'] is True
 
-    await fake_tab._disable_intercept_file_chooser_dialog()
-    assert fake_tab._intercept_file_chooser_dialog_enabled is False
-    assert fake_conn.last_command('Page.setInterceptFileChooserDialog')['params']['enabled'] is False
+    await fake_tab.disable_intercept_file_chooser_dialog()
+    assert fake_tab.intercept_file_chooser_dialog_enabled is False
+    assert (
+        fake_conn.last_command('Page.setInterceptFileChooserDialog')['params']['enabled'] is False
+    )
 
 
 @pytest.mark.asyncio
@@ -72,14 +87,14 @@ async def test_useragent_override_sets_emulation_override(fake_conn, fake_tab):
 @pytest.mark.asyncio
 async def test_title_evaluates_document_title_and_returns_value(fake_conn, fake_tab):
     fake_conn.set_response('Runtime.evaluate', {'result': {'value': 'Hello'}})
-    assert await fake_tab.title == 'Hello'
+    assert await fake_tab.title() == 'Hello'
     assert fake_conn.last_command('Runtime.evaluate')['params']['expression'] == 'document.title'
 
 
 @pytest.mark.asyncio
 async def test_page_source_evaluates_outer_html_and_returns_value(fake_conn, fake_tab):
     fake_conn.set_response('Runtime.evaluate', {'result': {'value': '<html></html>'}})
-    assert await fake_tab.page_source == '<html></html>'
+    assert await fake_tab.page_source() == '<html></html>'
     expression = fake_conn.last_command('Runtime.evaluate')['params']['expression']
     assert expression == 'document.documentElement.outerHTML'
 
@@ -99,7 +114,7 @@ async def test_delete_all_cookies_sends_command(fake_conn, fake_tab):
 
 @pytest.mark.asyncio
 async def test_get_network_response_body_returns_body_and_carries_request_id(fake_conn, fake_tab):
-    await fake_tab._enable_network_events()
+    await fake_tab.enable_network_events()
     fake_conn.set_response('Network.getResponseBody', {'body': 'hello', 'base64Encoded': False})
     assert await fake_tab.get_network_response_body('req-1') == 'hello'
     assert fake_conn.last_command('Network.getResponseBody')['params']['requestId'] == 'req-1'
@@ -136,13 +151,30 @@ async def test_handle_dialog_raises_without_dialog(fake_tab):
 
 @pytest.mark.asyncio
 async def test_continue_request_carries_request_id(fake_conn, fake_tab):
-    await fake_tab._continue_request(request_id='r1')
+    await fake_tab.continue_request(request_id='r1')
     assert fake_conn.last_command('Fetch.continueRequest')['params']['requestId'] == 'r1'
 
 
 @pytest.mark.asyncio
+async def test_fail_request_carries_error_reason(fake_conn, fake_tab):
+    await fake_tab.fail_request('r1', ErrorReason.FAILED)
+    sent = fake_conn.last_command('Fetch.failRequest')
+    assert sent['params']['requestId'] == 'r1'
+    assert sent['params']['errorReason'] == 'Failed'
+
+
+@pytest.mark.asyncio
+async def test_fulfill_request_carries_response_code_and_body(fake_conn, fake_tab):
+    await fake_tab.fulfill_request(request_id='r1', response_code=200, body='ok')
+    sent = fake_conn.last_command('Fetch.fulfillRequest')
+    assert sent['params']['requestId'] == 'r1'
+    assert sent['params']['responseCode'] == 200
+    assert sent['params']['body'] == 'ok'
+
+
+@pytest.mark.asyncio
 async def test_continue_with_auth_carries_challenge_and_credentials(fake_conn, fake_tab):
-    await fake_tab._continue_with_auth(
+    await fake_tab.continue_with_auth(
         'r1',
         AuthChallengeResponseType.PROVIDE_CREDENTIALS,
         proxy_username='user',
@@ -160,8 +192,27 @@ async def test_continue_with_auth_carries_challenge_and_credentials(fake_conn, f
 async def test_execute_script_evaluates_and_returns_result(fake_conn, fake_tab):
     fake_conn.set_response('Runtime.evaluate', {'result': {'type': 'number', 'value': 3}})
     result = await fake_tab.execute_script('1 + 2')
-    assert result == 3
+    assert result['result']['result']['value'] == 3
     assert fake_conn.last_command('Runtime.evaluate')['params']['expression'] == '1 + 2'
+
+
+@pytest.mark.asyncio
+async def test_evaluate_returns_python_value_and_forwards_args(fake_conn, fake_tab):
+    fake_conn.set_response('Runtime.evaluate', {'result': {'type': 'number', 'value': 5}})
+    assert await fake_tab.evaluate('(a, b) => a + b', 2, 3) == 5
+    params = fake_conn.last_command('Runtime.evaluate')['params']
+    assert params['expression'] == '((a, b) => a + b)(2, 3)'
+    assert params['returnByValue'] is True and params['awaitPromise'] is True
+
+
+@pytest.mark.asyncio
+async def test_evaluate_raises_on_script_exception(fake_conn, fake_tab):
+    fake_conn.set_response(
+        'Runtime.evaluate',
+        {'result': {'type': 'object'}, 'exceptionDetails': {'exception': {'description': 'boom'}}},
+    )
+    with pytest.raises(ScriptEvaluationError):
+        await fake_tab.evaluate('throw new Error("boom")')
 
 
 @pytest.mark.asyncio
@@ -192,26 +243,32 @@ async def test_lazy_api_properties_are_typed_and_cached(fake_tab):
 
 
 @pytest.mark.asyncio
-async def test_enable_auto_solve_cloudflare_registers_callback_and_enables_page_events(
-    fake_conn, fake_tab
-):
-    await fake_tab.enable_auto_solve_cloudflare_captcha()
-    assert fake_tab._page_events_enabled is True
-    assert fake_conn.callbacks_for('Page.loadEventFired')
+async def test_expect_cloudflare_turnstile_listens_only_while_its_block_runs(fake_conn, fake_tab):
+    async with fake_tab.expect_cloudflare_turnstile(time_to_wait_captcha=0.05):
+        assert fake_tab.page_events_enabled is True
+        callbacks = fake_conn.callbacks_for('Page.loadEventFired')
+        assert len(callbacks) == 1
+        await callbacks[0]({'method': 'Page.loadEventFired', 'params': {}})
+    assert fake_conn.callbacks_for('Page.loadEventFired') == []
+    assert fake_tab.page_events_enabled is False
 
 
 @pytest.mark.asyncio
-async def test_enable_auto_solve_cloudflare_warns_on_deprecated_args(fake_tab):
-    with pytest.warns(DeprecationWarning):
-        await fake_tab.enable_auto_solve_cloudflare_captcha(time_before_click=1.0)
-
-
-@pytest.mark.asyncio
-async def test_get_network_logs_returns_logs_when_enabled(fake_conn, fake_tab):
-    await fake_tab._enable_network_events()
-    fake_conn.network_logs.append(
-        {'method': 'Network.requestWillBeSent', 'params': {'request': {'url': 'http://x/api'}}}
+async def test_cookie_methods_of_a_context_tab_go_through_the_browser_connection(fake_conn):
+    """Chrome only accepts browserContextId on the browser target, never on a page session."""
+    browser = Chrome()
+    browser_conn = FakeConnection()
+    browser._connection_handler = browser_conn
+    browser_conn.set_response('Storage.getCookies', {'cookies': [{'name': 'a', 'value': '1'}]})
+    tab = Tab(
+        browser=browser, target_id='ctx-tab', browser_context_id='ctx-1', connection_handler=fake_conn
     )
-    assert await fake_tab.get_network_logs()
-    assert await fake_tab.get_network_logs(filter='/api')
-    assert await fake_tab.get_network_logs(filter='/nope') == []
+
+    await tab.set_cookies([{'name': 'a', 'value': '1'}])
+    cookies = await tab.get_cookies()
+    await tab.delete_all_cookies()
+
+    assert cookies == [{'name': 'a', 'value': '1'}]
+    for method in ('Storage.setCookies', 'Storage.getCookies', 'Storage.clearCookies'):
+        assert browser_conn.last_command(method)['params']['browserContextId'] == 'ctx-1'
+        assert not fake_conn.commands_for(method)

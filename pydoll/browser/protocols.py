@@ -6,11 +6,9 @@ from pathlib import Path
 from typing import (
     TYPE_CHECKING,
     Any,
-    Optional,
     Protocol,
     TypeAlias,
     TypeVar,
-    Union,
     runtime_checkable,
 )
 
@@ -19,16 +17,12 @@ from pydoll.elements.protocols import ShadowRootProtocol, WebElementProtocol
 from pydoll.interactions.keyboard import Keyboard
 from pydoll.interactions.mouse import Mouse
 from pydoll.interactions.scroll import Scroll
+from pydoll.protocol.cdp.browser.methods import GetVersionResult
+from pydoll.protocol.cdp.browser.types import Bounds, DownloadBehavior, PermissionType
+from pydoll.protocol.cdp.network.types import Cookie, CookieParam
 from pydoll.protocol.events import Event
-from pydoll.protocol.types import (
-    BrowserVersion,
-    Cookie,
-    CookieParam,
-    DownloadBehavior,
-    Header,
-    Permission,
-    WindowBounds,
-)
+from pydoll.protocol.types import Header
+from pydoll.utils import UrlPattern
 
 if TYPE_CHECKING:
     from pydoll.browser.intercepted_request import InterceptedRequest
@@ -36,9 +30,7 @@ if TYPE_CHECKING:
 
 T_Tab = TypeVar('T_Tab')
 
-BrowserEventCallback: TypeAlias = (
-    Callable[[dict], object] | Callable[[dict], Awaitable[object]]
-)
+BrowserEventCallback: TypeAlias = Callable[[dict], object] | Callable[[dict], Awaitable[object]]
 InterceptCallback: TypeAlias = Callable[['InterceptedRequest'], Awaitable[object]]
 
 
@@ -73,10 +65,10 @@ class OptionsProtocol(Protocol):
     def page_load_state(self, state: PageLoadState) -> None: ...
 
     @property
-    def user_agent(self) -> Optional[str]: ...
+    def user_agent(self) -> str | None: ...
 
     @user_agent.setter
-    def user_agent(self, user_agent: Optional[str]) -> None: ...
+    def user_agent(self, user_agent: str | None) -> None: ...
 
 
 class BrowserOptionsManagerProtocol(Protocol):
@@ -91,14 +83,16 @@ class BrowserOptionsManagerProtocol(Protocol):
 class BrowserProtocol(Protocol[T_Tab]):
     """Portable browser-level contract shared by browser implementations.
 
-    This protocol intentionally models only the cross-browser surface. Browser-specific
-    protocol escape hatches and advanced CDP/BiDi methods should live on the concrete
-    browser classes instead of being added here.
+    Models only the cross-browser surface, typed with the CDP shapes the Chromium
+    backend returns natively (GetVersionResult, Cookie, Bounds, PermissionType,
+    DownloadBehavior); the BiDi backend converts to and from them. Browser-specific
+    escape hatches (``execute_command`` with a protocol-typed command, the CDP Fetch
+    helpers, ``get_targets``) live on the concrete browser classes.
     """
 
     options: OptionsProtocol
 
-    async def start(self, headless: bool = False) -> T_Tab: ...
+    async def start(self) -> T_Tab: ...
 
     async def stop(self) -> None: ...
 
@@ -108,8 +102,8 @@ class BrowserProtocol(Protocol[T_Tab]):
 
     async def create_browser_context(
         self,
-        proxy_server: Optional[str] = None,
-        proxy_bypass_list: Optional[str] = None,
+        proxy_server: str | None = None,
+        proxy_bypass_list: str | None = None,
     ) -> str: ...
 
     async def delete_browser_context(self, browser_context_id: str) -> None: ...
@@ -121,56 +115,56 @@ class BrowserProtocol(Protocol[T_Tab]):
     async def new_tab(
         self,
         url: str = '',
-        browser_context_id: Optional[str] = None,
+        browser_context_id: str | None = None,
     ) -> T_Tab: ...
 
-    async def get_version(self) -> BrowserVersion: ...
+    async def get_version(self) -> GetVersionResult: ...
 
     async def set_download_path(
         self,
         path: str,
-        browser_context_id: Optional[str] = None,
+        browser_context_id: str | None = None,
     ) -> None: ...
 
     async def set_download_behavior(
         self,
         behavior: DownloadBehavior,
-        download_path: Optional[str] = None,
-        browser_context_id: Optional[str] = None,
+        download_path: str | None = None,
+        browser_context_id: str | None = None,
     ) -> None: ...
 
     async def delete_all_cookies(
         self,
-        browser_context_id: Optional[str] = None,
+        browser_context_id: str | None = None,
     ) -> None: ...
 
     async def set_cookies(
         self,
         cookies: list[CookieParam],
-        browser_context_id: Optional[str] = None,
+        browser_context_id: str | None = None,
     ) -> None: ...
 
     async def get_cookies(
         self,
-        browser_context_id: Optional[str] = None,
+        browser_context_id: str | None = None,
     ) -> list[Cookie]: ...
 
     async def set_window_maximized(self) -> None: ...
 
     async def set_window_minimized(self) -> None: ...
 
-    async def set_window_bounds(self, bounds: WindowBounds) -> None: ...
+    async def set_window_bounds(self, bounds: Bounds) -> None: ...
 
     async def grant_permissions(
         self,
-        permissions: Sequence[Permission],
-        origin: Optional[str] = None,
-        browser_context_id: Optional[str] = None,
+        permissions: list[PermissionType],
+        origin: str | None = None,
+        browser_context_id: str | None = None,
     ) -> None: ...
 
     async def reset_permissions(
         self,
-        browser_context_id: Optional[str] = None,
+        browser_context_id: str | None = None,
     ) -> None: ...
 
     async def on(
@@ -185,7 +179,7 @@ class BrowserProtocol(Protocol[T_Tab]):
     async def intercept_requests(
         self,
         callback: InterceptCallback,
-        url_patterns: Optional[list[str]] = None,
+        url_patterns: list[str] | None = None,
     ) -> str: ...
 
     async def remove_intercept(self, intercept_id: str) -> None: ...
@@ -200,11 +194,11 @@ class DownloadHandleProtocol(Protocol):
     """
 
     @property
-    def file_path(self) -> Optional[str]: ...
+    def file_path(self) -> str | None: ...
 
-    async def wait_started(self, timeout: Optional[float] = None) -> None: ...
+    async def wait_started(self, timeout: float | None = None) -> None: ...
 
-    async def wait_finished(self, timeout: Optional[float] = None) -> None: ...
+    async def wait_finished(self, timeout: float | None = None) -> None: ...
 
     async def read_bytes(self) -> bytes: ...
 
@@ -223,38 +217,36 @@ class RequestProtocol(Protocol):
         self,
         method: str,
         url: str,
-        params: Optional[dict[str, str]] = None,
-        data: Optional[Union[dict, list, tuple, str, bytes]] = None,
-        json: Optional[dict[str, Any]] = None,
-        headers: Optional[list[Header]] = None,
+        params: dict[str, str] | None = None,
+        data: dict | list | tuple | str | bytes | None = None,
+        json: dict[str, Any] | None = None,
+        headers: list[Header] | None = None,
         **kwargs,
     ) -> Response: ...
 
-    async def get(
-        self, url: str, params: Optional[dict[str, str]] = None, **kwargs
-    ) -> Response: ...
+    async def get(self, url: str, params: dict[str, str] | None = None, **kwargs) -> Response: ...
 
     async def post(
         self,
         url: str,
-        data: Optional[Union[dict, list, tuple, str, bytes]] = None,
-        json: Optional[dict[str, Any]] = None,
+        data: dict | list | tuple | str | bytes | None = None,
+        json: dict[str, Any] | None = None,
         **kwargs,
     ) -> Response: ...
 
     async def put(
         self,
         url: str,
-        data: Optional[Union[dict, list, tuple, str, bytes]] = None,
-        json: Optional[dict[str, Any]] = None,
+        data: dict | list | tuple | str | bytes | None = None,
+        json: dict[str, Any] | None = None,
         **kwargs,
     ) -> Response: ...
 
     async def patch(
         self,
         url: str,
-        data: Optional[Union[dict, list, tuple, str, bytes]] = None,
-        json: Optional[dict[str, Any]] = None,
+        data: dict | list | tuple | str | bytes | None = None,
+        json: dict[str, Any] | None = None,
         **kwargs,
     ) -> Response: ...
 
@@ -272,9 +264,10 @@ class TabProtocol(Protocol):
     Models only the cross-protocol surface. Protocol-specific features live on the
     concrete tab classes and are intentionally absent here: CDP Fetch control
     (continue/fail/fulfill_request), OOPIF iframes (get_frame), network introspection
-    (get_network_logs), the Cloudflare auto-solver, save_bundle, the extractor
-    (extract/extract_all), and the execute_protocol_command escape hatch (typed per
-    protocol).
+    (get_network_logs), the Cloudflare Turnstile helper, save_bundle, the extractor
+    (extract/extract_all), the ``expect_request``/``expect_response``/
+    ``wait_for_network_idle`` waits (whose handles carry protocol-shaped events),
+    and the ``execute_command`` escape hatch (typed per protocol).
     """
 
     @property
@@ -289,13 +282,10 @@ class TabProtocol(Protocol):
     @property
     def request(self) -> RequestProtocol: ...
 
-    @property
     async def current_url(self) -> str: ...
 
-    @property
     async def page_source(self) -> str: ...
 
-    @property
     async def title(self) -> str: ...
 
     async def go_to(self, url: str, timeout: int = 300) -> None: ...
@@ -310,16 +300,16 @@ class TabProtocol(Protocol):
 
     async def find(
         self,
-        id: Optional[str] = None,
-        class_name: Optional[str] = None,
-        name: Optional[str] = None,
-        tag_name: Optional[str] = None,
-        text: Optional[str] = None,
+        id: str | None = None,
+        class_name: str | None = None,
+        name: str | None = None,
+        tag_name: str | None = None,
+        text: str | None = None,
         timeout: int = 0,
         find_all: bool = False,
         raise_exc: bool = True,
         **attributes: dict[str, str],
-    ) -> Union[WebElementProtocol, Sequence[WebElementProtocol], None]: ...
+    ) -> WebElementProtocol | Sequence[WebElementProtocol] | None: ...
 
     async def query(
         self,
@@ -327,31 +317,50 @@ class TabProtocol(Protocol):
         timeout: int = 0,
         find_all: bool = False,
         raise_exc: bool = True,
-    ) -> Union[WebElementProtocol, Sequence[WebElementProtocol], None]: ...
+    ) -> WebElementProtocol | Sequence[WebElementProtocol] | None: ...
 
     async def find_shadow_roots(
-        self, timeout: float = 0
+        self, deep: bool = False, timeout: float = 0
     ) -> Sequence[ShadowRootProtocol]: ...
 
-    async def execute_script(self, script: str, *args: object) -> object: ...
+    async def evaluate(self, script: str, *args: object) -> object: ...
+
+    async def wait_for_url(self, url: UrlPattern, timeout: float = 30) -> str: ...
+
+    async def wait_for_script(self, script: str, timeout: float = 30) -> Any: ...
+
+    async def wait_for_absence(
+        self,
+        id: str | None = None,
+        class_name: str | None = None,
+        name: str | None = None,
+        tag_name: str | None = None,
+        text: str | None = None,
+        timeout: float = 30,
+        **attributes: str,
+    ) -> None: ...
+
+    def expect_navigation(
+        self, url: UrlPattern | None = None, timeout: float = 30
+    ) -> AbstractAsyncContextManager[None]: ...
 
     async def take_screenshot(
         self,
-        path: Optional[Union[str, Path]] = None,
+        path: str | Path | None = None,
         quality: int = 100,
         beyond_viewport: bool = False,
         as_base64: bool = False,
-    ) -> Optional[str]: ...
+    ) -> str | None: ...
 
     async def print_to_pdf(
         self,
-        path: Optional[Union[str, Path]] = None,
+        path: str | Path | None = None,
         landscape: bool = False,
         display_header_footer: bool = False,
         print_background: bool = True,
         scale: float = 1.0,
         as_base64: bool = False,
-    ) -> Optional[str]: ...
+    ) -> str | None: ...
 
     async def get_cookies(self) -> list[Cookie]: ...
 
@@ -363,18 +372,16 @@ class TabProtocol(Protocol):
 
     async def get_dialog_message(self) -> str: ...
 
-    async def handle_dialog(
-        self, accept: bool, prompt_text: Optional[str] = None
-    ) -> None: ...
+    async def handle_dialog(self, accept: bool, prompt_text: str | None = None) -> None: ...
 
     def expect_file_chooser(
-        self, files: Union[str, Path, list[Union[str, Path]]]
+        self, files: str | Path | list[str | Path]
     ) -> AbstractAsyncContextManager[None]: ...
 
     def expect_download(
         self,
-        keep_file_at: Optional[Union[str, Path]] = None,
-        timeout: Optional[float] = None,
+        keep_file_at: str | Path | None = None,
+        timeout: float | None = None,
     ) -> AbstractAsyncContextManager[DownloadHandleProtocol]: ...
 
     async def on(

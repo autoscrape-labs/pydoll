@@ -12,7 +12,7 @@ import base64
 
 import pytest
 
-from pydoll.exceptions import NetworkEventsNotEnabled
+from pydoll.exceptions import NetworkEventsNotEnabled, NoDialogPresent
 
 
 @pytest.mark.asyncio
@@ -70,7 +70,8 @@ async def test_has_dialog_reflects_connection_state(fake_bidi_conn, fake_bidi_ta
 
 @pytest.mark.asyncio
 async def test_get_dialog_message_reads_connection_dialog(fake_bidi_conn, fake_bidi_tab):
-    assert await fake_bidi_tab.get_dialog_message() == ''
+    with pytest.raises(NoDialogPresent):
+        await fake_bidi_tab.get_dialog_message()
     fake_bidi_conn.dialog = {'params': {'message': 'hello?'}}
     assert await fake_bidi_tab.get_dialog_message() == 'hello?'
 
@@ -87,7 +88,7 @@ async def test_handle_dialog_carries_accept_and_text(fake_bidi_conn, fake_bidi_t
 async def test_set_cookies_carries_optional_attributes(fake_bidi_conn, fake_bidi_tab):
     await fake_bidi_tab.set_cookies([{
         'name': 'a', 'value': '1', 'domain': 'example.com',
-        'path': '/x', 'httpOnly': True, 'secure': True, 'expiry': 123, 'sameSite': 'Strict',
+        'path': '/x', 'httpOnly': True, 'secure': True, 'expires': 123.0, 'sameSite': 'Strict',
     }])
     cookie = fake_bidi_conn.last_command('storage.setCookie')['params']['cookie']
     assert cookie['path'] == '/x'
@@ -108,6 +109,41 @@ async def test_find_shadow_roots_collects_open_and_closed(fake_bidi_conn, fake_b
     roots = await fake_bidi_tab.find_shadow_roots()
     assert len(roots) == 1
     assert roots[0].mode == 'open'
+
+
+@pytest.mark.asyncio
+async def test_find_shadow_roots_deep_walks_child_contexts(fake_bidi_conn, fake_bidi_tab):
+    fake_bidi_conn.set_result(
+        'browsingContext.getTree',
+        {'contexts': [{'context': 'fake-context', 'children': [
+            {'context': 'frame-1', 'children': [{'context': 'frame-1-1', 'children': None}]},
+        ]}]},
+    )
+    fake_bidi_conn.set_result('browsingContext.locateNodes', {'nodes': []})
+    assert await fake_bidi_tab.find_shadow_roots(deep=True) == []
+    contexts = [c['params']['context'] for c in fake_bidi_conn.commands_for('browsingContext.locateNodes')]
+    assert contexts == ['fake-context', 'frame-1', 'frame-1-1']
+
+
+@pytest.mark.asyncio
+async def test_find_shadow_roots_timeout_raises(fake_bidi_conn, fake_bidi_tab):
+    from pydoll.exceptions import WaitElementTimeout
+
+    fake_bidi_conn.set_result('browsingContext.locateNodes', {'nodes': []})
+    with pytest.raises(WaitElementTimeout):
+        await fake_bidi_tab.find_shadow_roots(timeout=0.05)
+
+
+@pytest.mark.asyncio
+async def test_set_cookies_derives_domain_from_url(fake_bidi_conn, fake_bidi_tab):
+    await fake_bidi_tab.set_cookies([{'name': 'a', 'value': '1', 'url': 'https://example.com/p'}])
+    assert fake_bidi_conn.last_command('storage.setCookie')['params']['cookie']['domain'] == 'example.com'
+
+
+@pytest.mark.asyncio
+async def test_set_cookies_without_domain_or_url_raises(fake_bidi_tab):
+    with pytest.raises(ValueError):
+        await fake_bidi_tab.set_cookies([{'name': 'a', 'value': '1'}])
 
 
 @pytest.mark.asyncio

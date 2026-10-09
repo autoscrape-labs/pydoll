@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from pydoll.protocol.types import Header
 
@@ -21,7 +21,7 @@ class InterceptedRequest:
         url: str,
         method: str,
         headers: list[Header],
-        body: Optional[bytes],
+        body: bytes | None,
         continue_fn: Callable[..., Awaitable[None]],
         fail_fn: Callable[..., Awaitable[None]],
         respond_fn: Callable[..., Awaitable[None]],
@@ -37,9 +37,9 @@ class InterceptedRequest:
 
     async def continue_(
         self,
-        url: Optional[str] = None,
-        method: Optional[str] = None,
-        headers: Optional[list[Header]] = None,
+        url: str | None = None,
+        method: str | None = None,
+        headers: list[Header] | None = None,
     ):
         """Continue the request, optionally modifying it."""
         await self._continue_fn(
@@ -56,8 +56,8 @@ class InterceptedRequest:
     async def respond(
         self,
         status: int = 200,
-        headers: Optional[list[Header]] = None,
-        body: Optional[str] = None,
+        headers: list[Header] | None = None,
+        body: str | None = None,
     ):
         """Respond to the request with a custom response."""
         await self._respond_fn(

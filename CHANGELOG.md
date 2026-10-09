@@ -1,3 +1,152 @@
+## 3.0.0 (2026-09-29)
+
+### BREAKING CHANGE
+
+- the async properties are now methods (tab.title(),
+tab.current_url(), tab.page_source(), element.text(), element.inner_html(),
+element.bounds(), element.iframe_context(), shadow_root.inner_html()), and
+everything that raised DeprecationWarning in 2.x is removed: Tab.get_frame(),
+the element argument of Tab.execute_script(), WebElement.key_down/key_up/
+press_keyboard_key, type_text(interval=), Browser.start(headless=), the
+custom_selector/time_before_click arguments of the Cloudflare helpers and the
+NotAnIFrame/IFrameNotFound exceptions. _DownloadHandle is now DownloadHandle.
+
+### Feat
+
+- say why the browser failed to start
+- expect_cloudflare_turnstile is the only Turnstile handler
+- humanized mouse inside iframes and shadow roots, moves sent without waiting
+- **fingerprint**: construct declared WebGL extensions and delegate without call/apply lookups
+- waits for element states, URLs, scripts, network idle, and expect_* capture blocks
+- **playwright**: run the layer on Pydoll 3 and test the documented flows
+- **playwright**: Playwright-compatible API layer (async and sync) over pydoll
+- pydoll 3, one API in sync and async form
+- **sync**: emit overloads, setters and every annotation dependency in the generated facades
+- **sync**: generated synchronous API for pydoll
+
+### Fix
+
+- **playwright**: fractional clicks, geolocation accuracy, stale frames, wire headers and console handles
+- settle Runtime enabling before the next page command, and keep the instance for signature-less retry hooks
+- retry hook arity from its signature, and sync runtime fork, cancel and cache fixes
+- **playwright**: report an unreachable http DevTools endpoint as Error on every platform
+- **playwright**: enter an expect block only after its event source is enabled
+- **playwright**: resolve wait_until='commit' on frameNavigated so page.url is already set
+- **sync**: stop leaking a thread per callback and tighten the generated facade
+- **playwright**: navigation, frames, lifecycle and error translation after review
+- harden the waiting API, the event worker and the WebGL override after review
+- **playwright**: make the context locale reach navigator.language
+- keep browser shutdown best effort on locked profile files, and tidy after review
+- **sync**: stop retaining facades, isolate callback threads, make the loop restartable
+
+### Refactor
+
+- make find_or_wait_element private
+- **playwright**: fix the findings the removed suppressions exposed
+- drop narration comments, section banners and the lint suppressions that hid real findings
+- spell unions with the | operator instead of typing.Union and Optional
+- name the Cloudflare helpers after what they do
+
+### Perf
+
+- send a typed string's key events as one batch
+- faster stop, quicker readiness poll, and log calls that cost nothing when off
+- stop sleeping where the browser has already answered
+
+## 2.27.0 (2026-09-16)
+
+### Feat
+
+- **fingerprint**: let the profile answer navigator.plugins and mimeTypes
+- **examples**: hide the globals that name the browser brand
+- **examples**: add a Linux desktop profile shaped for a container
+- **fingerprint**: cover the WebGL limits the hCaptcha payload actually asks for
+- **fingerprint**: let the profile answer the media codec probes
+- **fingerprint**: hide the Web APIs the claimed OS does not implement
+- **fingerprint**: WebGPU profiles for the Windows and Android examples
+- **fingerprint**: WebGPU adapter profile
+- **fingerprint**: rewrite browser-process script fetches with the profile identity
+- **fingerprint**: native-first overrides and Chromium client hints algorithm
+
+### Fix
+
+- **fingerprint**: stop warning about the User-Agent the header path requires
+- **fingerprint**: check the font names a local() source asks for
+- **fingerprint**: give a patched method the native arity, not the callback's
+- **fingerprint**: correct the transform-feedback enum mapping
+- **examples**: complete the Android uniform families and enforce it
+- **fingerprint**: treat an empty client_hints as no Client Hints at all
+- **fingerprint**: keep the emulation mode when a clamped window is reconciled
+- **examples**: drop the invalid webrtc_ip_policy from the container profile
+- **examples**: declare WebGL on the Linux container profile
+- **fingerprint**: anchor the example codec maps to measured answers
+- **fingerprint**: make the values the profile reports physically possible
+- **fingerprint**: stop the override from rewriting Chrome's header order
+- **input**: read like real mouse and keyboard input, keep touch emulation after navigation
+- **fingerprint**: apply the WebGPU profile inside workers
+- keep a margin when scrolling an element into view before clicking
+- keep worker and iframe session flows tolerant to rejected commands
+- raise CommandFailed when the browser answers a command with an error
+- **fingerprint**: let touch emulation own navigator.maxTouchPoints
+- **fingerprint**: faithful constructor wrappers and non-cloneable fakes
+- **fingerprint**: leave document.fonts.check() native
+- **fingerprint**: resolve script-fetch contexts by target and harden the JS residue
+- **fingerprint**: keep Chrome's frozen Android platform and soften platformVersion claims
+- preserve ws address when resolving iframe connections
+
+## 2.26.0 (2026-08-26)
+
+### Feat
+
+- **fingerprint**: propagate identity into cross-origin OOPIF iframes
+
+## 2.25.0 (2026-08-22)
+
+### Feat
+
+- **fingerprint**: coherent headless screen via Emulation.updateScreen
+- **fingerprint**: emulate CSS media features via Emulation.setEmulatedMedia
+
+## 2.24.0 (2026-08-13)
+
+### Feat
+
+- enhance fingerprint application and management with new features and tests
+- implement fingerprint injection subsystem
+- add browser fingerprint injection
+
+### Fix
+
+- **js**: clear field on empty text in selection-read exception fallback
+- narrow bare except in insert_text cache re-read
+- **js**: guard selection restore for unsupported input types in INSERT_TEXT
+- **test**: test_clear_input_in_iframe
+- **test**: test_find_element_in_parent_iframe
+- resolve resource leaks and improve URL rewriting logic
+- **examples**: use new_tab instead of removed get_page method
+- **decorators**: correct docstring example to use @retry
+- **utils**: use PATHEXT for executable validation on Windows
+- **bundle**: rewrite root-relative URLs in HTML bundles
+- **browser**: guard empty tabs and None user_data_dir in Browser
+- replace deprecated asyncio.get_event_loop with get_running_loop
+- **browser**: close ConnectionHandler in OOPIF and iframe resolution
+- change const to let for content and text variables
+- update request to return raw data instead of encoded text
+
+### Refactor
+
+- remove outdated comments on fingerprint context handling
+- **iframe**: extract _try_resolve_oopif to narrow try block
+
+## 2.23.1 (2026-07-16)
+
+### Fix
+
+- **cloudflare**: improve checkbox click logic for faster failure handling
+- **cloudflare**: update checkbox selector and improve bypass logic
+- nested iframes
+- **mouse**: keep debug overlay visible across page navigations
+
 ## 2.23.0 (2026-05-22)
 
 ### Feat

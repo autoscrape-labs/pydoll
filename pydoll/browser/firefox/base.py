@@ -4,9 +4,8 @@ import asyncio
 import logging
 import os
 import warnings
-from collections.abc import Sequence
 from random import randint
-from typing import TYPE_CHECKING, Optional, overload
+from typing import TYPE_CHECKING, Any, overload
 
 from pydoll.browser.firefox.tab import BiDiTab
 from pydoll.browser.intercepted_request import InterceptedRequest
@@ -24,7 +23,7 @@ from pydoll.commands.bidi.script_commands import ScriptCommands
 from pydoll.commands.bidi.session_commands import SessionCommands
 from pydoll.commands.bidi.storage_commands import StorageCommands
 from pydoll.connection.bidi_connection_handler import BiDiConnectionHandler
-from pydoll.exceptions import BrowserNotRunning
+from pydoll.exceptions import BrowserNotRunning, UnsupportedOperation
 from pydoll.protocol.bidi.base import Command, T_CommandParams, T_CommandResult
 from pydoll.protocol.bidi.browser.types import (
     ClientWindowInfo,
@@ -32,31 +31,25 @@ from pydoll.protocol.bidi.browser.types import (
     DownloadBehaviorAllowed,
     DownloadBehaviorDenied,
 )
+from pydoll.protocol.bidi.browser.types import DownloadBehavior as BiDiDownloadBehavior
 from pydoll.protocol.bidi.browsing_context.types import CreateType
 from pydoll.protocol.bidi.network.types import (
     InterceptPhase,
-    SameSite,
-    StringValue,
     UrlPatternPattern,
     UrlPatternString,
 )
 from pydoll.protocol.bidi.permissions.types import PermissionDescriptor, PermissionState
 from pydoll.protocol.bidi.session.types import ManualProxyConfiguration
-from pydoll.protocol.bidi.storage.types import PartialCookie, StorageKeyPartitionDescriptor
+from pydoll.protocol.bidi.storage.types import StorageKeyPartitionDescriptor
+from pydoll.protocol.cdp.browser.methods import GetVersionResult
+from pydoll.protocol.cdp.browser.types import Bounds, DownloadBehavior, PermissionType
+from pydoll.protocol.cdp.network.types import Cookie, CookieParam
 from pydoll.protocol.events import BIDI_EVENT_MAP, Event
-from pydoll.protocol.types import (
-    BrowserVersion,
-    Cookie,
-    CookieParam,
-    DownloadBehavior,
-    Permission,
-    WindowBounds,
-)
 
 if TYPE_CHECKING:
-    from typing import Any, Awaitable, Callable
+    from typing import Awaitable, Callable
 
-    from pydoll.browser.protocols import BrowserOptionsManagerProtocol
+    from pydoll.browser.protocols import BrowserOptionsManagerProtocol, InterceptCallback
     from pydoll.protocol.bidi.session.methods import NewResultCapabilities
 
 logger = logging.getLogger(__name__)
@@ -99,28 +92,31 @@ _WEBDRIVER_STEALTH_SCRIPT = r"""() => {
   });
 }"""
 
-# Maps the portable Permission set to the W3C names BiDi understands. Permissions
-# absent here have no Firefox/BiDi equivalent and are skipped with a warning.
-_BIDI_PERMISSION_MAP: dict[Permission, str] = {
-    Permission.GEOLOCATION: 'geolocation',
-    Permission.NOTIFICATIONS: 'notifications',
-    Permission.CAMERA: 'camera',
-    Permission.MICROPHONE: 'microphone',
-    Permission.MIDI: 'midi',
-    Permission.BACKGROUND_SYNC: 'background-sync',
-    Permission.PERIODIC_BACKGROUND_SYNC: 'periodic-background-sync',
-    Permission.PERSISTENT_STORAGE: 'persistent-storage',
-    Permission.STORAGE_ACCESS: 'storage-access',
-    Permission.CLIPBOARD_READ: 'clipboard-read',
-    Permission.CLIPBOARD_WRITE: 'clipboard-write',
-    Permission.IDLE_DETECTION: 'idle-detection',
-    Permission.PAYMENT_HANDLER: 'payment-handler',
-    Permission.SCREEN_WAKE_LOCK: 'screen-wake-lock',
-    Permission.DISPLAY_CAPTURE: 'display-capture',
-    Permission.SPEAKER_SELECTION: 'speaker-selection',
-    Permission.WINDOW_MANAGEMENT: 'window-management',
-    Permission.LOCAL_FONTS: 'local-fonts',
+# Maps the CDP PermissionType set to the W3C names BiDi understands. Permissions
+# absent here have no Firefox/BiDi equivalent and raise UnsupportedOperation.
+_BIDI_PERMISSION_MAP: dict[PermissionType, str] = {
+    PermissionType.GEOLOCATION: 'geolocation',
+    PermissionType.NOTIFICATIONS: 'notifications',
+    PermissionType.VIDEO_CAPTURE: 'camera',
+    PermissionType.AUDIO_CAPTURE: 'microphone',
+    PermissionType.MIDI: 'midi',
+    PermissionType.BACKGROUND_SYNC: 'background-sync',
+    PermissionType.PERIODIC_BACKGROUND_SYNC: 'periodic-background-sync',
+    PermissionType.DURABLE_STORAGE: 'persistent-storage',
+    PermissionType.STORAGE_ACCESS: 'storage-access',
+    PermissionType.CLIPBOARD_READ_WRITE: 'clipboard-read',
+    PermissionType.CLIPBOARD_SANITIZED_WRITE: 'clipboard-write',
+    PermissionType.IDLE_DETECTION: 'idle-detection',
+    PermissionType.PAYMENT_HANDLER: 'payment-handler',
+    PermissionType.WAKE_LOCK_SCREEN: 'screen-wake-lock',
+    PermissionType.DISPLAY_CAPTURE: 'display-capture',
+    PermissionType.SPEAKER_SELECTION: 'speaker-selection',
+    PermissionType.WINDOW_MANAGEMENT: 'window-management',
+    PermissionType.LOCAL_FONTS: 'local-fonts',
 }
+
+
+_ALLOWING_BEHAVIORS = frozenset({DownloadBehavior.ALLOW, DownloadBehavior.ALLOW_AND_NAME})
 
 
 class FirefoxBrowser:
@@ -129,7 +125,7 @@ class FirefoxBrowser:
     def __init__(
         self,
         options_manager: BrowserOptionsManagerProtocol,
-        connection_port: Optional[int] = None,
+        connection_port: int | None = None,
     ):
         self._validate_connection_port(connection_port)
         self.options = options_manager.initialize_options()
@@ -140,9 +136,9 @@ class FirefoxBrowser:
         self._connection_handler = BiDiConnectionHandler(
             connection_port=self._connection_port,
         )
-        self._session_id: Optional[str] = None
+        self._session_id: str | None = None
         self._capabilities: NewResultCapabilities = {}
-        self._granted_permissions: list[tuple[str, str, Optional[str]]] = []
+        self._granted_permissions: list[tuple[str, str, str | None]] = []
         self._intercept_callbacks: dict[str, int] = {}
 
     async def __aenter__(self) -> FirefoxBrowser:
@@ -153,14 +149,21 @@ class FirefoxBrowser:
             await self.stop()
         await self._connection_handler.close()
 
-    async def start(self, headless: bool = False):
-        """Start Firefox and establish BiDi session."""
-        if headless:
-            self.options.headless = headless
+    async def start(self) -> BiDiTab:
+        """Start Firefox and establish a BiDi session.
 
-        binary_location = (
-            self.options.binary_location or self._get_default_binary_location()
-        )
+        Headless mode comes from ``options.headless``. The initial tab is moved to
+        ``about:blank``: Firefox opens on ``about:home``, a privileged page that
+        BiDi refuses to scope commands to (event subscriptions, frame trees)
+        without system access.
+
+        Returns:
+            Initial tab for interaction.
+
+        Raises:
+            BrowserNotRunning: If Firefox does not answer within ``options.start_timeout``.
+        """
+        binary_location = self.options.binary_location or self._get_default_binary_location()
         temp_dir = self._temp_directory_manager.create_temp_dir()
 
         self._browser_process_manager.start_browser_process(
@@ -173,15 +176,15 @@ class FirefoxBrowser:
         response = await self._execute_command(SessionCommands.new())
         self._session_id = response['result']['sessionId']
         self._capabilities = response['result']['capabilities']
-        logger.info(f'BiDi session established: {self._session_id}')
+        logger.info('BiDi session established: %s', self._session_id)
 
         await self._apply_webdriver_stealth()
         await self._apply_user_agent_override()
 
         tabs = await self.get_opened_tabs()
-        if tabs:
-            return tabs[0]
-        return await self.new_tab()
+        tab = tabs[0] if tabs else await self.new_tab()
+        await tab.go_to('about:blank')
+        return tab
 
     async def stop(self):
         """Stop Firefox and cleanup resources."""
@@ -224,9 +227,7 @@ class FirefoxBrowser:
         page can read navigator.webdriver === true.
         """
         await self._execute_command(
-            ScriptCommands.add_preload_script(
-                function_declaration=_WEBDRIVER_STEALTH_SCRIPT
-            )
+            ScriptCommands.add_preload_script(function_declaration=_WEBDRIVER_STEALTH_SCRIPT)
         )
 
     async def _apply_user_agent_override(self) -> None:
@@ -247,8 +248,8 @@ class FirefoxBrowser:
 
     async def create_browser_context(
         self,
-        proxy_server: Optional[str] = None,
-        proxy_bypass_list: Optional[str] = None,
+        proxy_server: str | None = None,
+        proxy_bypass_list: str | None = None,
     ) -> str:
         """Create isolated browser context (BiDi UserContext).
 
@@ -265,43 +266,34 @@ class FirefoxBrowser:
                 stacklevel=2,
             )
 
-        proxy: Optional[ManualProxyConfiguration] = None
+        proxy: ManualProxyConfiguration | None = None
         if proxy_server:
             proxy = ManualProxyConfiguration(
                 proxyType='manual', httpProxy=proxy_server, sslProxy=proxy_server
             )
 
-        response = await self._execute_command(
-            BrowserCommands.create_user_context(proxy=proxy)
-        )
+        response = await self._execute_command(BrowserCommands.create_user_context(proxy=proxy))
         context_id: str = response['result']['userContext']
-        logger.info(f'Created browser context: {context_id}')
+        logger.info('Created browser context: %s', context_id)
         return context_id
 
     async def delete_browser_context(self, browser_context_id: str):
         """Delete browser context (BiDi UserContext)."""
-        logger.info(f'Deleting browser context: {browser_context_id}')
-        await self._execute_command(
-            BrowserCommands.remove_user_context(browser_context_id)
-        )
+        logger.info('Deleting browser context: %s', browser_context_id)
+        await self._execute_command(BrowserCommands.remove_user_context(browser_context_id))
 
     async def get_browser_contexts(self) -> list[str]:
         """Get all browser context IDs."""
-        response = await self._execute_command(
-            BrowserCommands.get_user_contexts()
-        )
+        response = await self._execute_command(BrowserCommands.get_user_contexts())
         return [ctx['userContext'] for ctx in response['result']['userContexts']]
 
     async def get_opened_tabs(self) -> list[BiDiTab]:
         """Get all open browsing contexts (tabs)."""
         response = await self._execute_command(BrowsingContextCommands.get_tree())
         contexts = response['result']['contexts']
-        return [
-            BiDiTab(ctx['context'], self._connection_handler)
-            for ctx in contexts
-        ]
+        return [BiDiTab(ctx['context'], self._connection_handler) for ctx in contexts]
 
-    async def new_tab(self, url: str = '', browser_context_id: Optional[str] = None) -> BiDiTab:
+    async def new_tab(self, url: str = '', browser_context_id: str | None = None) -> BiDiTab:
         """Create a new tab.
 
         Args:
@@ -319,45 +311,48 @@ class FirefoxBrowser:
 
         return tab
 
-    async def get_version(self) -> BrowserVersion:
-        """Get browser version information from the session capabilities.
+    async def get_version(self) -> GetVersionResult:
+        """Get browser version information, in the CDP ``GetVersionResult`` shape.
 
         Capabilities are captured once when the BiDi session is created (session.new
-        can only be called once per session), so this reuses the cached values.
+        can only be called once per session), so this reuses the cached values:
+        ``product`` is ``"<browserName>/<browserVersion>"`` and ``userAgent`` the
+        session's; ``protocolVersion``, ``revision`` and ``jsVersion`` have no BiDi
+        counterpart and are empty.
         """
         caps = self._capabilities
-        return BrowserVersion(
-            browserName=caps.get('browserName', ''),
-            browserVersion=caps.get('browserVersion', ''),
+        return GetVersionResult(
+            protocolVersion='',
+            product=f'{caps.get("browserName", "")}/{caps.get("browserVersion", "")}',
+            revision='',
             userAgent=caps.get('userAgent', ''),
+            jsVersion='',
         )
 
-    async def set_download_path(
-        self, path: str, browser_context_id: Optional[str] = None
-    ):
+    async def set_download_path(self, path: str, browser_context_id: str | None = None):
         """Set download directory path."""
-        await self.set_download_behavior(
-            DownloadBehavior.ALLOW, path, browser_context_id
-        )
+        await self.set_download_behavior(DownloadBehavior.ALLOW, path, browser_context_id)
 
     async def set_download_behavior(
         self,
         behavior: DownloadBehavior,
-        download_path: Optional[str] = None,
-        browser_context_id: Optional[str] = None,
+        download_path: str | None = None,
+        browser_context_id: str | None = None,
     ):
         """Configure download handling.
 
         Args:
-            behavior: ALLOW or DENY.
-            download_path: Required if behavior is ALLOW.
-            browser_context_id: Context to apply to.
+            behavior: ALLOW (and ALLOW_AND_NAME, which BiDi cannot distinguish) save
+                to ``download_path``; DENY blocks downloads; DEFAULT restores
+                Firefox's own behaviour.
+            download_path: Required if behavior allows downloads.
+            browser_context_id: UserContext to apply to (all when None).
         """
-        bidi_behavior: DownloadBehaviorAllowed | DownloadBehaviorDenied
-        if behavior == DownloadBehavior.ALLOW and download_path:
-            bidi_behavior = DownloadBehaviorAllowed(
-                type='allowed', destinationFolder=download_path
-            )
+        bidi_behavior: BiDiDownloadBehavior | None
+        if behavior == DownloadBehavior.DEFAULT:
+            bidi_behavior = None
+        elif behavior in _ALLOWING_BEHAVIORS and download_path:
+            bidi_behavior = DownloadBehaviorAllowed(type='allowed', destinationFolder=download_path)
         else:
             bidi_behavior = DownloadBehaviorDenied(type='denied')
 
@@ -369,63 +364,41 @@ class FirefoxBrowser:
             )
         )
 
-    async def delete_all_cookies(
-        self, browser_context_id: Optional[str] = None
-    ):
+    async def delete_all_cookies(self, browser_context_id: str | None = None):
         """Delete all cookies."""
-        partition: Optional[StorageKeyPartitionDescriptor] = None
-        if browser_context_id:
-            partition = StorageKeyPartitionDescriptor(
-                type='storageKey', userContext=browser_context_id
-            )
         await self._execute_command(
-            StorageCommands.delete_cookies(partition=partition)
+            StorageCommands.delete_cookies(partition=self._cookie_partition(browser_context_id))
         )
 
     async def set_cookies(
         self,
         cookies: list[CookieParam],
-        browser_context_id: Optional[str] = None,
+        browser_context_id: str | None = None,
     ):
-        """Set cookies."""
-        partition: Optional[StorageKeyPartitionDescriptor] = None
-        if browser_context_id:
-            partition = StorageKeyPartitionDescriptor(
-                type='storageKey', userContext=browser_context_id
-            )
+        """Set cookies (CDP ``CookieParam`` shape; BiDi needs a domain or a url)."""
+        partition = self._cookie_partition(browser_context_id)
         for cookie in cookies:
-            bidi_cookie = PartialCookie(
-                name=cookie['name'],
-                value=StringValue(type='string', value=cookie['value']),
-                domain=cookie['domain'],
-            )
-            if 'path' in cookie:
-                bidi_cookie['path'] = cookie['path']
-            if 'httpOnly' in cookie:
-                bidi_cookie['httpOnly'] = cookie['httpOnly']
-            if 'secure' in cookie:
-                bidi_cookie['secure'] = cookie['secure']
-            if 'expiry' in cookie:
-                bidi_cookie['expiry'] = cookie['expiry']
-            if 'sameSite' in cookie:
-                bidi_cookie['sameSite'] = SameSite(cookie['sameSite'].lower())
             await self._execute_command(
-                StorageCommands.set_cookie(cookie=bidi_cookie, partition=partition)
+                StorageCommands.set_cookie(
+                    cookie=BiDiTab._to_bidi_cookie(cookie), partition=partition
+                )
             )
 
-    async def get_cookies(
-        self, browser_context_id: Optional[str] = None
-    ) -> list[Cookie]:
-        """Get all cookies."""
-        partition: Optional[StorageKeyPartitionDescriptor] = None
-        if browser_context_id:
-            partition = StorageKeyPartitionDescriptor(
-                type='storageKey', userContext=browser_context_id
-            )
+    async def get_cookies(self, browser_context_id: str | None = None) -> list[Cookie]:
+        """Get all cookies, in the CDP ``Cookie`` shape."""
         response = await self._execute_command(
-            StorageCommands.get_cookies(partition=partition)
+            StorageCommands.get_cookies(partition=self._cookie_partition(browser_context_id))
         )
-        return [BiDiTab._to_generic_cookie(c) for c in response['result']['cookies']]
+        return [BiDiTab._to_cdp_cookie(c) for c in response['result']['cookies']]
+
+    @staticmethod
+    def _cookie_partition(
+        browser_context_id: str | None,
+    ) -> StorageKeyPartitionDescriptor | None:
+        """The storage partition of a user context (None addresses every context)."""
+        if not browser_context_id:
+            return None
+        return StorageKeyPartitionDescriptor(type='storageKey', userContext=browser_context_id)
 
     async def set_window_maximized(self):
         """Maximize browser window."""
@@ -449,11 +422,12 @@ class FirefoxBrowser:
                 )
             )
 
-    async def set_window_bounds(self, bounds: WindowBounds):
+    async def set_window_bounds(self, bounds: Bounds):
         """Set window position and/or size.
 
         Args:
-            bounds: WindowBounds with optional keys: width, height, x, y.
+            bounds: CDP ``Bounds`` with optional ``left``, ``top``, ``width``, ``height``
+                (``windowState`` is ignored; use set_window_maximized/minimized).
         """
         windows = await self._get_client_windows()
         if windows:
@@ -461,14 +435,17 @@ class FirefoxBrowser:
                 BrowserCommands.set_client_window_state(
                     client_window=windows[0]['clientWindow'],
                     state=ClientWindowState.NORMAL,
-                    **bounds,
+                    width=bounds.get('width'),
+                    height=bounds.get('height'),
+                    x=bounds.get('left'),
+                    y=bounds.get('top'),
                 )
             )
 
     @overload
     async def on(
         self,
-        event_name: str,
+        event_name: Event | str,
         callback: Callable[[Any], Any],
         temporary: bool = False,
     ) -> int: ...
@@ -476,7 +453,7 @@ class FirefoxBrowser:
     @overload
     async def on(
         self,
-        event_name: str,
+        event_name: Event | str,
         callback: Callable[[Any], Awaitable[Any]],
         temporary: bool = False,
     ) -> int: ...
@@ -497,9 +474,7 @@ class FirefoxBrowser:
         if isinstance(event_name, Event):
             native_event = BIDI_EVENT_MAP.get(event_name, event_name)
 
-        await self._execute_command(
-            SessionCommands.subscribe(events=[native_event])
-        )
+        await self._execute_command(SessionCommands.subscribe(events=[native_event]))
 
         async def callback_wrapper(event):
             asyncio.create_task(callback(event))
@@ -519,8 +494,8 @@ class FirefoxBrowser:
 
     async def intercept_requests(
         self,
-        callback: Callable,
-        url_patterns: Optional[list[str]] = None,
+        callback: InterceptCallback,
+        url_patterns: list[str] | None = None,
     ) -> str:
         """Intercept network requests.
 
@@ -532,7 +507,7 @@ class FirefoxBrowser:
             Intercept ID for later removal.
         """
 
-        bidi_patterns: Optional[list[UrlPatternPattern | UrlPatternString]] = None
+        bidi_patterns: list[UrlPatternPattern | UrlPatternString] | None = None
         if url_patterns:
             bidi_patterns = [UrlPatternString(type='string', pattern=p) for p in url_patterns]
 
@@ -558,14 +533,15 @@ class FirefoxBrowser:
                 ]
             await self._execute_command(
                 NetworkCommands.continue_request(
-                    request=request_id, url=url, method=method, headers=bidi_headers,
+                    request=request_id,
+                    url=url,
+                    method=method,
+                    headers=bidi_headers,
                 )
             )
 
         async def _bidi_fail(request_id, **_):
-            await self._execute_command(
-                NetworkCommands.fail_request(request=request_id)
-            )
+            await self._execute_command(NetworkCommands.fail_request(request=request_id))
 
         async def _bidi_respond(request_id, status=200, headers=None, body=None, **_):
             bidi_headers = None
@@ -597,9 +573,7 @@ class FirefoxBrowser:
                 {
                     'name': h['name'],
                     'value': (
-                        h['value'].get('value', '')
-                        if isinstance(h['value'], dict)
-                        else h['value']
+                        h['value'].get('value', '') if isinstance(h['value'], dict) else h['value']
                     ),
                 }
                 for h in raw_headers
@@ -629,9 +603,7 @@ class FirefoxBrowser:
         Unsubscribes from ``network.beforeRequestSent`` once the last intercept is
         removed, so the remote end stops emitting interception events.
         """
-        await self._execute_command(
-            NetworkCommands.remove_intercept(intercept=intercept_id)
-        )
+        await self._execute_command(NetworkCommands.remove_intercept(intercept=intercept_id))
         callback_id = self._intercept_callbacks.pop(intercept_id, None)
         if callback_id is not None:
             await self._connection_handler.remove_callback(callback_id)
@@ -642,34 +614,31 @@ class FirefoxBrowser:
 
     async def grant_permissions(
         self,
-        permissions: Sequence[Permission],
-        origin: Optional[str] = None,
-        browser_context_id: Optional[str] = None,
+        permissions: list[PermissionType],
+        origin: str | None = None,
+        browser_context_id: str | None = None,
     ):
         """Grant permissions for an origin via permissions.setPermission.
 
-        Permissions that Chromium supports but Firefox/BiDi does not are skipped
-        with a warning.
-
         Args:
-            permissions: Permissions to grant.
+            permissions: CDP permission types to grant; the ones with a W3C
+                equivalent are mapped to Firefox's names.
             origin: Origin to grant for. Required in BiDi (CDP allows all origins).
             browser_context_id: UserContext to scope the permissions to.
 
         Raises:
             ValueError: If origin is not provided (BiDi requires an explicit origin).
+            UnsupportedOperation: If a permission has no Firefox/BiDi equivalent.
         """
         if not origin:
             raise ValueError('BiDi requires an explicit origin for grant_permissions.')
+        unsupported = [p.name for p in permissions if p not in _BIDI_PERMISSION_MAP]
+        if unsupported:
+            raise UnsupportedOperation(
+                f'Permissions not supported by Firefox/BiDi: {", ".join(unsupported)}'
+            )
         for permission in permissions:
-            bidi_name = _BIDI_PERMISSION_MAP.get(permission)
-            if bidi_name is None:
-                warnings.warn(
-                    f'Permission {permission.name} is not supported by Firefox/BiDi '
-                    'and was skipped.',
-                    stacklevel=2,
-                )
-                continue
+            bidi_name = _BIDI_PERMISSION_MAP[permission]
             await self._execute_command(
                 PermissionsCommands.set_permission(
                     descriptor=PermissionDescriptor(name=bidi_name),
@@ -680,13 +649,13 @@ class FirefoxBrowser:
             )
             self._granted_permissions.append((bidi_name, origin, browser_context_id))
 
-    async def reset_permissions(self, browser_context_id: Optional[str] = None):
+    async def reset_permissions(self, browser_context_id: str | None = None):
         """Reset permissions granted through this browser back to 'prompt'.
 
         BiDi has no reset-all primitive, so only permissions granted via this
         instance are reset (optionally filtered by browser_context_id).
         """
-        remaining: list[tuple[str, str, Optional[str]]] = []
+        remaining: list[tuple[str, str, str | None]] = []
         for name, origin, user_context in self._granted_permissions:
             if browser_context_id is not None and user_context != browser_context_id:
                 remaining.append((name, origin, user_context))
@@ -701,7 +670,7 @@ class FirefoxBrowser:
             )
         self._granted_permissions = remaining
 
-    async def execute_protocol_command(
+    async def execute_command(
         self,
         command: Command[T_CommandParams, T_CommandResult],
         timeout: int = 60,
@@ -710,22 +679,22 @@ class FirefoxBrowser:
 
         Escape hatch for BiDi features not covered by the portable API. Build the
         command with the ``pydoll.commands.bidi.*`` builders.
+
+        Raises:
+            CommandFailed: If Firefox answers the command with an error.
         """
-        return await self._execute_command(command, timeout)
+        return await self._connection_handler.execute_command(command, timeout)
 
     async def _execute_command(
         self,
         command: Command[T_CommandParams, T_CommandResult],
         timeout: int = 60,
     ) -> T_CommandResult:
-        """Execute a BiDi command and return typed result."""
-        return await self._connection_handler.execute_command(command, timeout)
+        return await self.execute_command(command, timeout)
 
     async def _get_client_windows(self) -> list[ClientWindowInfo]:
         """Get all client windows."""
-        response = await self._execute_command(
-            BrowserCommands.get_client_windows()
-        )
+        response = await self._execute_command(BrowserCommands.get_client_windows())
         return response['result']['clientWindows']
 
     async def _is_browser_running(self, timeout: int = 5) -> bool:
@@ -748,7 +717,7 @@ class FirefoxBrowser:
         raise NotImplementedError
 
     @staticmethod
-    def _validate_connection_port(connection_port: Optional[int]):
+    def _validate_connection_port(connection_port: int | None):
         if connection_port is not None and (
             not isinstance(connection_port, int) or connection_port < 0
         ):

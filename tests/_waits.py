@@ -61,6 +61,6 @@ async def wait_for_element_text(element, expected: str, timeout: float = 10.0) -
     """Poll an element's (stripped) text until it equals *expected*."""
 
     async def check() -> bool:
-        return (await element.text).strip() == expected
+        return (await element.text()).strip() == expected
 
     await wait_until(check, timeout, message=f'element text != {expected!r}')

@@ -69,7 +69,8 @@ async def _wait_for_worker_result(tab, expression: str, timeout: float = 15.0) -
     """Poll a page global until the worker has reported its navigator snapshot."""
     deadline = asyncio.get_event_loop().time() + timeout
     while asyncio.get_event_loop().time() < deadline:
-        value = await tab.execute_script(f'return {expression}')
+        response = await tab.execute_script(f'return {expression}', return_by_value=True)
+        value = response['result']['result'].get('value')
         if value:
             return value
         await asyncio.sleep(0.1)

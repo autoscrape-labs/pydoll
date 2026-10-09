@@ -21,8 +21,8 @@ async def test_start_returns_a_tab_and_reports_version(ci_chrome_options):
         tab = await browser.start()
         assert isinstance(tab, Tab)
         version = await browser.get_version()
-        assert 'browserName' in version
-        assert 'browserVersion' in version
+        assert 'product' in version
+        assert 'userAgent' in version
 
 
 @pytest.mark.asyncio
@@ -71,7 +71,7 @@ async def test_set_then_get_cookies_roundtrip(ci_chrome_options):
 async def test_get_targets_includes_a_page(ci_chrome_options):
     async with Chrome(options=ci_chrome_options) as browser:
         await browser.start()
-        targets = await browser._get_targets()
+        targets = await browser.get_targets()
         assert isinstance(targets, list)
         assert any(target.get('type') == 'page' for target in targets)
 
@@ -82,4 +82,4 @@ async def test_options_user_agent_applied_at_start(ci_chrome_options):
     async with Chrome(options=ci_chrome_options) as browser:
         tab = await browser.start()
         await tab.go_to('data:text/html,<p>ua</p>')
-        assert await tab.execute_script('return navigator.userAgent') == 'StartUA/1.0'
+        assert await tab.evaluate('return navigator.userAgent') == 'StartUA/1.0'

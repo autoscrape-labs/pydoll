@@ -19,12 +19,23 @@ The `FindElementsMixin` provides element finding capabilities to classes that in
 
 Mixins are typically used internally by the library to compose functionality. The `FindElementsMixin` is used by classes like `Tab` and `WebElement` to provide element finding methods:
 
-```python
-# These methods come from FindElementsMixin
-element = await tab.find(id="username")
-elements = await tab.find(class_name="item", find_all=True)
-element = await tab.query("#submit-button")
-```
+=== "Sync"
+
+    ```python
+    # These methods come from FindElementsMixin
+    element = tab.find(id="username")
+    elements = tab.find(class_name="item", find_all=True)
+    element = tab.query("#submit-button")
+    ```
+
+=== "Async"
+
+    ```python
+    # These methods come from FindElementsMixin
+    element = await tab.find(id="username")
+    elements = await tab.find(class_name="item", find_all=True)
+    element = await tab.query("#submit-button")
+    ```
 
 ## Available Methods
 

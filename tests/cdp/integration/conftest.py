@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-from typing import Optional
 
 import pytest_asyncio
 import websockets
@@ -12,6 +11,7 @@ from websockets.asyncio.server import Server, ServerConnection, serve
 from pydoll.browser.chromium import Chrome
 from pydoll.browser.chromium.tab import Tab
 from pydoll.connection import ConnectionHandler
+from tests.browser_options import ci_options
 
 
 class FakeCDPServer:
@@ -25,10 +25,12 @@ class FakeCDPServer:
     """
 
     def __init__(self) -> None:
-        self._server: Optional[Server] = None
+        self._server: Server | None = None
         self._connections: set[ServerConnection] = set()
         self._received: list[dict] = []
         self._results: dict[str, dict] = {}
+        self._errors: dict[str, dict] = {}
+        self._bare_methods: set[str] = set()
         self._hung_methods: set[str] = set()
         self._total_connections = 0
 
@@ -72,6 +74,14 @@ class FakeCDPServer:
         """Cumulative number of client connections accepted over the server's life."""
         return self._total_connections
 
+    def set_error(self, method: str, code: int, message: str) -> None:
+        """Answer a command method with a CDP error frame instead of a result."""
+        self._errors[method] = {'code': code, 'message': message}
+
+    def omit_result(self, method: str) -> None:
+        """Answer a command method with a bare ``{id}`` frame (a broken peer)."""
+        self._bare_methods.add(method)
+
     def set_result(self, method: str, result: dict) -> None:
         """Configure the result payload returned for a command method."""
         self._results[method] = result
@@ -80,7 +90,7 @@ class FakeCDPServer:
         """Receive a command method but never answer it, to test timeouts/drops."""
         self._hung_methods.add(method)
 
-    async def push_event(self, method: str, params: Optional[dict] = None) -> None:
+    async def push_event(self, method: str, params: dict | None = None) -> None:
         """Send an unsolicited CDP event to every connected client."""
         await self._broadcast(json.dumps({'method': method, 'params': params or {}}))
 
@@ -111,9 +121,16 @@ class FakeCDPServer:
     async def _respond(self, connection: ServerConnection, raw: str) -> None:
         message = json.loads(raw)
         self._received.append(message)
-        if message.get('method') in self._hung_methods:
+        method = message.get('method')
+        if method in self._hung_methods:
             return
-        result = self._results.get(message.get('method'), {})
+        if method in self._bare_methods:
+            await connection.send(json.dumps({'id': message['id']}))
+            return
+        if method in self._errors:
+            await connection.send(json.dumps({'id': message['id'], 'error': self._errors[method]}))
+            return
+        result = self._results.get(method, {})
         await connection.send(json.dumps({'id': message['id'], 'result': result}))
 
 
@@ -142,3 +159,61 @@ async def fake_tab(cdp_server):
         yield tab
     finally:
         await handler.close()
+
+
+@pytest_asyncio.fixture(scope='session')
+async def browser():
+    """One headless Chrome for the whole session (one per xdist worker).
+
+    Tests never touch this browser's own state directly; they get an isolated
+    tab from the ``tab`` fixture. Tests that need special launch flags keep
+    launching their own browser via ``ci_chrome_options``.
+    """
+    instance = Chrome(options=ci_options())
+    await instance.start()
+    try:
+        yield instance
+    finally:
+        await instance.stop()
+
+
+@pytest_asyncio.fixture
+async def tab(browser):
+    """A tab in a fresh browser context, torn down after the test.
+
+    A browser context has its own cookies, storage and cache, so a test sees
+    the same isolation as a freshly launched browser at a fraction of the cost
+    (about 0.15 s instead of over a second). Disposing the context closes its
+    tabs, so a test that already closed the tab tears down cleanly.
+    """
+    context_id = await browser.create_browser_context()
+    instance = await browser.new_tab(browser_context_id=context_id)
+    try:
+        yield instance
+    finally:
+        await browser.delete_browser_context(context_id)
+
+
+@pytest_asyncio.fixture(scope='session')
+async def site_per_process_browser():
+    """A session Chrome launched with --site-per-process, so cross-origin iframes
+    become out-of-process frames (OOPIFs) the way they do in a real browser."""
+    options = ci_options()
+    options.add_argument('--site-per-process')
+    instance = Chrome(options=options)
+    await instance.start()
+    try:
+        yield instance
+    finally:
+        await instance.stop()
+
+
+@pytest_asyncio.fixture
+async def oopif_tab(site_per_process_browser):
+    """A tab in a fresh context of the --site-per-process browser."""
+    context_id = await site_per_process_browser.create_browser_context()
+    instance = await site_per_process_browser.new_tab(browser_context_id=context_id)
+    try:
+        yield instance
+    finally:
+        await site_per_process_browser.delete_browser_context(context_id)

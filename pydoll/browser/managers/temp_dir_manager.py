@@ -1,5 +1,4 @@
 import logging
-import os
 import shutil
 import time
 from pathlib import Path
@@ -70,55 +69,27 @@ class TempDirectoryManager:
 
     def handle_cleanup_error(self, func: Callable[[str], None], path: str, exc_info: tuple):
         """
-        Handle errors during directory cleanup with browser-specific workarounds.
+        Handle errors during directory cleanup.
+
+        Chrome keeps some profile files open for a moment after its process
+        exits (Windows holds caches, cookies and history for a few hundred
+        milliseconds), so a ``PermissionError`` is retried a few times and then
+        skipped with a warning: cleanup is best effort and must not fail the
+        browser shutdown. Any other ``OSError`` is skipped as well.
 
         Args:
             func: Original function that failed.
             path: Path that could not be processed.
             exc_info: Exception information tuple.
-
-        Note:
-            Handles Chromium-specific locked files like CrashpadMetrics.
         """
-        matches = ['CrashpadMetrics-active.pma']
-        match_substrings = ['Safe Browsing', 'Safe Browsing Cookies']
-        # Extra patterns commonly locked on Windows; compare case-insensitively
-        windows_locked_substrings = [
-            '\\cache\\',
-            '/cache/',
-            'no_vary_search',
-            'journal.baj',
-            '\\network\\cookies',
-            '/network/cookies',
-            'cookies-journal',
-            '\\local storage\\',
-            '/local storage/',
-            '\\local storage\\leveldb\\',
-            '/local storage/leveldb/',
-            'leveldb',
-            'indexeddb',
-        ]
         exc_type, exc_value, _ = exc_info
-
         if exc_type is PermissionError:
-            filename = Path(path).name
-            # Known Chromium files that may remain locked briefly on Windows
-            path_lc = path.lower()
-            windows_match = os.name == 'nt' and any(
-                substr in path_lc for substr in windows_locked_substrings
-            )
-            if (
-                filename in matches
-                or any(substr in path for substr in match_substrings)
-                or windows_match
-            ):
-                try:
-                    self.retry_process_file(func, path)
-                    return
-                except PermissionError:
-                    logger.warning(f'Ignoring locked Chrome file during cleanup: {path}')
-                    return
-        elif exc_type is OSError:
+            try:
+                self.retry_process_file(func, path)
+            except PermissionError:
+                logger.warning('Ignoring locked Chrome file during cleanup: %s', path)
+            return
+        if exc_type is not None and issubclass(exc_type, OSError):
             return
         raise exc_value
 
@@ -131,24 +102,33 @@ class TempDirectoryManager:
         """
         for temp_dir in self._temp_dirs:
             logger.info(f'Cleaning up temp directory: {temp_dir.name}')
-            shutil.rmtree(temp_dir.name, onerror=self.handle_cleanup_error)
-            remaining = Path(temp_dir.name)
-            if not remaining.exists():
-                continue
-
-            for attempt in range(10):
-                time.sleep(0.2)
-                try:
-                    shutil.rmtree(temp_dir.name, onerror=self.handle_cleanup_error)
-                except Exception:  # noqa: BLE001 - best-effort cleanup
-                    pass
-                if not remaining.exists():
-                    logger.debug(
-                        f'Temp directory removed after retry #{attempt + 1}: {temp_dir.name}'
-                    )
-                    break
-            if remaining.exists():
-                logger.warning(
-                    f'Temp directory still present after retries (leftover files may remain): '
-                    f'{temp_dir.name}'
-                )
+            try:
+                shutil.rmtree(temp_dir.name, onerror=self.handle_cleanup_error)
+                remaining = Path(temp_dir.name)
+                if remaining.exists():
+                    for attempt in range(10):
+                        time.sleep(0.2)
+                        try:
+                            shutil.rmtree(temp_dir.name, onerror=self.handle_cleanup_error)
+                        except Exception:  # noqa: BLE001 - best-effort cleanup
+                            pass
+                        if not remaining.exists():
+                            logger.debug(
+                                f'Temp directory removed after retry #{attempt + 1}: '
+                                f'{temp_dir.name}'
+                            )
+                            break
+                    if remaining.exists():
+                        logger.warning(
+                            'Temp directory still present after retries (leftover files may '
+                            f'remain): {temp_dir.name}'
+                        )
+            finally:
+                # Disarm TemporaryDirectory's own weakref finalizer: it re-runs an
+                # UNGUARDED shutil.rmtree at GC/interpreter exit, which on Windows
+                # crashes with WinError 32 on files Chrome still holds briefly (e.g.
+                # ``Session Storage/LOG``). We have already cleaned up above with the
+                # locked-file-aware handler, so the built-in pass must not fire again.
+                finalizer = getattr(temp_dir, '_finalizer', None)
+                if finalizer is not None:
+                    finalizer.detach()

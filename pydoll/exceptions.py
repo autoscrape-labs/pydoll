@@ -103,6 +103,23 @@ class UnsupportedOperation(BrowserException):
     message = 'This operation is not supported by this browser'
 
 
+class FingerprintContextConflict(BrowserException):
+    """Raised when a different fingerprint is applied within one browser context.
+
+    Service and shared workers are shared across all tabs of a browser context,
+    so a single context can only carry one fingerprint identity. Use a separate
+    browser context per identity (``Browser.create_browser_context()`` +
+    ``Browser.new_tab(browser_context_id=...)``).
+    """
+
+    message = (
+        'A different fingerprint is already applied to this browser context. '
+        'Multiple fingerprints are only supported across separate browser contexts: '
+        'create one context per identity via Browser.create_browser_context() and '
+        'open each tab with new_tab(browser_context_id=...).'
+    )
+
+
 class ProtocolException(PydollException):
     """Base class for exceptions related to CDP protocol communication."""
 
@@ -137,6 +154,35 @@ class CommandExecutionTimeout(ProtocolException):
     """Raised when a command execution times out."""
 
     message = 'The command execution timed out'
+
+
+class CommandFailed(ProtocolException):
+    """Raised when the browser answers a command with a CDP error instead of a result.
+
+    Covers protocol-level rejections (unknown method, invalid params, session not
+    found) and domain-level failures such as an object id that no longer resolves
+    or an execution context destroyed by a navigation.
+
+    Attributes:
+        method: CDP method that was rejected.
+        code: JSON-RPC style error code reported by the browser.
+        data: Optional extra detail the browser attached to the error.
+    """
+
+    message = 'The browser rejected the command'
+
+    def __init__(
+        self,
+        method: str = '',
+        code: int = 0,
+        message: str = '',
+        data: str = '',
+    ):
+        self.method = method
+        self.code = code
+        self.data = data
+        detail = message or self.__class__.message
+        super().__init__(f'{method}: {detail} (code {code})' if method else detail)
 
 
 class InvalidCallback(ProtocolException):
@@ -209,6 +255,12 @@ class WaitElementTimeout(TimeoutException):
     """Raised when waiting for an element times out."""
 
     message = 'Timed out waiting for element to appear'
+
+
+class WaitTimeout(TimeoutException):
+    """Raised when a wait_for_* or expect_* condition is not met in time."""
+
+    message = 'Timed out waiting for the condition'
 
 
 class DownloadTimeout(TimeoutException):
@@ -288,22 +340,10 @@ class NoDialogPresent(DialogException):
     message = 'No dialog present on the page'
 
 
-class NotAnIFrame(PydollException):
-    """Raised when an element is not an iframe."""
-
-    message = 'The element is not an iframe'
-
-
 class InvalidIFrame(PydollException):
     """Raised when an iframe is not valid."""
 
     message = 'The iframe is not valid'
-
-
-class IFrameNotFound(PydollException):
-    """Raised when an iframe is not found."""
-
-    message = 'The iframe was not found'
 
 
 class NetworkEventsNotEnabled(PydollException):
@@ -342,10 +382,12 @@ class InvalidScriptWithElement(ScriptException):
     message = 'Script contains "argument" but no element was provided'
 
 
-class ScriptExecutionError(ScriptException):
-    """Raised when JavaScript executed via execute_script throws."""
+class ScriptEvaluationError(ScriptException):
+    """Raised when the script a wait evaluates throws (or its promise rejects)."""
 
-    message = 'The executed script raised an error'
+    def __init__(self, error_text: str):
+        self.error_text = error_text
+        super().__init__(message=f'The script threw: {error_text}')
 
 
 class WrongPrefsDict(PydollException):

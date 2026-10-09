@@ -5,6 +5,7 @@ import json
 import logging
 from abc import ABC, abstractmethod
 from contextlib import suppress
+from enum import Enum
 from typing import TYPE_CHECKING, cast
 
 import websockets
@@ -15,11 +16,13 @@ from pydoll.connection.managers import CommandsManager, EventsManager
 from pydoll.connection.managers.event_trackers import BaseEventTracker
 from pydoll.exceptions import (
     CommandExecutionTimeout,
+    CommandFailed,
+    InvalidResponse,
     WebSocketConnectionClosed,
 )
 
 if TYPE_CHECKING:
-    from typing import AsyncGenerator, Awaitable, Callable, Optional, Union
+    from typing import AsyncGenerator, Awaitable, Callable, Mapping, Sequence
 
     from websockets.asyncio.client import connect as Connect
 
@@ -33,57 +36,77 @@ class BaseConnectionHandler(ABC):
     Protocol-agnostic WebSocket connection manager.
 
     Handles connection lifecycle, command execution, and event subscription.
-    Subclasses implement protocol-specific URL resolution, message parsing,
+    Subclasses implement protocol-specific URL resolution, message routing,
     error extraction, and event tracking.
     """
 
     def __init__(
         self,
-        connection_port: Optional[int] = None,
-        page_id: Optional[str] = None,
-        ws_address: Optional[str] = None,
+        connection_port: int | None = None,
+        page_id: str | None = None,
+        ws_address: str | None = None,
         ws_connector: type[Connect] = websockets.connect,
     ):
+        """
+        Initialize connection handler.
+
+        Args:
+            connection_port: Browser's remote-debugging port.
+            page_id: Target page ID (CDP only). If None, connects to the browser-level endpoint.
+            ws_address: WebSocket address. It has priority over connection_port and page_id.
+            ws_connector: WebSocket connection factory (mainly for testing).
+        """
         self._connection_port = connection_port
         self._page_id = page_id
         self._ws_address = ws_address
         self._ws_connector = ws_connector
-        self._ws_connection: Optional[ClientConnection] = None
+        self._ws_connection: ClientConnection | None = None
         self._command_manager = CommandsManager()
         self._events_handler = EventsManager()
         self._event_tracker = self._create_event_tracker()
-        self._receive_task: Optional[asyncio.Task] = None
+        self._receive_task: asyncio.Task | None = None
         self._connection_lock = asyncio.Lock()
-        logger.info(f'{self.__class__.__name__} initialized.')
+        logger.info('%s initialized.', self.__class__.__name__)
         logger.debug(
-            f'Init params: port={self._connection_port}, page_id={self._page_id}, '
-            f'ws_address_set={bool(self._ws_address)}'
+            'Init params: port=%s, page_id=%s, ws_address_set=%s',
+            self._connection_port,
+            self._page_id,
+            bool(self._ws_address),
         )
 
+    @staticmethod
     @abstractmethod
-    def _create_event_tracker(self) -> BaseEventTracker:
+    def _create_event_tracker() -> BaseEventTracker:
         """Create protocol-specific event tracker."""
 
     @abstractmethod
     async def _resolve_ws_address(self) -> str:
         """Resolve WebSocket URL using protocol-specific logic."""
 
+    @staticmethod
     @abstractmethod
-    def _is_command_response(self, message: dict) -> bool:
-        """Determine if a parsed message is a command response."""
+    def _is_command_response(message: dict) -> bool:
+        """Determine if a parsed message is a command response (as opposed to an event)."""
 
+    @staticmethod
     @abstractmethod
-    def _extract_error(self, message: dict) -> Optional[str]:
-        """Extract error information from a response, if any."""
+    def _extract_error(method: str, response: dict) -> CommandFailed | None:
+        """Build the ``CommandFailed`` a command response carries, if it is an error.
+
+        Each protocol reports a rejected command differently (CDP nests an
+        ``error`` object with a numeric code, BiDi flags the whole message with
+        ``type: 'error'`` and a string code), so the subclass reads its own
+        shape and returns the exception ready to raise, or None for a success.
+        """
 
     @property
-    def network_logs(self):
-        """Access captured network request and response logs."""
+    def network_logs(self) -> Sequence[Mapping[str, object]]:
+        """Snapshot of the captured network request events."""
         return self._event_tracker.network_logs
 
     @property
-    def dialog(self):
-        """Access currently active dialog information."""
+    def dialog(self) -> Mapping[str, object]:
+        """Event of the currently open dialog; empty (falsy) when no dialog is open."""
         return self._event_tracker.dialog
 
     async def ping(self) -> bool:
@@ -110,6 +133,8 @@ class BaseConnectionHandler(ABC):
             Parsed response wrapper, typed as the command's response parameter.
 
         Raises:
+            CommandFailed: If the browser answers with an error instead of a result.
+            InvalidResponse: If the response carries neither a result nor an error.
             CommandExecutionTimeout: If browser doesn't respond within timeout.
             WebSocketConnectionClosed: If connection closes during execution.
         """
@@ -120,27 +145,143 @@ class BaseConnectionHandler(ABC):
         try:
             ws = cast(ClientConnection, self._ws_connection)
             logger.debug(
-                f'Sending command: id={command.get("id")}, method={command.get("method")}, '
-                f'timeout={timeout}s'
+                'Sending command: id=%s, method=%s, timeout=%ss',
+                command.get('id'),
+                command.get('method'),
+                timeout,
             )
-            start = asyncio.get_event_loop().time()
+            start = asyncio.get_running_loop().time()
             await ws.send(command_str)
             response: str = await asyncio.wait_for(future, timeout)
-            elapsed = asyncio.get_event_loop().time() - start
-            logger.debug(f'Command completed: id={command.get("id")} in {elapsed:.3f}s')
-            return json.loads(response)
+            elapsed = asyncio.get_running_loop().time() - start
+            logger.debug('Command completed: id=%s in %.3fs', command.get('id'), elapsed)
+            response_data = json.loads(response)
+            self._raise_if_failed(command, response_data)
+            return response_data
         except asyncio.TimeoutError:
             self._command_manager.remove_pending_command(command['id'])
             logger.error(
-                f'Command timeout: id={command.get("id")}, method={command.get("method")}, '
-                f'timeout={timeout}s'
+                'Command timeout: id=%s, method=%s, timeout=%ss',
+                command.get('id'),
+                command.get('method'),
+                timeout,
             )
             raise CommandExecutionTimeout()
         except websockets.ConnectionClosed:
             self._command_manager.remove_pending_command(command['id'])
             await self._handle_connection_loss()
-            logger.warning(f'WebSocket connection closed during command: id={command.get("id")}')
+            logger.warning('WebSocket connection closed during command: id=%s', command.get('id'))
             raise WebSocketConnectionClosed()
+
+    async def execute_command_nowait(
+        self, command: Command[T_CommandParams, T_CommandResponse]
+    ) -> None:
+        """
+        Send a command and return as soon as it is on the wire.
+
+        The answer is still consumed when it arrives, so the pending table stays
+        clean, and an error answer is logged instead of raised. Meant for streams
+        of input events whose order the socket already guarantees: awaiting
+        each answer would add a network round trip between consecutive mouse
+        moves, which no real input device has.
+
+        Args:
+            command: Command to send.
+
+        Raises:
+            WebSocketConnectionClosed: If the connection cannot be (re)established.
+        """
+        await self._ensure_active_connection()
+        future = self._command_manager.create_command_future(command)
+        future.add_done_callback(lambda done: self._log_discarded_answer(command, done))
+        ws = cast(ClientConnection, self._ws_connection)
+        logger.debug(
+            'Sending command without waiting: id=%s, method=%s',
+            command.get('id'),
+            command.get('method'),
+        )
+        await ws.send(json.dumps(command))
+
+    def _log_discarded_answer(self, command: Command, future: asyncio.Future[str]) -> None:
+        """Log an error answered to a command whose result nobody awaits."""
+        if future.cancelled() or future.exception() is not None:
+            return
+        method = self._method_name(command)
+        failure = self._extract_error(method, json.loads(future.result()))
+        if failure is not None:
+            logger.debug(
+                'Unawaited command %s (id=%s) failed: %s', method, command.get('id'), failure
+            )
+
+    async def execute_commands(
+        self,
+        commands: Sequence[Command[T_CommandParams, T_CommandResponse]],
+        timeout: int = 60,
+    ) -> list[T_CommandResponse]:
+        """Send several commands back to back and wait for all of their answers.
+
+        The browser handles the commands of one session in the order they
+        arrive, so sending a sequence without waiting for each answer keeps
+        the ordering (keydown before keyup, for example) while paying one
+        round trip for the whole batch instead of one per command.
+
+        Args:
+            commands: Commands to send, in order.
+            timeout: Seconds to wait for the last answer.
+
+        Returns:
+            The responses, in the same order as ``commands``.
+
+        Raises:
+            CommandFailed: If the browser rejects any command in the batch.
+            CommandExecutionTimeout: If the answers do not all arrive in time.
+            WebSocketConnectionClosed: If the connection closes meanwhile.
+        """
+        if not commands:
+            return []
+        await self._ensure_active_connection()
+        ws = cast(ClientConnection, self._ws_connection)
+        futures = [self._command_manager.create_command_future(command) for command in commands]
+        try:
+            for command in commands:
+                await ws.send(json.dumps(command))
+            responses: list[str] = await asyncio.wait_for(asyncio.gather(*futures), timeout)
+        except asyncio.TimeoutError:
+            for command in commands:
+                self._command_manager.remove_pending_command(command['id'])
+            logger.error('Batch of %d commands timed out after %ss', len(commands), timeout)
+            raise CommandExecutionTimeout()
+        except websockets.ConnectionClosed:
+            for command in commands:
+                self._command_manager.remove_pending_command(command['id'])
+            await self._handle_connection_loss()
+            raise WebSocketConnectionClosed()
+        results: list[T_CommandResponse] = []
+        for command, raw in zip(commands, responses):
+            response_data = json.loads(raw)
+            self._raise_if_failed(command, response_data)
+            results.append(response_data)
+        return results
+
+    @staticmethod
+    def _method_name(command: Command) -> str:
+        """Return the command's method as a plain string (factories may pass an Enum)."""
+        raw_method = command.get('method', '')
+        return raw_method.value if isinstance(raw_method, Enum) else raw_method
+
+    def _raise_if_failed(self, command: Command, response: dict) -> None:
+        """Raise when the browser answered with an error instead of a result.
+
+        Both protocols emit exactly one of ``result`` or an error for a command
+        id, so a message with neither is treated as a broken peer.
+        """
+        method = self._method_name(command)
+        failure = self._extract_error(method, response)
+        if failure is not None:
+            logger.debug('Command rejected: method=%s, error=%s', method, failure)
+            raise failure
+        if 'result' not in response:
+            raise InvalidResponse(f'Response for {method} has neither result nor error')
 
     async def register_callback(
         self,
@@ -152,23 +293,28 @@ class BaseConnectionHandler(ABC):
         Register event listener.
 
         Args:
-            event_name: Event name to listen for.
-            callback: Async function called when event occurs.
+            event_name: Event name to listen for (e.g. 'Page.loadEventFired',
+                'browsingContext.load').
+            callback: Function called when event occurs.
             temporary: If True, callback removed after first trigger.
 
         Returns:
             Callback ID for later removal.
+
+        Note:
+            The corresponding domain (CDP) or subscription (BiDi) must be
+            enabled before events fire.
         """
         callback_id = self._events_handler.register_callback(event_name, callback, temporary)
         logger.debug(
-            f'Registered callback: id={callback_id}, event={event_name}, temporary={temporary}'
+            'Registered callback: id=%s, event=%s, temporary=%s', callback_id, event_name, temporary
         )
         return callback_id
 
     async def remove_callback(self, callback_id: int) -> bool:
         """Remove registered event callback by ID."""
         removed = self._events_handler.remove_callback(callback_id)
-        logger.debug(f'Removed callback: id={callback_id}, removed={removed}')
+        logger.debug('Removed callback: id=%s, removed=%s', callback_id, removed)
         return removed
 
     async def clear_callbacks(self):
@@ -218,7 +364,7 @@ class BaseConnectionHandler(ABC):
         """Create fresh WebSocket connection and start event listening."""
         await self._teardown_connection()
         ws_address = await self._resolve_ws_address()
-        logger.info(f'Connecting to {ws_address}')
+        logger.info('Connecting to %s', ws_address)
         self._ws_connection = await self._ws_connector(
             ws_address,
             max_size=None,
@@ -261,21 +407,21 @@ class BaseConnectionHandler(ABC):
                 except Exception:
                     logger.exception('Error processing WebSocket message; skipping')
         except websockets.ConnectionClosed as e:
-            logger.info(f'WebSocket connection closed: {e}')
+            logger.info('WebSocket connection closed: %s', e)
         except Exception:
             logger.exception('Fatal error in WebSocket receive loop')
         finally:
             self._command_manager.fail_all_pending(WebSocketConnectionClosed())
             await self._events_handler.stop()
 
-    async def _incoming_messages(self) -> AsyncGenerator[Union[str, bytes], None]:
+    async def _incoming_messages(self) -> AsyncGenerator[str | bytes, None]:
         """Generator yielding raw messages from WebSocket connection."""
         ws = cast(ClientConnection, self._ws_connection)
 
         while ws.state is not State.CLOSED:
             yield await ws.recv()
 
-    def _process_single_message(self, raw_message: str):
+    def _process_single_message(self, raw_message: str | bytes):
         """Route a single raw WebSocket message.
 
         Command responses are resolved inline (fast, synchronous) so they are
@@ -294,18 +440,26 @@ class BaseConnectionHandler(ABC):
             self._events_handler.enqueue_event(message)
 
     @staticmethod
-    def _parse_message(raw_message: str) -> dict | None:
+    def _parse_message(raw_message: str | bytes) -> dict | None:
         """Parse raw message string into JSON object."""
         try:
             return json.loads(raw_message)
         except json.JSONDecodeError:
-            logger.warning(f'Failed to parse message: {raw_message[:200]}...')
+            logger.warning('Failed to parse message: %s...', raw_message[:200])
             return None
 
     def _handle_command_message(self, message: dict):
-        """Resolve the pending future for a command response."""
-        logger.debug(f'Processing command response: {message.get("id")}')
-        self._command_manager.resolve_command(message['id'], json.dumps(message))
+        """Resolve the pending future for a command response.
+
+        A response without an integer id (BiDi answers a malformed command with
+        ``id: null``) belongs to no pending command and is only logged.
+        """
+        command_id = message.get('id')
+        if not isinstance(command_id, int):
+            logger.warning('Command response without id: %s', str(message)[:200])
+            return
+        logger.debug('Processing command response: %s', command_id)
+        self._command_manager.resolve_command(command_id, json.dumps(message))
 
     def __repr__(self):
         return f'{self.__class__.__name__}(port={self._connection_port})'

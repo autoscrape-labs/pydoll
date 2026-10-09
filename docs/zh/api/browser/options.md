@@ -1,25 +1,9 @@
-# Browser Options
+# ChromiumOptions
 
-## ChromiumOptions
+在启动前配置浏览器：二进制路径、headless 模式、命令行参数和偏好设置。详见 [浏览器选项](../../guides/browser-options.md)。
 
 ::: pydoll.browser.options.ChromiumOptions
     options:
       show_root_heading: true
       show_source: false
-      heading_level: 3
-
-## Options Interface
-
-::: pydoll.browser.interfaces.Options
-    options:
-      show_root_heading: true
-      show_source: false
-      heading_level: 3
-
-## BrowserOptionsManager Interface
-
-::: pydoll.browser.interfaces.BrowserOptionsManager
-    options:
-      show_root_heading: true
-      show_source: false
-      heading_level: 3 
+      heading_level: 2

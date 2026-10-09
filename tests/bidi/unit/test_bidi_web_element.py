@@ -48,14 +48,14 @@ async def test_get_attribute_reads_from_cache(fake_bidi_conn, fake_bidi_tab):
 async def test_text_calls_function_and_deserializes(fake_bidi_conn, fake_bidi_tab):
     element = await _find(fake_bidi_tab, fake_bidi_conn, {})
     fake_bidi_conn.set_result('script.callFunction', _success({'type': 'string', 'value': 'hello'}))
-    assert await element.text == 'hello'
+    assert await element.text() == 'hello'
 
 
 @pytest.mark.asyncio
-async def test_execute_script_returns_deserialized_value(fake_bidi_conn, fake_bidi_tab):
+async def test_evaluate_returns_deserialized_value(fake_bidi_conn, fake_bidi_tab):
     element = await _find(fake_bidi_tab, fake_bidi_conn, {})
     fake_bidi_conn.set_result('script.callFunction', _success({'type': 'number', 'value': 7}))
-    assert await element.execute_script('(el) => 7') == 7
+    assert await element.evaluate('(el) => 7') == 7
 
 
 @pytest.mark.asyncio
@@ -138,7 +138,7 @@ async def test_take_screenshot_as_base64(fake_bidi_conn, fake_bidi_tab):
 async def test_inner_html_reads_via_function(fake_bidi_conn, fake_bidi_tab):
     element = await _find(fake_bidi_tab, fake_bidi_conn, {})
     fake_bidi_conn.set_result('script.callFunction', _success({'type': 'string', 'value': '<b>x</b>'}))
-    assert await element.inner_html == '<b>x</b>'
+    assert await element.inner_html() == '<b>x</b>'
 
 
 @pytest.mark.asyncio
@@ -185,7 +185,7 @@ async def test_clear_raises_when_not_input(fake_bidi_conn, fake_bidi_tab):
 @pytest.mark.asyncio
 async def test_insert_text_passes_text_argument(fake_bidi_conn, fake_bidi_tab):
     element = await _find(fake_bidi_tab, fake_bidi_conn, {})
-    fake_bidi_conn.set_result('script.callFunction', _success({'type': 'undefined'}))
+    fake_bidi_conn.set_result('script.callFunction', _success({'type': 'boolean', 'value': True}))
     await element.insert_text('hello')
     args = fake_bidi_conn.last_command('script.callFunction')['params']['arguments']
     assert {'type': 'string', 'value': 'hello'} in args

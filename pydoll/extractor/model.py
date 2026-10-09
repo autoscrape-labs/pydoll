@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import ClassVar, Optional
+from typing import ClassVar
 
 from pydantic import BaseModel, ConfigDict
 
@@ -28,7 +28,7 @@ class ExtractionModel(BaseModel):
             author: str = Field(selector='.author', description='Author name')
     """
 
-    _extraction_fields_cache: ClassVar[Optional[dict[str, ExtractionMetadata]]] = None
+    _extraction_fields_cache: ClassVar[dict[str, ExtractionMetadata] | None] = None
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
 

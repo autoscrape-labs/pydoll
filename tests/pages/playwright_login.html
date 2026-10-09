@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Login fixture</title>
+</head>
+<body>
+  <h1>Sign in</h1>
+  <form id="login-form">
+    <label for="username">Username</label>
+    <input id="username" name="username" type="text">
+    <label for="password">Password</label>
+    <input id="password" name="password" type="password">
+    <button id="login" type="submit">Login</button>
+  </form>
+
+  <nav id="session" hidden>
+    <span id="welcome"></span>
+    <a id="logout" href="#logout">Logout</a>
+  </nav>
+
+  <section id="quotes">
+    <div class="quote">
+      <span class="text">The only way to do great work is to love what you do.</span>
+      <small class="author">Steve Jobs</small>
+    </div>
+    <div class="quote">
+      <span class="text">Stay hungry, stay foolish.</span>
+      <small class="author">Steve Jobs</small>
+    </div>
+    <div class="quote">
+      <span class="text">Simplicity is the ultimate sophistication.</span>
+      <small class="author">Leonardo da Vinci</small>
+    </div>
+  </section>
+
+  <button id="counter" type="button">Clicked 0 times</button>
+
+  <script>
+    let clicks = 0;
+    document.getElementById('login-form').addEventListener('submit', function (event) {
+      event.preventDefault();
+      const user = document.getElementById('username').value;
+      if (!user || !document.getElementById('password').value) {
+        return;
+      }
+      document.getElementById('welcome').textContent = 'Welcome, ' + user + '!';
+      document.getElementById('session').hidden = false;
+      document.getElementById('login-form').hidden = true;
+    });
+    document.getElementById('counter').addEventListener('click', function () {
+      clicks += 1;
+      this.textContent = 'Clicked ' + clicks + ' times';
+    });
+  </script>
+</body>
+</html>

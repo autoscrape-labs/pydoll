@@ -1,16 +1,43 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from pydoll.protocol.cdp.base import Command
 from pydoll.protocol.cdp.emulation.methods import (
     EmulationMethod,
+    SetDeviceMetricsOverrideParams,
+    SetEmulatedMediaParams,
+    SetGeolocationOverrideParams,
+    SetHardwareConcurrencyOverrideParams,
+    SetLocaleOverrideParams,
+    SetTimezoneOverrideParams,
+    SetTouchEmulationEnabledParams,
     SetUserAgentOverrideParams,
+    UpdateScreenParams,
 )
 
 if TYPE_CHECKING:
-    from pydoll.protocol.cdp.emulation.methods import SetUserAgentOverrideCommand
-    from pydoll.protocol.cdp.emulation.types import UserAgentMetadata
+    from pydoll.protocol.cdp.emulation.methods import (
+        GetScreenInfosCommand,
+        SetDeviceMetricsOverrideCommand,
+        SetEmulatedMediaCommand,
+        SetGeolocationOverrideCommand,
+        SetHardwareConcurrencyOverrideCommand,
+        SetLocaleOverrideCommand,
+        SetTimezoneOverrideCommand,
+        SetTouchEmulationEnabledCommand,
+        SetUserAgentOverrideCommand,
+        UpdateScreenCommand,
+    )
+    from pydoll.protocol.cdp.emulation.types import (
+        DevicePosture,
+        DisplayFeature,
+        MediaFeature,
+        ScreenOrientation,
+        UserAgentMetadata,
+        WorkAreaInsets,
+    )
+    from pydoll.protocol.cdp.page.types import Viewport
 
 
 class EmulationCommands:
@@ -27,9 +54,9 @@ class EmulationCommands:
     @staticmethod
     def set_user_agent_override(
         user_agent: str,
-        accept_language: Optional[str] = None,
-        platform: Optional[str] = None,
-        user_agent_metadata: Optional[UserAgentMetadata] = None,
+        accept_language: str | None = None,
+        platform: str | None = None,
+        user_agent_metadata: UserAgentMetadata | None = None,
     ) -> SetUserAgentOverrideCommand:
         """
         Overrides the browser's User-Agent string via the Emulation domain.
@@ -59,3 +86,284 @@ class EmulationCommands:
         if user_agent_metadata is not None:
             params['userAgentMetadata'] = user_agent_metadata
         return Command(method=EmulationMethod.SET_USER_AGENT_OVERRIDE, params=params)
+
+    @staticmethod
+    def set_timezone_override(timezone_id: str) -> SetTimezoneOverrideCommand:
+        """Override the default timezone with an IANA timezone identifier.
+
+        Args:
+            timezone_id: IANA timezone (e.g., 'America/New_York').
+                Empty string disables the override.
+
+        Returns:
+            SetTimezoneOverrideCommand: CDP command to override timezone.
+        """
+        params = SetTimezoneOverrideParams(timezoneId=timezone_id)
+        return Command(method=EmulationMethod.SET_TIMEZONE_OVERRIDE, params=params)
+
+    @staticmethod
+    def set_geolocation_override(
+        latitude: float | None = None,
+        longitude: float | None = None,
+        accuracy: float | None = None,
+        altitude: float | None = None,
+        altitude_accuracy: float | None = None,
+        heading: float | None = None,
+        speed: float | None = None,
+    ) -> SetGeolocationOverrideCommand:
+        """Override the Geolocation Position reported by the browser.
+
+        Args:
+            latitude: Mock latitude.
+            longitude: Mock longitude.
+            accuracy: Mock accuracy in meters.
+            altitude: Mock altitude in meters.
+            altitude_accuracy: Mock altitude accuracy in meters.
+            heading: Mock heading in degrees (0-360).
+            speed: Mock speed in m/s.
+
+        Returns:
+            SetGeolocationOverrideCommand: CDP command to override geolocation.
+        """
+        params = SetGeolocationOverrideParams()
+        if latitude is not None:
+            params['latitude'] = latitude
+        if longitude is not None:
+            params['longitude'] = longitude
+        if accuracy is not None:
+            params['accuracy'] = accuracy
+        if altitude is not None:
+            params['altitude'] = altitude
+        if altitude_accuracy is not None:
+            params['altitudeAccuracy'] = altitude_accuracy
+        if heading is not None:
+            params['heading'] = heading
+        if speed is not None:
+            params['speed'] = speed
+        return Command(method=EmulationMethod.SET_GEOLOCATION_OVERRIDE, params=params)
+
+    @staticmethod
+    def set_device_metrics_override(
+        width: int,
+        height: int,
+        device_scale_factor: float,
+        mobile: bool,
+        *,
+        scale: float | None = None,
+        screen_width: int | None = None,
+        screen_height: int | None = None,
+        position_x: int | None = None,
+        position_y: int | None = None,
+        dont_set_visible_size: bool | None = None,
+        screen_orientation: ScreenOrientation | None = None,
+        viewport: Viewport | None = None,
+        display_feature: DisplayFeature | None = None,
+        device_posture: DevicePosture | None = None,
+    ) -> SetDeviceMetricsOverrideCommand:
+        """Override device screen metrics.
+
+        Args:
+            width: Overriding width in pixels (0 disables).
+            height: Overriding height in pixels (0 disables).
+            device_scale_factor: Device scale factor (0 disables).
+            mobile: Whether to emulate mobile device.
+            scale: Scale to apply to resulting view image.
+            screen_width: Overriding screen width in pixels.
+            screen_height: Overriding screen height in pixels.
+            position_x: Overriding view X position on screen.
+            position_y: Overriding view Y position on screen.
+            dont_set_visible_size: Do not set visible view size.
+            screen_orientation: Screen orientation override.
+            viewport: Visible area of the page override.
+            display_feature: Multi-segment screen display feature.
+            device_posture: Foldable device posture setting.
+
+        Returns:
+            SetDeviceMetricsOverrideCommand: CDP command to override device metrics.
+        """
+        params = SetDeviceMetricsOverrideParams(
+            width=width,
+            height=height,
+            deviceScaleFactor=device_scale_factor,
+            mobile=mobile,
+        )
+        if scale is not None:
+            params['scale'] = scale
+        if screen_width is not None:
+            params['screenWidth'] = screen_width
+        if screen_height is not None:
+            params['screenHeight'] = screen_height
+        if position_x is not None:
+            params['positionX'] = position_x
+        if position_y is not None:
+            params['positionY'] = position_y
+        if dont_set_visible_size is not None:
+            params['dontSetVisibleSize'] = dont_set_visible_size
+        if screen_orientation is not None:
+            params['screenOrientation'] = screen_orientation
+        if viewport is not None:
+            params['viewport'] = viewport
+        if display_feature is not None:
+            params['displayFeature'] = display_feature
+        if device_posture is not None:
+            params['devicePosture'] = device_posture
+        return Command(method=EmulationMethod.SET_DEVICE_METRICS_OVERRIDE, params=params)
+
+    @staticmethod
+    def set_locale_override(locale: str = '') -> SetLocaleOverrideCommand:
+        """Override the default locale used by the browser.
+
+        Args:
+            locale: ICU style C locale (e.g., 'en_US').
+                Empty string disables the override.
+
+        Returns:
+            SetLocaleOverrideCommand: CDP command to override locale.
+        """
+        params = SetLocaleOverrideParams()
+        if locale:
+            params['locale'] = locale
+        return Command(method=EmulationMethod.SET_LOCALE_OVERRIDE, params=params)
+
+    @staticmethod
+    def set_hardware_concurrency_override(
+        hardware_concurrency: int,
+    ) -> SetHardwareConcurrencyOverrideCommand:
+        """Override the value reported by navigator.hardwareConcurrency.
+
+        Applied natively by the browser, so the reported getter still looks
+        native to fingerprinting scripts (unlike a JavaScript override).
+
+        Args:
+            hardware_concurrency: Number of logical processors to report (>= 1).
+
+        Returns:
+            SetHardwareConcurrencyOverrideCommand: CDP command to override the value.
+        """
+        params = SetHardwareConcurrencyOverrideParams(hardwareConcurrency=hardware_concurrency)
+        return Command(method=EmulationMethod.SET_HARDWARE_CONCURRENCY_OVERRIDE, params=params)
+
+    @staticmethod
+    def set_touch_emulation_enabled(
+        enabled: bool,
+        max_touch_points: int | None = None,
+    ) -> SetTouchEmulationEnabledCommand:
+        """Enable or disable touch event emulation.
+
+        Applied natively: with it enabled the page exposes ``ontouchstart`` and
+        ``matchMedia('(pointer: coarse)')`` matches, the way a real touch device
+        reports, so a mobile identity stays coherent beyond ``navigator``.
+
+        Args:
+            enabled: Whether touch emulation is enabled.
+            max_touch_points: Maximum touch points supported (defaults to one).
+
+        Returns:
+            SetTouchEmulationEnabledCommand: CDP command toggling touch emulation.
+        """
+        params = SetTouchEmulationEnabledParams(enabled=enabled)
+        if max_touch_points is not None:
+            params['maxTouchPoints'] = max_touch_points
+        return Command(method=EmulationMethod.SET_TOUCH_EMULATION_ENABLED, params=params)
+
+    @staticmethod
+    def set_emulated_media(
+        media: str | None = None,
+        features: list[MediaFeature] | None = None,
+    ) -> SetEmulatedMediaCommand:
+        """Emulate the given CSS media type and/or media features.
+
+        Applied natively by the browser, so ``window.matchMedia`` still reports
+        a genuine result for the emulated feature (no JavaScript wrapper to
+        detect). Each call replaces the previously emulated features.
+
+        Args:
+            media: Media type to emulate (e.g., 'screen', 'print').
+                Empty string disables the media-type override.
+            features: Media features to emulate, each ``{'name': ..., 'value': ...}``
+                (e.g., ``{'name': 'color-gamut', 'value': 'p3'}``).
+
+        Returns:
+            SetEmulatedMediaCommand: CDP command to emulate media features.
+        """
+        params = SetEmulatedMediaParams()
+        if media is not None:
+            params['media'] = media
+        if features is not None:
+            params['features'] = features
+        return Command(method=EmulationMethod.SET_EMULATED_MEDIA, params=params)
+
+    @staticmethod
+    def get_screen_infos() -> GetScreenInfosCommand:
+        """Return the device's screen configuration.
+
+        In headless mode the virtual headless screen configuration is returned;
+        in headful mode the physical screens are returned. Only meaningful in
+        headless mode, where it pairs with :meth:`update_screen`.
+
+        Returns:
+            GetScreenInfosCommand: CDP command returning the list of screens.
+        """
+        return Command(method=EmulationMethod.GET_SCREEN_INFOS)
+
+    @staticmethod
+    def update_screen(
+        screen_id: str,
+        *,
+        left: int | None = None,
+        top: int | None = None,
+        width: int | None = None,
+        height: int | None = None,
+        work_area_insets: WorkAreaInsets | None = None,
+        device_pixel_ratio: float | None = None,
+        rotation: int | None = None,
+        color_depth: int | None = None,
+        label: str | None = None,
+        is_internal: bool | None = None,
+    ) -> UpdateScreenCommand:
+        """Update parameters of an existing screen (headless only).
+
+        Targets the browser-global virtual screen, so the new geometry is what
+        every frame reads via ``window.screen`` - including cross-origin iframes,
+        which ``Emulation.setDeviceMetricsOverride`` (session-scoped) cannot reach.
+        Sizes and ``work_area_insets`` are physical pixels; the CSS values a page
+        reads are those divided by ``device_pixel_ratio``.
+
+        Args:
+            screen_id: Target screen id (from :meth:`get_screen_infos`).
+            left: Offset of the left edge in physical pixels.
+            top: Offset of the top edge in physical pixels.
+            width: Screen width in physical pixels.
+            height: Screen height in physical pixels.
+            work_area_insets: Reserved work-area insets (menu bar / dock / taskbar).
+            device_pixel_ratio: Screen device pixel ratio.
+            rotation: Rotation angle (0, 90, 180 or 270).
+            color_depth: Color depth in bits.
+            label: Descriptive label for the screen.
+            is_internal: Whether the screen is internal to the device.
+
+        Returns:
+            UpdateScreenCommand: CDP command returning the updated screen info.
+        """
+        params = UpdateScreenParams(screenId=screen_id)
+        if left is not None:
+            params['left'] = left
+        if top is not None:
+            params['top'] = top
+        if width is not None:
+            params['width'] = width
+        if height is not None:
+            params['height'] = height
+        if work_area_insets is not None:
+            params['workAreaInsets'] = work_area_insets
+        if device_pixel_ratio is not None:
+            params['devicePixelRatio'] = device_pixel_ratio
+        if rotation is not None:
+            params['rotation'] = rotation
+        if color_depth is not None:
+            params['colorDepth'] = color_depth
+        if label is not None:
+            params['label'] = label
+        if is_internal is not None:
+            params['isInternal'] = is_internal
+        return Command(method=EmulationMethod.UPDATE_SCREEN, params=params)

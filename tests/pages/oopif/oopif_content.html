@@ -19,6 +19,10 @@
     <iframe id="nested-iframe" src="oopif_nested.html"
             style="width:600px;height:200px;border:1px solid #666;"></iframe>
 
+    <!-- Nested data: URL iframe (opaque origin, no own OOPIF target) -->
+    <iframe id="data-iframe"
+            style="width:400px;height:120px;border:1px solid #333;"></iframe>
+
     <!-- Shadow root with elements and a nested iframe -->
     <div id="shadow-host"></div>
 
@@ -30,6 +34,16 @@
                 count++;
                 document.getElementById('oopif-btn-count').textContent = String(count);
             });
+        })();
+
+        // Data: URL iframe (opaque origin) nested inside this OOPIF
+        (function() {
+            document.getElementById('data-iframe').src =
+                'data:text/html,' +
+                encodeURIComponent(
+                    '<h2 id="data-heading">Data Frame Content</h2>' +
+                    '<input id="data-input" type="text">'
+                );
         })();
 
         // Shadow root containing text, button, and a nested iframe

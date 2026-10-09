@@ -52,6 +52,8 @@ class InputCommands:
         return Command(
             method=InputMethod.SET_FILES,
             params=SetFilesParameters(
-                context=context, element=element, files=files,
+                context=context,
+                element=element,
+                files=files,
             ),
         )

@@ -82,7 +82,7 @@ async def _wait_for_page_fetch_done(tab, timeout: float = 10.0):
     loop = asyncio.get_event_loop()
     deadline = loop.time() + timeout
     while loop.time() < deadline:
-        status = await tab.execute_script(
+        status = await tab.evaluate(
             "return document.getElementById('status')?.textContent"
         )
         if status == 'done':

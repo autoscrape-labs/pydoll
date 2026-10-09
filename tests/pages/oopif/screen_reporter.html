@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Screen Reporter</title>
+</head>
+<body>
+    <pre id="screen-info"></pre>
+    <script>
+        document.getElementById('screen-info').textContent = JSON.stringify({
+            width: screen.width,
+            height: screen.height,
+            availWidth: screen.availWidth,
+            availHeight: screen.availHeight,
+            availTop: screen.availTop,
+            availLeft: screen.availLeft,
+            colorDepth: screen.colorDepth,
+            pixelDepth: screen.pixelDepth,
+            dpr: window.devicePixelRatio
+        });
+    </script>
+</body>
+</html>

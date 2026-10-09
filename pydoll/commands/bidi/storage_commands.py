@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from pydoll.protocol.bidi.base import Command
 from pydoll.protocol.bidi.storage.methods import (
@@ -28,8 +28,8 @@ class StorageCommands:
 
     @staticmethod
     def get_cookies(
-        filter: Optional[CookieFilter] = None,
-        partition: Optional[PartitionDescriptor] = None,
+        filter: CookieFilter | None = None,
+        partition: PartitionDescriptor | None = None,
     ) -> GetCookiesCommand:
         """Generates a command to get cookies."""
         params = GetCookiesParameters()
@@ -42,7 +42,7 @@ class StorageCommands:
     @staticmethod
     def set_cookie(
         cookie: PartialCookie,
-        partition: Optional[PartitionDescriptor] = None,
+        partition: PartitionDescriptor | None = None,
     ) -> SetCookieCommand:
         """Generates a command to set a cookie."""
         params = SetCookieParameters(cookie=cookie)
@@ -52,8 +52,8 @@ class StorageCommands:
 
     @staticmethod
     def delete_cookies(
-        filter: Optional[CookieFilter] = None,
-        partition: Optional[PartitionDescriptor] = None,
+        filter: CookieFilter | None = None,
+        partition: PartitionDescriptor | None = None,
     ) -> DeleteCookiesCommand:
         """Generates a command to delete cookies."""
         params = DeleteCookiesParameters()

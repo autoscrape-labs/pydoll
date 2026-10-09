@@ -21,14 +21,14 @@ async def element_tab(tab, page_url):
 
 
 async def _live(tab, expression: str):
-    """Read a live JS value from the page (BiDi execute_script returns it directly)."""
-    return await tab.execute_script(f'return {expression}')
+    """Read a live JS value from the page (BiDi evaluate returns it directly)."""
+    return await tab.evaluate(f'return {expression}')
 
 
 @pytest.mark.asyncio(loop_scope='module')
 async def test_find_returns_element_with_text(element_tab):
     title = await element_tab.find(id='title')
-    assert (await title.text) == 'WebElement Test Page'
+    assert (await title.text()) == 'WebElement Test Page'
 
 
 @pytest.mark.asyncio(loop_scope='module')
@@ -46,13 +46,13 @@ async def test_find_all_returns_every_match(element_tab):
 @pytest.mark.asyncio(loop_scope='module')
 async def test_click_triggers_dom_side_effect(element_tab):
     await (await element_tab.find(id='btn')).click()
-    assert (await (await element_tab.find(id='clicks')).text) == '1'
+    assert (await (await element_tab.find(id='clicks')).text()) == '1'
 
 
 @pytest.mark.asyncio(loop_scope='module')
 async def test_humanized_click_triggers_dom_side_effect(element_tab):
     await (await element_tab.find(id='btn')).click(humanize=True)
-    assert (await (await element_tab.find(id='clicks')).text) == '1'
+    assert (await (await element_tab.find(id='clicks')).text()) == '1'
 
 
 @pytest.mark.asyncio(loop_scope='module')

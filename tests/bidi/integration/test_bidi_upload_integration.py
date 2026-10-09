@@ -25,7 +25,7 @@ async def _wait_file_set(tab, timeout: float = 5.0) -> None:
     """Poll until the input reports a file (the dialog handler runs asynchronously)."""
     deadline = asyncio.get_event_loop().time() + timeout
     while asyncio.get_event_loop().time() < deadline:
-        if (await tab.execute_script(_FILES_LEN) or 0) >= 1:
+        if (await tab.evaluate(_FILES_LEN) or 0) >= 1:
             return
         await asyncio.sleep(0.1)
 
@@ -40,8 +40,8 @@ class TestFileUpload:
         file_input = await tab.find(id='file-input')
         await file_input.set_input_files(str(upload))
 
-        assert await tab.execute_script(_FILES_LEN) == 1
-        assert await tab.execute_script(_FILE_NAME) == 'proactive.txt'
+        assert await tab.evaluate(_FILES_LEN) == 1
+        assert await tab.evaluate(_FILE_NAME) == 'proactive.txt'
 
     @pytest.mark.asyncio(loop_scope='module')
     async def test_expect_file_chooser_fills_input_on_click(self, tab, tmp_path):
@@ -54,5 +54,5 @@ class TestFileUpload:
             await file_input.click()
             await _wait_file_set(tab)
 
-        assert await tab.execute_script(_FILES_LEN) == 1
-        assert await tab.execute_script(_FILE_NAME) == 'reactive.txt'
+        assert await tab.evaluate(_FILES_LEN) == 1
+        assert await tab.evaluate(_FILE_NAME) == 'reactive.txt'

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import platform
-from typing import Optional
 
 from pydoll.browser.firefox.base import FirefoxBrowser
 from pydoll.browser.firefox.options import FirefoxOptions, FirefoxOptionsManager
@@ -18,8 +17,8 @@ class Firefox(FirefoxBrowser):
 
     def __init__(
         self,
-        options: Optional[FirefoxOptions] = None,
-        connection_port: Optional[int] = None,
+        options: FirefoxOptions | None = None,
+        connection_port: int | None = None,
     ):
         super().__init__(
             options_manager=FirefoxOptionsManager(options),

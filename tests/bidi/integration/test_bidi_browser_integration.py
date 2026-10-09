@@ -26,8 +26,8 @@ async def test_get_version_reports_browser_name(ci_firefox_options):
     async with Firefox(options=ci_firefox_options) as browser:
         await browser.start()
         version = await browser.get_version()
-        assert 'browserName' in version
-        assert version['browserName']
+        assert version['product'].lower().startswith('firefox/')
+        assert version['userAgent']
 
 
 @pytest.mark.asyncio
@@ -35,8 +35,8 @@ async def test_navigation_reports_current_url_and_title(ci_firefox_options, page
     async with Firefox(options=ci_firefox_options) as browser:
         tab = await browser.start()
         await tab.go_to(page_url('web_element.html'))
-        assert 'web_element.html' in (await tab.current_url)
-        assert (await tab.title) == 'WebElement Test Page'
+        assert 'web_element.html' in (await tab.current_url())
+        assert (await tab.title()) == 'WebElement Test Page'
 
 
 @pytest.mark.asyncio
@@ -44,7 +44,7 @@ async def test_page_source_reflects_loaded_document(ci_firefox_options, page_url
     async with Firefox(options=ci_firefox_options) as browser:
         tab = await browser.start()
         await tab.go_to(page_url('web_element.html'))
-        source = await tab.page_source
+        source = await tab.page_source()
         assert 'WebElement Test Page' in source
 
 
@@ -55,7 +55,7 @@ async def test_new_tab_opens_and_navigates(ci_firefox_options, page_url):
         tab = await browser.new_tab()
         assert isinstance(tab, BiDiTab)
         await tab.go_to(page_url('web_element.html'))
-        assert 'web_element.html' in (await tab.current_url)
+        assert 'web_element.html' in (await tab.current_url())
 
 
 @pytest.mark.asyncio
@@ -74,7 +74,7 @@ async def test_useragent_override_changes_navigator_user_agent(ci_firefox_option
         tab = await browser.start()
         await tab.useragent_override('CustomUA/9.9')
         await tab.go_to('data:text/html,<p>ua</p>')
-        assert await tab.execute_script('return navigator.userAgent') == 'CustomUA/9.9'
+        assert await tab.evaluate('return navigator.userAgent') == 'CustomUA/9.9'
 
 
 @pytest.mark.asyncio
@@ -83,7 +83,7 @@ async def test_options_user_agent_applied_at_start(ci_firefox_options):
     async with Firefox(options=ci_firefox_options) as browser:
         tab = await browser.start()
         await tab.go_to('data:text/html,<p>ua</p>')
-        assert await tab.execute_script('return navigator.userAgent') == 'StartUA/1.0'
+        assert await tab.evaluate('return navigator.userAgent') == 'StartUA/1.0'
 
 
 @pytest.mark.asyncio

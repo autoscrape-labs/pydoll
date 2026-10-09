@@ -252,7 +252,11 @@ class Scripts:
 
             // Extract cookies from set-cookie header
             const cookies = document.cookie;
-            let text = await response.text();
+            const responseClone = response.clone();
+            let [content, text] = await Promise.all([
+                responseClone.arrayBuffer(),
+                response.text()
+            ]);
             const possiblePrefixes = [")]}}'\\n", ")]}}'\\n", ")]}}\\n"];
             for (let prefix of possiblePrefixes) {{
                 if (text.startsWith(prefix)) {{
@@ -260,7 +264,7 @@ class Scripts:
                     break;
                 }}
             }}
-            let content, jsonData;
+            let jsonData;
             const contentType = response.headers.get('content-type') || '';
 
             if (contentType.includes('application/json')) {{
@@ -268,13 +272,11 @@ class Scripts:
                     jsonData = JSON.parse(text);
                     text = JSON.stringify(jsonData);
                 }} catch (e) {{
+                    // Return raw bytes if parsing fails
                     jsonData = null;
-                    // Keep original text if parsing fails
                 }}
-                content = new TextEncoder().encode(text).buffer;
             }} else {{
-                // For non-JSON, keep original text handling
-                content = new TextEncoder().encode(text).buffer;
+                // For non-JSON, return raw bytes
                 jsonData = null;
             }}
 
@@ -406,12 +408,34 @@ new Promise((resolve) => {{
 
         // Standard input/textarea
         if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
-            const start = el.selectionStart || el.value.length;
-            const end = el.selectionEnd || el.value.length;
+            el.focus();
+            let start, end;
+            try {
+                start = el.selectionStart;
+                end = el.selectionEnd;
+            } catch (e) {
+                // Unsupported input type (number, email, range, etc.)
+                el.value = text ? el.value + text : '';
+                el.dispatchEvent(new Event('input', { bubbles: true }));
+                el.dispatchEvent(new Event('change', { bubbles: true }));
+                return true;
+            }
+            const hasSelection = start !== end;
+            // When inserting empty text with no selection, select all first
+            // so the field is cleared (matches user expectation for insertText('')).
+            if (!hasSelection && text === '') {
+                el.select();
+                start = 0;
+                end = el.value.length;
+            }
+            start = start ?? el.value.length;
+            end = end ?? el.value.length;
             const before = el.value.substring(0, start);
             const after = el.value.substring(end);
             el.value = before + text + after;
-            el.selectionStart = el.selectionEnd = start + text.length;
+            try {
+                el.selectionStart = el.selectionEnd = start + text.length;
+            } catch (e) {}
             el.dispatchEvent(new Event('input', { bubbles: true }));
             el.dispatchEvent(new Event('change', { bubbles: true }));
             return true;
@@ -488,6 +512,15 @@ new Promise((resolve) => {{
         return !!(this && this.tagName && this.tagName.toLowerCase() === 'option');
     }
     """
+
+
+# Pointer Events give a mouse no pressure sensor: Blink reports pressure 0.5
+# while a button is held and 0 otherwise (GetPointerEventPressure in
+# third_party/blink/renderer/core/events/pointer_event_factory.cc returns 0
+# without buttons and 0.5 when the platform force is NaN). Input.dispatchMouseEvent
+# sends force 0 unless told otherwise, so pressed events must carry this value to
+# read like real mouse input.
+PRESSED_POINTER_FORCE = 0.5
 
 
 class Key(tuple[str, int], Enum):

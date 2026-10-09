@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Fingerprint native paths</title>
+  </head>
+  <body>
+    <h1 id="status">loading</h1>
+    <script>
+      window.__workers = null;
+      window.__page = null;
+
+      const worker = new Worker('dedicated_worker.js');
+      worker.onmessage = (event) => {
+        window.__workers = event.data;
+      };
+
+      function stackOf(fn) {
+        try {
+          fn();
+          return 'no throw';
+        } catch (error) {
+          return error.stack;
+        }
+      }
+
+      async function readPage() {
+        const notifications = await navigator.permissions.query({ name: 'notifications' });
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const voices = speechSynthesis.getVoices();
+        const offline = new OfflineAudioContext(1, 44100, 44100);
+        const getter = (proto, prop) => Object.getOwnPropertyDescriptor(proto, prop).get;
+        const adapter = navigator.gpu ? await navigator.gpu.requestAdapter() : null;
+        window.__page = {
+          webgpu: adapter ? {
+            vendor: adapter.info.vendor,
+            architecture: adapter.info.architecture,
+            infoCtor: Object.getPrototypeOf(adapter.info).constructor.name,
+            infoOwnProps: Object.getOwnPropertyNames(adapter.info),
+            maxBufferSize: adapter.limits.maxBufferSize,
+            maxBindGroups: adapter.limits.maxBindGroups,
+            features: [...adapter.features],
+            hasF16: adapter.features.has('shader-f16'),
+            size: adapter.features.size,
+            deviceOk: await adapter.requestDevice().then((d) => d.adapterInfo.vendor).catch((e) => 'err ' + e.message),
+          } : 'no adapter',
+          userAgent: navigator.userAgent,
+          platform: navigator.platform,
+          languages: Array.from(navigator.languages),
+          brands: navigator.userAgentData.brands,
+          formFactors: (await navigator.userAgentData.getHighEntropyValues(['formFactors'])).formFactors,
+          platformVersion: (await navigator.userAgentData.getHighEntropyValues(['platformVersion'])).platformVersion,
+          permission: {
+            state: notifications.state,
+            isNative: notifications instanceof PermissionStatus,
+            ownProps: Object.getOwnPropertyNames(notifications),
+            legacy: Notification.permission,
+          },
+          devices: devices.map((d) => ({
+            kind: d.kind,
+            ctor: Object.getPrototypeOf(d).constructor.name,
+            ownProps: Object.getOwnPropertyNames(d),
+          })),
+          voices: voices.map((v) => ({
+            name: v.name,
+            ctor: Object.getPrototypeOf(v).constructor.name,
+            ownProps: Object.getOwnPropertyNames(v),
+          })),
+          offlineSampleRate: offline.sampleRate,
+          offlineMaxChannelCount: offline.destination.maxChannelCount,
+          stacks: {
+            userAgent: stackOf(() => getter(Navigator.prototype, 'userAgent').call({})),
+            language: stackOf(() => getter(Navigator.prototype, 'language').call({})),
+            deviceMemory: stackOf(() => getter(Navigator.prototype, 'deviceMemory').call({})),
+            getVoices: stackOf(() => SpeechSynthesis.prototype.getVoices.call({})),
+          },
+          debugShaders: (() => {
+            const gl = document.createElement('canvas').getContext('webgl');
+            if (!gl) return 'no-webgl';
+            return {
+              hidden: gl.getExtension('WEBGL_debug_shaders') === null,
+              listed: (gl.getSupportedExtensions() || []).includes('WEBGL_debug_shaders'),
+            };
+          })(),
+        };
+      }
+
+      window.__serviceWorker = null;
+      navigator.serviceWorker
+        .register('sw.js')
+        .then(() => navigator.serviceWorker.ready)
+        .then(() => { window.__serviceWorker = 'ready'; })
+        .catch((error) => { window.__serviceWorker = 'error: ' + error.message; });
+
+      readPage();
+      document.getElementById('status').textContent = 'ready';
+    </script>
+  </body>
+</html>

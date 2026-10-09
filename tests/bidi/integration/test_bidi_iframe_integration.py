@@ -26,7 +26,7 @@ class TestIframeTraversal:
         frame = await tab.find(id='frame')
         assert frame.is_iframe
         inner = await frame.find(id='inner', timeout=5)
-        assert (await inner.text) == 'hi'
+        assert (await inner.text()) == 'hi'
 
     @pytest.mark.asyncio(loop_scope='module')
     async def test_find_all_inside_iframe(self, tab):
@@ -39,4 +39,4 @@ class TestIframeTraversal:
     async def test_cross_iframe_xpath_selector(self, tab):
         await tab.go_to(PAGE)
         inner = await tab.query("//iframe[@id='frame']//p[@id='inner']", timeout=5)
-        assert (await inner.text) == 'hi'
+        assert (await inner.text()) == 'hi'

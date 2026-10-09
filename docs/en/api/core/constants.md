@@ -1,6 +1,6 @@
 # Constants
 
-This section documents all constants, enums, and configuration values used throughout Pydoll.
+Enums and constants used across Pydoll, including `By`, `Key`, and `PermissionType`. Learn more in [Selectors](../../basics/selectors.md) and [Keyboard control](../../guides/keyboard.md).
 
 ::: pydoll.constants
     options:
