@@ -14,16 +14,16 @@ from pydoll.sync._runtime import SyncBase, mapping, run_sync
 
 from pydoll.browser.chromium.chrome import Chrome as _ChromeImpl
 from pydoll.browser.chromium.edge import Edge as _EdgeImpl
-from pydoll.browser.tab import Tab as _TabImpl
-from pydoll.browser.tab import DownloadHandle as _DownloadHandleImpl
-from pydoll.browser.tab import RequestHandle as _RequestHandleImpl
-from pydoll.browser.tab import ResponseHandle as _ResponseHandleImpl
-from pydoll.elements.web_element import WebElement as _WebElementImpl
-from pydoll.elements.shadow_root import ShadowRoot as _ShadowRootImpl
+from pydoll.browser.chromium.tab import Tab as _TabImpl
+from pydoll.browser.chromium.tab import DownloadHandle as _DownloadHandleImpl
+from pydoll.browser.chromium.tab import RequestHandle as _RequestHandleImpl
+from pydoll.browser.chromium.tab import ResponseHandle as _ResponseHandleImpl
+from pydoll.elements.cdp.web_element import WebElement as _WebElementImpl
+from pydoll.elements.cdp.shadow_root import ShadowRoot as _ShadowRootImpl
 from pydoll.interactions.keyboard import Keyboard as _KeyboardImpl
 from pydoll.interactions.mouse import Mouse as _MouseImpl
 from pydoll.interactions.scroll import Scroll as _ScrollImpl
-from pydoll.browser.requests.request import Request as _RequestImpl
+from pydoll.browser.requests.cdp.request import Request as _RequestImpl
 from pydoll.browser.requests.response import Response as _ResponseImpl
 
 
@@ -32,11 +32,14 @@ import logging
 import platform
 from typing import TYPE_CHECKING
 from pydoll.browser.chromium.base import Browser
-from pydoll.browser.managers import ChromiumOptionsManager
+from pydoll.browser.chromium.options import ChromiumOptionsManager
 from pydoll.exceptions import UnsupportedOS
 from pydoll.utils import validate_browser_paths
-from pydoll.browser.options import ChromiumOptions
+from pydoll.browser.chromium.options import ChromiumOptions
 import asyncio
+import base64
+import fnmatch
+import inspect
 import json
 import os
 import shutil
@@ -45,31 +48,33 @@ from contextlib import suppress
 from functools import partial
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, overload
 from urllib.parse import urlsplit, urlunsplit
+from pydoll.browser.intercepted_request import InterceptedRequest
 from pydoll.browser.managers import BrowserProcessManager, ProxyManager, TempDirectoryManager
 from pydoll.commands import BrowserCommands, EmulationCommands, FetchCommands, RuntimeCommands, StorageCommands, TargetCommands
 from pydoll.connection import ConnectionHandler
 from pydoll.exceptions import BrowserNotRunning, CommandFailed, FailedToStartBrowser, InvalidConnectionPort, InvalidWebSocketAddress, MissingTargetOrWebSocket, NoValidTabFound
-from pydoll.protocol.browser.types import DownloadBehavior
-from pydoll.protocol.fetch.events import FetchEvent
-from pydoll.protocol.fetch.types import AuthChallengeResponseType
-from pydoll.protocol.target.events import TargetEvent
-from pydoll.protocol.target.types import FilterEntry
+from pydoll.protocol.cdp.browser.types import DownloadBehavior
+from pydoll.protocol.cdp.fetch.events import FetchEvent
+from pydoll.protocol.cdp.fetch.types import AuthChallengeResponseType
+from pydoll.protocol.cdp.network.types import ErrorReason
+from pydoll.protocol.cdp.target.events import TargetEvent
+from pydoll.protocol.cdp.target.types import FilterEntry
+from pydoll.protocol.events import CDP_EVENT_MAP, Event
 from pydoll.utils import PollInterval, find_free_port
 from pydoll.utils.fingerprint_builder import build_fingerprint_worker_js
 from pydoll.utils.user_agent_parser import ParsedUserAgent, UserAgentParser
 from tempfile import TemporaryDirectory
-from pydoll.browser.interfaces import BrowserOptionsManager, Options
-from pydoll.protocol.base import Command, T_CommandParams, T_CommandResponse
-from pydoll.protocol.browser.methods import GetVersionResponse, GetVersionResult, GetWindowForTargetResponse
-from pydoll.protocol.browser.types import Bounds, PermissionType
-from pydoll.protocol.fetch.events import RequestPausedEvent
-from pydoll.protocol.fetch.types import HeaderEntry
+from pydoll.browser.protocols import BrowserOptionsManagerProtocol, OptionsProtocol
+from pydoll.protocol.cdp.base import Command, T_CommandParams, T_CommandResponse
+from pydoll.protocol.cdp.browser.methods import GetVersionResponse, GetVersionResult, GetWindowForTargetResponse
+from pydoll.protocol.cdp.browser.types import Bounds, PermissionType
+from pydoll.protocol.cdp.fetch.events import RequestPausedEvent
+from pydoll.protocol.cdp.fetch.types import HeaderEntry
+from pydoll.protocol.cdp.network.types import Cookie, CookieParam, RequestMethod, ResourceType
+from pydoll.protocol.cdp.storage.methods import GetCookiesResponse
+from pydoll.protocol.cdp.target.methods import CreateBrowserContextResponse, CreateTargetResponse, GetBrowserContextsResponse, GetTargetsResponse
+from pydoll.protocol.cdp.target.types import TargetInfo
 from pydoll.protocol.fingerprint.types import FingerprintConfig
-from pydoll.protocol.network.types import Cookie, CookieParam, ErrorReason, RequestMethod, ResourceType
-from pydoll.protocol.storage.methods import GetCookiesResponse
-from pydoll.protocol.target.methods import CreateBrowserContextResponse, CreateTargetResponse, GetBrowserContextsResponse, GetTargetsResponse
-from pydoll.protocol.target.types import TargetInfo
-from pydoll.browser.options import Options
 import base64 as _b64
 import contextlib
 import io
@@ -80,98 +85,118 @@ from tempfile import mkdtemp
 from typing import TYPE_CHECKING, Any, AsyncGenerator, Awaitable, Callable, TypeVar, cast, overload
 import aiofiles
 from pydoll.browser.fingerprint_applier import FingerprintApplier
-from pydoll.commands import DomCommands, FetchCommands, NetworkCommands, PageCommands, RuntimeCommands, StorageCommands, TargetCommands
+from pydoll.commands import DomCommands, EmulationCommands, FetchCommands, NetworkCommands, PageCommands, RuntimeCommands, StorageCommands, TargetCommands
 from pydoll.constants import PageLoadState
-from pydoll.elements.mixins import FindElementsMixin
+from pydoll.elements.mixins.cdp_find_elements_mixin import CDPFindElementsMixin
 from pydoll.exceptions import CommandExecutionTimeout, CommandFailed, DownloadTimeout, InvalidFileExtension, InvalidScriptWithElement, InvalidTabInitialization, MissingScreenshotPath, NavigationError, NetworkEventsNotEnabled, NoDialogPresent, PageLoadTimeout, ScriptEvaluationError, TopLevelTargetRequired, WaitElementTimeout, WaitTimeout, WebSocketConnectionClosed
 from pydoll.extractor.engine import ExtractionEngine
 from pydoll.interactions.iframe import IFrameContext
-from pydoll.protocol.browser.types import DownloadBehavior, DownloadProgressState
-from pydoll.protocol.dom.types import Node, ShadowRootType
-from pydoll.protocol.network.events import NetworkEvent
-from pydoll.protocol.network.types import ResourceType
-from pydoll.protocol.page.events import PageEvent
-from pydoll.protocol.page.types import FrameResourceTree, ScreenshotFormat
-from pydoll.protocol.runtime.methods import EvaluateResponse, SerializationOptions
-from pydoll.protocol.runtime.types import ExceptionDetails, RemoteObject
+from pydoll.protocol.cdp.browser.types import DownloadBehavior, DownloadProgressState
+from pydoll.protocol.cdp.dom.types import Node, ShadowRootType
+from pydoll.protocol.cdp.network.events import NetworkEvent
+from pydoll.protocol.cdp.network.types import ResourceType
+from pydoll.protocol.cdp.page.events import PageEvent
+from pydoll.protocol.cdp.page.types import FrameResourceTree, ScreenshotFormat
+from pydoll.protocol.cdp.runtime.methods import EvaluateResponse, SerializationOptions
+from pydoll.protocol.cdp.runtime.types import ExceptionDetails, RemoteObject
+from pydoll.protocol.events import CDP_DOMAIN_MAP, CDP_EVENT_MAP, Event
 from pydoll.utils import PollInterval, UrlPattern, decode_base64_to_bytes, has_return_outside_function, url_matcher
 from pydoll.utils.bundle import build_asset_filename, collect_frame_resources, filter_fetchable_resources, inline_all_assets, rewrite_html_urls
 from pydoll.extractor.model import ExtractionModel
-from pydoll.protocol.base import EmptyResponse
-from pydoll.protocol.browser.events import DownloadProgressEvent, DownloadWillBeginEvent
-from pydoll.protocol.dom.methods import DescribeNodeResponse, GetDocumentResponse, ResolveNodeResponse
-from pydoll.protocol.fetch.types import AuthChallengeResponseType, HeaderEntry, RequestStage
-from pydoll.protocol.network.events import RequestWillBeSentEvent
-from pydoll.protocol.network.methods import GetCookiesResponse as NetworkGetCookiesResponse
-from pydoll.protocol.network.methods import GetResponseBodyResponse
-from pydoll.protocol.network.types import Cookie, CookieParam, ErrorReason, RequestMethod
-from pydoll.protocol.page.events import FileChooserOpenedEvent
-from pydoll.protocol.page.methods import CaptureScreenshotResponse, GetResourceContentResponse, GetResourceTreeResponse, NavigateResponse, PrintToPDFResponse
-from pydoll.protocol.runtime.methods import EvaluateResponse
-from pydoll.protocol.target.methods import AttachToTargetResponse, GetTargetsResponse
+from pydoll.protocol.cdp.base import EmptyResponse
+from pydoll.protocol.cdp.browser.events import DownloadProgressEvent, DownloadWillBeginEvent
+from pydoll.protocol.cdp.dom.methods import DescribeNodeResponse, GetDocumentResponse, ResolveNodeResponse
+from pydoll.protocol.cdp.fetch.types import AuthChallengeResponseType, HeaderEntry, RequestStage
+from pydoll.protocol.cdp.network.events import RequestWillBeSentEvent
+from pydoll.protocol.cdp.network.methods import GetCookiesResponse as NetworkGetCookiesResponse
+from pydoll.protocol.cdp.network.methods import GetResponseBodyResponse
+from pydoll.protocol.cdp.network.types import Cookie, CookieParam, ErrorReason, RequestMethod
+from pydoll.protocol.cdp.page.events import FileChooserOpenedEvent
+from pydoll.protocol.cdp.page.methods import CaptureScreenshotResponse, GetResourceContentResponse, GetResourceTreeResponse, NavigateResponse, PrintToPDFResponse
+from pydoll.protocol.cdp.target.methods import AttachToTargetResponse, GetTargetsResponse
 T = TypeVar('T', bound='ExtractionModel')
-from typing import TYPE_CHECKING, Sequence, cast, overload
+from typing import TYPE_CHECKING, Sequence, cast
 from pydoll.commands import DomCommands, RuntimeCommands
 from pydoll.connection.connection_handler import ConnectionHandler
 from pydoll.constants import By, Scripts
+from pydoll.elements.mixins.find_elements_mixin import FindElementsMixin
+from pydoll.exceptions import CommandFailed, ElementNotFound, ScriptException
+from pydoll.protocol.cdp.dom.methods import DescribeNodeResponse
+from pydoll.protocol.cdp.dom.types import Node
+from pydoll.protocol.cdp.runtime.methods import CallFunctionOnParams, CallFunctionOnResponse, EvaluateParams, EvaluateResponse, GetPropertiesResponse
+from pydoll.protocol.cdp.runtime.types import CallArgument
+from typing import TYPE_CHECKING, Generic, TypeVar, cast, overload
+from pydoll.constants import By
 from pydoll.elements.utils import SelectorParser
-from pydoll.exceptions import CommandFailed, ElementNotFound, ScriptException, WaitElementTimeout
+from pydoll.exceptions import ElementNotFound, WaitElementTimeout
 from pydoll.utils import PollInterval
 from typing import Literal
-from pydoll.protocol.dom.methods import DescribeNodeResponse
-from pydoll.protocol.dom.types import Node
-from pydoll.protocol.runtime.methods import CallFunctionOnParams, CallFunctionOnResponse, EvaluateParams, EvaluateResponse, GetPropertiesResponse
-from pydoll.protocol.runtime.types import CallArgument
-from pydoll.elements.mixins.find_elements_mixin import FindElementsMixin
+from pydoll.elements.protocols import WebElementProtocol
+T_Element = TypeVar('T_Element', bound='WebElementProtocol')
 from pydoll.commands import DomCommands, InputCommands, PageCommands, RuntimeCommands
 from pydoll.constants import PRESSED_POINTER_FORCE, Scripts
-from pydoll.exceptions import CommandExecutionTimeout, CommandFailed, ElementNotAFileInput, ElementNotFound, ElementNotInteractable, ElementNotVisible, InvalidFileExtension, InvalidIFrame, MissingScreenshotPath, ShadowRootNotFound, WaitElementTimeout, WebSocketConnectionClosed
+from pydoll.exceptions import CommandExecutionTimeout, CommandFailed, ElementNotAFileInput, ElementNotFound, ElementNotInteractable, ElementNotVisible, InvalidFileExtension, InvalidIFrame, MissingScreenshotPath, ScriptEvaluationError, ShadowRootNotFound, WaitElementTimeout, WebSocketConnectionClosed
 from pydoll.interactions.iframe import IFrameContext, IFrameContextResolver
-from pydoll.protocol.dom.types import Rect, ShadowRootType
-from pydoll.protocol.input.types import MOUSE_BUTTON_MASK, MouseButton, MouseEventType
-from pydoll.protocol.page.types import ScreenshotFormat, Viewport
-from pydoll.protocol.runtime.methods import CallFunctionOnResponse, EvaluateResponse, GetPropertiesResponse, SerializationOptions
+from pydoll.protocol.cdp.dom.types import Rect, ShadowRootType
+from pydoll.protocol.cdp.input.types import MOUSE_BUTTON_MASK, MouseButton, MouseEventType
+from pydoll.protocol.cdp.page.types import ScreenshotFormat, Viewport
+from pydoll.protocol.cdp.runtime.methods import CallFunctionOnResponse, EvaluateResponse, GetPropertiesResponse, SerializationOptions
 from pydoll.utils import PollInterval, decode_base64_to_bytes, extract_text_from_html, is_script_already_function
-from pydoll.protocol.dom.methods import DescribeNodeResponse, GetBoxModelResponse, GetOuterHTMLResponse, ResolveNodeResponse
-from pydoll.protocol.dom.types import Quad
-from pydoll.protocol.page.methods import CaptureScreenshotResponse
-from pydoll.protocol.runtime.methods import GetPropertiesResponse
+from pydoll.protocol.cdp.dom.methods import DescribeNodeResponse, GetBoxModelResponse, GetOuterHTMLResponse, ResolveNodeResponse
+from pydoll.protocol.cdp.dom.types import Quad
+from pydoll.protocol.cdp.page.methods import CaptureScreenshotResponse
+from pydoll.protocol.cdp.runtime.methods import GetPropertiesResponse
 from pydoll.commands import DomCommands
-from pydoll.protocol.dom.types import ShadowRootType
-from pydoll.protocol.dom.methods import GetOuterHTMLResponse
+from pydoll.protocol.cdp.dom.types import ShadowRootType
+from pydoll.protocol.cdp.dom.methods import GetOuterHTMLResponse
 import random
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Protocol, cast
 from pydoll.commands import InputCommands
+from pydoll.commands.bidi.input_commands import InputCommands as BiDiInputCommands
 from pydoll.constants import CHAR_TO_KEY_INFO, DEFAULT_TYPO_PROBABILITY, QWERTY_NEIGHBORS, Key, TypoType
-from pydoll.protocol.input.types import KeyEventType, KeyModifier
-from pydoll.protocol.base import Command
+from pydoll.protocol.cdp.input.types import KeyEventType, KeyModifier
+from pydoll.protocol.bidi.input.types import KeyAction, KeySourceActions
+from pydoll.protocol.cdp.base import Command
 from pydoll.interactions.keyboard import CommandExecutor
+from pydoll.interactions.keyboard import BiDiCommandExecutor
 from pydoll.interactions.keyboard import TypoResult
 from pydoll.interactions.keyboard import TimingConfig
 from pydoll.interactions.keyboard import TypoConfig
+from pydoll.interactions.keyboard import BiDiKeyboard
 import math
 from pydoll.commands import InputCommands, RuntimeCommands
 from pydoll.constants import PRESSED_POINTER_FORCE
+from pydoll.exceptions import CommandFailed
 from pydoll.interactions.utils import bezier_2d, fitts_duration, minimum_jerk, random_control_points
+from pydoll.protocol.bidi.input.types import PointerType
+from pydoll.browser.firefox.tab import BiDiTab
+from pydoll.protocol.bidi.input.types import PointerAction, PointerMoveAction, PointerSourceActions, SourceActions
 from pydoll.interactions.mouse import MouseTimingConfig
+from pydoll.interactions.mouse import BiDiMouse
 from pydoll.constants import Scripts, ScrollPosition
 from pydoll.interactions.utils import CubicBezier
-from pydoll.protocol.input.types import MouseEventType
+from pydoll.protocol.cdp.input.types import MouseEventType
+from pydoll.protocol.cdp.runtime.methods import EvaluateResponse
+from pydoll.protocol.bidi.input.types import WheelScrollAction, WheelSourceActions
 from pydoll.interactions.scroll import ScrollTimingConfig
+from pydoll.interactions.scroll import BiDiScroll
 import json as jsonlib
 from collections.abc import AsyncIterator
 from typing import TYPE_CHECKING, Any, Callable, cast
-from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
-from pydoll.browser.requests.har_recorder import HarCapture, HarRecorder
-from pydoll.commands.runtime_commands import RuntimeCommands
+from pydoll.browser.requests.base import BaseRequest
+from pydoll.browser.requests.cdp.har_recorder import HarRecorder
+from pydoll.browser.requests.har import HarCapture
+from pydoll.commands.cdp.runtime_commands import RuntimeCommands
 from pydoll.constants import Scripts
+from pydoll.protocol.cdp.network.events import NetworkEvent, RequestWillBeSentEvent, RequestWillBeSentExtraInfoEvent, ResponseReceivedEvent, ResponseReceivedExtraInfoEvent, ResponseReceivedExtraInfoEventParams
+from pydoll.protocol.types import Header, ResponseCookie
+from pydoll.protocol.cdp.network.events import RequestWillBeSentEventParams, RequestWillBeSentExtraInfoEventParams, ResponseReceivedEventParams
+from typing import Any, Generic, TypeVar
+from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 from pydoll.exceptions import HTTPError
-from pydoll.protocol.network.events import NetworkEvent, RequestWillBeSentEvent, RequestWillBeSentExtraInfoEvent, ResponseReceivedEvent, ResponseReceivedExtraInfoEvent, ResponseReceivedExtraInfoEventParams
-from pydoll.protocol.network.types import CookieParam, ResourceType
-from pydoll.protocol.network.events import RequestWillBeSentEventParams, RequestWillBeSentExtraInfoEventParams, ResponseReceivedEventParams
+T_Tab = TypeVar('T_Tab')
 from typing import TYPE_CHECKING, Any
-from pydoll.protocol.network.types import CookieParam
 
 
 
@@ -198,11 +223,11 @@ class Chrome(SyncBase):
         return self._run(self._impl.__aexit__(exc_type, exc, tb))
 
     @property
-    def options(self) -> Options:
+    def options(self) -> OptionsProtocol:
         return mapping.from_impl(self._impl.options)
 
     @options.setter
-    def options(self, value: Options) -> None:
+    def options(self, value: OptionsProtocol) -> None:
         self._impl.options = mapping.to_impl(value)
 
     def connect(self, ws_address: str) -> Tab:
@@ -416,14 +441,15 @@ class Chrome(SyncBase):
         """Reset all permissions to defaults and restore prompting behavior."""
         return mapping.from_impl(self._run(self._impl.reset_permissions(browser_context_id=mapping.to_impl(browser_context_id))))
 
-    def on(self, event_name: str, callback: Callable[[Any], Any], temporary: bool=False) -> int:
+    def on(self, event_name: Event | str, callback: Callable[[Any], Any], temporary: bool=False) -> int:
         """
-        Register CDP event listener at browser level.
+        Register an event listener at browser level.
 
         Callback runs in background task to prevent blocking. Affects all pages/targets.
 
         Args:
-            event_name: CDP event name (e.g., "Network.responseReceived").
+            event_name: Portable ``Event`` member or native CDP event name
+                (e.g., "Network.responseReceived").
             callback: Function called on event (sync or async).
             temporary: Remove after first invocation.
 
@@ -438,6 +464,33 @@ class Chrome(SyncBase):
     def remove_callback(self, callback_id: int):
         """Remove callback from browser."""
         return mapping.from_impl(self._run(self._impl.remove_callback(callback_id=mapping.to_impl(callback_id))))
+
+    def intercept_requests(self, callback: Callable[[InterceptedRequest], object], url_patterns: list[str] | None=None) -> str:
+        """Intercept network requests browser-wide and hand each one to ``callback``.
+
+        Every intercepted request is wrapped in an ``InterceptedRequest`` whose
+        ``continue_()``, ``fail()`` and ``respond()`` resolve it; requests that
+        match none of ``url_patterns`` are continued untouched. The Fetch domain
+        is enabled on registration and disabled again when the last intercept
+        is removed, so requests never stay paused without a handler.
+
+        Args:
+            callback: Function (sync or async) receiving the InterceptedRequest.
+            url_patterns: URL patterns to intercept (``'*'`` wildcards, e.g.
+                ``['/api/*']``); every request when None.
+
+        Returns:
+            Intercept id for ``remove_intercept``.
+        """
+        return mapping.from_impl(self._run(self._impl.intercept_requests(callback=mapping.wrap_handler(callback), url_patterns=mapping.to_impl(url_patterns))))
+
+    def remove_intercept(self, intercept_id: str):
+        """Remove a request intercept registered with ``intercept_requests``.
+
+        Disables the Fetch domain once the last intercept is removed so requests
+        stop being paused.
+        """
+        return mapping.from_impl(self._run(self._impl.remove_intercept(intercept_id=mapping.to_impl(intercept_id))))
 
     def enable_fetch_events(self, handle_auth_requests: bool=False, resource_type: ResourceType | None=None):
         """
@@ -506,7 +559,7 @@ class Edge(SyncBase):
     """Edge browser implementation for CDP automation."""
     _impl: _EdgeImpl
 
-    def __init__(self, options: Options | None=None, connection_port: int | None=None) -> None:
+    def __init__(self, options: ChromiumOptions | None=None, connection_port: int | None=None) -> None:
         """
         Initialize Edge browser instance.
 
@@ -523,11 +576,11 @@ class Edge(SyncBase):
         return self._run(self._impl.__aexit__(exc_type, exc, tb))
 
     @property
-    def options(self) -> Options:
+    def options(self) -> OptionsProtocol:
         return mapping.from_impl(self._impl.options)
 
     @options.setter
-    def options(self, value: Options) -> None:
+    def options(self, value: OptionsProtocol) -> None:
         self._impl.options = mapping.to_impl(value)
 
     def connect(self, ws_address: str) -> Tab:
@@ -741,14 +794,15 @@ class Edge(SyncBase):
         """Reset all permissions to defaults and restore prompting behavior."""
         return mapping.from_impl(self._run(self._impl.reset_permissions(browser_context_id=mapping.to_impl(browser_context_id))))
 
-    def on(self, event_name: str, callback: Callable[[Any], Any], temporary: bool=False) -> int:
+    def on(self, event_name: Event | str, callback: Callable[[Any], Any], temporary: bool=False) -> int:
         """
-        Register CDP event listener at browser level.
+        Register an event listener at browser level.
 
         Callback runs in background task to prevent blocking. Affects all pages/targets.
 
         Args:
-            event_name: CDP event name (e.g., "Network.responseReceived").
+            event_name: Portable ``Event`` member or native CDP event name
+                (e.g., "Network.responseReceived").
             callback: Function called on event (sync or async).
             temporary: Remove after first invocation.
 
@@ -763,6 +817,33 @@ class Edge(SyncBase):
     def remove_callback(self, callback_id: int):
         """Remove callback from browser."""
         return mapping.from_impl(self._run(self._impl.remove_callback(callback_id=mapping.to_impl(callback_id))))
+
+    def intercept_requests(self, callback: Callable[[InterceptedRequest], object], url_patterns: list[str] | None=None) -> str:
+        """Intercept network requests browser-wide and hand each one to ``callback``.
+
+        Every intercepted request is wrapped in an ``InterceptedRequest`` whose
+        ``continue_()``, ``fail()`` and ``respond()`` resolve it; requests that
+        match none of ``url_patterns`` are continued untouched. The Fetch domain
+        is enabled on registration and disabled again when the last intercept
+        is removed, so requests never stay paused without a handler.
+
+        Args:
+            callback: Function (sync or async) receiving the InterceptedRequest.
+            url_patterns: URL patterns to intercept (``'*'`` wildcards, e.g.
+                ``['/api/*']``); every request when None.
+
+        Returns:
+            Intercept id for ``remove_intercept``.
+        """
+        return mapping.from_impl(self._run(self._impl.intercept_requests(callback=mapping.wrap_handler(callback), url_patterns=mapping.to_impl(url_patterns))))
+
+    def remove_intercept(self, intercept_id: str):
+        """Remove a request intercept registered with ``intercept_requests``.
+
+        Disables the Fetch domain once the last intercept is removed so requests
+        stop being paused.
+        """
+        return mapping.from_impl(self._run(self._impl.remove_intercept(intercept_id=mapping.to_impl(intercept_id))))
 
     def enable_fetch_events(self, handle_auth_requests: bool=False, resource_type: ResourceType | None=None):
         """
@@ -1067,6 +1148,14 @@ class Tab(SyncBase):
     def bring_to_front(self):
         """Brings the page to front."""
         return mapping.from_impl(self._run(self._impl.bring_to_front()))
+
+    def useragent_override(self, user_agent: str) -> None:
+        """Override the User-Agent string for this tab at runtime.
+
+        Uses Emulation.setUserAgentOverride, which updates both the HTTP header
+        and navigator.userAgent for subsequent requests and navigations.
+        """
+        self._run(self._impl.useragent_override(user_agent=mapping.to_impl(user_agent)))
 
     def get_cookies(self) -> list[Cookie]:
         """Get all cookies of this tab's browser context.
@@ -1450,6 +1539,32 @@ class Tab(SyncBase):
         """
         return mapping.from_impl(self._run(self._impl.execute_script(script=mapping.to_impl(script), object_group=mapping.to_impl(object_group), include_command_line_api=mapping.to_impl(include_command_line_api), silent=mapping.to_impl(silent), context_id=mapping.to_impl(context_id), return_by_value=mapping.to_impl(return_by_value), generate_preview=mapping.to_impl(generate_preview), user_gesture=mapping.to_impl(user_gesture), await_promise=mapping.to_impl(await_promise), throw_on_side_effect=mapping.to_impl(throw_on_side_effect), timeout=mapping.to_impl(timeout), disable_breaks=mapping.to_impl(disable_breaks), repl_mode=mapping.to_impl(repl_mode), allow_unsafe_eval_blocked_by_csp=mapping.to_impl(allow_unsafe_eval_blocked_by_csp), unique_context_id=mapping.to_impl(unique_context_id), serialization_options=mapping.to_impl(serialization_options))))
 
+    def evaluate(self, script: str, *args: object) -> object:
+        """Run JavaScript in the page and return its result as a Python value.
+
+        This is the portable evaluation API shared with the Firefox backend. With no
+        ``args`` a bare ``return`` statement is wrapped automatically; with ``args``
+        pass a function expression (``(a, b) => a + b``) and they are forwarded to it.
+        Promises are awaited. Use ``execute_script`` for the raw CDP response and its
+        Runtime.evaluate options.
+
+        Args:
+            script: JavaScript to run.
+            *args: JSON-serializable values forwarded to the script function.
+
+        Returns:
+            The script's return value as a Python object (None when it returns nothing
+            or a non-serializable value).
+
+        Raises:
+            ScriptEvaluationError: If the script throws or its promise rejects.
+
+        Examples:
+            tab.evaluate('return document.title')
+            tab.evaluate('(a, b) => a + b', 2, 3)
+        """
+        return mapping.from_impl(self._run(self._impl.evaluate(mapping.to_impl(script), *[mapping.to_impl(positional) for positional in args])))
+
     def continue_request(self, request_id: str, url: str | None=None, method: RequestMethod | None=None, post_data: str | None=None, headers: list[HeaderEntry] | None=None, intercept_response: bool | None=None):
         """
         Continue paused request without modifications.
@@ -1508,22 +1623,23 @@ class Tab(SyncBase):
         """
         return mapping.from_impl(self._impl.expect_download(keep_file_at=mapping.to_impl(keep_file_at), timeout=mapping.to_impl(timeout)))
 
-    def on(self, event_name: str, callback: Callable[[dict], Any], temporary: bool=False) -> int:
+    def on(self, event_name: Event | str, callback: Callable[[dict], Any], temporary: bool=False) -> int:
         """
-        Register CDP event listener.
+        Register an event listener on this tab.
 
-        Callback runs in background task to prevent blocking.
+        Callback runs in background task to prevent blocking. Registering a
+        handler enables the CDP domain the event belongs to when it is not
+        enabled yet (``Event.PAGE_LOADED`` enables Page, ``'Network.requestWillBeSent'``
+        enables Network), so callers do not have to enable it beforehand.
 
         Args:
-            event_name: CDP event name (e.g., 'Page.loadEventFired').
+            event_name: Portable ``Event`` member or native CDP event name
+                (e.g., 'Page.loadEventFired').
             callback: Function called on event (sync or async).
             temporary: Remove after first invocation.
 
         Returns:
             Callback ID for removal.
-
-        Note:
-            Corresponding domain must be enabled before events fire.
         """
         return mapping.from_impl(self._run(cast('Any', self._impl).on(event_name=mapping.to_impl(event_name), callback=mapping.wrap_handler(callback), temporary=mapping.to_impl(temporary))))
 
@@ -1534,78 +1650,6 @@ class Tab(SyncBase):
     def clear_callbacks(self):
         """Clear all registered event callbacks."""
         return mapping.from_impl(self._run(self._impl.clear_callbacks()))
-
-    @overload
-    def find(self, id: str | None=..., class_name: str | None=..., name: str | None=..., tag_name: str | None=..., text: str | None=..., timeout: int=..., find_all: Literal[False]=False, raise_exc: Literal[True]=True, **attributes) -> WebElement: ...
-    @overload
-    def find(self, id: str | None=..., class_name: str | None=..., name: str | None=..., tag_name: str | None=..., text: str | None=..., timeout: int=..., find_all: Literal[False]=False, raise_exc: Literal[False]=False, **attributes) -> WebElement | None: ...
-    @overload
-    def find(self, id: str | None=..., class_name: str | None=..., name: str | None=..., tag_name: str | None=..., text: str | None=..., timeout: int=..., find_all: Literal[True]=True, raise_exc: Literal[True]=True, **attributes) -> list[WebElement]: ...
-    @overload
-    def find(self, id: str | None=..., class_name: str | None=..., name: str | None=..., tag_name: str | None=..., text: str | None=..., timeout: int=..., find_all: Literal[True]=True, raise_exc: Literal[False]=False, **attributes) -> list[WebElement] | None: ...
-    @overload
-    def find(self, id: str | None=..., class_name: str | None=..., name: str | None=..., tag_name: str | None=..., text: str | None=..., timeout: int=..., find_all: bool=..., raise_exc: bool=..., **attributes) -> WebElement | list[WebElement] | None: ...
-    def find(self, id: str | None=None, class_name: str | None=None, name: str | None=None, tag_name: str | None=None, text: str | None=None, timeout: int=0, find_all: bool=False, raise_exc: bool=True, **attributes: dict[str, str]) -> WebElement | list[WebElement] | None:
-        """
-        Find element(s) using combination of common HTML attributes.
-
-        Flexible element location using standard attributes. Multiple attributes
-        can be combined for specific selectors (builds XPath when multiple specified).
-
-        Args:
-            id: Element ID attribute value.
-            class_name: CSS class name to match.
-            name: Element name attribute value.
-            tag_name: HTML tag name (e.g., "div", "input").
-            text: Text content to match within element.
-            timeout: Maximum seconds to wait for elements to appear.
-            find_all: If True, returns all matches; if False, first match only.
-            raise_exc: Whether to raise exception if no elements found.
-            **attributes: Additional HTML attributes to match.
-
-        Returns:
-            WebElement, list[WebElement], or None based on find_all and raise_exc.
-
-        Raises:
-            ValueError: If no search criteria provided.
-            ElementNotFound: If no elements found and raise_exc=True.
-            WaitElementTimeout: If timeout specified and no elements appear in time.
-            NotImplementedError: If called on a ShadowRoot (use query() with CSS instead).
-        """
-        return mapping.from_impl(self._run(cast('Any', self._impl).find(id=mapping.to_impl(id), class_name=mapping.to_impl(class_name), name=mapping.to_impl(name), tag_name=mapping.to_impl(tag_name), text=mapping.to_impl(text), timeout=mapping.to_impl(timeout), find_all=mapping.to_impl(find_all), raise_exc=mapping.to_impl(raise_exc), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in attributes.items()})))
-
-    @overload
-    def query(self, expression: str, timeout: int=..., find_all: Literal[False]=False, raise_exc: Literal[True]=True) -> WebElement: ...
-    @overload
-    def query(self, expression: str, timeout: int=..., find_all: Literal[False]=False, raise_exc: Literal[False]=False) -> WebElement | None: ...
-    @overload
-    def query(self, expression: str, timeout: int=..., find_all: Literal[True]=True, raise_exc: Literal[True]=True) -> list[WebElement]: ...
-    @overload
-    def query(self, expression: str, timeout: int=..., find_all: Literal[True]=True, raise_exc: Literal[False]=False) -> list[WebElement] | None: ...
-    @overload
-    def query(self, expression: str, timeout: int=..., find_all: bool=..., raise_exc: bool=...) -> WebElement | list[WebElement] | None: ...
-    def query(self, expression: str, timeout: int=0, find_all: bool=False, raise_exc: bool=True) -> WebElement | list[WebElement] | None:
-        """
-        Find element(s) using raw CSS selector or XPath expression.
-
-        Direct access using CSS or XPath syntax. Selector type automatically
-        determined based on expression pattern.
-
-        Args:
-            expression: Selector expression (CSS, XPath, ID with #, class with .).
-            timeout: Maximum seconds to wait for elements to appear.
-            find_all: If True, returns all matches; if False, first match only.
-            raise_exc: Whether to raise exception if no elements found.
-
-        Returns:
-            WebElement, list[WebElement], or None based on find_all and raise_exc.
-
-        Raises:
-            ElementNotFound: If no elements found and raise_exc=True.
-            WaitElementTimeout: If timeout specified and no elements appear in time.
-            NotImplementedError: If called with XPath on a ShadowRoot.
-        """
-        return mapping.from_impl(self._run(cast('Any', self._impl).query(expression=mapping.to_impl(expression), timeout=mapping.to_impl(timeout), find_all=mapping.to_impl(find_all), raise_exc=mapping.to_impl(raise_exc))))
 
     def query_script(self, function_declaration: str, arguments: list[CallArgument] | None=None, execution_context_id: int | None=None) -> list[WebElement]:
         """
@@ -1657,6 +1701,78 @@ class Tab(SyncBase):
             CommandExecutionTimeout: If no answer arrives within ``timeout``.
         """
         return mapping.from_impl(self._run(self._impl.execute_command(command=mapping.to_impl(command), timeout=mapping.to_impl(timeout))))
+
+    @overload
+    def find(self, id: str | None=..., class_name: str | None=..., name: str | None=..., tag_name: str | None=..., text: str | None=..., timeout: int=..., find_all: Literal[False]=False, raise_exc: Literal[True]=True, **attributes) -> WebElement: ...
+    @overload
+    def find(self, id: str | None=..., class_name: str | None=..., name: str | None=..., tag_name: str | None=..., text: str | None=..., timeout: int=..., find_all: Literal[False]=False, raise_exc: Literal[False]=False, **attributes) -> WebElement | None: ...
+    @overload
+    def find(self, id: str | None=..., class_name: str | None=..., name: str | None=..., tag_name: str | None=..., text: str | None=..., timeout: int=..., find_all: Literal[True]=True, raise_exc: Literal[True]=True, **attributes) -> list[WebElement]: ...
+    @overload
+    def find(self, id: str | None=..., class_name: str | None=..., name: str | None=..., tag_name: str | None=..., text: str | None=..., timeout: int=..., find_all: Literal[True]=True, raise_exc: Literal[False]=False, **attributes) -> list[WebElement] | None: ...
+    @overload
+    def find(self, id: str | None=..., class_name: str | None=..., name: str | None=..., tag_name: str | None=..., text: str | None=..., timeout: int=..., find_all: bool=..., raise_exc: bool=..., **attributes) -> WebElement | list[WebElement] | None: ...
+    def find(self, id: str | None=None, class_name: str | None=None, name: str | None=None, tag_name: str | None=None, text: str | None=None, timeout: int=0, find_all: bool=False, raise_exc: bool=True, **attributes: dict[str, str]) -> WebElement | list[WebElement] | None:
+        """
+        Find element(s) using combination of common HTML attributes.
+
+        Flexible element location using standard attributes. Multiple attributes
+        can be combined for specific selectors (builds XPath when multiple specified).
+
+        Args:
+            id: Element ID attribute value.
+            class_name: CSS class name to match.
+            name: Element name attribute value.
+            tag_name: HTML tag name (e.g., "div", "input").
+            text: Text content to match within element.
+            timeout: Maximum seconds to wait for elements to appear.
+            find_all: If True, returns all matches; if False, first match only.
+            raise_exc: Whether to raise exception if no elements found.
+            **attributes: Additional HTML attributes to match.
+
+        Returns:
+            Element, list of elements, or None based on find_all and raise_exc.
+
+        Raises:
+            ValueError: If no search criteria provided.
+            ElementNotFound: If no elements found and raise_exc=True.
+            WaitElementTimeout: If timeout specified and no elements appear in time.
+            NotImplementedError: If called on a ShadowRoot (use query() with CSS instead).
+        """
+        return mapping.from_impl(self._run(cast('Any', self._impl).find(id=mapping.to_impl(id), class_name=mapping.to_impl(class_name), name=mapping.to_impl(name), tag_name=mapping.to_impl(tag_name), text=mapping.to_impl(text), timeout=mapping.to_impl(timeout), find_all=mapping.to_impl(find_all), raise_exc=mapping.to_impl(raise_exc), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in attributes.items()})))
+
+    @overload
+    def query(self, expression: str, timeout: int=..., find_all: Literal[False]=False, raise_exc: Literal[True]=True) -> WebElement: ...
+    @overload
+    def query(self, expression: str, timeout: int=..., find_all: Literal[False]=False, raise_exc: Literal[False]=False) -> WebElement | None: ...
+    @overload
+    def query(self, expression: str, timeout: int=..., find_all: Literal[True]=True, raise_exc: Literal[True]=True) -> list[WebElement]: ...
+    @overload
+    def query(self, expression: str, timeout: int=..., find_all: Literal[True]=True, raise_exc: Literal[False]=False) -> list[WebElement] | None: ...
+    @overload
+    def query(self, expression: str, timeout: int=..., find_all: bool=..., raise_exc: bool=...) -> WebElement | list[WebElement] | None: ...
+    def query(self, expression: str, timeout: int=0, find_all: bool=False, raise_exc: bool=True) -> WebElement | list[WebElement] | None:
+        """
+        Find element(s) using raw CSS selector or XPath expression.
+
+        Direct access using CSS or XPath syntax. Selector type automatically
+        determined based on expression pattern.
+
+        Args:
+            expression: Selector expression (CSS, XPath, ID with #, class with .).
+            timeout: Maximum seconds to wait for elements to appear.
+            find_all: If True, returns all matches; if False, first match only.
+            raise_exc: Whether to raise exception if no elements found.
+
+        Returns:
+            Element, list of elements, or None based on find_all and raise_exc.
+
+        Raises:
+            ElementNotFound: If no elements found and raise_exc=True.
+            WaitElementTimeout: If timeout specified and no elements appear in time.
+            NotImplementedError: If called with XPath on a ShadowRoot.
+        """
+        return mapping.from_impl(self._run(cast('Any', self._impl).query(expression=mapping.to_impl(expression), timeout=mapping.to_impl(timeout), find_all=mapping.to_impl(find_all), raise_exc=mapping.to_impl(raise_exc))))
 
 class DownloadHandle(SyncBase):
     """Handle returned by expect_download to access the downloaded file."""
@@ -2155,77 +2271,29 @@ class WebElement(SyncBase):
         """
         return mapping.from_impl(self._run(self._impl.execute_script(script=mapping.to_impl(script), arguments=mapping.to_impl(arguments), silent=mapping.to_impl(silent), return_by_value=mapping.to_impl(return_by_value), generate_preview=mapping.to_impl(generate_preview), user_gesture=mapping.to_impl(user_gesture), await_promise=mapping.to_impl(await_promise), execution_context_id=mapping.to_impl(execution_context_id), object_group=mapping.to_impl(object_group), throw_on_side_effect=mapping.to_impl(throw_on_side_effect), unique_context_id=mapping.to_impl(unique_context_id), serialization_options=mapping.to_impl(serialization_options))))
 
-    @overload
-    def find(self, id: str | None=..., class_name: str | None=..., name: str | None=..., tag_name: str | None=..., text: str | None=..., timeout: int=..., find_all: Literal[False]=False, raise_exc: Literal[True]=True, **attributes) -> WebElement: ...
-    @overload
-    def find(self, id: str | None=..., class_name: str | None=..., name: str | None=..., tag_name: str | None=..., text: str | None=..., timeout: int=..., find_all: Literal[False]=False, raise_exc: Literal[False]=False, **attributes) -> WebElement | None: ...
-    @overload
-    def find(self, id: str | None=..., class_name: str | None=..., name: str | None=..., tag_name: str | None=..., text: str | None=..., timeout: int=..., find_all: Literal[True]=True, raise_exc: Literal[True]=True, **attributes) -> list[WebElement]: ...
-    @overload
-    def find(self, id: str | None=..., class_name: str | None=..., name: str | None=..., tag_name: str | None=..., text: str | None=..., timeout: int=..., find_all: Literal[True]=True, raise_exc: Literal[False]=False, **attributes) -> list[WebElement] | None: ...
-    @overload
-    def find(self, id: str | None=..., class_name: str | None=..., name: str | None=..., tag_name: str | None=..., text: str | None=..., timeout: int=..., find_all: bool=..., raise_exc: bool=..., **attributes) -> WebElement | list[WebElement] | None: ...
-    def find(self, id: str | None=None, class_name: str | None=None, name: str | None=None, tag_name: str | None=None, text: str | None=None, timeout: int=0, find_all: bool=False, raise_exc: bool=True, **attributes: dict[str, str]) -> WebElement | list[WebElement] | None:
+    def evaluate(self, script: str, *args: object) -> object:
         """
-        Find element(s) using combination of common HTML attributes.
+        Run JavaScript with ``this`` bound to the element and return its value.
 
-        Flexible element location using standard attributes. Multiple attributes
-        can be combined for specific selectors (builds XPath when multiple specified).
+        The portable counterpart of ``execute_script``: the same call works on a
+        Firefox ``BiDiWebElement``. ``script`` is either a function declaration
+        (``function(a, b) { return this.value + a + b }``) or a body that may use
+        ``return``; ``args`` are JSON-serialisable values forwarded as the
+        function's arguments. A returned promise is awaited and its settled value
+        is returned by value (objects and arrays become dicts and lists; a DOM
+        node or a function comes back as ``None``).
 
         Args:
-            id: Element ID attribute value.
-            class_name: CSS class name to match.
-            name: Element name attribute value.
-            tag_name: HTML tag name (e.g., "div", "input").
-            text: Text content to match within element.
-            timeout: Maximum seconds to wait for elements to appear.
-            find_all: If True, returns all matches; if False, first match only.
-            raise_exc: Whether to raise exception if no elements found.
-            **attributes: Additional HTML attributes to match.
+            script: JavaScript function declaration or body; ``this`` is the element.
+            *args: Values forwarded to the function as positional arguments.
 
         Returns:
-            WebElement, list[WebElement], or None based on find_all and raise_exc.
+            The script's return value as a Python object.
 
         Raises:
-            ValueError: If no search criteria provided.
-            ElementNotFound: If no elements found and raise_exc=True.
-            WaitElementTimeout: If timeout specified and no elements appear in time.
-            NotImplementedError: If called on a ShadowRoot (use query() with CSS instead).
+            ScriptEvaluationError: If the script throws or its promise rejects.
         """
-        return mapping.from_impl(self._run(cast('Any', self._impl).find(id=mapping.to_impl(id), class_name=mapping.to_impl(class_name), name=mapping.to_impl(name), tag_name=mapping.to_impl(tag_name), text=mapping.to_impl(text), timeout=mapping.to_impl(timeout), find_all=mapping.to_impl(find_all), raise_exc=mapping.to_impl(raise_exc), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in attributes.items()})))
-
-    @overload
-    def query(self, expression: str, timeout: int=..., find_all: Literal[False]=False, raise_exc: Literal[True]=True) -> WebElement: ...
-    @overload
-    def query(self, expression: str, timeout: int=..., find_all: Literal[False]=False, raise_exc: Literal[False]=False) -> WebElement | None: ...
-    @overload
-    def query(self, expression: str, timeout: int=..., find_all: Literal[True]=True, raise_exc: Literal[True]=True) -> list[WebElement]: ...
-    @overload
-    def query(self, expression: str, timeout: int=..., find_all: Literal[True]=True, raise_exc: Literal[False]=False) -> list[WebElement] | None: ...
-    @overload
-    def query(self, expression: str, timeout: int=..., find_all: bool=..., raise_exc: bool=...) -> WebElement | list[WebElement] | None: ...
-    def query(self, expression: str, timeout: int=0, find_all: bool=False, raise_exc: bool=True) -> WebElement | list[WebElement] | None:
-        """
-        Find element(s) using raw CSS selector or XPath expression.
-
-        Direct access using CSS or XPath syntax. Selector type automatically
-        determined based on expression pattern.
-
-        Args:
-            expression: Selector expression (CSS, XPath, ID with #, class with .).
-            timeout: Maximum seconds to wait for elements to appear.
-            find_all: If True, returns all matches; if False, first match only.
-            raise_exc: Whether to raise exception if no elements found.
-
-        Returns:
-            WebElement, list[WebElement], or None based on find_all and raise_exc.
-
-        Raises:
-            ElementNotFound: If no elements found and raise_exc=True.
-            WaitElementTimeout: If timeout specified and no elements appear in time.
-            NotImplementedError: If called with XPath on a ShadowRoot.
-        """
-        return mapping.from_impl(self._run(cast('Any', self._impl).query(expression=mapping.to_impl(expression), timeout=mapping.to_impl(timeout), find_all=mapping.to_impl(find_all), raise_exc=mapping.to_impl(raise_exc))))
+        return mapping.from_impl(self._run(self._impl.evaluate(mapping.to_impl(script), *[mapping.to_impl(positional) for positional in args])))
 
     def query_script(self, function_declaration: str, arguments: list[CallArgument] | None=None, execution_context_id: int | None=None) -> list[WebElement]:
         """
@@ -2277,6 +2345,78 @@ class WebElement(SyncBase):
             CommandExecutionTimeout: If no answer arrives within ``timeout``.
         """
         return mapping.from_impl(self._run(self._impl.execute_command(command=mapping.to_impl(command), timeout=mapping.to_impl(timeout))))
+
+    @overload
+    def find(self, id: str | None=..., class_name: str | None=..., name: str | None=..., tag_name: str | None=..., text: str | None=..., timeout: int=..., find_all: Literal[False]=False, raise_exc: Literal[True]=True, **attributes) -> WebElement: ...
+    @overload
+    def find(self, id: str | None=..., class_name: str | None=..., name: str | None=..., tag_name: str | None=..., text: str | None=..., timeout: int=..., find_all: Literal[False]=False, raise_exc: Literal[False]=False, **attributes) -> WebElement | None: ...
+    @overload
+    def find(self, id: str | None=..., class_name: str | None=..., name: str | None=..., tag_name: str | None=..., text: str | None=..., timeout: int=..., find_all: Literal[True]=True, raise_exc: Literal[True]=True, **attributes) -> list[WebElement]: ...
+    @overload
+    def find(self, id: str | None=..., class_name: str | None=..., name: str | None=..., tag_name: str | None=..., text: str | None=..., timeout: int=..., find_all: Literal[True]=True, raise_exc: Literal[False]=False, **attributes) -> list[WebElement] | None: ...
+    @overload
+    def find(self, id: str | None=..., class_name: str | None=..., name: str | None=..., tag_name: str | None=..., text: str | None=..., timeout: int=..., find_all: bool=..., raise_exc: bool=..., **attributes) -> WebElement | list[WebElement] | None: ...
+    def find(self, id: str | None=None, class_name: str | None=None, name: str | None=None, tag_name: str | None=None, text: str | None=None, timeout: int=0, find_all: bool=False, raise_exc: bool=True, **attributes: dict[str, str]) -> WebElement | list[WebElement] | None:
+        """
+        Find element(s) using combination of common HTML attributes.
+
+        Flexible element location using standard attributes. Multiple attributes
+        can be combined for specific selectors (builds XPath when multiple specified).
+
+        Args:
+            id: Element ID attribute value.
+            class_name: CSS class name to match.
+            name: Element name attribute value.
+            tag_name: HTML tag name (e.g., "div", "input").
+            text: Text content to match within element.
+            timeout: Maximum seconds to wait for elements to appear.
+            find_all: If True, returns all matches; if False, first match only.
+            raise_exc: Whether to raise exception if no elements found.
+            **attributes: Additional HTML attributes to match.
+
+        Returns:
+            Element, list of elements, or None based on find_all and raise_exc.
+
+        Raises:
+            ValueError: If no search criteria provided.
+            ElementNotFound: If no elements found and raise_exc=True.
+            WaitElementTimeout: If timeout specified and no elements appear in time.
+            NotImplementedError: If called on a ShadowRoot (use query() with CSS instead).
+        """
+        return mapping.from_impl(self._run(cast('Any', self._impl).find(id=mapping.to_impl(id), class_name=mapping.to_impl(class_name), name=mapping.to_impl(name), tag_name=mapping.to_impl(tag_name), text=mapping.to_impl(text), timeout=mapping.to_impl(timeout), find_all=mapping.to_impl(find_all), raise_exc=mapping.to_impl(raise_exc), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in attributes.items()})))
+
+    @overload
+    def query(self, expression: str, timeout: int=..., find_all: Literal[False]=False, raise_exc: Literal[True]=True) -> WebElement: ...
+    @overload
+    def query(self, expression: str, timeout: int=..., find_all: Literal[False]=False, raise_exc: Literal[False]=False) -> WebElement | None: ...
+    @overload
+    def query(self, expression: str, timeout: int=..., find_all: Literal[True]=True, raise_exc: Literal[True]=True) -> list[WebElement]: ...
+    @overload
+    def query(self, expression: str, timeout: int=..., find_all: Literal[True]=True, raise_exc: Literal[False]=False) -> list[WebElement] | None: ...
+    @overload
+    def query(self, expression: str, timeout: int=..., find_all: bool=..., raise_exc: bool=...) -> WebElement | list[WebElement] | None: ...
+    def query(self, expression: str, timeout: int=0, find_all: bool=False, raise_exc: bool=True) -> WebElement | list[WebElement] | None:
+        """
+        Find element(s) using raw CSS selector or XPath expression.
+
+        Direct access using CSS or XPath syntax. Selector type automatically
+        determined based on expression pattern.
+
+        Args:
+            expression: Selector expression (CSS, XPath, ID with #, class with .).
+            timeout: Maximum seconds to wait for elements to appear.
+            find_all: If True, returns all matches; if False, first match only.
+            raise_exc: Whether to raise exception if no elements found.
+
+        Returns:
+            Element, list of elements, or None based on find_all and raise_exc.
+
+        Raises:
+            ElementNotFound: If no elements found and raise_exc=True.
+            WaitElementTimeout: If timeout specified and no elements appear in time.
+            NotImplementedError: If called with XPath on a ShadowRoot.
+        """
+        return mapping.from_impl(self._run(cast('Any', self._impl).query(expression=mapping.to_impl(expression), timeout=mapping.to_impl(timeout), find_all=mapping.to_impl(find_all), raise_exc=mapping.to_impl(raise_exc))))
 
 class ShadowRoot(SyncBase):
     """
@@ -2308,78 +2448,6 @@ class ShadowRoot(SyncBase):
         """HTML content of the shadow root."""
         return mapping.from_impl(self._run(self._impl.inner_html()))
 
-    @overload
-    def find(self, id: str | None=..., class_name: str | None=..., name: str | None=..., tag_name: str | None=..., text: str | None=..., timeout: int=..., find_all: Literal[False]=False, raise_exc: Literal[True]=True, **attributes) -> WebElement: ...
-    @overload
-    def find(self, id: str | None=..., class_name: str | None=..., name: str | None=..., tag_name: str | None=..., text: str | None=..., timeout: int=..., find_all: Literal[False]=False, raise_exc: Literal[False]=False, **attributes) -> WebElement | None: ...
-    @overload
-    def find(self, id: str | None=..., class_name: str | None=..., name: str | None=..., tag_name: str | None=..., text: str | None=..., timeout: int=..., find_all: Literal[True]=True, raise_exc: Literal[True]=True, **attributes) -> list[WebElement]: ...
-    @overload
-    def find(self, id: str | None=..., class_name: str | None=..., name: str | None=..., tag_name: str | None=..., text: str | None=..., timeout: int=..., find_all: Literal[True]=True, raise_exc: Literal[False]=False, **attributes) -> list[WebElement] | None: ...
-    @overload
-    def find(self, id: str | None=..., class_name: str | None=..., name: str | None=..., tag_name: str | None=..., text: str | None=..., timeout: int=..., find_all: bool=..., raise_exc: bool=..., **attributes) -> WebElement | list[WebElement] | None: ...
-    def find(self, id: str | None=None, class_name: str | None=None, name: str | None=None, tag_name: str | None=None, text: str | None=None, timeout: int=0, find_all: bool=False, raise_exc: bool=True, **attributes: dict[str, str]) -> WebElement | list[WebElement] | None:
-        """
-        Find element(s) using combination of common HTML attributes.
-
-        Flexible element location using standard attributes. Multiple attributes
-        can be combined for specific selectors (builds XPath when multiple specified).
-
-        Args:
-            id: Element ID attribute value.
-            class_name: CSS class name to match.
-            name: Element name attribute value.
-            tag_name: HTML tag name (e.g., "div", "input").
-            text: Text content to match within element.
-            timeout: Maximum seconds to wait for elements to appear.
-            find_all: If True, returns all matches; if False, first match only.
-            raise_exc: Whether to raise exception if no elements found.
-            **attributes: Additional HTML attributes to match.
-
-        Returns:
-            WebElement, list[WebElement], or None based on find_all and raise_exc.
-
-        Raises:
-            ValueError: If no search criteria provided.
-            ElementNotFound: If no elements found and raise_exc=True.
-            WaitElementTimeout: If timeout specified and no elements appear in time.
-            NotImplementedError: If called on a ShadowRoot (use query() with CSS instead).
-        """
-        return mapping.from_impl(self._run(cast('Any', self._impl).find(id=mapping.to_impl(id), class_name=mapping.to_impl(class_name), name=mapping.to_impl(name), tag_name=mapping.to_impl(tag_name), text=mapping.to_impl(text), timeout=mapping.to_impl(timeout), find_all=mapping.to_impl(find_all), raise_exc=mapping.to_impl(raise_exc), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in attributes.items()})))
-
-    @overload
-    def query(self, expression: str, timeout: int=..., find_all: Literal[False]=False, raise_exc: Literal[True]=True) -> WebElement: ...
-    @overload
-    def query(self, expression: str, timeout: int=..., find_all: Literal[False]=False, raise_exc: Literal[False]=False) -> WebElement | None: ...
-    @overload
-    def query(self, expression: str, timeout: int=..., find_all: Literal[True]=True, raise_exc: Literal[True]=True) -> list[WebElement]: ...
-    @overload
-    def query(self, expression: str, timeout: int=..., find_all: Literal[True]=True, raise_exc: Literal[False]=False) -> list[WebElement] | None: ...
-    @overload
-    def query(self, expression: str, timeout: int=..., find_all: bool=..., raise_exc: bool=...) -> WebElement | list[WebElement] | None: ...
-    def query(self, expression: str, timeout: int=0, find_all: bool=False, raise_exc: bool=True) -> WebElement | list[WebElement] | None:
-        """
-        Find element(s) using raw CSS selector or XPath expression.
-
-        Direct access using CSS or XPath syntax. Selector type automatically
-        determined based on expression pattern.
-
-        Args:
-            expression: Selector expression (CSS, XPath, ID with #, class with .).
-            timeout: Maximum seconds to wait for elements to appear.
-            find_all: If True, returns all matches; if False, first match only.
-            raise_exc: Whether to raise exception if no elements found.
-
-        Returns:
-            WebElement, list[WebElement], or None based on find_all and raise_exc.
-
-        Raises:
-            ElementNotFound: If no elements found and raise_exc=True.
-            WaitElementTimeout: If timeout specified and no elements appear in time.
-            NotImplementedError: If called with XPath on a ShadowRoot.
-        """
-        return mapping.from_impl(self._run(cast('Any', self._impl).query(expression=mapping.to_impl(expression), timeout=mapping.to_impl(timeout), find_all=mapping.to_impl(find_all), raise_exc=mapping.to_impl(raise_exc))))
-
     def query_script(self, function_declaration: str, arguments: list[CallArgument] | None=None, execution_context_id: int | None=None) -> list[WebElement]:
         """
         Run a JavaScript function that returns elements and wrap them as WebElements.
@@ -2430,6 +2498,78 @@ class ShadowRoot(SyncBase):
             CommandExecutionTimeout: If no answer arrives within ``timeout``.
         """
         return mapping.from_impl(self._run(self._impl.execute_command(command=mapping.to_impl(command), timeout=mapping.to_impl(timeout))))
+
+    @overload
+    def find(self, id: str | None=..., class_name: str | None=..., name: str | None=..., tag_name: str | None=..., text: str | None=..., timeout: int=..., find_all: Literal[False]=False, raise_exc: Literal[True]=True, **attributes) -> WebElement: ...
+    @overload
+    def find(self, id: str | None=..., class_name: str | None=..., name: str | None=..., tag_name: str | None=..., text: str | None=..., timeout: int=..., find_all: Literal[False]=False, raise_exc: Literal[False]=False, **attributes) -> WebElement | None: ...
+    @overload
+    def find(self, id: str | None=..., class_name: str | None=..., name: str | None=..., tag_name: str | None=..., text: str | None=..., timeout: int=..., find_all: Literal[True]=True, raise_exc: Literal[True]=True, **attributes) -> list[WebElement]: ...
+    @overload
+    def find(self, id: str | None=..., class_name: str | None=..., name: str | None=..., tag_name: str | None=..., text: str | None=..., timeout: int=..., find_all: Literal[True]=True, raise_exc: Literal[False]=False, **attributes) -> list[WebElement] | None: ...
+    @overload
+    def find(self, id: str | None=..., class_name: str | None=..., name: str | None=..., tag_name: str | None=..., text: str | None=..., timeout: int=..., find_all: bool=..., raise_exc: bool=..., **attributes) -> WebElement | list[WebElement] | None: ...
+    def find(self, id: str | None=None, class_name: str | None=None, name: str | None=None, tag_name: str | None=None, text: str | None=None, timeout: int=0, find_all: bool=False, raise_exc: bool=True, **attributes: dict[str, str]) -> WebElement | list[WebElement] | None:
+        """
+        Find element(s) using combination of common HTML attributes.
+
+        Flexible element location using standard attributes. Multiple attributes
+        can be combined for specific selectors (builds XPath when multiple specified).
+
+        Args:
+            id: Element ID attribute value.
+            class_name: CSS class name to match.
+            name: Element name attribute value.
+            tag_name: HTML tag name (e.g., "div", "input").
+            text: Text content to match within element.
+            timeout: Maximum seconds to wait for elements to appear.
+            find_all: If True, returns all matches; if False, first match only.
+            raise_exc: Whether to raise exception if no elements found.
+            **attributes: Additional HTML attributes to match.
+
+        Returns:
+            Element, list of elements, or None based on find_all and raise_exc.
+
+        Raises:
+            ValueError: If no search criteria provided.
+            ElementNotFound: If no elements found and raise_exc=True.
+            WaitElementTimeout: If timeout specified and no elements appear in time.
+            NotImplementedError: If called on a ShadowRoot (use query() with CSS instead).
+        """
+        return mapping.from_impl(self._run(cast('Any', self._impl).find(id=mapping.to_impl(id), class_name=mapping.to_impl(class_name), name=mapping.to_impl(name), tag_name=mapping.to_impl(tag_name), text=mapping.to_impl(text), timeout=mapping.to_impl(timeout), find_all=mapping.to_impl(find_all), raise_exc=mapping.to_impl(raise_exc), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in attributes.items()})))
+
+    @overload
+    def query(self, expression: str, timeout: int=..., find_all: Literal[False]=False, raise_exc: Literal[True]=True) -> WebElement: ...
+    @overload
+    def query(self, expression: str, timeout: int=..., find_all: Literal[False]=False, raise_exc: Literal[False]=False) -> WebElement | None: ...
+    @overload
+    def query(self, expression: str, timeout: int=..., find_all: Literal[True]=True, raise_exc: Literal[True]=True) -> list[WebElement]: ...
+    @overload
+    def query(self, expression: str, timeout: int=..., find_all: Literal[True]=True, raise_exc: Literal[False]=False) -> list[WebElement] | None: ...
+    @overload
+    def query(self, expression: str, timeout: int=..., find_all: bool=..., raise_exc: bool=...) -> WebElement | list[WebElement] | None: ...
+    def query(self, expression: str, timeout: int=0, find_all: bool=False, raise_exc: bool=True) -> WebElement | list[WebElement] | None:
+        """
+        Find element(s) using raw CSS selector or XPath expression.
+
+        Direct access using CSS or XPath syntax. Selector type automatically
+        determined based on expression pattern.
+
+        Args:
+            expression: Selector expression (CSS, XPath, ID with #, class with .).
+            timeout: Maximum seconds to wait for elements to appear.
+            find_all: If True, returns all matches; if False, first match only.
+            raise_exc: Whether to raise exception if no elements found.
+
+        Returns:
+            Element, list of elements, or None based on find_all and raise_exc.
+
+        Raises:
+            ElementNotFound: If no elements found and raise_exc=True.
+            WaitElementTimeout: If timeout specified and no elements appear in time.
+            NotImplementedError: If called with XPath on a ShadowRoot.
+        """
+        return mapping.from_impl(self._run(cast('Any', self._impl).query(expression=mapping.to_impl(expression), timeout=mapping.to_impl(timeout), find_all=mapping.to_impl(find_all), raise_exc=mapping.to_impl(raise_exc))))
 
 class Keyboard(SyncBase):
     """
@@ -2666,25 +2806,11 @@ class Scroll(SyncBase):
         return mapping.from_impl(self._run(self._impl.to_bottom(smooth=mapping.to_impl(smooth), humanize=mapping.to_impl(humanize))))
 
 class Request(SyncBase):
-    """High-level interface for making HTTP requests using the browser's fetch API.
+    """HTTP client over CDP. See BaseRequest for the public API.
 
-    This class provides a requests-like interface that executes HTTP requests in the
-    browser's JavaScript context. All requests inherit the browser's current session
-    state including cookies, authentication headers, and other automatic browser
-    behaviors. This allows for seamless interaction with websites that require
-    authentication or have complex cookie management.
-
-    Key Features:
-    - Executes requests in the browser's JavaScript context using fetch API
-    - Automatically includes browser cookies and session state
-    - Preserves browser's security context and CORS policies
-    - Captures both request and response headers for analysis
-    - Supports all standard HTTP methods (GET, POST, PUT, DELETE, etc.)
-
-    Note:
-    - Headers passed to methods are additional headers, not replacements
-    - Browser's automatic headers (User-Agent, Accept, etc.) are preserved
-    - Cookies are managed automatically by the browser
+    Captures both phases of network activity via CDP Network events: request
+    headers from requestWillBeSent(ExtraInfo) and response headers + Set-Cookie
+    from responseReceived(ExtraInfo).
     """
     _impl: _RequestImpl
 
@@ -2696,150 +2822,11 @@ class Request(SyncBase):
     def tab(self, value: Any) -> None:
         self._impl.tab = mapping.to_impl(value)
 
-    def request(self, method: str, url: str, params: dict[str, str] | None=None, data: dict | list | tuple | str | bytes | None=None, json: dict[str, Any] | None=None, headers: list[HeaderEntry] | None=None, **kwargs) -> Response:
-        """Execute an HTTP request in the browser's JavaScript context.
-
-        This method uses the browser's fetch API to make requests, inheriting all
-        browser session state including cookies, authentication, and security context.
-        The request is executed as if made by the browser itself.
-
-        Args:
-            method: HTTP method (GET, POST, PUT, DELETE, etc.). Case insensitive.
-            url: Target URL for the request. Can be relative or absolute.
-            params: Query parameters to append to the URL. These are URL-encoded
-                and merged with any existing query string in the URL.
-            data: Request body data. Behavior depends on type:
-                - dict/list/tuple: URL-encoded as form data (application/x-www-form-urlencoded)
-                - str/bytes: Sent as-is with no Content-Type modification
-                Mutually exclusive with 'json' parameter.
-            json: Data to be JSON-serialized as request body. Automatically sets
-                Content-Type to application/json. Mutually exclusive with 'data'.
-            headers: Additional headers to include. These are ADDED to browser's
-                automatic headers, not replacements.
-                Format: [{'name': 'X-Custom', 'value': 'value'}]
-            **kwargs: Additional fetch API options (e.g., credentials, mode, cache).
-
-        Returns:
-            Response object containing status, headers, content, and cookies from
-            both the request and response phases.
-
-        Raises:
-            HTTPError: If the request execution fails or network error occurs.
-
-        Note:
-            - Browser cookies are automatically included
-            - CORS policies are enforced by the browser
-            - Authentication headers are preserved from browser session
-        """
-        return mapping.from_impl(self._run(self._impl.request(method=mapping.to_impl(method), url=mapping.to_impl(url), params=mapping.to_impl(params), data=mapping.to_impl(data), json=mapping.to_impl(json), headers=mapping.to_impl(headers), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()})))
-
-    def get(self, url: str, params: dict[str, str] | None=None, **kwargs) -> Response:
-        """Execute a GET request for retrieving data.
-
-        Args:
-            url: Target URL to retrieve data from.
-            params: Query parameters to append to URL.
-            **kwargs: Additional fetch options.
-
-        Returns:
-            Response object with retrieved data.
-        """
-        return mapping.from_impl(self._run(self._impl.get(url=mapping.to_impl(url), params=mapping.to_impl(params), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()})))
-
-    def post(self, url: str, data: dict | list | tuple | str | bytes | None=None, json: dict[str, Any] | None=None, **kwargs) -> Response:
-        """Execute a POST request for creating or submitting data.
-
-        Args:
-            url: Target URL for data submission.
-            data: Form data to submit (URL-encoded).
-            json: JSON data to submit.
-            **kwargs: Additional fetch options.
-
-        Returns:
-            Response object with server's response to the submission.
-        """
-        return mapping.from_impl(self._run(self._impl.post(url=mapping.to_impl(url), data=mapping.to_impl(data), json=mapping.to_impl(json), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()})))
-
-    def put(self, url: str, data: dict | list | tuple | str | bytes | None=None, json: dict[str, Any] | None=None, **kwargs) -> Response:
-        """Execute a PUT request for updating/replacing resources.
-
-        Args:
-            url: Target URL of resource to update.
-            data: Form data for the update.
-            json: JSON data for the update.
-            **kwargs: Additional fetch options.
-
-        Returns:
-            Response object confirming the update operation.
-        """
-        return mapping.from_impl(self._run(self._impl.put(url=mapping.to_impl(url), data=mapping.to_impl(data), json=mapping.to_impl(json), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()})))
-
-    def patch(self, url: str, data: dict | list | tuple | str | bytes | None=None, json: dict[str, Any] | None=None, **kwargs) -> Response:
-        """Execute a PATCH request for partial resource updates.
-
-        Args:
-            url: Target URL of resource to partially update.
-            data: Form data with changes to apply.
-            json: JSON data with changes to apply.
-            **kwargs: Additional fetch options.
-
-        Returns:
-            Response object confirming the partial update.
-        """
-        return mapping.from_impl(self._run(self._impl.patch(url=mapping.to_impl(url), data=mapping.to_impl(data), json=mapping.to_impl(json), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()})))
-
-    def delete(self, url: str, **kwargs) -> Response:
-        """Execute a DELETE request for removing resources.
-
-        Args:
-            url: Target URL of resource to delete.
-            **kwargs: Additional fetch options.
-
-        Returns:
-            Response object confirming the deletion.
-        """
-        return mapping.from_impl(self._run(self._impl.delete(url=mapping.to_impl(url), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()})))
-
-    def head(self, url: str, **kwargs) -> Response:
-        """Execute a HEAD request to retrieve only response headers.
-
-        Useful for checking resource existence, size, or modification date
-        without downloading the full content.
-
-        Args:
-            url: Target URL to check headers for.
-            **kwargs: Additional fetch options.
-
-        Returns:
-            Response object with headers but no body content.
-        """
-        return mapping.from_impl(self._run(self._impl.head(url=mapping.to_impl(url), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()})))
-
-    def options(self, url: str, **kwargs) -> Response:
-        """Execute an OPTIONS request to check allowed methods and capabilities.
-
-        Used for CORS preflight checks and discovering server capabilities.
-
-        Args:
-            url: Target URL to check options for.
-            **kwargs: Additional fetch options.
-
-        Returns:
-            Response object with allowed methods and CORS headers.
-        """
-        return mapping.from_impl(self._run(self._impl.options(url=mapping.to_impl(url), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()})))
-
     def record(self, resource_types: list[ResourceType] | None=None) -> AbstractContextManager[HarCapture]:
         """Record network traffic as HAR.
 
-        Context manager that captures all network activity on the tab
-        and produces a HarCapture object for export.
-
         Args:
-            resource_types: Optional list of resource types to capture.
-                When provided, only requests matching these types are
-                recorded. When None (default), all resource types are
-                captured.
+            resource_types: Resource types to capture (all when None).
 
         Usage::
 
@@ -2847,17 +2834,63 @@ class Request(SyncBase):
                 tab.go_to('https://example.com')
             capture.save('flow.har')
 
-            # Record only fetch and XHR requests
-            with tab.request.record(
-                resource_types=[ResourceType.FETCH, ResourceType.XHR]
-            ) as capture:
-                tab.go_to('https://example.com')
-            capture.save('api_calls.har')
-
         Yields:
             HarCapture: Object with .save(), .to_dict(), and .entries.
         """
         return mapping.from_impl(self._impl.record(resource_types=mapping.to_impl(resource_types)))
+
+    def request(self, method: str, url: str, params: dict[str, str] | None=None, data: dict | list | tuple | str | bytes | None=None, json: dict[str, Any] | None=None, headers: list[Header] | None=None, **kwargs) -> Response:
+        """Execute an HTTP request in the browser's JavaScript context.
+
+        Uses the browser's fetch API, inheriting all session state (cookies,
+        authentication, security context).
+
+        Args:
+            method: HTTP method (GET, POST, ...). Case insensitive.
+            url: Target URL, relative or absolute.
+            params: Query parameters merged into the URL.
+            data: Request body. dict/list/tuple is form-urlencoded; str/bytes is
+                sent as-is. Mutually exclusive with json.
+            json: Body serialized as JSON (sets Content-Type). Mutually exclusive
+                with data.
+            headers: Extra headers ADDED to the browser's automatic headers.
+            **kwargs: Extra fetch options (credentials, mode, cache, ...).
+
+        Returns:
+            Response with status, headers, content and cookies.
+
+        Raises:
+            HTTPError: If the request fails or a network error occurs.
+        """
+        return mapping.from_impl(self._run(self._impl.request(method=mapping.to_impl(method), url=mapping.to_impl(url), params=mapping.to_impl(params), data=mapping.to_impl(data), json=mapping.to_impl(json), headers=mapping.to_impl(headers), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()})))
+
+    def get(self, url: str, params: dict[str, str] | None=None, **kwargs) -> Response:
+        """Execute a GET request."""
+        return mapping.from_impl(self._run(self._impl.get(url=mapping.to_impl(url), params=mapping.to_impl(params), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()})))
+
+    def post(self, url: str, data: dict | list | tuple | str | bytes | None=None, json: dict[str, Any] | None=None, **kwargs) -> Response:
+        """Execute a POST request."""
+        return mapping.from_impl(self._run(self._impl.post(url=mapping.to_impl(url), data=mapping.to_impl(data), json=mapping.to_impl(json), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()})))
+
+    def put(self, url: str, data: dict | list | tuple | str | bytes | None=None, json: dict[str, Any] | None=None, **kwargs) -> Response:
+        """Execute a PUT request."""
+        return mapping.from_impl(self._run(self._impl.put(url=mapping.to_impl(url), data=mapping.to_impl(data), json=mapping.to_impl(json), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()})))
+
+    def patch(self, url: str, data: dict | list | tuple | str | bytes | None=None, json: dict[str, Any] | None=None, **kwargs) -> Response:
+        """Execute a PATCH request."""
+        return mapping.from_impl(self._run(self._impl.patch(url=mapping.to_impl(url), data=mapping.to_impl(data), json=mapping.to_impl(json), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()})))
+
+    def delete(self, url: str, **kwargs) -> Response:
+        """Execute a DELETE request."""
+        return mapping.from_impl(self._run(self._impl.delete(url=mapping.to_impl(url), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()})))
+
+    def head(self, url: str, **kwargs) -> Response:
+        """Execute a HEAD request."""
+        return mapping.from_impl(self._run(self._impl.head(url=mapping.to_impl(url), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()})))
+
+    def options(self, url: str, **kwargs) -> Response:
+        """Execute an OPTIONS request."""
+        return mapping.from_impl(self._run(self._impl.options(url=mapping.to_impl(url), **{kwarg: mapping.to_impl(kwarg_value) for kwarg, kwarg_value in kwargs.items()})))
 
 class Response(SyncBase):
     """HTTP response object for browser-based fetch requests.
@@ -2894,7 +2927,7 @@ class Response(SyncBase):
         return mapping.from_impl(self._impl.ok)
 
     @property
-    def cookies(self) -> list[CookieParam]:
+    def cookies(self) -> list[ResponseCookie]:
         """Get cookies that were set by the server during this response.
 
         Returns:
@@ -2909,7 +2942,7 @@ class Response(SyncBase):
         return mapping.from_impl(self._impl.cookies)
 
     @property
-    def request_headers(self) -> list[HeaderEntry]:
+    def request_headers(self) -> list[Header]:
         """Get headers that were actually sent in the HTTP request.
 
         Returns:
@@ -2924,7 +2957,7 @@ class Response(SyncBase):
         return mapping.from_impl(self._impl.request_headers)
 
     @property
-    def headers(self) -> list[HeaderEntry]:
+    def headers(self) -> list[Header]:
         """Get headers received from the server in the HTTP response.
 
         Returns:

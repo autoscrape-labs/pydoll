@@ -123,7 +123,12 @@ const _apply = Reflect.apply;
 // resolves our functions to a native string. No window/Symbol slot to scan.
 const _FAKED = new Set();
 const _mark = (fn) => { try { _FAKED.add(_apply(_ORIG, fn, [])); } catch (e) {} return fn; };
-const _nativeStr = (fn) => 'function ' + fn.name + '() { [native code] }';
+// Native toString format differs per engine (V8: one line keeping the
+// ``get `` accessor prefix; SpiderMonkey: multi-line, prefix dropped), so the
+// template is read from a real native function at bootstrap.
+const _TPL = _apply(_ORIG, Object.getOwnPropertyDescriptor(Object, 'keys').value, []);
+const _nativeStr = (fn) => _TPL.replace('keys',
+  _TPL.includes('\n') ? fn.name.replace(/^(get|set) /, '') : fn.name);
 const _hook = Object.getOwnPropertyDescriptor({
   toString() { const s = _apply(_ORIG, this, []); return _FAKED.has(s) ? _nativeStr(this) : s; }
 }, 'toString').value;

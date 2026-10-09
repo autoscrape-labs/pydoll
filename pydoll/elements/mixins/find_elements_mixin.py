@@ -2,57 +2,25 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from typing import TYPE_CHECKING, Sequence, cast, overload
+from typing import TYPE_CHECKING, Generic, TypeVar, cast, overload
 
-from pydoll.commands import (
-    DomCommands,
-    RuntimeCommands,
-)
-from pydoll.connection.connection_handler import ConnectionHandler
-from pydoll.constants import By, Scripts
+from pydoll.constants import By
 from pydoll.elements.utils import SelectorParser
-from pydoll.exceptions import (
-    CommandFailed,
-    ElementNotFound,
-    ScriptException,
-    WaitElementTimeout,
-)
+from pydoll.exceptions import ElementNotFound, WaitElementTimeout
 from pydoll.utils import PollInterval
 
 if TYPE_CHECKING:
     from typing import Literal
 
-    from pydoll.elements.web_element import WebElement
-    from pydoll.interactions.iframe import IFrameContext
-    from pydoll.protocol.base import Command, T_CommandParams, T_CommandResponse
-    from pydoll.protocol.dom.methods import DescribeNodeResponse
-    from pydoll.protocol.dom.types import Node
-    from pydoll.protocol.runtime.methods import (
-        CallFunctionOnParams,
-        CallFunctionOnResponse,
-        EvaluateParams,
-        EvaluateResponse,
-        GetPropertiesResponse,
-    )
-    from pydoll.protocol.runtime.types import CallArgument
+    from pydoll.elements.protocols import WebElementProtocol
 
 
 logger = logging.getLogger(__name__)
 
-
-def create_web_element(*args, **kwargs):
-    """
-    Create WebElement instance avoiding circular imports.
-
-    Factory method that dynamically imports WebElement at runtime
-    to prevent circular import dependencies.
-    """
-    from pydoll.elements.web_element import WebElement  # noqa: PLC0415
-
-    return WebElement(*args, **kwargs)
+T_Element = TypeVar('T_Element', bound='WebElementProtocol')
 
 
-class FindElementsMixin:
+class FindElementsMixin(Generic[T_Element]):
     """
     Mixin providing comprehensive element finding and waiting capabilities.
 
@@ -60,12 +28,55 @@ class FindElementsMixin:
     with support for single/multiple element finding and configurable waiting.
     Classes using this mixin gain powerful element discovery without implementing
     complex location logic themselves.
+
+    The mixin is protocol-agnostic: the search itself is delegated to
+    ``_find_element`` / ``_find_elements``, implemented per protocol
+    (``CDPFindElementsMixin`` for Chromium, ``BidiFindElementsMixin`` for Firefox).
     """
 
     _css_only: bool = False
 
-    if TYPE_CHECKING:
-        _connection_handler: ConnectionHandler
+    async def _find_element(self, by: By, value: str, raise_exc: bool = True) -> T_Element | None:
+        """
+        Find first element matching selector.
+
+        Internal method performing the actual element search. Searches in the
+        document context or relative to the current element (when used from an
+        element). Implemented per protocol (CDP/BiDi).
+
+        Args:
+            by: Selector strategy (CSS_SELECTOR, XPATH, ID, etc.).
+            value: Selector value to locate element.
+            raise_exc: Whether to raise ElementNotFound if not found.
+
+        Returns:
+            Element instance or None if not found and raise_exc=False.
+
+        Raises:
+            ElementNotFound: If element not found and raise_exc=True.
+        """
+        raise NotImplementedError
+
+    async def _find_elements(self, by: By, value: str, raise_exc: bool = True) -> list[T_Element]:
+        """
+        Find all elements matching selector.
+
+        Internal method performing the actual multi-element search. Searches in
+        the document context or relative to the current element (when used from
+        an element). Implemented per protocol (CDP/BiDi).
+
+        Args:
+            by: Selector strategy (CSS_SELECTOR, XPATH, ID, etc.).
+            value: Selector value to locate elements.
+            raise_exc: Whether to raise ElementNotFound if none found.
+
+        Returns:
+            List of element instances (empty if none found and raise_exc=False).
+
+        Raises:
+            ElementNotFound: If no elements found and raise_exc=True.
+        """
+        raise NotImplementedError
 
     @staticmethod
     def _build_text_expression(selector: str, method: str) -> str | None:
@@ -86,7 +97,7 @@ class FindElementsMixin:
         find_all: Literal[False] = False,
         raise_exc: Literal[True] = True,
         **attributes,
-    ) -> WebElement: ...
+    ) -> T_Element: ...
 
     @overload
     async def find(
@@ -100,7 +111,7 @@ class FindElementsMixin:
         find_all: Literal[False] = False,
         raise_exc: Literal[False] = False,
         **attributes,
-    ) -> WebElement | None: ...
+    ) -> T_Element | None: ...
 
     @overload
     async def find(
@@ -114,7 +125,7 @@ class FindElementsMixin:
         find_all: Literal[True] = True,
         raise_exc: Literal[True] = True,
         **attributes,
-    ) -> list[WebElement]: ...
+    ) -> list[T_Element]: ...
 
     @overload
     async def find(
@@ -128,7 +139,7 @@ class FindElementsMixin:
         find_all: Literal[True] = True,
         raise_exc: Literal[False] = False,
         **attributes,
-    ) -> list[WebElement] | None: ...
+    ) -> list[T_Element] | None: ...
 
     @overload
     async def find(
@@ -142,7 +153,7 @@ class FindElementsMixin:
         find_all: bool = ...,
         raise_exc: bool = ...,
         **attributes,
-    ) -> WebElement | list[WebElement] | None: ...
+    ) -> T_Element | list[T_Element] | None: ...
 
     async def find(
         self,
@@ -155,7 +166,7 @@ class FindElementsMixin:
         find_all: bool = False,
         raise_exc: bool = True,
         **attributes: dict[str, str],
-    ) -> WebElement | list[WebElement] | None:
+    ) -> T_Element | list[T_Element] | None:
         """
         Find element(s) using combination of common HTML attributes.
 
@@ -174,7 +185,7 @@ class FindElementsMixin:
             **attributes: Additional HTML attributes to match.
 
         Returns:
-            WebElement, list[WebElement], or None based on find_all and raise_exc.
+            Element, list of elements, or None based on find_all and raise_exc.
 
         Raises:
             ValueError: If no search criteria provided.
@@ -228,7 +239,7 @@ class FindElementsMixin:
         timeout: int = ...,
         find_all: Literal[False] = False,
         raise_exc: Literal[True] = True,
-    ) -> WebElement: ...
+    ) -> T_Element: ...
 
     @overload
     async def query(
@@ -237,7 +248,7 @@ class FindElementsMixin:
         timeout: int = ...,
         find_all: Literal[False] = False,
         raise_exc: Literal[False] = False,
-    ) -> WebElement | None: ...
+    ) -> T_Element | None: ...
 
     @overload
     async def query(
@@ -246,7 +257,7 @@ class FindElementsMixin:
         timeout: int = ...,
         find_all: Literal[True] = True,
         raise_exc: Literal[True] = True,
-    ) -> list[WebElement]: ...
+    ) -> list[T_Element]: ...
 
     @overload
     async def query(
@@ -255,7 +266,7 @@ class FindElementsMixin:
         timeout: int = ...,
         find_all: Literal[True] = True,
         raise_exc: Literal[False] = False,
-    ) -> list[WebElement] | None: ...
+    ) -> list[T_Element] | None: ...
 
     @overload
     async def query(
@@ -264,11 +275,11 @@ class FindElementsMixin:
         timeout: int = ...,
         find_all: bool = ...,
         raise_exc: bool = ...,
-    ) -> WebElement | list[WebElement] | None: ...
+    ) -> T_Element | list[T_Element] | None: ...
 
     async def query(
         self, expression: str, timeout: int = 0, find_all: bool = False, raise_exc: bool = True
-    ) -> WebElement | list[WebElement] | None:
+    ) -> T_Element | list[T_Element] | None:
         """
         Find element(s) using raw CSS selector or XPath expression.
 
@@ -282,7 +293,7 @@ class FindElementsMixin:
             raise_exc: Whether to raise exception if no elements found.
 
         Returns:
-            WebElement, list[WebElement], or None based on find_all and raise_exc.
+            Element, list of elements, or None based on find_all and raise_exc.
 
         Raises:
             ElementNotFound: If no elements found and raise_exc=True.
@@ -314,7 +325,7 @@ class FindElementsMixin:
         timeout: int = 0,
         find_all: bool = False,
         raise_exc: bool = True,
-    ) -> WebElement | list[WebElement] | None:
+    ) -> T_Element | list[T_Element] | None:
         """
         Core element finding method with optional waiting capability.
 
@@ -330,7 +341,7 @@ class FindElementsMixin:
             raise_exc: Whether to raise exception if no elements found.
 
         Returns:
-            WebElement, list[WebElement], or None based on find_all and raise_exc.
+            Element, list of elements, or None based on find_all and raise_exc.
 
         Raises:
             ElementNotFound: If no elements found with timeout=0 and raise_exc=True.
@@ -389,7 +400,7 @@ class FindElementsMixin:
         timeout: int,
         find_all: bool,
         raise_exc: bool,
-    ) -> WebElement | list[WebElement] | None:
+    ) -> T_Element | list[T_Element] | None:
         """
         Retry loop for iframe-crossing element searches.
 
@@ -397,7 +408,7 @@ class FindElementsMixin:
         element is found or the *timeout* expires.
 
         Args:
-            segments: Ordered ``(By, selector)`` pairs — one per iframe boundary
+            segments: Ordered ``(By, selector)`` pairs, one per iframe boundary
                 plus a final selector for the target element(s).
             timeout: Maximum seconds to wait (0 = single attempt).
             find_all: If ``True``, the last segment uses ``_find_elements``.
@@ -438,7 +449,7 @@ class FindElementsMixin:
         self,
         segments: list[tuple[By, str]],
         find_all: bool,
-    ) -> WebElement | list[WebElement] | None:
+    ) -> T_Element | list[T_Element] | None:
         """
         Single attempt to walk iframe segments and find the target element.
 
@@ -453,7 +464,7 @@ class FindElementsMixin:
         Returns:
             Found element(s) or ``None`` / ``[]`` if any intermediate step fails.
         """
-        current_context: FindElementsMixin = self
+        current_context: FindElementsMixin[T_Element] = self
         for i, (by, selector) in enumerate(segments):
             is_last = i == len(segments) - 1
             if is_last:
@@ -465,288 +476,8 @@ class FindElementsMixin:
             element = await current_context._find_element(by, selector, raise_exc=False)
             if not element or not getattr(element, 'is_iframe', False):
                 return None
-            current_context = element
+            current_context = cast('FindElementsMixin[T_Element]', element)
         return None
-
-    async def _find_element(self, by: By, value: str, raise_exc: bool = True) -> WebElement | None:
-        """
-        Find first element matching selector.
-
-        Internal method performing actual element search. Can be called directly
-        for fine-grained control. Searches in document context or relative to
-        current element (when used from WebElement).
-
-        Args:
-            by: Selector strategy (CSS_SELECTOR, XPATH, ID, etc.).
-            value: Selector value to locate element.
-            raise_exc: Whether to raise ElementNotFound if not found.
-
-        Returns:
-            WebElement instance or None if not found and raise_exc=False.
-
-        Raises:
-            ElementNotFound: If element not found and raise_exc=True.
-        """
-        logger.debug('_find_element(): by=%s, value=%s, raise_exc=%s', by, value, raise_exc)
-        iframe_context = None
-        if getattr(self, 'is_iframe', False):
-            element_self = cast('WebElement', self)
-            iframe_context = await element_self.iframe_context()
-
-        if iframe_context:
-            command = self._get_find_element_command(
-                by,
-                value,
-                object_id=iframe_context.document_object_id or '',
-                execution_context_id=iframe_context.execution_context_id,
-            )
-        elif hasattr(self, '_object_id'):
-            command = self._get_find_element_command(by, value, self._object_id)
-        else:
-            command = self._get_find_element_command(by, value)
-
-        try:
-            response_for_command: (
-                EvaluateResponse | CallFunctionOnResponse
-            ) = await self._execute_command(command)
-        except CommandFailed as exc:
-            self._not_found(raise_exc, f'Element search rejected by the browser: {exc}', exc)
-            return None
-
-        if not self._has_object_id_key(response_for_command):
-            self._not_found(raise_exc, 'Element not found')
-            return None
-
-        object_id = response_for_command['result']['result']['objectId']
-        attributes = await self._get_object_attributes(object_id=object_id)
-        logger.debug('_find_element() found object_id=%s', object_id)
-        element = create_web_element(
-            object_id,
-            self._connection_handler,
-            by,
-            value,
-            attributes,
-            mouse=getattr(self, '_mouse', None),
-        )
-        self._apply_iframe_context_to_element(
-            element, iframe_context or getattr(self, '_iframe_context', None)
-        )
-        return element
-
-    async def _find_elements(self, by: By, value: str, raise_exc: bool = True) -> list[WebElement]:
-        """
-        Find all elements matching selector.
-
-        Internal method performing actual multi-element search. Can be called directly
-        for fine-grained control. Searches in document context or relative to
-        current element (when used from WebElement).
-
-        Args:
-            by: Selector strategy (CSS_SELECTOR, XPATH, ID, etc.).
-            value: Selector value to locate elements.
-            raise_exc: Whether to raise ElementNotFound if none found.
-
-        Returns:
-            list of WebElement instances (empty if none found and raise_exc=False).
-
-        Raises:
-            ElementNotFound: If no elements found and raise_exc=True.
-        """
-        logger.debug('_find_elements(): by=%s, value=%s, raise_exc=%s', by, value, raise_exc)
-        iframe_context = None
-        if getattr(self, 'is_iframe', False):
-            element_self = cast('WebElement', self)
-            iframe_context = await element_self.iframe_context()
-
-        if iframe_context:
-            command = self._get_find_elements_command(
-                by,
-                value,
-                object_id=iframe_context.document_object_id or '',
-                execution_context_id=iframe_context.execution_context_id,
-            )
-        elif hasattr(self, '_object_id'):
-            command = self._get_find_elements_command(by, value, self._object_id)
-        else:
-            command = self._get_find_elements_command(by, value)
-
-        try:
-            response_for_command: (
-                EvaluateResponse | CallFunctionOnResponse
-            ) = await self._execute_command(command)
-        except CommandFailed as exc:
-            self._not_found(raise_exc, f'Element search rejected by the browser: {exc}', exc)
-            return []
-
-        if not self._has_object_id_key(response_for_command):
-            self._not_found(raise_exc, 'No elements found')
-            return []
-
-        object_id = response_for_command['result']['result']['objectId']
-        try:
-            object_ids = await self._collection_object_ids(object_id)
-        except CommandFailed as exc:
-            self._not_found(raise_exc, f'Element list vanished before it was read: {exc}', exc)
-            return []
-
-        inherited_context = iframe_context or getattr(self, '_iframe_context', None)
-        elements = await self._wrap_elements(object_ids, by, value, inherited_context)
-        logger.debug('_find_elements() returning %s elements', len(elements))
-        return elements
-
-    async def query_script(
-        self,
-        function_declaration: str,
-        arguments: list[CallArgument] | None = None,
-        execution_context_id: int | None = None,
-    ) -> list[WebElement]:
-        """
-        Run a JavaScript function that returns elements and wrap them as WebElements.
-
-        The function runs with the search root bound to ``this`` (``document`` on a
-        Tab, the frame document on an iframe element, the element itself on a
-        WebElement, the root on a ShadowRoot) in the same execution context and
-        iframe routing that ``query()`` uses. It may return a single Element, a
-        NodeList, an array of Elements, or ``null``.
-
-        Args:
-            function_declaration: JavaScript function source, e.g.
-                ``function(tag) { return this.querySelectorAll(tag); }``.
-            arguments: CDP call arguments passed positionally to the function.
-            execution_context_id: Run in this execution context of the frame (for
-                example an isolated world created with ``Page.createIsolatedWorld``)
-                with ``this`` bound to that context's ``document``. Ignored when the
-                root is a non-iframe element, whose object id already fixes the context.
-
-        Returns:
-            WebElements for every element the function returned, in return order.
-
-        Raises:
-            ScriptException: If the function throws or fails to compile.
-            CommandFailed: If the browser rejects the command itself.
-        """
-        logger.debug('query_script(): length=%s', len(function_declaration))
-        iframe_context = None
-        if getattr(self, 'is_iframe', False):
-            element_self = cast('WebElement', self)
-            iframe_context = await element_self.iframe_context()
-
-        if execution_context_id is None and iframe_context:
-            if not iframe_context.document_object_id:
-                execution_context_id = iframe_context.execution_context_id
-        element_root = hasattr(self, '_object_id') and not getattr(self, 'is_iframe', False)
-        if execution_context_id is not None and not element_root:
-            command = RuntimeCommands.call_function_on(
-                function_declaration=(
-                    f'function() {{ return ({function_declaration}).apply(document, arguments); }}'
-                ),
-                arguments=arguments,
-                execution_context_id=execution_context_id,
-                return_by_value=False,
-            )
-        else:
-            if iframe_context:
-                root_object_id = iframe_context.document_object_id or ''
-            elif hasattr(self, '_object_id'):
-                root_object_id = self._object_id
-            else:
-                root_object_id = await self._document_object_id()
-            command = RuntimeCommands.call_function_on(
-                function_declaration=function_declaration,
-                object_id=root_object_id,
-                arguments=arguments,
-                return_by_value=False,
-            )
-        response: CallFunctionOnResponse = await self._execute_command(command)
-        self._raise_script_exception(response)
-        remote_object = response['result']['result']
-        result_object_id = remote_object.get('objectId')
-        if not result_object_id:
-            return []
-
-        if remote_object.get('subtype') == 'node':
-            object_ids = [result_object_id]
-        else:
-            object_ids = await self._collection_object_ids(result_object_id)
-
-        inherited_context = iframe_context or getattr(self, '_iframe_context', None)
-        elements = await self._wrap_elements(object_ids, 'script', None, inherited_context)
-        logger.debug('query_script() returning %s elements', len(elements))
-        return elements
-
-    async def _document_object_id(self) -> str:
-        """Resolve the remote object id of ``document`` in the default context."""
-        response: EvaluateResponse = await self._execute_command(
-            RuntimeCommands.evaluate(expression='document', return_by_value=False)
-        )
-        return response['result']['result']['objectId']
-
-    async def _collection_object_ids(self, object_id: str) -> list[str]:
-        """Object ids of the indexed entries of an array-like remote object."""
-        query_response: GetPropertiesResponse = await self._execute_command(
-            RuntimeCommands.get_properties(object_id=object_id)
-        )
-        object_ids: list[str] = []
-        for query in query_response.get('result', {}).get('result', []):
-            if not (query['name'].isdigit() and 'objectId' in query['value']):
-                continue
-            object_ids.append(query['value']['objectId'])
-        return object_ids
-
-    async def _wrap_elements(
-        self,
-        object_ids: list[str],
-        by: str | None,
-        value: str | None,
-        inherited_context: IFrameContext | None,
-    ) -> list[WebElement]:
-        """Describe each node and build the WebElements, propagating iframe context."""
-        elements = []
-        for object_id in object_ids:
-            try:
-                node_description = await self._describe_node(object_id=object_id)
-            except KeyError:
-                continue
-
-            attributes = node_description.get('attributes', [])
-            tag_name = node_description.get('nodeName', '').lower()
-            attributes.extend(['tag_name', tag_name])
-
-            child = create_web_element(
-                object_id,
-                self._connection_handler,
-                by,
-                value,
-                attributes,
-                mouse=getattr(self, '_mouse', None),
-            )
-            self._apply_iframe_context_to_element(child, inherited_context)
-            elements.append(child)
-        return elements
-
-    @staticmethod
-    def _raise_script_exception(response: CallFunctionOnResponse) -> None:
-        """Surface a JavaScript exception thrown by a script as CommandFailed."""
-        details = response.get('result', {}).get('exceptionDetails')
-        if not details:
-            return
-        exception = details.get('exception', {})
-        message = exception.get('description') or details.get('text') or 'Script threw an exception'
-        raise ScriptException(message)
-
-    async def _get_object_attributes(self, object_id: str) -> list[str]:
-        """
-        Get attributes of a DOM node.
-        """
-        node_description = await self._describe_node(object_id=object_id)
-        if not node_description:
-            # If the node couldn't be described (e.g., object id doesn't reference a Node),
-            # return minimal attributes to keep the flow stable.
-            return ['tag_name', '']
-        attributes = node_description.get('attributes', [])
-        tag_name = node_description.get('nodeName', '').lower()
-        attributes.extend(['tag_name', tag_name])
-        return attributes
 
     def _get_by_and_value(
         self,
@@ -829,252 +560,6 @@ class FindElementsMixin:
         """
         return SelectorParser.get_expression_type(expression)
 
-    async def _describe_node(self, object_id: str = '') -> Node:
-        """
-        Get detailed DOM node information using CDP DOM.describeNode.
-
-        Used internally to gather data for WebElement initialization.
-        """
-        try:
-            response: DescribeNodeResponse = await self._execute_command(
-                DomCommands.describe_node(object_id=object_id)
-            )
-        except CommandFailed:
-            return {}
-        return response.get('result', {}).get('node', {})
-
-    def _apply_iframe_context_to_element(
-        self, element: WebElement, iframe_context: IFrameContext | None
-    ) -> None:
-        """
-        Propagate iframe context to the newly created element.
-        - If the element is also an iframe, configure session routing.
-        - Otherwise, inject the iframe's own context.
-        """
-        if not iframe_context:
-            return
-        if getattr(element, 'is_iframe', False):
-            routing_handler = iframe_context.session_handler or self._connection_handler
-            element._routing_session_handler = routing_handler
-            element._routing_session_id = iframe_context.session_id
-            element._routing_parent_frame_id = iframe_context.frame_id
-            return
-        element._iframe_context = iframe_context
-
-    def _resolve_routing(self) -> tuple[ConnectionHandler, str | None]:
-        """
-        Resolve handler and sessionId for the current context (iframe routed or default).
-        """
-        iframe_context = getattr(self, '_iframe_context', None)
-        if iframe_context and getattr(iframe_context, 'session_handler', None):
-            return iframe_context.session_handler, getattr(iframe_context, 'session_id', None)
-        routing_handler = getattr(self, '_routing_session_handler', None)
-        if routing_handler is not None:
-            return routing_handler, getattr(self, '_routing_session_id', None)
-        return self._connection_handler, None
-
-    async def execute_command(
-        self, command: Command[T_CommandParams, T_CommandResponse], timeout: int = 60
-    ) -> T_CommandResponse:
-        """
-        Send a raw CDP command through this object's session.
-
-        The command is routed exactly like the object's own operations: a Tab
-        sends it to the page session, a WebElement inside an out-of-process
-        iframe sends it to that frame's session. Build commands with the
-        factories in ``pydoll.commands`` or pass a plain ``{'method': ..., 'params': ...}``
-        dict for methods pydoll does not wrap.
-
-        Args:
-            command: CDP command to send.
-            timeout: Seconds to wait for the browser's answer.
-
-        Returns:
-            The browser's response, with the domain result under ``'result'``.
-
-        Raises:
-            CommandFailed: If the browser answers with an error.
-            CommandExecutionTimeout: If no answer arrives within ``timeout``.
-        """
-        handler, session_id = self._resolve_routing()
-        if session_id:
-            command['sessionId'] = session_id
-        return await handler.execute_command(command, timeout=timeout)
-
-    async def _execute_command(
-        self, command: Command[T_CommandParams, T_CommandResponse]
-    ) -> T_CommandResponse:
-        """Execute CDP command via resolved handler (60s timeout)."""
-        handler, session_id = self._resolve_routing()
-        if session_id:
-            command['sessionId'] = session_id
-        return await handler.execute_command(command, timeout=60)
-
-    async def _execute_commands(
-        self, commands: Sequence[Command[T_CommandParams, T_CommandResponse]]
-    ) -> list[T_CommandResponse]:
-        """Send a batch of commands in order through the resolved handler."""
-        handler, session_id = self._resolve_routing()
-        if session_id:
-            for command in commands:
-                command['sessionId'] = session_id
-        return await handler.execute_commands(commands, timeout=60)
-
-    def _get_find_element_command(
-        self,
-        by: By,
-        value: str,
-        object_id: str = '',
-        execution_context_id: int | None = None,
-    ):
-        """
-        Create CDP command for finding single element.
-
-        Handles special cases for different selector types and contexts:
-        - CLASS_NAME/ID: converts to CSS selector
-        - Relative searches: uses different scripts for context element
-        - XPath: requires special handling
-        - NAME: converts to XPath expression
-        """
-        escaped_value = value.replace('"', '\\"')
-        command: (
-            Command[CallFunctionOnParams, CallFunctionOnResponse]
-            | Command[EvaluateParams, EvaluateResponse]
-        )
-        match by:
-            case By.CLASS_NAME:
-                selector = f'.{escaped_value}'
-            case By.ID:
-                selector = f'#{escaped_value}'
-            case _:
-                selector = escaped_value
-        if object_id and not by == By.XPATH:
-            script = Scripts.RELATIVE_QUERY_SELECTOR.replace('{selector}', selector)
-            command = RuntimeCommands.call_function_on(
-                function_declaration=script,
-                object_id=object_id,
-                return_by_value=False,
-            )
-        elif by == By.XPATH:
-            command = self._get_find_element_by_xpath_command(
-                value, object_id=object_id, execution_context_id=execution_context_id
-            )
-        elif by == By.NAME:
-            command = self._get_find_element_by_xpath_command(
-                f'//*[@name="{escaped_value}"]',
-                object_id=object_id,
-                execution_context_id=execution_context_id,
-            )
-        else:
-            command = RuntimeCommands.evaluate(
-                expression=Scripts.QUERY_SELECTOR.replace('{selector}', selector),
-                context_id=execution_context_id,
-            )
-        return command
-
-    def _get_find_elements_command(
-        self,
-        by: By,
-        value: str,
-        object_id: str = '',
-        execution_context_id: int | None = None,
-    ):
-        """
-        Create CDP command for finding multiple elements.
-
-        Similar to _get_find_element_command but for multiple element searches.
-        Handles same special cases and selector type conversions.
-        """
-        escaped_value = value.replace('"', '\\"')
-        command: (
-            Command[CallFunctionOnParams, CallFunctionOnResponse]
-            | Command[EvaluateParams, EvaluateResponse]
-        )
-        match by:
-            case By.CLASS_NAME:
-                selector = f'.{escaped_value}'
-            case By.ID:
-                selector = f'#{escaped_value}'
-            case _:
-                selector = escaped_value
-        if object_id and not by == By.XPATH:
-            script = Scripts.RELATIVE_QUERY_SELECTOR_ALL.replace('{selector}', selector)
-            command = RuntimeCommands.call_function_on(
-                function_declaration=script,
-                object_id=object_id,
-                return_by_value=False,
-            )
-        elif by == By.XPATH:
-            command = self._get_find_elements_by_xpath_command(
-                value, object_id=object_id, execution_context_id=execution_context_id
-            )
-        else:
-            command = RuntimeCommands.evaluate(
-                expression=Scripts.QUERY_SELECTOR_ALL.replace('{selector}', selector),
-                context_id=execution_context_id,
-            )
-        return command
-
-    def _get_find_element_by_xpath_command(
-        self,
-        xpath: str,
-        object_id: str,
-        execution_context_id: int | None = None,
-    ):
-        """
-        Create CDP command specifically for XPath single element finding.
-
-        XPath requires special handling vs CSS selectors. Ensures relative
-        XPath for context-based searches.
-        """
-        command: (
-            Command[CallFunctionOnParams, CallFunctionOnResponse]
-            | Command[EvaluateParams, EvaluateResponse]
-        )
-        escaped_value = xpath.replace('"', '\\"')
-        if object_id:
-            escaped_value = self._ensure_relative_xpath(escaped_value)
-            script = Scripts.FIND_RELATIVE_XPATH_ELEMENT.replace('{escaped_value}', escaped_value)
-            command = RuntimeCommands.call_function_on(
-                function_declaration=script,
-                object_id=object_id,
-                return_by_value=False,
-            )
-        else:
-            script = Scripts.FIND_XPATH_ELEMENT.replace('{escaped_value}', escaped_value)
-            command = RuntimeCommands.evaluate(expression=script, context_id=execution_context_id)
-        return command
-
-    def _get_find_elements_by_xpath_command(
-        self,
-        xpath: str,
-        object_id: str,
-        execution_context_id: int | None = None,
-    ):
-        """
-        Create CDP command specifically for XPath multiple element finding.
-
-        XPath requires special handling vs CSS selectors. Ensures relative
-        XPath for context-based searches.
-        """
-        escaped_value = xpath.replace('"', '\\"')
-        command: (
-            Command[CallFunctionOnParams, CallFunctionOnResponse]
-            | Command[EvaluateParams, EvaluateResponse]
-        )
-        if object_id:
-            escaped_value = self._ensure_relative_xpath(escaped_value)
-            script = Scripts.FIND_RELATIVE_XPATH_ELEMENTS.replace('{escaped_value}', escaped_value)
-            command = RuntimeCommands.call_function_on(
-                function_declaration=script,
-                object_id=object_id,
-                return_by_value=False,
-            )
-        else:
-            script = Scripts.FIND_XPATH_ELEMENTS.replace('{escaped_value}', escaped_value)
-            command = RuntimeCommands.evaluate(expression=script, context_id=execution_context_id)
-        return command
-
     @staticmethod
     def _ensure_relative_xpath(xpath: str) -> str:
         """
@@ -1083,17 +568,3 @@ class FindElementsMixin:
         Converts absolute XPath to relative for context-based searches.
         """
         return SelectorParser.ensure_relative_xpath(xpath)
-
-    @staticmethod
-    def _not_found(raise_exc: bool, reason: str, cause: BaseException | None = None) -> None:
-        """Log a failed search and raise ElementNotFound when the caller asked for it."""
-        logger.debug(reason)
-        if raise_exc:
-            raise ElementNotFound() from cause
-
-    @staticmethod
-    def _has_object_id_key(response: EvaluateResponse | CallFunctionOnResponse) -> bool:
-        """
-        Check if response has objectId key.
-        """
-        return bool(response.get('result', {}).get('result', {}).get('objectId'))

@@ -15,7 +15,7 @@ import re
 from typing import Any, Pattern
 
 from pydoll.playwright._element_handle import JSHandle, PrimitiveHandle
-from pydoll.protocol.runtime.types import CallArgument
+from pydoll.protocol.cdp.runtime.types import CallArgument
 
 HANDLE_KEY = '__pydoll_handle__'
 VALUE_KEY = '__pydoll_value__'

@@ -1,0 +1,302 @@
+import pytest
+
+from pydoll.browser.protocols import OptionsProtocol
+from pydoll.browser.chromium.options import ChromiumOptions as Options
+from pydoll.constants import PageLoadState
+from pydoll.exceptions import (
+    ArgumentAlreadyExistsInOptions,
+    ArgumentNotFoundInOptions,
+    WrongPrefsDict,
+)
+
+
+def test_initial_arguments():
+    options = Options()
+    assert options.arguments == []
+
+
+def test_initial_binary_location():
+    options = Options()
+    assert not options.binary_location
+
+
+def test_set_binary_location():
+    options = Options()
+    options.binary_location = '/path/to/browser'
+    assert options.binary_location == '/path/to/browser'
+
+
+def test_set_start_timeout():
+    options = Options()
+    options.start_timeout = 30
+    assert options.start_timeout == 30
+
+
+def test_initial_page_load_state():
+    options = Options()
+    assert options.page_load_state == PageLoadState.COMPLETE
+
+
+def test_set_page_load_state():
+    options = Options()
+    options.page_load_state = PageLoadState.INTERACTIVE
+    assert options.page_load_state == PageLoadState.INTERACTIVE
+
+
+def test_add_argument():
+    options = Options()
+    options.add_argument('--headless')
+    assert options.arguments == ['--headless']
+
+
+def test_add_duplicate_argument():
+    options = Options()
+    options.add_argument('--headless')
+    with pytest.raises(ArgumentAlreadyExistsInOptions, match='Argument already exists: --headless'):
+        options.add_argument('--headless')
+
+def test_remove_argument():
+    options = Options()
+    options.add_argument('--headless')
+    options.remove_argument('--headless')
+    assert options.arguments == []
+
+def test_remove_argument_not_exists():
+    options = Options()
+    with pytest.raises(ArgumentNotFoundInOptions, match='Argument not found: --headless'):
+        options.remove_argument('--headless')
+
+def test_add_multiple_arguments():
+    options = Options()
+    options.add_argument('--headless')
+    options.add_argument('--no-sandbox')
+    assert options.arguments == ['--headless', '--no-sandbox']
+
+
+def test_set_default_download_directory():
+    options = Options()
+    options.set_default_download_directory('/tmp/downloads')
+    assert options.browser_preferences['download']['default_directory'] == '/tmp/downloads'
+
+
+def test_set_prompt_for_download():
+    options = Options()
+    options.prompt_for_download = False
+    assert options.browser_preferences['download']['prompt_for_download'] is False
+    assert options.prompt_for_download is False
+
+
+def test_set_block_popups():
+    options = Options()
+    options.block_popups = True
+    assert options.browser_preferences['profile']['default_content_setting_values']['popups'] == 0
+    assert options.block_popups == True
+
+
+def test_set_password_manager_enabled():
+    options = Options()
+    options.password_manager_enabled = False
+    assert options.browser_preferences['profile']['password_manager_enabled'] is False
+    assert options.password_manager_enabled is False
+
+
+def test_set_block_notifications():
+    options = Options()
+    options.block_notifications = True
+    assert (
+        options.browser_preferences['profile']['default_content_setting_values']['notifications']
+        == 2
+    )
+    assert options.block_notifications == True
+
+
+def test_set_allow_automatic_downloads():
+    options = Options()
+    options.allow_automatic_downloads = True
+    assert (
+        options.browser_preferences['profile']['default_content_setting_values'][
+            'automatic_downloads'
+        ]
+        == 1
+    )
+    assert options.allow_automatic_downloads == True
+
+
+def test_set_open_pdf_externally():
+    options = Options()
+    options.open_pdf_externally = True
+    assert options.browser_preferences['plugins']['always_open_pdf_externally'] is True
+    assert options.open_pdf_externally is True
+
+
+def test_set_accept_languages():
+    options = Options()
+    options.set_accept_languages('pt-BR,pt,en-US,en')
+    assert options.browser_preferences['intl']['accept_languages'] == 'pt-BR,pt,en-US,en'
+
+
+def test_set_multiple_prefs():
+    options = Options()
+    options.set_default_download_directory('/tmp/all')
+    options.prompt_for_download = False
+    options.block_popups = True
+    options.password_manager_enabled = False
+    options.block_notifications = True
+    options.allow_automatic_downloads = True
+    options.open_pdf_externally = True
+    options.set_accept_languages('pt-BR,pt,en-US,en')
+
+    assert options.browser_preferences['download']['default_directory'] == '/tmp/all'
+    assert options.browser_preferences['download']['prompt_for_download'] is False
+    assert options.browser_preferences['profile']['default_content_setting_values']['popups'] == 0
+    assert options.browser_preferences['profile']['password_manager_enabled'] is False
+    assert (
+        options.browser_preferences['profile']['default_content_setting_values']['notifications']
+        == 2
+    )
+    assert (
+        options.browser_preferences['profile']['default_content_setting_values'][
+            'automatic_downloads'
+        ]
+        == 1
+    )
+    assert options.browser_preferences['plugins']['always_open_pdf_externally'] is True
+    assert options.browser_preferences['intl']['accept_languages'] == 'pt-BR,pt,en-US,en'
+
+
+def test_dict_prefs():
+    options = Options()
+    options.browser_preferences = {
+        "download": {"directory_upgrade": True},
+    }
+    assert options.browser_preferences['download']['directory_upgrade'] == True
+
+
+def test_not_dict_prefs_error():
+    with pytest.raises(ValueError, match='The experimental options value must be a dict.'):
+        options = Options()
+        options.browser_preferences = ["download", "directory_upgrade"]
+
+
+def test_wrong_dict_prefs_error():
+    with pytest.raises(WrongPrefsDict):
+        options = Options()
+        options.browser_preferences = {
+            'prefs': {
+                "download": {"directory_upgrade": True},
+            }
+        }
+
+def test_set_arguments():
+    options = Options()
+    options.arguments = ['--headless']
+    assert options.arguments == ['--headless']
+
+def test_get_pref_path():
+    options = Options()
+    options.set_default_download_directory('/tmp/downloads')
+    assert options._get_pref_path(['download', 'default_directory']) == '/tmp/downloads'
+
+
+def test_get_pref_path_none():
+    options = Options()
+    assert options._get_pref_path(['download', 'default_directory']) is None
+
+
+def test_options_protocol_compliance():
+    options = Options()
+    assert isinstance(options, OptionsProtocol)
+
+def test_set_headless():
+    options = Options()
+    options.headless = True
+    assert options.headless is True
+    assert options.arguments == ['--headless']
+
+def test_set_headless_false():
+    options = Options()
+    options.headless = True
+    assert options.headless is True
+    assert options.arguments == ['--headless']
+    options.headless = False
+    assert options.headless is False
+    assert options.arguments == []
+
+def test_set_headless_true_twice():
+    options = Options()
+    options.headless = True
+    assert options.headless is True
+    assert options.arguments == ['--headless']
+    options.headless = True
+    assert options.headless is True
+    assert options.arguments == ['--headless']
+
+def test_set_headless_false_twice():
+    options = Options()
+    options.headless = False
+    assert options.headless is False
+    assert options.arguments == []
+    options.headless = False
+    assert options.headless is False
+    assert options.arguments == []
+
+def test_set_webrtc_leak_protection():
+    options = Options()
+    options.webrtc_leak_protection = True
+    assert options.webrtc_leak_protection is True
+    assert options.arguments == ['--force-webrtc-ip-handling-policy=disable_non_proxied_udp']
+
+def test_set_webrtc_leak_protection_false():
+    options = Options()
+    options.webrtc_leak_protection = True
+    assert options.webrtc_leak_protection is True
+    assert options.arguments == ['--force-webrtc-ip-handling-policy=disable_non_proxied_udp']
+    options.webrtc_leak_protection = False
+    assert options.webrtc_leak_protection is False
+    assert options.arguments == []
+
+def test_set_webrtc_leak_protection_true_twice():
+    options = Options()
+    options.webrtc_leak_protection = True
+    assert options.webrtc_leak_protection is True
+    assert options.arguments == ['--force-webrtc-ip-handling-policy=disable_non_proxied_udp']
+    options.webrtc_leak_protection = True
+    assert options.webrtc_leak_protection is True
+    assert options.arguments == ['--force-webrtc-ip-handling-policy=disable_non_proxied_udp']
+
+def test_set_webrtc_leak_protection_false_twice():
+    options = Options()
+    options.webrtc_leak_protection = False
+    assert options.webrtc_leak_protection is False
+    assert options.arguments == []
+    options.webrtc_leak_protection = False
+    assert options.webrtc_leak_protection is False
+    assert options.arguments == []
+
+
+def test_initial_user_agent_is_none():
+    options = Options()
+    assert options.user_agent is None
+
+
+def test_set_user_agent_adds_argument():
+    options = Options()
+    options.user_agent = 'CustomUA/1.0'
+    assert options.user_agent == 'CustomUA/1.0'
+    assert '--user-agent=CustomUA/1.0' in options.arguments
+
+
+def test_set_user_agent_replaces_previous_argument():
+    options = Options()
+    options.user_agent = 'First/1.0'
+    options.user_agent = 'Second/2.0'
+    assert options.user_agent == 'Second/2.0'
+    assert options.arguments == ['--user-agent=Second/2.0']
+
+
+def test_set_user_agent_none_removes_argument():
+    options = Options()
+    options.user_agent = 'CustomUA/1.0'
+    options.user_agent = None
+    assert options.user_agent is None
+    assert options.arguments == []

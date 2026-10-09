@@ -165,6 +165,10 @@ cython_debug/
 
 # Dev test file
 dev_test_file.py
+.vscode/
+bidi_spec.md
+bidi_spec_full.md
+debug_bidi.py
 
 # Internal tooling and private studies
 tools/

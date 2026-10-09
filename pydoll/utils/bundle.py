@@ -7,8 +7,8 @@ import posixpath
 import re
 from urllib.parse import urljoin, urlparse
 
-from pydoll.protocol.network.types import ResourceType
-from pydoll.protocol.page.types import FrameResource, FrameResourceTree
+from pydoll.protocol.cdp.network.types import ResourceType
+from pydoll.protocol.cdp.page.types import FrameResource, FrameResourceTree
 
 _BUNDLEABLE_RESOURCE_TYPES: frozenset[ResourceType] = frozenset({
     ResourceType.DOCUMENT,

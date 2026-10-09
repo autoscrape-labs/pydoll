@@ -17,7 +17,7 @@ from pydoll.playwright._keys import (
     resolve_smart_modifier,
     split_key_string,
 )
-from pydoll.protocol.input.types import (
+from pydoll.protocol.cdp.input.types import (
     KeyEventType,
     KeyModifier,
     MouseButton,

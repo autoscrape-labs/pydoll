@@ -10,20 +10,20 @@ changing one import line::
 
 from pydoll.browser.chromium.chrome import Chrome
 from pydoll.browser.chromium.edge import Edge
-from pydoll.browser.options import ChromiumOptions
-from pydoll.browser.requests.request import Request
+from pydoll.browser.chromium.options import ChromiumOptions
+from pydoll.browser.chromium.tab import DownloadHandle, RequestHandle, ResponseHandle, Tab
+from pydoll.browser.requests.cdp.request import Request
 from pydoll.browser.requests.response import Response
-from pydoll.browser.tab import DownloadHandle, RequestHandle, ResponseHandle, Tab
 from pydoll.constants import Key
-from pydoll.elements.shadow_root import ShadowRoot
-from pydoll.elements.web_element import WebElement
+from pydoll.elements.cdp.shadow_root import ShadowRoot
+from pydoll.elements.cdp.web_element import WebElement
 from pydoll.extractor import ExtractionModel, Field
 from pydoll.interactions.keyboard import Keyboard
 from pydoll.interactions.mouse import Mouse
 from pydoll.interactions.scroll import Scroll
-from pydoll.protocol.fetch.events import FetchEvent
-from pydoll.protocol.network.events import NetworkEvent
-from pydoll.protocol.page.events import PageEvent
+from pydoll.protocol.cdp.fetch.events import FetchEvent
+from pydoll.protocol.cdp.network.events import NetworkEvent
+from pydoll.protocol.cdp.page.events import PageEvent
 
 __all__ = [
     'Chrome',

@@ -13,7 +13,7 @@ from dataclasses import dataclass
 from typing import TypedDict, cast
 
 from pydoll.playwright._errors import Error
-from pydoll.protocol.input.types import KeyLocation, KeyModifier
+from pydoll.protocol.cdp.input.types import KeyLocation, KeyModifier
 
 
 @dataclass(frozen=True)

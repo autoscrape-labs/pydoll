@@ -7,7 +7,7 @@ import re
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Pattern, Sequence, TypedDict
 
-from pydoll.elements.web_element import WebElement
+from pydoll.elements.cdp.web_element import WebElement
 from pydoll.playwright._actions import Resolver
 from pydoll.playwright._element_handle import ElementHandle
 from pydoll.playwright._errors import Error

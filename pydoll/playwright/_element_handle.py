@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Sequence
 
 from pydoll.commands import RuntimeCommands
-from pydoll.elements.web_element import WebElement
+from pydoll.elements.cdp.web_element import WebElement
 from pydoll.playwright._actions import fixed_resolver
 from pydoll.playwright._errors import Error
 from pydoll.playwright._remote_values import parse_remote_value

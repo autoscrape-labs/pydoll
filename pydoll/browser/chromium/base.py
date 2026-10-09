@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 import asyncio
+import base64
+import fnmatch
+import inspect
 import json
 import logging
 import os
@@ -11,12 +14,13 @@ from functools import partial
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, overload
 from urllib.parse import urlsplit, urlunsplit
 
+from pydoll.browser.chromium.tab import Tab
+from pydoll.browser.intercepted_request import InterceptedRequest
 from pydoll.browser.managers import (
     BrowserProcessManager,
     ProxyManager,
     TempDirectoryManager,
 )
-from pydoll.browser.tab import Tab
 from pydoll.commands import (
     BrowserCommands,
     EmulationCommands,
@@ -35,11 +39,13 @@ from pydoll.exceptions import (
     MissingTargetOrWebSocket,
     NoValidTabFound,
 )
-from pydoll.protocol.browser.types import DownloadBehavior
-from pydoll.protocol.fetch.events import FetchEvent
-from pydoll.protocol.fetch.types import AuthChallengeResponseType
-from pydoll.protocol.target.events import TargetEvent
-from pydoll.protocol.target.types import FilterEntry
+from pydoll.protocol.cdp.browser.types import DownloadBehavior
+from pydoll.protocol.cdp.fetch.events import FetchEvent
+from pydoll.protocol.cdp.fetch.types import AuthChallengeResponseType
+from pydoll.protocol.cdp.network.types import ErrorReason
+from pydoll.protocol.cdp.target.events import TargetEvent
+from pydoll.protocol.cdp.target.types import FilterEntry
+from pydoll.protocol.events import CDP_EVENT_MAP, Event
 from pydoll.utils import PollInterval, find_free_port
 from pydoll.utils.fingerprint_builder import build_fingerprint_worker_js
 from pydoll.utils.user_agent_parser import ParsedUserAgent, UserAgentParser
@@ -47,32 +53,31 @@ from pydoll.utils.user_agent_parser import ParsedUserAgent, UserAgentParser
 if TYPE_CHECKING:
     from tempfile import TemporaryDirectory
 
-    from pydoll.browser.interfaces import BrowserOptionsManager, Options
-    from pydoll.protocol.base import Command, Response, T_CommandParams, T_CommandResponse
-    from pydoll.protocol.browser.methods import (
+    from pydoll.browser.protocols import BrowserOptionsManagerProtocol, OptionsProtocol
+    from pydoll.protocol.cdp.base import Command, Response, T_CommandParams, T_CommandResponse
+    from pydoll.protocol.cdp.browser.methods import (
         GetVersionResponse,
         GetVersionResult,
         GetWindowForTargetResponse,
     )
-    from pydoll.protocol.browser.types import Bounds, PermissionType
-    from pydoll.protocol.fetch.events import RequestPausedEvent
-    from pydoll.protocol.fetch.types import HeaderEntry
-    from pydoll.protocol.fingerprint.types import FingerprintConfig
-    from pydoll.protocol.network.types import (
+    from pydoll.protocol.cdp.browser.types import Bounds, PermissionType
+    from pydoll.protocol.cdp.fetch.events import RequestPausedEvent
+    from pydoll.protocol.cdp.fetch.types import HeaderEntry
+    from pydoll.protocol.cdp.network.types import (
         Cookie,
         CookieParam,
-        ErrorReason,
         RequestMethod,
         ResourceType,
     )
-    from pydoll.protocol.storage.methods import GetCookiesResponse
-    from pydoll.protocol.target.methods import (
+    from pydoll.protocol.cdp.storage.methods import GetCookiesResponse
+    from pydoll.protocol.cdp.target.methods import (
         CreateBrowserContextResponse,
         CreateTargetResponse,
         GetBrowserContextsResponse,
         GetTargetsResponse,
     )
-    from pydoll.protocol.target.types import TargetInfo
+    from pydoll.protocol.cdp.target.types import TargetInfo
+    from pydoll.protocol.fingerprint.types import FingerprintConfig
 
 logger = logging.getLogger(__name__)
 
@@ -87,7 +92,7 @@ class Browser(ABC):  # noqa: PLR0904
 
     def __init__(
         self,
-        options_manager: BrowserOptionsManager,
+        options_manager: BrowserOptionsManagerProtocol,
         connection_port: int | None = None,
         proxy_manager: ProxyManager | None = None,
         browser_process_manager: BrowserProcessManager | None = None,
@@ -111,7 +116,7 @@ class Browser(ABC):  # noqa: PLR0904
             Call start() to actually launch the browser.
         """
         self._validate_connection_port(connection_port)
-        self.options: Options = options_manager.initialize_options()
+        self.options: OptionsProtocol = options_manager.initialize_options()
         self._proxy_manager = proxy_manager or ProxyManager(self.options)
         self._connection_port = connection_port if connection_port else find_free_port()
         self._browser_process_manager = browser_process_manager or BrowserProcessManager()
@@ -121,6 +126,7 @@ class Browser(ABC):  # noqa: PLR0904
         self._backup_preferences_dir = ''
         self._tabs_opened: dict[str, Tab] = {}
         self._context_proxy_auth: dict[str, tuple[str, str]] = {}
+        self._intercept_callbacks: set[int] = set()
         self._context_fingerprints: dict[str | None, 'FingerprintConfig'] = {}
         self._context_worker_callbacks: dict[str | None, int] = {}
         self._fingerprint_fetch_callback: int | None = None
@@ -548,20 +554,24 @@ class Browser(ABC):  # noqa: PLR0904
 
     @overload
     async def on(
-        self, event_name: str, callback: Callable[[Any], Any], temporary: bool = False
+        self, event_name: Event | str, callback: Callable[[Any], Any], temporary: bool = False
     ) -> int: ...
     @overload
     async def on(
-        self, event_name: str, callback: Callable[[Any], Awaitable[Any]], temporary: bool = False
+        self,
+        event_name: Event | str,
+        callback: Callable[[Any], Awaitable[Any]],
+        temporary: bool = False,
     ) -> int: ...
     async def on(self, event_name, callback, temporary: bool = False) -> int:
         """
-        Register CDP event listener at browser level.
+        Register an event listener at browser level.
 
         Callback runs in background task to prevent blocking. Affects all pages/targets.
 
         Args:
-            event_name: CDP event name (e.g., "Network.responseReceived").
+            event_name: Portable ``Event`` member or native CDP event name
+                (e.g., "Network.responseReceived").
             callback: Function called on event (sync or async).
             temporary: Remove after first invocation.
 
@@ -571,6 +581,9 @@ class Browser(ABC):  # noqa: PLR0904
         Note:
             For page-specific events, use Tab.on() instead.
         """
+        native_event = event_name
+        if isinstance(event_name, Event):
+            native_event = CDP_EVENT_MAP.get(event_name, event_name)
 
         async def callback_wrapper(event):
             asyncio.create_task(callback(event))
@@ -581,18 +594,116 @@ class Browser(ABC):  # noqa: PLR0904
             function_to_register = callback
         logger.debug(
             'Registering callback: event=%s, temporary=%s, async=%s',
-            event_name,
+            native_event,
             temporary,
             asyncio.iscoroutinefunction(callback),
         )
         return await self._connection_handler.register_callback(
-            event_name, function_to_register, temporary
+            native_event, function_to_register, temporary
         )
 
     async def remove_callback(self, callback_id: int):
         """Remove callback from browser."""
         logger.debug('Removing callback: id=%s', callback_id)
         return await self._connection_handler.remove_callback(callback_id)
+
+    async def intercept_requests(
+        self,
+        callback: Callable[[InterceptedRequest], object],
+        url_patterns: list[str] | None = None,
+    ) -> str:
+        """Intercept network requests browser-wide and hand each one to ``callback``.
+
+        Every intercepted request is wrapped in an ``InterceptedRequest`` whose
+        ``continue_()``, ``fail()`` and ``respond()`` resolve it; requests that
+        match none of ``url_patterns`` are continued untouched. The Fetch domain
+        is enabled on registration and disabled again when the last intercept
+        is removed, so requests never stay paused without a handler.
+
+        Args:
+            callback: Function (sync or async) receiving the InterceptedRequest.
+            url_patterns: URL patterns to intercept (``'*'`` wildcards, e.g.
+                ``['/api/*']``); every request when None.
+
+        Returns:
+            Intercept id for ``remove_intercept``.
+        """
+        await self.enable_fetch_events()
+
+        async def _cdp_continue(request_id, url=None, method=None, headers=None, **_):
+            await self.continue_request(
+                request_id=request_id,
+                url=url,
+                method=method,
+                headers=(
+                    [{'name': h['name'], 'value': h['value']} for h in headers] if headers else None
+                ),
+            )
+
+        async def _cdp_fail(request_id, **_):
+            await self.fail_request(request_id, ErrorReason.BLOCKED_BY_CLIENT)
+
+        async def _cdp_respond(request_id, status=200, headers=None, body=None, **_):
+            encoded_body = (
+                base64.b64encode(body.encode('utf-8')).decode('ascii') if body is not None else None
+            )
+            await self.fulfill_request(
+                request_id=request_id,
+                response_code=status,
+                response_headers=(
+                    [{'name': h['name'], 'value': h['value']} for h in headers] if headers else None
+                ),
+                body=encoded_body,
+            )
+
+        async def _on_request_paused(event):
+            params = event.get('params', {})
+            request_data = params.get('request', {})
+            raw_headers = request_data.get('headers', {})
+            request = InterceptedRequest(
+                request_id=params.get('requestId', ''),
+                url=request_data.get('url', ''),
+                method=request_data.get('method', ''),
+                headers=[{'name': name, 'value': value} for name, value in raw_headers.items()],
+                body=None,
+                continue_fn=_cdp_continue,
+                fail_fn=_cdp_fail,
+                respond_fn=_cdp_respond,
+            )
+            if url_patterns and not any(
+                self._match_url_pattern(request.url, pattern) for pattern in url_patterns
+            ):
+                await request.continue_()
+                return
+            outcome = callback(request)
+            if inspect.isawaitable(outcome):
+                await outcome
+
+        callback_id = await self._connection_handler.register_callback(
+            FetchEvent.REQUEST_PAUSED, _on_request_paused
+        )
+        self._intercept_callbacks.add(callback_id)
+        logger.debug('Request intercept registered: id=%s, patterns=%s', callback_id, url_patterns)
+        return str(callback_id)
+
+    async def remove_intercept(self, intercept_id: str):
+        """Remove a request intercept registered with ``intercept_requests``.
+
+        Disables the Fetch domain once the last intercept is removed so requests
+        stop being paused.
+        """
+        callback_id = int(intercept_id)
+        await self._connection_handler.remove_callback(callback_id)
+        self._intercept_callbacks.discard(callback_id)
+        if not self._intercept_callbacks:
+            await self.disable_fetch_events()
+
+    @staticmethod
+    def _match_url_pattern(url: str, pattern: str) -> bool:
+        """Match a URL against a ``*`` wildcard pattern (substring when not absolute)."""
+        if pattern.startswith('http'):
+            return fnmatch.fnmatch(url, pattern)
+        return fnmatch.fnmatch(url, f'*{pattern}*')
 
     async def enable_fetch_events(
         self,

@@ -7,13 +7,16 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from pydoll.commands import InputCommands, RuntimeCommands
+from pydoll.commands.bidi.input_commands import InputCommands as BiDiInputCommands
 from pydoll.constants import Scripts, ScrollPosition
 from pydoll.interactions.utils import CubicBezier
-from pydoll.protocol.input.types import MouseEventType
-from pydoll.protocol.runtime.methods import EvaluateResponse
+from pydoll.protocol.cdp.input.types import MouseEventType
+from pydoll.protocol.cdp.runtime.methods import EvaluateResponse
 
 if TYPE_CHECKING:
-    from pydoll.browser.tab import Tab
+    from pydoll.browser.chromium.tab import Tab
+    from pydoll.browser.firefox.tab import BiDiTab
+    from pydoll.protocol.bidi.input.types import WheelScrollAction, WheelSourceActions
 
 
 @dataclass(frozen=True)
@@ -385,6 +388,79 @@ class Scroll:
         """
         command = RuntimeCommands.evaluate(expression=script, await_promise=True)
         return await self._tab._execute_command(command)
+
+
+class BiDiScroll(Scroll):
+    """Scroll controller for Firefox via WebDriver BiDi input.performActions.
+
+    Reuses all humanized-scroll physics from Scroll (Bezier easing, momentum,
+    jitter, micro-pauses, overshoot) unchanged and only swaps the dispatch
+    points: wheel events go through input.performActions and the JS helpers
+    run through the tab's portable ``evaluate``. The BiDi tab is kept apart
+    from the CDP ``_tab`` the base class types, so every method that touches
+    the browser is overridden here.
+    """
+
+    def __init__(
+        self,
+        tab: BiDiTab,
+        timing: ScrollTimingConfig | None = None,
+    ):
+        """
+        Initialize the BiDi scroll controller.
+
+        Args:
+            tab: BiDi tab whose browsing context receives the wheel actions.
+            timing: Optional custom timing configuration for humanized scroll.
+        """
+        self._bidi_tab = tab
+        self._timing = timing or ScrollTimingConfig()
+
+    async def _dispatch_scroll_event(self, delta_x: int, delta_y: int):
+        """Dispatch a wheel scroll via input.performActions."""
+        center_x, center_y = await self._get_viewport_center()
+        scroll: WheelScrollAction = {
+            'type': 'scroll',
+            'x': center_x,
+            'y': center_y,
+            'deltaX': delta_x,
+            'deltaY': delta_y,
+            'origin': 'viewport',
+        }
+        source: WheelSourceActions = {'type': 'wheel', 'id': 'wheel', 'actions': [scroll]}
+        await self._bidi_tab._execute_command(
+            BiDiInputCommands.perform_actions(
+                context=self._bidi_tab._context_id,
+                actions=[source],
+            )
+        )
+
+    async def _get_viewport_center(self) -> tuple[int, int]:
+        """Get the center coordinates of the viewport."""
+        value = await self._bidi_tab.evaluate(Scripts.GET_VIEWPORT_CENTER)
+        if isinstance(value, str):
+            try:
+                value = json.loads(value)
+            except json.JSONDecodeError:
+                value = None
+        expected_dimensions = 2
+        if isinstance(value, list) and len(value) == expected_dimensions:
+            return (int(value[0]), int(value[1]))
+        return (400, 300)
+
+    async def _get_current_scroll_y(self) -> float:
+        """Get current vertical scroll position."""
+        value = await self._bidi_tab.evaluate(Scripts.GET_SCROLL_Y)
+        return float(value) if isinstance(value, (int, float)) else 0.0
+
+    async def _get_remaining_scroll_to_bottom(self) -> float:
+        """Get remaining distance to scroll to reach the bottom."""
+        value = await self._bidi_tab.evaluate(Scripts.GET_REMAINING_SCROLL_TO_BOTTOM)
+        return float(value) if isinstance(value, (int, float)) else 0.0
+
+    async def _execute_script_await_promise(self, script: str):
+        """Execute JavaScript, awaiting any returned Promise, through the BiDi tab."""
+        return await self._bidi_tab.evaluate(script)
 
 
 # Backward compatibility alias

@@ -1,6 +1,6 @@
 """Browser launch options shared by every test that starts a real Chrome."""
 
-from pydoll.browser.options import ChromiumOptions as Options
+from pydoll.browser.chromium.options import ChromiumOptions as Options
 
 
 def ci_options() -> Options:

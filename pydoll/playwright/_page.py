@@ -14,9 +14,9 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Sequence, TypeVar
 from urllib.parse import urljoin
 
-from pydoll.browser.tab import Tab
+from pydoll.browser.chromium.tab import Tab
 from pydoll.commands import DomCommands, EmulationCommands, PageCommands, RuntimeCommands
-from pydoll.elements.web_element import WebElement
+from pydoll.elements.cdp.web_element import WebElement
 from pydoll.exceptions import PydollException
 from pydoll.playwright._dialog import ConsoleMessage, Dialog, Download, FileChooser
 from pydoll.playwright._element_handle import ElementHandle, JSHandle
@@ -44,13 +44,13 @@ from pydoll.playwright._network import (
     wait_for_matching,
 )
 from pydoll.playwright._selectors import TextMatch
-from pydoll.protocol.emulation.types import MediaFeature
-from pydoll.protocol.fetch.events import FetchEvent
-from pydoll.protocol.fetch.types import AuthChallengeResponseType
-from pydoll.protocol.network.events import NetworkEvent
-from pydoll.protocol.page.events import PageEvent
-from pydoll.protocol.page.types import ScreenshotFormat, Viewport
-from pydoll.protocol.runtime.events import RuntimeEvent
+from pydoll.protocol.cdp.emulation.types import MediaFeature
+from pydoll.protocol.cdp.fetch.events import FetchEvent
+from pydoll.protocol.cdp.fetch.types import AuthChallengeResponseType
+from pydoll.protocol.cdp.network.events import NetworkEvent
+from pydoll.protocol.cdp.page.events import PageEvent
+from pydoll.protocol.cdp.page.types import ScreenshotFormat, Viewport
+from pydoll.protocol.cdp.runtime.events import RuntimeEvent
 
 logger = logging.getLogger(__name__)
 

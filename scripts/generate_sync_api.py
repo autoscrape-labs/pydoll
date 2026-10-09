@@ -26,6 +26,7 @@ import inspect
 import re
 import sys
 import textwrap
+import typing
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -74,16 +75,16 @@ TARGETS = [
         classes=[
             ('pydoll.browser.chromium.chrome', 'Chrome'),
             ('pydoll.browser.chromium.edge', 'Edge'),
-            ('pydoll.browser.tab', 'Tab'),
-            ('pydoll.browser.tab', 'DownloadHandle'),
-            ('pydoll.browser.tab', 'RequestHandle'),
-            ('pydoll.browser.tab', 'ResponseHandle'),
-            ('pydoll.elements.web_element', 'WebElement'),
-            ('pydoll.elements.shadow_root', 'ShadowRoot'),
+            ('pydoll.browser.chromium.tab', 'Tab'),
+            ('pydoll.browser.chromium.tab', 'DownloadHandle'),
+            ('pydoll.browser.chromium.tab', 'RequestHandle'),
+            ('pydoll.browser.chromium.tab', 'ResponseHandle'),
+            ('pydoll.elements.cdp.web_element', 'WebElement'),
+            ('pydoll.elements.cdp.shadow_root', 'ShadowRoot'),
             ('pydoll.interactions.keyboard', 'Keyboard'),
             ('pydoll.interactions.mouse', 'Mouse'),
             ('pydoll.interactions.scroll', 'Scroll'),
-            ('pydoll.browser.requests.request', 'Request'),
+            ('pydoll.browser.requests.cdp.request', 'Request'),
             ('pydoll.browser.requests.response', 'Response'),
         ],
         constructible={'Chrome', 'Edge'},
@@ -601,7 +602,35 @@ def _naming(target: Target) -> Naming:
             facade_name = implementations.get(value)
             if facade_name is not None and name != facade_name:
                 aliases[name] = facade_name
+    for cls in implementations:
+        for type_var, bound_name in _typevar_bindings(cls).items():
+            aliases.setdefault(type_var, implementations.get(bound_name, bound_name))
     return Naming(facade_names=set(implementations.values()), aliases=aliases)
+
+
+def _typevar_bindings(cls: type) -> dict[str, str]:
+    """TypeVar names a class binds through a parametrized generic base.
+
+    ``class WebElement(CDPFindElementsMixin)`` with
+    ``class CDPFindElementsMixin(FindElementsMixin['WebElement'])`` binds the
+    mixin's ``T_Element`` to ``WebElement``; the facade spells annotations that
+    use the TypeVar with the bound name, which is what the implementation's
+    methods return at runtime.
+    """
+    bindings: dict[str, str] = {}
+    for klass in cls.__mro__:
+        for base in getattr(klass, '__orig_bases__', ()):
+            origin = typing.get_origin(base)
+            parameters = getattr(origin, '__parameters__', ())
+            for parameter, argument in zip(parameters, typing.get_args(base)):
+                if isinstance(argument, typing.ForwardRef):
+                    bound_name = argument.__forward_arg__
+                elif isinstance(argument, type):
+                    bound_name = argument.__name__
+                else:
+                    continue
+                bindings.setdefault(parameter.__name__, bound_name)
+    return bindings
 
 
 def _type_checking_imports(target: Target, naming: Naming) -> list[str]:

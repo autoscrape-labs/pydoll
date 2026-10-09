@@ -51,12 +51,12 @@ from pydoll.playwright._errors import Error, translate
 from pydoll.playwright._selectors import DEFAULT_TEST_ID_ATTRIBUTE
 import logging
 from typing import TYPE_CHECKING, Any, Sequence, cast
-from pydoll.browser.options import ChromiumOptions
+from pydoll.browser.chromium.options import ChromiumOptions
 from pydoll.commands import TargetCommands
 from pydoll.playwright._errors import TRANSPORT_ERRORS, Error, TargetClosedError, translate
 from pydoll.playwright._events import EventEmitter
-from pydoll.protocol.target.events import TargetEvent
-from pydoll.protocol.target.types import TargetInfo
+from pydoll.protocol.cdp.target.events import TargetEvent
+from pydoll.protocol.cdp.target.types import TargetInfo
 import inspect
 import time
 from typing import Any, Awaitable, Callable, Coroutine, Generic, TypeAlias, TypeVar
@@ -70,13 +70,13 @@ import shutil
 import tempfile
 from typing import TYPE_CHECKING, Any, Callable, Sequence
 from urllib.parse import urlparse
-from pydoll.browser.tab import Tab
+from pydoll.browser.chromium.tab import Tab
 from pydoll.commands import BrowserCommands, EmulationCommands, PageCommands, RuntimeCommands
 from pydoll.playwright._events import DEFAULT_TIMEOUT_MS, Deadline, EventContextManager, EventEmitter, create_future, schedule
 from pydoll.playwright._glob import URLMatch
 from pydoll.playwright._network import RouteEntry, RouteHandler, make_entry
-from pydoll.protocol.browser.types import DownloadBehavior, PermissionType
-from pydoll.protocol.network.types import CookieParam
+from pydoll.protocol.cdp.browser.types import DownloadBehavior, PermissionType
+from pydoll.protocol.cdp.network.types import CookieParam
 from pydoll.utils.user_agent_parser import UserAgentParser
 import base64
 import re
@@ -85,19 +85,19 @@ import weakref
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Sequence, TypeVar
 from urllib.parse import urljoin
 from pydoll.commands import DomCommands, EmulationCommands, PageCommands, RuntimeCommands
-from pydoll.elements.web_element import WebElement
+from pydoll.elements.cdp.web_element import WebElement
 from pydoll.playwright._events import Deadline, EventContextManager, EventEmitter, create_future, schedule
 from pydoll.playwright._glob import URLMatch, URLMatcher
 from pydoll.playwright._navigation import NavigationTracker
 from pydoll.playwright._network import NetworkManager, RouteEntry, RouteHandler, Router, make_entry, wait_for_matching
 from pydoll.playwright._selectors import TextMatch
-from pydoll.protocol.emulation.types import MediaFeature
-from pydoll.protocol.fetch.events import FetchEvent
-from pydoll.protocol.fetch.types import AuthChallengeResponseType
-from pydoll.protocol.network.events import NetworkEvent
-from pydoll.protocol.page.events import PageEvent
-from pydoll.protocol.page.types import ScreenshotFormat, Viewport
-from pydoll.protocol.runtime.events import RuntimeEvent
+from pydoll.protocol.cdp.emulation.types import MediaFeature
+from pydoll.protocol.cdp.fetch.events import FetchEvent
+from pydoll.protocol.cdp.fetch.types import AuthChallengeResponseType
+from pydoll.protocol.cdp.network.events import NetworkEvent
+from pydoll.protocol.cdp.page.events import PageEvent
+from pydoll.protocol.cdp.page.types import ScreenshotFormat, Viewport
+from pydoll.protocol.cdp.runtime.events import RuntimeEvent
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Sequence, TypeVar, cast
 from pydoll.commands import DomCommands, PageCommands, RuntimeCommands
 from pydoll.playwright._actions import Actions, Resolver
@@ -108,7 +108,7 @@ from pydoll.playwright._locator import FilePayload
 from pydoll.playwright._remote_values import parse_remote_value
 from pydoll.playwright._selectors import TextMatch, get_by_alt_text_selector, get_by_label_selector, get_by_placeholder_selector, get_by_role_selector, get_by_test_id_selector, get_by_text_selector, get_by_title_selector, split_by_frame
 from pydoll.playwright._serialization import call_arguments, evaluate_source
-from pydoll.protocol.runtime.types import CallArgument
+from pydoll.protocol.cdp.runtime.types import CallArgument
 from typing import TYPE_CHECKING, Any, Pattern, Sequence, TypedDict
 from pydoll.playwright._actions import Resolver
 from pydoll.playwright._selectors import ENTER_FRAME, TextMatch, get_by_alt_text_selector, get_by_label_selector, get_by_placeholder_selector, get_by_role_selector, get_by_test_id_selector, get_by_text_selector, get_by_title_selector, with_has, with_has_not, with_has_not_text, with_has_text, with_visible
@@ -119,14 +119,14 @@ from pydoll.playwright._actions import fixed_resolver
 from typing import TYPE_CHECKING, Literal, TypeAlias
 from pydoll.commands import InputCommands
 from pydoll.playwright._keys import KEYPAD_LOCATION, MODIFIER_NAMES, KeyDescription, describe_key, key_location, modifier_bits, resolve_smart_modifier, split_key_string
-from pydoll.protocol.input.types import KeyEventType, KeyModifier, MouseButton, MouseEventType, TouchEventType
+from pydoll.protocol.cdp.input.types import KeyEventType, KeyModifier, MouseButton, MouseEventType, TouchEventType
 MouseButtonName: TypeAlias = Literal['left', 'right', 'middle']
 import mimetypes
 from json import dumps as json_dumps
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, cast
 from urllib.parse import parse_qs
 from pydoll.commands import NetworkCommands
-from pydoll.protocol.network.types import ErrorReason
+from pydoll.protocol.cdp.network.types import ErrorReason
 from pydoll.playwright._network import NetworkManager
 from pydoll.playwright._network import RouteEntry
 from pydoll.playwright._network import Router

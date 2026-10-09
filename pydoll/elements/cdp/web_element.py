@@ -1,0 +1,1234 @@
+from __future__ import annotations
+
+import asyncio
+import json
+import logging
+from pathlib import Path
+from typing import TYPE_CHECKING
+
+import aiofiles
+
+from pydoll.commands import (
+    DomCommands,
+    InputCommands,
+    PageCommands,
+    RuntimeCommands,
+)
+from pydoll.connection import ConnectionHandler
+from pydoll.constants import (
+    PRESSED_POINTER_FORCE,
+    Scripts,
+)
+from pydoll.elements.cdp.shadow_root import ShadowRoot
+from pydoll.elements.mixins.cdp_find_elements_mixin import CDPFindElementsMixin
+from pydoll.exceptions import (
+    CommandExecutionTimeout,
+    CommandFailed,
+    ElementNotAFileInput,
+    ElementNotFound,
+    ElementNotInteractable,
+    ElementNotVisible,
+    InvalidFileExtension,
+    InvalidIFrame,
+    MissingScreenshotPath,
+    ScriptEvaluationError,
+    ShadowRootNotFound,
+    WaitElementTimeout,
+    WebSocketConnectionClosed,
+)
+from pydoll.interactions.iframe import IFrameContext, IFrameContextResolver
+from pydoll.interactions.keyboard import Keyboard
+from pydoll.interactions.mouse import Mouse
+from pydoll.protocol.cdp.dom.types import Rect, ShadowRootType
+from pydoll.protocol.cdp.input.types import (
+    MOUSE_BUTTON_MASK,
+    MouseButton,
+    MouseEventType,
+)
+from pydoll.protocol.cdp.page.types import ScreenshotFormat, Viewport
+from pydoll.protocol.cdp.runtime.methods import (
+    CallFunctionOnResponse,
+    EvaluateResponse,
+    GetPropertiesResponse,
+    SerializationOptions,
+)
+from pydoll.protocol.cdp.runtime.types import CallArgument
+from pydoll.utils import (
+    PollInterval,
+    decode_base64_to_bytes,
+    extract_text_from_html,
+    is_script_already_function,
+)
+
+if TYPE_CHECKING:
+    from pydoll.protocol.cdp.dom.methods import (
+        DescribeNodeResponse,
+        GetBoxModelResponse,
+        GetOuterHTMLResponse,
+        ResolveNodeResponse,
+    )
+    from pydoll.protocol.cdp.dom.types import Quad
+    from pydoll.protocol.cdp.page.methods import CaptureScreenshotResponse
+    from pydoll.protocol.cdp.runtime.methods import GetPropertiesResponse
+
+logger = logging.getLogger(__name__)
+
+
+class WebElement(CDPFindElementsMixin):  # noqa: PLR0904
+    """
+    DOM element wrapper for browser automation.
+
+    Provides comprehensive functionality for element interaction, inspection,
+    and manipulation using Chrome DevTools Protocol commands.
+    """
+
+    if TYPE_CHECKING:
+        _routing_session_handler: ConnectionHandler | None
+        _routing_session_id: str | None
+        _routing_parent_frame_id: str | None
+
+    _SCROLL_INTO_VIEW_MARGIN = 24
+
+    def __init__(
+        self,
+        object_id: str,
+        connection_handler: ConnectionHandler,
+        method: str | None = None,
+        selector: str | None = None,
+        attributes_list: list[str] | None = None,
+        mouse: Mouse | None = None,
+    ):
+        """
+        Initialize WebElement wrapper.
+
+        Args:
+            object_id: Unique CDP object identifier for this DOM element.
+            connection_handler: Connection instance for browser communication.
+            method: Search method used to find this element (for debugging).
+            selector: Selector string used to find this element (for debugging).
+            attributes_list: Flat list of alternating attribute names and values.
+            mouse: Optional Mouse instance for humanized click behavior.
+
+        Note:
+            Mouse and Keyboard follow different ownership strategies. The tab's Mouse is
+            shared with the elements of its document and of its same-process iframes, so
+            the cursor keeps one position across interactions; an element inside an
+            out-of-process iframe uses a mouse bound to that frame's session, cached on
+            the iframe context (see ``_input_mouse``). Keyboard is created per element and
+            routes commands through the element's own ``_execute_command``.
+        """
+        self._object_id = object_id
+        self._search_method = method
+        self._selector = selector
+        self._connection_handler = connection_handler
+        self._attributes: dict[str, str] = {}
+        self._keyboard: Keyboard | None = None
+        self._mouse = mouse
+        self._iframe_context: IFrameContext | None = None
+        self._iframe_resolver: IFrameContextResolver | None = None
+        self._def_attributes(attributes_list or [])
+        logger.debug(
+            'WebElement initialized: object_id=%s, method=%s, selector=%s, attributes=%s',
+            self._object_id,
+            self._search_method,
+            self._selector,
+            len(self._attributes),
+        )
+
+    def _get_keyboard(self) -> Keyboard:
+        """Get or create the keyboard controller."""
+        if self._keyboard is None:
+            self._keyboard = Keyboard(self)
+        return self._keyboard
+
+    def _get_iframe_resolver(self) -> IFrameContextResolver:
+        """Get or create the iframe context resolver."""
+        if self._iframe_resolver is None:
+            self._iframe_resolver = IFrameContextResolver(self)
+        return self._iframe_resolver
+
+    @property
+    def attributes(self) -> dict[str, str]:
+        """Read-only copy of the element's cached attributes."""
+        return dict(self._attributes)
+
+    @property
+    def value(self) -> str | None:
+        """Element's value attribute (for form elements)."""
+        return self._attributes.get('value')
+
+    @property
+    def class_name(self) -> str | None:
+        """Element's CSS class name(s)."""
+        return self._attributes.get('class_name')
+
+    @property
+    def id(self) -> str | None:
+        """Element's ID attribute."""
+        return self._attributes.get('id')
+
+    @property
+    def tag_name(self) -> str | None:
+        """Element's HTML tag name."""
+        return self._attributes.get('tag_name')
+
+    @property
+    def is_iframe(self) -> bool:
+        """Whether the element represents an iframe."""
+        return self.tag_name in {'iframe', 'frame'}
+
+    @property
+    def is_enabled(self) -> bool:
+        """Whether element is enabled (not disabled)."""
+        return bool('disabled' not in self._attributes.keys())
+
+    async def text(self) -> str:
+        """Visible text content of the element."""
+        if self._is_inside_iframe():
+            response: CallFunctionOnResponse = await self.execute_script(
+                'return (this.textContent || "").trim()', return_by_value=True
+            )
+            text_value = response.get('result', {}).get('result', {}).get('value', '') or ''
+            logger.debug('Extracted text length (iframe ctx): %s', len(text_value))
+            return text_value
+
+        outer_html = await self.inner_html()
+        text_value = extract_text_from_html(outer_html, strip=True)
+        logger.debug('Extracted text length: %s', len(text_value))
+        return text_value
+
+    async def bounds(self) -> Quad:
+        """
+        Element's bounding box coordinates.
+
+        Returns coordinates in CSS pixels relative to document origin.
+        """
+        command = DomCommands.get_box_model(object_id=self._object_id)
+        response: GetBoxModelResponse = await self._execute_command(command)
+        content = response['result']['model']['content']
+        logger.debug('Bounds retrieved (points=%s)', len(content))
+        return content
+
+    async def inner_html(self) -> str:
+        if self.is_iframe:
+            return await self._get_iframe_inner_html()
+
+        if self._is_inside_iframe():
+            response: CallFunctionOnResponse = await self.execute_script(
+                'return this.outerHTML', return_by_value=True
+            )
+            return response.get('result', {}).get('result', {}).get('value', '')
+
+        command = DomCommands.get_outer_html(object_id=self._object_id)
+        response_get_outer_html: GetOuterHTMLResponse = await self._execute_command(command)
+        return response_get_outer_html['result']['outerHTML']
+
+    async def iframe_context(self) -> IFrameContext | None:
+        """
+        Return the resolved iframe context for this element when it is an ``<iframe>``.
+
+        The context includes: frame_id, document_url, execution_context_id,
+        document_object_id and, for OOPIF targets, the session_id and
+        session_handler used for routing commands. A context resolved earlier is
+        reused while it still describes the frame's current document, so the
+        elements already found inside the frame keep a live session; after a
+        navigation or reload it is resolved afresh and the old one is closed.
+        Non-iframe elements return None.
+
+        Returns:
+            IFrameContext | None: Resolved iframe context or None for non-iframes.
+        """
+        if not self.is_iframe:
+            return None
+
+        resolver = self._get_iframe_resolver()
+        old_context = self._iframe_context
+        if old_context is not None and await resolver.is_current(old_context):
+            return old_context
+        self._iframe_context = await resolver.resolve()
+        if old_context is not None:
+            await old_context.close()
+        self._apply_routing_from_context()
+        return self._iframe_context
+
+    def get_attribute(self, name: str) -> str | None:
+        """
+        Get element attribute value.
+
+        Note:
+            Only provides attributes available when element was located.
+            For dynamic attributes, consider using JavaScript execution.
+        """
+        if name == 'class' and 'class_name' in self._attributes:
+            return self._attributes.get('class_name')
+        return self._attributes.get(name)
+
+    async def get_bounds_using_js(self) -> dict[str, int]:
+        """
+        Get element bounds using JavaScript getBoundingClientRect().
+
+        Returns coordinates relative to viewport (alternative to bounds property).
+        """
+        response = await self.execute_script(Scripts.BOUNDS, return_by_value=True)
+        bounds = json.loads(response['result']['result']['value'])
+        logger.debug('Bounds via JS: %s', bounds)
+        return bounds
+
+    async def get_parent_element(self) -> WebElement:
+        """Element's parent element."""
+        logger.debug('Getting parent element for object_id=%s', self._object_id)
+        result = await self.execute_script(Scripts.GET_PARENT_NODE)
+        if not self._has_object_id_key(result):
+            raise ElementNotFound(f'Parent element not found for element: {self}')
+
+        object_id = result['result']['result']['objectId']
+        attributes = await self._get_object_attributes(object_id=object_id)
+        logger.debug('Parent element resolved: object_id=%s', object_id)
+        return WebElement(
+            object_id, self._connection_handler, attributes_list=attributes, mouse=self._mouse
+        )
+
+    async def get_shadow_root(self, timeout: float = 0) -> ShadowRoot:
+        """
+        Get the shadow root attached to this element.
+
+        Args:
+            timeout: Maximum seconds to wait for the shadow root to appear.
+                When > 0, repeatedly polls (starting every 20 ms and backing off to
+                250 ms) until a shadow root is found or the timeout expires.
+
+        Returns:
+            ShadowRoot instance for traversing the shadow DOM.
+
+        Raises:
+            ShadowRootNotFound: If no shadow root is attached (when timeout=0).
+            WaitElementTimeout: If timeout > 0 and no shadow root appears
+                within the specified duration.
+        """
+        if not timeout:
+            return await self._get_shadow_root()
+
+        start_time = asyncio.get_running_loop().time()
+        interval = PollInterval()
+        while True:
+            try:
+                return await self._get_shadow_root()
+            except ShadowRootNotFound:
+                pass
+
+            if asyncio.get_running_loop().time() - start_time > timeout:
+                raise WaitElementTimeout(
+                    f'Timed out after {timeout}s waiting for shadow root on element'
+                )
+
+            await interval.wait()
+
+    async def _get_shadow_root(self) -> ShadowRoot:
+        """Get the shadow root attached to this element (single attempt)."""
+        try:
+            response: DescribeNodeResponse = await self._execute_command(
+                DomCommands.describe_node(object_id=self._object_id, depth=1, pierce=True)
+            )
+        except CommandFailed as exc:
+            raise ShadowRootNotFound() from exc
+        node_info = response.get('result', {}).get('node', {})
+        shadow_roots = node_info.get('shadowRoots', [])
+        if not shadow_roots:
+            raise ShadowRootNotFound()
+
+        shadow_root_data = shadow_roots[0]
+        backend_node_id = shadow_root_data.get('backendNodeId')
+        if not backend_node_id:
+            raise ShadowRootNotFound('Shadow root found but backend node ID is unavailable')
+
+        resolve_response: ResolveNodeResponse = await self._execute_command(
+            DomCommands.resolve_node(backend_node_id=backend_node_id)
+        )
+        shadow_object_id = resolve_response['result']['object']['objectId']
+
+        mode = ShadowRootType(shadow_root_data.get('shadowRootType', 'open'))
+
+        logger.debug('Shadow root resolved: object_id=%s, mode=%s', shadow_object_id, mode.value)
+        return ShadowRoot(
+            object_id=shadow_object_id,
+            connection_handler=self._connection_handler,
+            mode=mode,
+            host_element=self,
+        )
+
+    async def get_children_elements(
+        self, max_depth: int = 1, tag_filter: list[str] = [], raise_exc: bool = False
+    ) -> list[WebElement]:
+        """
+        Retrieve all direct and nested child elements of this element.
+
+        Args:
+            max_depth (int, optional): Maximum depth to traverse when finding children.
+                Defaults to 1 for direct children only.
+            tag_filter (list[str], optional): List of HTML tag names to filter results.
+                If empty, returns all child elements regardless of tag. Defaults to [].
+
+        Returns:
+            list[WebElement]: List of child WebElement objects found within the specified
+                depth and matching the tag filter criteria.
+
+        Raises:
+            ElementNotFound: If no child elements are found for this element and raise_exc is True.
+        """
+        logger.debug(
+            'Getting children: max_depth=%s, tag_filter=%s, raise_exc=%s',
+            max_depth,
+            tag_filter,
+            raise_exc,
+        )
+        children = await self._get_family_elements(
+            script=Scripts.GET_CHILDREN_NODE, max_depth=max_depth, tag_filter=tag_filter
+        )
+        if not children and raise_exc:
+            raise ElementNotFound(f'Child element not found for element: {self}')
+        logger.debug('Children found: %s', len(children))
+        return children
+
+    async def get_siblings_elements(
+        self, tag_filter: list[str] = [], raise_exc: bool = False
+    ) -> list[WebElement]:
+        """
+        Retrieve all sibling elements of this element (elements at the same DOM level).
+
+        Args:
+            tag_filter (list[str], optional): List of HTML tag names to filter results.
+                If empty, returns all sibling elements regardless of tag. Defaults to [].
+
+        Returns:
+            list[WebElement]: List of sibling WebElement objects that share the same
+                parent as this element and match the tag filter criteria.
+
+        Raises:
+            ElementNotFound: If no sibling elements are found for this element
+            and raise_exc is True.
+        """
+        logger.debug('Getting siblings: tag_filter=%s, raise_exc=%s', tag_filter, raise_exc)
+        siblings = await self._get_family_elements(
+            script=Scripts.GET_SIBLINGS_NODE, tag_filter=tag_filter
+        )
+        if not siblings and raise_exc:
+            raise ElementNotFound(f'Sibling element not found for element: {self}')
+        logger.debug('Siblings found: %s', len(siblings))
+        return siblings
+
+    async def take_screenshot(
+        self,
+        path: str | Path | None = None,
+        quality: int = 100,
+        as_base64: bool = False,
+    ) -> str | None:
+        """
+        Capture screenshot of this element only.
+
+        Automatically scrolls element into view before capturing.
+
+        Args:
+            path: File path for screenshot (extension determines format).
+            quality: Image quality 0-100 (default 100).
+            as_base64: Return as base64 string instead of saving file.
+
+        Returns:
+            Base64 screenshot data if as_base64=True, None otherwise.
+
+        Raises:
+            InvalidFileExtension: If file extension not supported.
+            MissingScreenshotPath: If path is None and as_base64 is False.
+        """
+        if not path and not as_base64:
+            raise MissingScreenshotPath()
+
+        if path and isinstance(path, str):
+            output_extension = path.split('.')[-1]
+        elif path and isinstance(path, Path):
+            output_extension = path.suffix.lstrip('.')
+        else:
+            output_extension = ScreenshotFormat.JPEG
+
+        # Normalize jpg to jpeg (CDP only accepts jpeg)
+        if output_extension == 'jpg':
+            output_extension = 'jpeg'
+
+        if not ScreenshotFormat.has_value(output_extension):
+            raise InvalidFileExtension(f'{output_extension} extension is not supported.')
+
+        file_format = ScreenshotFormat.get_value(output_extension)
+
+        bounds = await self.get_bounds_using_js()
+        clip = Viewport(
+            x=bounds['x'],
+            y=bounds['y'],
+            width=bounds['width'],
+            height=bounds['height'],
+            scale=1,
+        )
+        logger.debug(
+            'Taking element screenshot: path=%s, quality=%s, as_base64=%s, '
+            'clip={x: %s, y: %s, w: %s, h: %s}',
+            path,
+            quality,
+            as_base64,
+            clip['x'],
+            clip['y'],
+            clip['width'],
+            clip['height'],
+        )
+
+        screenshot: CaptureScreenshotResponse = await self._connection_handler.execute_command(
+            PageCommands.capture_screenshot(format=file_format, clip=clip, quality=quality)
+        )
+
+        screenshot_data = screenshot['result']['data']
+
+        if as_base64:
+            logger.info('Element screenshot captured and returned as base64')
+            return screenshot_data
+
+        if path:
+            image_bytes = decode_base64_to_bytes(screenshot_data)
+            async with aiofiles.open(str(path), 'wb') as file:
+                await file.write(image_bytes)
+            logger.info('Element screenshot saved: %s', path)
+
+        return None
+
+    async def scroll_into_view(self):
+        """Scroll element into the viewport, keeping a margin from every edge.
+
+        ``DOM.scrollIntoViewIfNeeded`` aligns a partially visible element with the
+        closest viewport edge. That leaves it under the overlay scrollbar the scroll
+        itself reveals on macOS, so the mouse events that follow land on the
+        scrollbar instead of the element. Asking for the element's box plus a
+        margin keeps it clear of the edges. When the box cannot be read the plain
+        behaviour is kept.
+        """
+        logger.info('Scrolling element into view: object_id=%s', self._object_id)
+        command = DomCommands.scroll_into_view_if_needed(
+            object_id=self._object_id, rect=await self._scroll_rect_with_margin()
+        )
+        try:
+            await self._execute_command(command)
+        except CommandFailed as exc:
+            raise ElementNotVisible(f'Element cannot be scrolled into view: {exc}') from exc
+
+    async def _scroll_rect_with_margin(self) -> Rect | None:
+        """Element box padded by the scroll margin, relative to its border box."""
+        try:
+            bounds = await self.get_bounds_using_js()
+        except (CommandFailed, KeyError, TypeError, ValueError):
+            return None
+        margin = self._SCROLL_INTO_VIEW_MARGIN
+        return {
+            'x': -margin,
+            'y': -margin,
+            'width': bounds['width'] + 2 * margin,
+            'height': bounds['height'] + 2 * margin,
+        }
+
+    async def wait_until(
+        self,
+        *,
+        is_visible: bool = False,
+        is_interactable: bool = False,
+        is_hidden: bool = False,
+        is_detached: bool = False,
+        is_enabled: bool = False,
+        timeout: float = 0,
+    ):
+        """Wait for the element to meet every condition you set to True.
+
+        ``is_visible`` and ``is_interactable`` wait for the element to show up
+        and accept input; ``is_hidden`` waits for it to leave the screen (a
+        spinner finishing), ``is_detached`` for it to leave the DOM, and
+        ``is_enabled`` for its ``disabled`` attribute to be cleared. With the
+        default ``timeout`` of 0 the conditions are checked once.
+
+        Raises:
+            ValueError: If no condition is set to True.
+            WaitElementTimeout: If the conditions are not all met within ``timeout``.
+        """
+        checks_map = [
+            (is_visible, 'visible', self.is_visible),
+            (is_interactable, 'interactable', self.is_interactable),
+            (is_hidden, 'hidden', self._is_hidden),
+            (is_detached, 'detached', self.is_detached),
+            (is_enabled, 'enabled', self._is_enabled_now),
+        ]
+        checks = [func for flag, _, func in checks_map if flag]
+        if not checks:
+            raise ValueError('Set at least one condition on wait_until()')
+
+        condition_msg = ' and '.join(label for flag, label, _ in checks_map if flag)
+
+        logger.info(
+            'Waiting for element: visible=%s, interactable=%s, hidden=%s, detached=%s, '
+            'enabled=%s, timeout=%ss',
+            is_visible,
+            is_interactable,
+            is_hidden,
+            is_detached,
+            is_enabled,
+            timeout,
+        )
+        loop = asyncio.get_running_loop()
+        deadline = loop.time() + timeout
+        interval = PollInterval()
+        while True:
+            results = await asyncio.gather(*(check() for check in checks))
+            if all(results):
+                logger.info('Element condition satisfied: %s', condition_msg)
+                return
+
+            if loop.time() >= deadline:
+                logger.error('Timeout waiting for element to become %s', condition_msg)
+                raise WaitElementTimeout(f'Timed out waiting for element to become {condition_msg}')
+
+            await interval.wait()
+
+    async def click_using_js(self):
+        """
+        Click element using JavaScript click() method.
+
+        Raises:
+            ElementNotVisible: If element is not visible.
+            ElementNotInteractable: If element couldn't be clicked.
+
+        Note:
+            For <option> elements, uses specialized selection approach.
+            Element is automatically scrolled into view.
+        """
+        if await self._is_option_element():
+            return await self._click_option_tag()
+
+        await self.scroll_into_view()
+
+        if not await self.is_visible():
+            raise ElementNotVisible()
+
+        logger.info('Clicking element via JS: object_id=%s', self._object_id)
+        result = await self.execute_script(Scripts.CLICK, return_by_value=True)
+        clicked = result['result']['result']['value']
+        if not clicked:
+            raise ElementNotInteractable()
+
+    async def click(
+        self,
+        x_offset: int = 0,
+        y_offset: int = 0,
+        hold_time: float = 0,
+        humanize: bool = False,
+    ):
+        """
+        Click element using simulated mouse events.
+
+        Args:
+            x_offset: Horizontal offset from element center.
+            y_offset: Vertical offset from element center.
+            hold_time: Seconds to keep the button down between press and release
+                (used when humanize=False). Zero by default, so a plain click is
+                two back-to-back events; pass humanize=True for human timing.
+            humanize: When True and a Mouse instance is available, uses humanized
+                Bezier curve movement from the current tracked position to the
+                element center before clicking. When False, dispatches raw CDP
+                mousePressed/mouseReleased events directly.
+
+        Raises:
+            ElementNotVisible: If element is not visible.
+
+        Note:
+            For <option> elements, delegates to specialized JavaScript approach.
+            Element is automatically scrolled into view.
+        """
+        if await self._is_option_element():
+            return await self._click_option_tag()
+
+        if not await self.is_visible():
+            raise ElementNotVisible()
+
+        await self.scroll_into_view()
+        position_to_click = await self._target_point(x_offset, y_offset)
+
+        mouse = self._input_mouse()
+        if humanize and mouse is not None:
+            logger.info(
+                'Clicking element (humanized): x=%s, y=%s',
+                position_to_click[0],
+                position_to_click[1],
+            )
+            await mouse.click(position_to_click[0], position_to_click[1], humanize=True)
+            return
+
+        logger.info(
+            'Clicking element: x=%s, y=%s, hold=%ss',
+            position_to_click[0],
+            position_to_click[1],
+            hold_time,
+        )
+        press_command = InputCommands.dispatch_mouse_event(
+            type=MouseEventType.MOUSE_PRESSED,
+            x=int(position_to_click[0]),
+            y=int(position_to_click[1]),
+            button=MouseButton.LEFT,
+            click_count=1,
+            buttons=MOUSE_BUTTON_MASK[MouseButton.LEFT],
+            force=PRESSED_POINTER_FORCE,
+        )
+        release_command = InputCommands.dispatch_mouse_event(
+            type=MouseEventType.MOUSE_RELEASED,
+            x=int(position_to_click[0]),
+            y=int(position_to_click[1]),
+            button=MouseButton.LEFT,
+            click_count=1,
+        )
+        await self._execute_command(press_command)
+        if hold_time > 0:
+            await asyncio.sleep(hold_time)
+        await self._execute_command(release_command)
+
+    def _input_mouse(self) -> Mouse | None:
+        """The mouse that moves in this element's frame.
+
+        The main document and its same-process iframes share the tab's mouse:
+        their coordinates are the tab's and so is their session. An
+        out-of-process iframe is another CDP target with viewport coordinates
+        of its own, so its elements get a mouse bound to the frame's session,
+        created once with the tab mouse's timing and kept on the iframe
+        context. ``None`` when the element was created without a mouse.
+        """
+        tab_mouse = self._mouse
+        if tab_mouse is None:
+            return None
+        handler, session_id = self._resolve_routing()
+        if handler is tab_mouse.connection_handler and session_id == tab_mouse.session_id:
+            return tab_mouse
+        context = self._iframe_context
+        if context is None:
+            return Mouse(handler, session_id=session_id, timing=tab_mouse.timing)
+        if context.mouse is None:
+            context.mouse = Mouse(handler, session_id=session_id, timing=tab_mouse.timing)
+        return context.mouse
+
+    async def hover(self, x_offset: int = 0, y_offset: int = 0, humanize: bool = False):
+        """
+        Move the mouse over the element without clicking.
+
+        Scrolls the element into view and moves the pointer to its center plus
+        the offsets, so hover styles, tooltips and menus that open on
+        ``mouseover`` react as they would for a person.
+
+        Args:
+            x_offset: Horizontal offset from the element center.
+            y_offset: Vertical offset from the element center.
+            humanize: Move along a curved path with human timing instead of
+                jumping straight to the point.
+
+        Raises:
+            ElementNotVisible: If the element is not visible.
+        """
+        if not await self.is_visible():
+            raise ElementNotVisible()
+
+        await self.scroll_into_view()
+        x, y = await self._target_point(x_offset, y_offset)
+
+        mouse = self._input_mouse()
+        if humanize and mouse is not None:
+            await mouse.move(x, y, humanize=True)
+            return
+
+        logger.info('Hovering element: x=%s, y=%s', x, y)
+        await self._execute_command(
+            InputCommands.dispatch_mouse_event(type=MouseEventType.MOUSE_MOVED, x=int(x), y=int(y))
+        )
+
+    async def double_click(self, x_offset: int = 0, y_offset: int = 0, humanize: bool = False):
+        """
+        Double-click the element.
+
+        Sends the two press-and-release pairs a real double click produces,
+        with the second pair carrying ``clickCount=2``, so the page receives
+        ``dblclick`` as well as the two ``click`` events.
+
+        Args:
+            x_offset: Horizontal offset from the element center.
+            y_offset: Vertical offset from the element center.
+            humanize: Move the mouse along a curved path before clicking.
+
+        Raises:
+            ElementNotVisible: If the element is not visible.
+        """
+        if not await self.is_visible():
+            raise ElementNotVisible()
+
+        await self.scroll_into_view()
+        x, y = await self._target_point(x_offset, y_offset)
+
+        mouse = self._input_mouse()
+        if humanize and mouse is not None:
+            await mouse.double_click(x, y, humanize=True)
+            return
+
+        logger.info('Double-clicking element: x=%s, y=%s', x, y)
+        for click_count in (1, 2):
+            await self._execute_command(
+                InputCommands.dispatch_mouse_event(
+                    type=MouseEventType.MOUSE_PRESSED,
+                    x=int(x),
+                    y=int(y),
+                    button=MouseButton.LEFT,
+                    click_count=click_count,
+                    buttons=MOUSE_BUTTON_MASK[MouseButton.LEFT],
+                    force=PRESSED_POINTER_FORCE,
+                )
+            )
+            await self._execute_command(
+                InputCommands.dispatch_mouse_event(
+                    type=MouseEventType.MOUSE_RELEASED,
+                    x=int(x),
+                    y=int(y),
+                    button=MouseButton.LEFT,
+                    click_count=click_count,
+                )
+            )
+
+    async def _target_point(self, x_offset: int, y_offset: int) -> tuple[float, float]:
+        """The element's center in page coordinates, plus the offsets."""
+        try:
+            element_bounds = await self.bounds()
+            center = self._calculate_center(element_bounds)
+            return center[0] + x_offset, center[1] + y_offset
+        except KeyError:
+            bounds = await self.get_bounds_using_js()
+            return (
+                bounds['x'] + bounds['width'] / 2 + x_offset,
+                bounds['y'] + bounds['height'] / 2 + y_offset,
+            )
+
+    async def focus(self):
+        """Focus this element via CDP DOM.focus command."""
+        await self._execute_command(DomCommands.focus(object_id=self._object_id))
+
+    async def clear(self):
+        """
+        Clear the current value of the element.
+
+        Supports standard inputs, textareas, and contenteditable elements.
+        Dispatches ``input`` and ``change`` events so frameworks detect the update.
+
+        Raises:
+            ElementNotInteractable: If the element does not accept text input.
+        """
+        logger.info('Clearing element value')
+        result = await self.execute_script(Scripts.CLEAR_INPUT, return_by_value=True)
+        success = result['result'].get('result', {}).get('value', False)
+        if not success:
+            logger.error('Element does not accept text input')
+            raise ElementNotInteractable('Element does not accept text input')
+        if self._attributes.get('tag_name', '').lower() in {'input', 'textarea'}:
+            self._attributes['value'] = ''
+
+    async def insert_text(self, text: str):
+        """
+        Insert text into element using JavaScript.
+
+        Supports standard inputs, textareas, contenteditable elements, and rich text editors.
+        Inserts text at cursor position or replaces selected text.
+
+        Args:
+            text: Text to insert.
+
+        Raises:
+            ElementNotInteractable: If element does not accept text input.
+
+        Note:
+            Uses JavaScript for maximum compatibility with all input types.
+            Automatically handles input/textarea and contenteditable elements.
+        """
+        logger.info('Inserting text (length=%s)', len(text))
+        result = await self.execute_script(
+            Scripts.INSERT_TEXT, return_by_value=True, arguments=[CallArgument(value=text)]
+        )
+        logger.debug('Insert text result: %s', result)
+        success = result['result'].get('result', {}).get('value', False)
+
+        if not success:
+            logger.error('Element does not accept text input')
+            raise ElementNotInteractable('Element does not accept text input')
+        # Keep cached attributes coherent for common cases (e.g., input value)
+        # This avoids forcing a DOM round-trip for simple assertions.
+        if self._attributes.get('tag_name', '').lower() in {'input', 'textarea'}:
+            # Re-read the actual DOM value to keep cache consistent.
+            # insertText appends at cursor, so the result may differ from
+            # the inserted text when the field already had content.
+            try:
+                live_result = await self.execute_script('return this.value', return_by_value=True)
+                self._attributes['value'] = (
+                    live_result.get('result', {}).get('result', {}).get('value', text)
+                )
+            except (
+                KeyError,
+                TypeError,
+                AttributeError,
+                CommandExecutionTimeout,
+                CommandFailed,
+                WebSocketConnectionClosed,
+            ):
+                self._attributes['value'] = text
+
+    async def set_input_files(self, files: str | Path | list[str | Path]):
+        """
+        Set file paths for file input element.
+
+        Args:
+            files: list of absolute file paths to existing files.
+
+        Raises:
+            ElementNotAFileInput: If element is not a file input.
+        """
+        if (
+            self._attributes.get('tag_name', '').lower() != 'input'
+            or self._attributes.get('type', '').lower() != 'file'
+        ):
+            raise ElementNotAFileInput()
+        files_list = [str(file) for file in files] if isinstance(files, list) else [str(files)]
+        logger.info('Setting input files: count=%s', len(files_list))
+        await self._execute_command(
+            DomCommands.set_file_input_files(files=files_list, object_id=self._object_id)
+        )
+
+    async def type_text(self, text: str, humanize: bool = False):
+        """
+        Type text character by character.
+
+        Args:
+            text: Text to type into the element.
+            humanize: When True, simulates human-like typing.
+        """
+        logger.info('Typing text (length=%s, humanize=%s)', len(text), humanize)
+        await self.click(humanize=humanize)
+        keyboard = self._get_keyboard()
+        await keyboard.type_text(text, humanize=humanize)
+
+    async def is_editable(self) -> bool:
+        """
+        Check if element can accept text input.
+
+        Returns:
+            True if element is editable (input, textarea, or contenteditable).
+        """
+        result = await self.execute_script(Scripts.IS_EDITABLE, return_by_value=True)
+        is_editable = result['result']['result']['value']
+        logger.debug('Element editable check: %s', is_editable)
+        return is_editable
+
+    async def is_visible(self):
+        """Check if element is visible using comprehensive JavaScript visibility test."""
+        try:
+            result = await self.execute_script(Scripts.ELEMENT_VISIBLE, return_by_value=True)
+        except CommandFailed:
+            return False
+        return bool(result.get('result', {}).get('result', {}).get('value', False))
+
+    async def is_detached(self) -> bool:
+        """Whether the element is no longer part of a document (removed or replaced)."""
+        try:
+            result = await self.execute_script('return !this.isConnected', return_by_value=True)
+        except CommandFailed:
+            return True
+        return bool(result.get('result', {}).get('result', {}).get('value', True))
+
+    async def _is_hidden(self) -> bool:
+        """Whether the element is not visible, counting a detached element as hidden."""
+        return not await self.is_visible()
+
+    async def _is_enabled_now(self) -> bool:
+        """Whether the element accepts input right now, read from the live DOM."""
+        try:
+            result = await self.execute_script('return !this.disabled', return_by_value=True)
+        except CommandFailed:
+            return False
+        return bool(result.get('result', {}).get('result', {}).get('value', False))
+
+    async def is_on_top(self):
+        """Check if element is topmost at its center point (not covered by overlays)."""
+        try:
+            result = await self.execute_script(Scripts.ELEMENT_ON_TOP, return_by_value=True)
+        except CommandFailed:
+            return False
+        return bool(result.get('result', {}).get('result', {}).get('value', False))
+
+    async def is_interactable(self):
+        """Check if element is interactable based on visibility and position."""
+        try:
+            result = await self.execute_script(Scripts.ELEMENT_INTERACTIVE, return_by_value=True)
+        except CommandFailed:
+            return False
+        return bool(result.get('result', {}).get('result', {}).get('value', False))
+
+    async def execute_script(
+        self,
+        script: str,
+        *,
+        arguments: list[CallArgument] | None = None,
+        silent: bool | None = None,
+        return_by_value: bool | None = None,
+        generate_preview: bool | None = None,
+        user_gesture: bool | None = None,
+        await_promise: bool | None = None,
+        execution_context_id: int | None = None,
+        object_group: str | None = None,
+        throw_on_side_effect: bool | None = None,
+        unique_context_id: str | None = None,
+        serialization_options: SerializationOptions | None = None,
+    ) -> CallFunctionOnResponse:
+        """
+        Execute JavaScript in element context.
+
+        Args:
+            script (str): JavaScript code to execute. Use 'this' to reference this element.
+            arguments (list[CallArgument] | None): Arguments to pass to the function
+                (Runtime.callFunctionOn).
+            silent (bool | None): Whether to silence exceptions (Runtime.callFunctionOn).
+            return_by_value (bool | None): Whether to return the result by value instead of
+                reference (Runtime.callFunctionOn).
+            generate_preview (bool | None): Whether to generate a preview for the result
+                (Runtime.callFunctionOn).
+            user_gesture (bool | None): Whether to treat the call as initiated by user
+                gesture (Runtime.callFunctionOn).
+            await_promise (bool | None): Whether to await promise result
+                (Runtime.callFunctionOn).
+            execution_context_id (int | None): ID of the execution context to call the
+                function in (Runtime.callFunctionOn).
+            object_group (str | None): Symbolic group name for the result
+                (Runtime.callFunctionOn).
+            throw_on_side_effect (bool | None): Whether to throw if side effect cannot be
+                ruled out (Runtime.callFunctionOn).
+            unique_context_id (str | None): Unique context ID for the function call
+                (Runtime.callFunctionOn).
+            serialization_options (SerializationOptions | None): Serialization options for
+                the result (Runtime.callFunctionOn).
+
+        Returns:
+            CallFunctionOnResponse: The result of the script execution.
+
+        Examples:
+            # Click the element
+            await element.execute_script('this.click()')
+
+            # Modify element style
+            await element.execute_script('this.style.border = "2px solid red"')
+
+            # Get element text
+            result = await element.execute_script('return this.textContent', return_by_value=True)
+
+            # Set element content
+            await element.execute_script('this.textContent = "Hello World"')
+        """
+        if not is_script_already_function(script):
+            script = f'function(){{ {script} }}'
+
+        logger.debug(
+            'Executing script on element: return_by_value=%s, length=%s, args=%s',
+            return_by_value,
+            len(script),
+            len(arguments) if arguments else 0,
+        )
+        command = RuntimeCommands.call_function_on(
+            function_declaration=script,
+            object_id=self._object_id,
+            arguments=arguments,
+            silent=silent,
+            return_by_value=return_by_value,
+            generate_preview=generate_preview,
+            user_gesture=user_gesture,
+            await_promise=await_promise,
+            execution_context_id=execution_context_id,
+            object_group=object_group,
+            throw_on_side_effect=throw_on_side_effect,
+            unique_context_id=unique_context_id,
+            serialization_options=serialization_options,
+        )
+        return await self._execute_command(command)
+
+    async def evaluate(self, script: str, *args: object) -> object:
+        """
+        Run JavaScript with ``this`` bound to the element and return its value.
+
+        The portable counterpart of ``execute_script``: the same call works on a
+        Firefox ``BiDiWebElement``. ``script`` is either a function declaration
+        (``function(a, b) { return this.value + a + b }``) or a body that may use
+        ``return``; ``args`` are JSON-serialisable values forwarded as the
+        function's arguments. A returned promise is awaited and its settled value
+        is returned by value (objects and arrays become dicts and lists; a DOM
+        node or a function comes back as ``None``).
+
+        Args:
+            script: JavaScript function declaration or body; ``this`` is the element.
+            *args: Values forwarded to the function as positional arguments.
+
+        Returns:
+            The script's return value as a Python object.
+
+        Raises:
+            ScriptEvaluationError: If the script throws or its promise rejects.
+        """
+        arguments = [CallArgument(value=arg) for arg in args] or None
+        response = await self.execute_script(
+            script, arguments=arguments, return_by_value=True, await_promise=True
+        )
+        evaluated = response['result']
+        details = evaluated.get('exceptionDetails')
+        if details is not None:
+            exception = details.get('exception')
+            description = ''
+            if exception is not None:
+                description = exception.get('description') or str(exception.get('value', ''))
+            text = description.split('\n', 1)[0] if description else details.get('text', 'Uncaught')
+            raise ScriptEvaluationError(text)
+        return evaluated['result'].get('value')
+
+    def __repr__(self):
+        """String representation showing attributes and object ID."""
+        attrs = ', '.join(f'{k}={v!r}' for k, v in self._attributes.items())
+        return f'{self.__class__.__name__}({attrs})(object_id={self._object_id})'
+
+    def _is_inside_iframe(self) -> bool:
+        """Check if this element is inside an iframe context (not the iframe itself)."""
+        return self._iframe_context is not None and not self.is_iframe
+
+    async def _get_iframe_inner_html(self) -> str:
+        """Get inner HTML of an iframe element."""
+        iframe_context = await self.iframe_context()
+        if iframe_context is None:
+            raise InvalidIFrame('Unable to resolve iframe context')
+        response: EvaluateResponse = await self._execute_command(
+            RuntimeCommands.evaluate(
+                expression='document.documentElement.outerHTML',
+                context_id=iframe_context.execution_context_id,
+                return_by_value=True,
+            )
+        )
+        return response['result']['result'].get('value', '')
+
+    def _apply_routing_from_context(self) -> None:
+        """Apply routing attributes from iframe context.
+
+        After iframe context resolution, commands targeting the *content* of
+        the iframe should route through ``_iframe_context`` (handled by
+        ``_resolve_routing`` which prioritises ``_iframe_context`` over
+        ``_routing_session_*``).
+
+        The ``_routing_session_handler`` / ``_routing_session_id`` attributes
+        must be preserved: they identify the parent OOPIF session where the
+        ``<iframe>`` *element itself* lives.  The resolver needs them to
+        re-describe the element on subsequent re-resolutions.
+        """
+
+    async def _click_option_tag(self):
+        """Specialized method for clicking <option> elements in dropdowns."""
+        await self._execute_command(
+            RuntimeCommands.call_function_on(
+                object_id=self._object_id,
+                function_declaration=Scripts.CLICK_OPTION_TAG,
+                return_by_value=True,
+            )
+        )
+
+    async def _get_family_elements(
+        self, script: str, max_depth: int = 1, tag_filter: list[str] = []
+    ) -> list[WebElement]:
+        """
+        Retrieve all family elements of this element (elements at the same DOM level).
+
+        Args:
+            script (str): CDP script to execute for retrieving family elements.
+            tag_filter (list[str], optional): List of HTML tag names to filter results.
+                If empty, returns all family elements regardless of tag. Defaults to [].
+
+        Returns:
+            list[WebElement]: List of family WebElement objects that share the same
+                parent as this element and match the tag filter criteria.
+        """
+        result = await self.execute_script(
+            script.format(tag_filter=tag_filter, max_depth=max_depth)
+        )
+        if not self._has_object_id_key(result):
+            return []
+
+        array_object_id = result['result']['result']['objectId']
+
+        get_properties_command = RuntimeCommands.get_properties(object_id=array_object_id)
+        try:
+            properties_response: GetPropertiesResponse = await self._execute_command(
+                get_properties_command
+            )
+        except CommandFailed as exc:
+            logger.debug('Family element list became unresolvable before it was read: %s', exc)
+            return []
+
+        family_elements: list[WebElement] = []
+        for prop in properties_response.get('result', {}).get('result', []):
+            if not (prop['name'].isdigit() and 'objectId' in prop['value']):
+                continue
+            child_object_id = prop['value']['objectId']
+            attributes = await self._get_object_attributes(object_id=child_object_id)
+            family_elements.append(
+                WebElement(
+                    child_object_id,
+                    self._connection_handler,
+                    attributes_list=attributes,
+                    mouse=self._mouse,
+                )
+            )
+
+        logger.debug('Family elements found: %s', len(family_elements))
+        return family_elements
+
+    def _def_attributes(self, attributes_list: list[str]):
+        """Process flat attribute list into dictionary (renames 'class' to 'class_name')."""
+        for i in range(0, len(attributes_list), 2):
+            key = attributes_list[i]
+            key = key if key != 'class' else 'class_name'
+            value = attributes_list[i + 1]
+            self._attributes[key] = value
+        logger.debug('Attributes defined: count=%s', len(self._attributes))
+
+    def _is_option_tag(self):
+        """Check if element is an <option> tag."""
+        return self._attributes.get('tag_name', '').lower() == 'option'
+
+    async def _is_option_element(self) -> bool:
+        """
+        Robust check for <option> elements, falling back to JS when tag_name is missing.
+        """
+        tag = self._attributes.get('tag_name', '')
+        if tag:
+            return tag.lower() == 'option'
+
+        # Heuristic from original selector/method
+        selector = str(getattr(self, '_selector', '') or '')
+        method_raw = getattr(self, '_search_method', '')
+        method = str(getattr(method_raw, 'value', method_raw) or '').lower()
+        if method == 'tag_name' and selector.lower() == 'option':
+            return True
+        if method == 'xpath' and 'option' in selector.lower():
+            return True
+
+        result = await self.execute_script(Scripts.IS_OPTION_TAG, return_by_value=True)
+        is_option = result.get('result', {}).get('result', {}).get('value', False)
+        if is_option and not self._attributes.get('tag_name'):
+            self._attributes['tag_name'] = 'option'
+        return bool(is_option)
+
+    @staticmethod
+    def _calculate_center(bounds: list) -> tuple:
+        """Calculate center point from bounding box coordinates."""
+        x_values = [bounds[i] for i in range(0, len(bounds), 2)]
+        y_values = [bounds[i] for i in range(1, len(bounds), 2)]
+        x_center = sum(x_values) / len(x_values)
+        y_center = sum(y_values) / len(y_values)
+        return x_center, y_center

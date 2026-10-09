@@ -20,9 +20,9 @@ import weakref
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Sequence, TypeVar, cast
 
-from pydoll.browser.tab import Tab
+from pydoll.browser.chromium.tab import Tab
 from pydoll.commands import DomCommands, PageCommands, RuntimeCommands
-from pydoll.elements.web_element import WebElement
+from pydoll.elements.cdp.web_element import WebElement
 from pydoll.playwright._actions import Actions, Resolver
 from pydoll.playwright._element_handle import ElementHandle, JSHandle, PrimitiveHandle
 from pydoll.playwright._errors import Error
@@ -42,7 +42,7 @@ from pydoll.playwright._selectors import (
     split_by_frame,
 )
 from pydoll.playwright._serialization import call_arguments, evaluate_source
-from pydoll.protocol.runtime.types import CallArgument
+from pydoll.protocol.cdp.runtime.types import CallArgument
 
 if TYPE_CHECKING:
     from pydoll.playwright._network import Response

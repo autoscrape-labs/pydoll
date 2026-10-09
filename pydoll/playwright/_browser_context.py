@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, Sequence
 from urllib.parse import urlparse
 
-from pydoll.browser.tab import Tab
+from pydoll.browser.chromium.tab import Tab
 from pydoll.commands import BrowserCommands, EmulationCommands, PageCommands, RuntimeCommands
 from pydoll.exceptions import PydollException
 from pydoll.playwright._errors import Error, translate
@@ -25,8 +25,8 @@ from pydoll.playwright._events import (
 from pydoll.playwright._glob import URLMatch
 from pydoll.playwright._network import Route, RouteEntry, RouteHandler, make_entry
 from pydoll.playwright._page import Page
-from pydoll.protocol.browser.types import DownloadBehavior, PermissionType
-from pydoll.protocol.network.types import CookieParam
+from pydoll.protocol.cdp.browser.types import DownloadBehavior, PermissionType
+from pydoll.protocol.cdp.network.types import CookieParam
 from pydoll.utils.user_agent_parser import UserAgentParser
 
 if TYPE_CHECKING:

@@ -8,20 +8,32 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from pydoll.commands import InputCommands, RuntimeCommands
+from pydoll.commands.bidi.input_commands import InputCommands as BiDiInputCommands
 from pydoll.constants import PRESSED_POINTER_FORCE
+from pydoll.exceptions import CommandFailed
 from pydoll.interactions.utils import (
     bezier_2d,
     fitts_duration,
     minimum_jerk,
     random_control_points,
 )
-from pydoll.protocol.input.types import MOUSE_BUTTON_MASK, MouseButton, MouseEventType
+from pydoll.protocol.bidi.input.types import PointerType
+from pydoll.protocol.cdp.input.types import MOUSE_BUTTON_MASK, MouseButton, MouseEventType
 
 if TYPE_CHECKING:
+    from pydoll.browser.firefox.tab import BiDiTab
     from pydoll.connection.connection_handler import ConnectionHandler
-    from pydoll.protocol.base import Command
+    from pydoll.protocol.bidi.input.types import (
+        PointerAction,
+        PointerMoveAction,
+        PointerSourceActions,
+        SourceActions,
+    )
+    from pydoll.protocol.cdp.base import Command
 
 logger = logging.getLogger(__name__)
+
+_VIEWPORT_PAIR = 2
 
 
 @dataclass(frozen=True)
@@ -533,6 +545,143 @@ class Mouse:
             x=int(round(x)), y=int(round(y)), radius=radius, color=color
         )
         await self._send(RuntimeCommands.evaluate(script))
+
+
+_BIDI_POINTER_BUTTON: dict[MouseButton, int] = {
+    MouseButton.LEFT: 0,
+    MouseButton.MIDDLE: 1,
+    MouseButton.RIGHT: 2,
+}
+
+
+class BiDiMouse(Mouse):
+    """Mouse controller for Firefox via WebDriver BiDi input.performActions.
+
+    Reuses every humanized-movement primitive from Mouse (Bezier path, Fitts's
+    Law timing, minimum-jerk, tremor, overshoot) unchanged and only swaps the
+    dispatch points, so the resulting pointer events report isTrusted=true.
+    Events address the tab's browsing context rather than a CDP session, so
+    this mouse holds the tab instead of a connection handler and session id.
+    BiDi answers every action, so intermediate moves of a humanized path wait
+    for their answer like any other event.
+    """
+
+    def __init__(
+        self,
+        tab: BiDiTab,
+        timing: MouseTimingConfig | None = None,
+        debug: bool = False,
+    ):
+        """
+        Initialize a BiDi mouse controller.
+
+        Args:
+            tab: BiDi tab whose browsing context receives the pointer actions.
+            timing: Optional custom timing configuration for humanized movement.
+            debug: Draw colored dots on the page to visualize mouse path.
+        """
+        self._tab = tab
+        self._timing = timing or MouseTimingConfig()
+        self._position = (0.0, 0.0)
+        self._pressed_button = None
+        self._debug = debug
+        self._viewport: tuple[int, int] | None = None
+
+    @staticmethod
+    def _pointer_source(actions: list[PointerAction]) -> list[SourceActions]:
+        source: PointerSourceActions = {
+            'type': 'pointer',
+            'id': 'mouse',
+            'parameters': {'pointerType': PointerType.MOUSE},
+            'actions': actions,
+        }
+        return [source]
+
+    @staticmethod
+    def _move_action(x: float, y: float) -> PointerMoveAction:
+        return {
+            'type': 'pointerMove',
+            'x': int(round(x)),
+            'y': int(round(y)),
+            'origin': 'viewport',
+        }
+
+    async def _perform(self, actions: list[PointerAction]) -> None:
+        """Run a pointer action sequence in the tab's browsing context."""
+        await self._tab._execute_command(
+            BiDiInputCommands.perform_actions(
+                context=self._tab._context_id,
+                actions=self._pointer_source(actions),
+            )
+        )
+
+    async def _dispatch_move(self, x: float, y: float, *, wait: bool = True) -> None:
+        """Dispatch a pointerMove and update internal position.
+
+        ``wait`` is accepted for parity with the CDP mouse; BiDi has no
+        fire-and-forget send, so every move waits for its answer.
+        """
+        x, y = await self._clamp_to_viewport(x, y)
+        try:
+            await self._perform([self._move_action(x, y)])
+        except CommandFailed as exc:
+            if 'out of bounds' not in str(exc):
+                raise
+            self._viewport = None
+            x, y = await self._clamp_to_viewport(x, y)
+            await self._perform([self._move_action(x, y)])
+        self._position = (x, y)
+        if self._debug:
+            await self._debug_draw_dot(x, y, radius=2, color='rgba(0,150,255,0.6)')
+
+    async def _clamp_to_viewport(self, x: float, y: float) -> tuple[float, float]:
+        """Keep a pointer target inside the viewport.
+
+        Humanized paths overshoot and tremble past their target, which CDP
+        tolerates but Firefox rejects (``input.performActions`` fails for a
+        pointerMove outside the viewport). The viewport size is read once and
+        refreshed when Firefox still reports an out-of-bounds move.
+        """
+        if self._viewport is None:
+            size = await self._tab.evaluate('return [window.innerWidth, window.innerHeight]')
+            width, height = (
+                size if isinstance(size, list) and len(size) == _VIEWPORT_PAIR else (0, 0)
+            )
+            self._viewport = (int(width), int(height))
+        width, height = self._viewport
+        if width <= 0 or height <= 0:
+            return max(x, 0.0), max(y, 0.0)
+        return min(max(x, 0.0), width - 1), min(max(y, 0.0), height - 1)
+
+    async def _dispatch_button(
+        self,
+        event_type: MouseEventType,
+        button: MouseButton = MouseButton.LEFT,
+        click_count: int = 1,
+    ) -> None:
+        """Dispatch pointerDown or pointerUp at the current position."""
+        button_index = _BIDI_POINTER_BUTTON.get(button, 0)
+        pressed = event_type == MouseEventType.MOUSE_PRESSED
+        press_or_release: PointerAction
+        if pressed:
+            press_or_release = {'type': 'pointerDown', 'button': button_index}
+        else:
+            press_or_release = {'type': 'pointerUp', 'button': button_index}
+        await self._perform([
+            self._move_action(self._position[0], self._position[1]),
+            press_or_release,
+        ])
+        self._pressed_button = button if pressed else None
+        if self._debug and pressed:
+            await self._debug_draw_dot(
+                self._position[0], self._position[1], radius=6, color='rgba(255,50,50,0.9)'
+            )
+
+    async def _debug_draw_dot(self, x: float, y: float, radius: int, color: str) -> None:
+        script = self._DEBUG_DOT_JS.format(
+            x=int(round(x)), y=int(round(y)), radius=radius, color=color
+        )
+        await self._tab.evaluate(script)
 
 
 MouseAPI = Mouse

@@ -20,23 +20,23 @@ from pydoll.exceptions import (
     FingerprintContextConflict,
     WebSocketConnectionClosed,
 )
-from pydoll.protocol.browser.types import (
+from pydoll.protocol.cdp.browser.types import (
     Bounds,
     PermissionDescriptor,
     PermissionSetting,
     WindowState,
 )
-from pydoll.protocol.emulation.types import (
+from pydoll.protocol.cdp.emulation.types import (
     MediaFeature,
     ScreenOrientation,
     ScreenOrientationType,
 )
-from pydoll.protocol.fetch.events import FetchEvent
-from pydoll.protocol.fetch.types import HeaderEntry, RequestStage
-from pydoll.protocol.network.types import ResourceType
-from pydoll.protocol.page.events import PageEvent
-from pydoll.protocol.target.events import TargetEvent
-from pydoll.protocol.target.types import FilterEntry
+from pydoll.protocol.cdp.fetch.events import FetchEvent
+from pydoll.protocol.cdp.fetch.types import HeaderEntry, RequestStage
+from pydoll.protocol.cdp.network.types import ResourceType
+from pydoll.protocol.cdp.page.events import PageEvent
+from pydoll.protocol.cdp.target.events import TargetEvent
+from pydoll.protocol.cdp.target.types import FilterEntry
 from pydoll.utils import UserAgentParser
 from pydoll.utils.fingerprint_builder import (
     build_fingerprint_js,
@@ -45,11 +45,12 @@ from pydoll.utils.fingerprint_builder import (
 )
 
 if TYPE_CHECKING:
-    from pydoll.browser.tab import Tab
-    from pydoll.protocol.base import Command
-    from pydoll.protocol.browser.methods import GetWindowForTargetResponse
-    from pydoll.protocol.emulation.methods import GetScreenInfosResponse
-    from pydoll.protocol.emulation.types import WorkAreaInsets
+    from pydoll.browser.chromium.tab import Tab
+    from pydoll.protocol.cdp.base import Command
+    from pydoll.protocol.cdp.browser.methods import GetWindowForTargetResponse
+    from pydoll.protocol.cdp.emulation.methods import GetScreenInfosResponse
+    from pydoll.protocol.cdp.emulation.types import WorkAreaInsets
+    from pydoll.protocol.cdp.target.methods import GetTargetInfoResponse
     from pydoll.protocol.fingerprint.types import (
         ClientHintsFingerprint,
         FingerprintConfig,
@@ -57,7 +58,6 @@ if TYPE_CHECKING:
         PermissionsFingerprint,
         ScreenFingerprint,
     )
-    from pydoll.protocol.target.methods import GetTargetInfoResponse
     from pydoll.utils.user_agent_parser import ParsedUserAgent
 
 logger = logging.getLogger(__name__)

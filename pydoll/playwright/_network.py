@@ -18,7 +18,7 @@ from pydoll.commands import NetworkCommands
 from pydoll.playwright._errors import Error
 from pydoll.playwright._events import Deadline
 from pydoll.playwright._glob import URLMatch, URLMatcher
-from pydoll.protocol.network.types import ErrorReason
+from pydoll.protocol.cdp.network.types import ErrorReason
 
 if TYPE_CHECKING:
     from pydoll.playwright._frame import Frame

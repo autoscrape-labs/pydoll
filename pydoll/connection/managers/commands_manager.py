@@ -5,7 +5,7 @@ import logging
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from pydoll.protocol.base import Command
+    from pydoll.protocol.base import Command, T_CommandParams, T_CommandResponse
 
 logger = logging.getLogger(__name__)
 
@@ -20,11 +20,13 @@ class CommandsManager:
 
     def __init__(self) -> None:
         """Initialize command manager with empty state."""
-        self._pending_commands: dict[int, asyncio.Future] = {}
+        self._pending_commands: dict[int, asyncio.Future[str]] = {}
         self._id = 1
         logger.debug('CommandsManager initialized')
 
-    def create_command_future(self, command: Command) -> asyncio.Future:
+    def create_command_future(
+        self, command: Command[T_CommandParams, T_CommandResponse]
+    ) -> asyncio.Future[str]:
         """
         Create future for command and assign unique ID.
 
@@ -32,10 +34,10 @@ class CommandsManager:
             command: Command to prepare for execution.
 
         Returns:
-            Future that resolves when command completes.
+            Future that resolves with the raw response payload when the command completes.
         """
         command['id'] = self._id
-        future = asyncio.Future()  # type: ignore
+        future: asyncio.Future[str] = asyncio.Future()
         self._pending_commands[self._id] = future
         self._id += 1
         logger.debug(

@@ -17,13 +17,13 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Sequence
 
 from pydoll.commands import InputCommands, PageCommands
-from pydoll.elements.web_element import WebElement
+from pydoll.elements.cdp.web_element import WebElement
 from pydoll.exceptions import PydollException
 from pydoll.playwright._errors import Error, TimeoutError
 from pydoll.playwright._events import Deadline
 from pydoll.playwright._keys import modifier_bits
-from pydoll.protocol.input.types import MouseButton, MouseEventType, TouchEventType
-from pydoll.protocol.runtime.types import CallArgument
+from pydoll.protocol.cdp.input.types import MouseButton, MouseEventType, TouchEventType
+from pydoll.protocol.cdp.runtime.types import CallArgument
 
 if TYPE_CHECKING:
     from pydoll.playwright._element_handle import ElementHandle

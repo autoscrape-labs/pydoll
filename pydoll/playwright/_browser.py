@@ -13,20 +13,20 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Sequence, cast
 
 from pydoll.browser.chromium import Chrome
-from pydoll.browser.options import ChromiumOptions
+from pydoll.browser.chromium.options import ChromiumOptions
 from pydoll.commands import TargetCommands
 from pydoll.exceptions import PydollException
 from pydoll.playwright._browser_context import BrowserContext
 from pydoll.playwright._errors import TRANSPORT_ERRORS, Error, TargetClosedError, translate
 from pydoll.playwright._events import EventEmitter
 from pydoll.playwright._page import Page
-from pydoll.protocol.target.events import TargetEvent
+from pydoll.protocol.cdp.target.events import TargetEvent
 
 logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from pydoll.playwright._playwright import BrowserType
-    from pydoll.protocol.target.types import TargetInfo
+    from pydoll.protocol.cdp.target.types import TargetInfo
 
 _CONTEXT_OPTION_NAMES = {
     'viewport',
