@@ -69,7 +69,7 @@ class ProxyManager:
         for index, arg in enumerate(self.options.arguments):
             if arg.startswith('--proxy-server='):
                 value = arg.split('=', 1)[1]
-                logger.debug(f'Found proxy argument at index {index}: {value}')
+                logger.debug('Found proxy argument at index %s', index)
                 return index, value
         return None
 
