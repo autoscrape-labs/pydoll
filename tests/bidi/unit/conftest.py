@@ -16,6 +16,7 @@ import pytest
 
 from pydoll.browser import Firefox
 from pydoll.browser.firefox.tab import BiDiTab
+from pydoll.exceptions import CommandFailed
 
 
 class FakeBiDiConnection:
@@ -31,6 +32,7 @@ class FakeBiDiConnection:
         self.network_logs: list[dict] = []
         self.dialog: dict = {}
         self._results: dict[str, dict] = {}
+        self._errors: dict[str, tuple[str, str]] = {}
         self._callbacks: dict[int, dict] = {}
         self._callback_id = 0
         self._command_id = 0
@@ -38,6 +40,15 @@ class FakeBiDiConnection:
     def set_result(self, method: str, result: dict) -> None:
         """Configure the result payload returned for a BiDi command method."""
         self._results[method] = result
+
+    def set_error(self, method: str, error: str, message: str = '') -> None:
+        """Make a BiDi command method fail the way the real peer reports it.
+
+        The real handler turns ``{type: 'error', error, message}`` into a
+        ``CommandFailed`` whose ``data`` carries the BiDi error code verbatim
+        (for example ``'unknown command'``); the fake raises the same exception.
+        """
+        self._errors[method] = (error, message)
 
     def commands_for(self, method: str) -> list[dict]:
         """Every recorded command matching a BiDi method, in arrival order."""
@@ -55,6 +66,15 @@ class FakeBiDiConnection:
         self._command_id += 1
         command['id'] = self._command_id
         self.commands.append(command)
+        method = getattr(command.get('method'), 'value', command.get('method'))
+        if method in self._errors:
+            error, message = self._errors[method]
+            raise CommandFailed(
+                method=method,
+                code=0,
+                message=f'{error}: {message}' if message else error,
+                data=error,
+            )
         return {
             'type': 'success',
             'id': self._command_id,

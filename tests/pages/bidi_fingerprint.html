@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>BiDi fingerprint probe</title>
+  </head>
+  <body>
+    <h1 id="status">loading</h1>
+    <script>
+      const getterSource = (proto, prop) => {
+        const descriptor = Object.getOwnPropertyDescriptor(proto, prop);
+        return descriptor && descriptor.get ? descriptor.get.toString() : null;
+      };
+      window.__fingerprint = {
+        userAgent: navigator.userAgent,
+        appVersion: navigator.appVersion,
+        platform: navigator.platform,
+        oscpu: navigator.oscpu,
+        hardwareConcurrency: navigator.hardwareConcurrency,
+        maxTouchPoints: navigator.maxTouchPoints,
+        language: navigator.language,
+        languages: Array.from(navigator.languages),
+        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        timezoneOffset: new Date(Date.UTC(2026, 0, 15, 12)).getTimezoneOffset(),
+        screenWidth: screen.width,
+        screenHeight: screen.height,
+        availWidth: screen.availWidth,
+        availHeight: screen.availHeight,
+        colorDepth: screen.colorDepth,
+        innerWidth: window.innerWidth,
+        innerHeight: window.innerHeight,
+        devicePixelRatio: window.devicePixelRatio,
+        hasDeviceMemory: 'deviceMemory' in navigator,
+        hasConnection: 'connection' in navigator,
+        userAgentGetter: getterSource(Navigator.prototype, 'userAgent'),
+        hardwareConcurrencyGetter: getterSource(Navigator.prototype, 'hardwareConcurrency'),
+      };
+      document.getElementById('status').textContent = 'ready';
+    </script>
+  </body>
+</html>

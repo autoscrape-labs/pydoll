@@ -15,6 +15,7 @@ from urllib.parse import urlparse
 
 import aiofiles
 
+from pydoll.browser.firefox.fingerprint_applier import BiDiFingerprintApplier
 from pydoll.browser.requests.bidi.request import BiDiRequest
 from pydoll.commands.bidi.browser_commands import BrowserCommands
 from pydoll.commands.bidi.browsing_context_commands import BrowsingContextCommands
@@ -62,6 +63,7 @@ if TYPE_CHECKING:
     from pydoll.elements.bidi.shadow_root import BiDiShadowRoot
     from pydoll.elements.bidi.web_element import BiDiWebElement
     from pydoll.extractor.model import ExtractionModel
+    from pydoll.protocol.fingerprint.types import FingerprintConfig
 
 logger = logging.getLogger(__name__)
 
@@ -101,6 +103,7 @@ class BiDiTab(BidiFindElementsMixin):
         self._extraction_engine: ExtractionEngine | None = None
         self._network_introspection_enabled = False
         self._response_collector_id: str | None = None
+        self._fingerprint_applier: BiDiFingerprintApplier | None = None
 
     @property
     def mouse(self) -> BiDiMouse:
@@ -330,6 +333,31 @@ class BiDiTab(BidiFindElementsMixin):
                 user_agent=user_agent, contexts=[self._context_id]
             )
         )
+
+    async def apply_fingerprint(self, fingerprint: FingerprintConfig) -> None:
+        """Apply a browser fingerprint profile to this tab.
+
+        Delegates to a per-tab :class:`BiDiFingerprintApplier` (created once and
+        reused), which overrides the identity signals Firefox exposes through the
+        BiDi ``emulation`` module natively and installs the JavaScript overrides as
+        a preload script scoped to this browsing context. Call before navigating
+        for full effect: the preload script runs ahead of page scripts on every
+        navigation, while the current document only receives the JS layer.
+
+        Sections Firefox cannot honour are skipped rather than faked:
+        ``hardware.device_memory``, ``network_connection`` and ``client_hints``
+        (the APIs do not exist in Gecko), ``media_features`` and ``permissions``
+        (no per-tab BiDi command; use ``Firefox.grant_permissions``), and the
+        identity inside Web Workers (BiDi preload scripts reach window realms
+        only). See :class:`BiDiFingerprintApplier` for the native/JS split.
+
+        Args:
+            fingerprint: Fingerprint configuration. Only specified fields are
+                overridden; unspecified fields keep real browser values.
+        """
+        if self._fingerprint_applier is None:
+            self._fingerprint_applier = BiDiFingerprintApplier(self)
+        await self._fingerprint_applier.apply(fingerprint)
 
     async def close(self):
         """Close this tab."""
