@@ -258,9 +258,13 @@ class Chrome(SyncBase):
         cancelled midway: the cleanup completes before the cancellation
         propagates.
 
+        Only a browser this object launched, or reached with ``connect()``,
+        is asked to close: after a start() refused because another browser
+        holds the port, that browser is left alone.
+
         Raises:
             BrowserNotRunning: If there is nothing to stop: no process was
-                launched and no browser answers on the endpoint.
+                launched and no browser reached with ``connect()`` answers.
         """
         return mapping.from_impl(self._run(self._impl.stop()))
 
@@ -348,7 +352,12 @@ class Chrome(SyncBase):
         return mapping.from_impl(self._run(self._impl.get_opened_tabs()))
 
     def get_tab_by_target(self, target: TargetInfo) -> Tab:
-        """Build a Tab for a target, in the context it belongs to when that one was created."""
+        """The Tab of a target, in the context it belongs to when that one was created.
+
+        A target that already has a Tab gets that same Tab back. A new one is
+        kept by the browser like every other tab, so ``close()``, ``stop()``
+        and ``delete_browser_context()`` close its connection.
+        """
         return mapping.from_impl(self._run(self._impl.get_tab_by_target(target=mapping.to_impl(target))))
 
     def set_download_path(self, path: str, browser_context_id: str | None=None):
@@ -606,9 +615,13 @@ class Edge(SyncBase):
         cancelled midway: the cleanup completes before the cancellation
         propagates.
 
+        Only a browser this object launched, or reached with ``connect()``,
+        is asked to close: after a start() refused because another browser
+        holds the port, that browser is left alone.
+
         Raises:
             BrowserNotRunning: If there is nothing to stop: no process was
-                launched and no browser answers on the endpoint.
+                launched and no browser reached with ``connect()`` answers.
         """
         return mapping.from_impl(self._run(self._impl.stop()))
 
@@ -696,7 +709,12 @@ class Edge(SyncBase):
         return mapping.from_impl(self._run(self._impl.get_opened_tabs()))
 
     def get_tab_by_target(self, target: TargetInfo) -> Tab:
-        """Build a Tab for a target, in the context it belongs to when that one was created."""
+        """The Tab of a target, in the context it belongs to when that one was created.
+
+        A target that already has a Tab gets that same Tab back. A new one is
+        kept by the browser like every other tab, so ``close()``, ``stop()``
+        and ``delete_browser_context()`` close its connection.
+        """
         return mapping.from_impl(self._run(self._impl.get_tab_by_target(target=mapping.to_impl(target))))
 
     def set_download_path(self, path: str, browser_context_id: str | None=None):

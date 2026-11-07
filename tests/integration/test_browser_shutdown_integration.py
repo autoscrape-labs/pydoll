@@ -17,7 +17,7 @@ from contextlib import suppress
 import pytest
 
 from pydoll.browser.chromium import Chrome
-from pydoll.exceptions import FailedToStartBrowser, PydollException
+from pydoll.exceptions import BrowserNotRunning, FailedToStartBrowser, PydollException
 from pydoll.protocol.page.events import PageEvent
 from pydoll.utils import get_browser_ws_address
 from tests.browser_options import ci_options
@@ -175,3 +175,33 @@ async def test_start_refuses_a_port_another_browser_already_answers_on(ci_chrome
         assert second._browser_process_manager._process is None
         response = await tab.execute_script('return 1 + 1')
         assert response['result']['result']['value'] == 2
+
+
+@pytest.mark.asyncio
+async def test_a_refused_start_leaves_the_browser_on_the_port_running(ci_chrome_options):
+    async with Chrome(options=ci_chrome_options) as first:
+        tab = await first.start()
+        async with Chrome(options=ci_options(), connection_port=first._connection_port) as second:
+            with pytest.raises(FailedToStartBrowser, match='already in use'):
+                await second.start()
+            with pytest.raises(BrowserNotRunning):
+                await second.stop()
+
+        response = await tab.execute_script('return 1 + 1')
+        assert response['result']['result']['value'] == 2
+
+
+@pytest.mark.asyncio
+async def test_the_same_browser_starts_again_on_its_port_after_stop(ci_chrome_options):
+    """The stopped browser leaves its port in TIME_WAIT, which no longer listens."""
+    browser = Chrome(options=ci_chrome_options)
+    await browser.start()
+    await browser.stop()
+    try:
+        tab = await browser.start()
+        response = await tab.execute_script('return 1 + 1')
+    finally:
+        await browser.stop()
+
+    assert response['result']['result']['value'] == 2
+

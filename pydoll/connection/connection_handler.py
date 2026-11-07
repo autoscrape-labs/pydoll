@@ -93,7 +93,10 @@ class ConnectionHandler:
 
         Opens a connection when there is none, sends a ping frame and waits for
         the pong. A stopped or frozen browser process keeps its socket open, so
-        sending the ping succeeds; only the pong shows it still reads input.
+        sending the ping succeeds; the pong shows the connection is still read.
+        It does not prove that commands are processed: on the Linux CI runners a
+        browser stopped with SIGSTOP was seen answering pings, which is why the
+        Browser's own liveness checks send a CDP command instead.
 
         Args:
             timeout: Seconds to wait for the connection and the pong together.

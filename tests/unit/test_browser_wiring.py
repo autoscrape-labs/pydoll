@@ -8,6 +8,7 @@ with the fast unit suite while still covering the seams between modules.
 from __future__ import annotations
 
 import os
+import subprocess
 
 import pytest
 
@@ -51,6 +52,13 @@ class _FakeProcess:
 
     def send_signal(self, signal_number):
         self.signals.append(signal_number)
+
+
+class _UnreapableProcess(_FakeProcess):
+    """A process that never exits, not even after SIGKILL (stuck in uninterruptible sleep)."""
+
+    def wait(self, timeout=None):
+        raise subprocess.TimeoutExpired('chrome', timeout)
 
 
 def test_chrome_applies_default_arguments_to_real_options():
@@ -193,6 +201,17 @@ async def test_stop_cleans_up_a_browser_that_already_exited_without_cdp(fake_con
     await browser.stop()
 
     assert fake_conn.commands == []
+    assert not os.path.isdir(profile)
+
+
+@pytest.mark.asyncio
+async def test_stop_still_removes_the_profile_when_the_process_cannot_be_reaped(fake_conn):
+    browser = _launched_browser(_UnreapableProcess(), fake_conn)
+    profile = browser._temp_directory_manager.create_temp_dir().name
+
+    with pytest.raises(subprocess.TimeoutExpired):
+        await browser.stop()
+
     assert not os.path.isdir(profile)
 
 

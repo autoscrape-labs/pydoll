@@ -13,8 +13,12 @@ from contextlib import suppress
 import pytest
 
 from pydoll.browser.chromium import Chrome
+from pydoll.browser.tab import Tab
 from pydoll.commands import TargetCommands
 from pydoll.protocol.network.events import NetworkEvent
+from pydoll.protocol.page.events import PageEvent
+from pydoll.utils import get_browser_ws_address
+from tests.browser_options import ci_options
 
 
 @pytest.mark.asyncio
@@ -188,9 +192,58 @@ async def test_closing_a_tab_already_closed_elsewhere_still_unregisters_it(brows
 async def test_closing_a_second_tab_object_for_a_target_closes_the_registered_one(browser, tab):
     callback_id = await tab.on(NetworkEvent.REQUEST_WILL_BE_SENT, lambda _event: None)
     target = next(t for t in await browser.get_targets() if t['targetId'] == tab.target_id)
-    other = await browser.get_tab_by_target(target)
+    other = Tab(browser, **browser._get_tab_kwargs(target['targetId']))
 
     await other.close()
 
     assert tab.target_id not in browser._tabs_opened
     assert await tab.remove_callback(callback_id) is False
+
+
+@pytest.mark.asyncio
+async def test_listing_tabs_twice_at_once_hands_out_one_tab_per_target(browser):
+    response = await browser.execute_command(TargetCommands.create_target(url='about:blank'))
+    target_id = response['result']['targetId']
+
+    first, second = await asyncio.gather(browser.get_opened_tabs(), browser.get_opened_tabs())
+
+    mine = [tab for tab in first + second if tab.target_id == target_id]
+    await mine[0].close()
+    assert len(mine) == 2
+    assert mine[0] is mine[1]
+
+
+@pytest.mark.asyncio
+async def test_a_tab_got_by_target_is_kept_and_closed_with_the_browser(ci_chrome_options):
+    async with Chrome(options=ci_chrome_options) as owner:
+        await owner.start()
+        response = await owner.execute_command(TargetCommands.create_target(url='about:blank'))
+        client = Chrome(options=ci_options())
+        await client.connect(await get_browser_ws_address(owner._connection_port))
+        target = next(
+            t for t in await client.get_targets() if t['targetId'] == response['result']['targetId']
+        )
+        tab = await client.get_tab_by_target(target)
+        callback_id = await tab.on(PageEvent.LOAD_EVENT_FIRED, lambda _event: None)
+
+        assert await client.get_tab_by_target(target) is tab
+        await client.close()
+
+        assert await tab.remove_callback(callback_id) is False
+
+
+@pytest.mark.asyncio
+async def test_connect_through_a_page_websocket_returns_a_usable_tab(ci_chrome_options):
+    async with Chrome(options=ci_chrome_options) as owner:
+        owner_tab = await owner.start()
+        browser_ws = await get_browser_ws_address(owner._connection_port)
+        page_ws = browser_ws.split('/devtools/')[0] + f'/devtools/page/{owner_tab.target_id}'
+        client = Chrome(options=ci_options())
+        try:
+            tab = await client.connect(page_ws)
+            response = await tab.execute_script('return 1 + 1')
+        finally:
+            await client.close()
+
+    assert response['result']['result']['value'] == 2
+

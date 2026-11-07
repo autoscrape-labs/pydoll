@@ -263,15 +263,22 @@ class Browser(ABC):  # noqa: PLR0904
         cancelled midway: the cleanup completes before the cancellation
         propagates.
 
+        Only a browser this object launched, or reached with ``connect()``,
+        is asked to close: after a start() refused because another browser
+        holds the port, that browser is left alone.
+
         Raises:
             BrowserNotRunning: If there is nothing to stop: no process was
-                launched and no browser answers on the endpoint.
+                launched and no browser reached with ``connect()`` answers.
         """
         launched = self._browser_process_manager.was_launched()
+        connected = self._ws_address is not None
         try:
             exited = self._browser_process_manager.exit_code() is not None
-            responsive = not exited and await self._is_browser_running(
-                timeout=self._STOP_RESPONSIVE_TIMEOUT
+            responsive = (
+                (launched or connected)
+                and not exited
+                and await self._is_browser_running(timeout=self._STOP_RESPONSIVE_TIMEOUT)
             )
             if not launched and not responsive:
                 logger.error('Stop called but browser is not running')
@@ -306,11 +313,19 @@ class Browser(ABC):  # noqa: PLR0904
             raise asyncio.CancelledError()
 
     async def _end_process_and_connections(self) -> None:
-        """End the process, close the connections and remove the profile, in that order."""
+        """End the process, close the connections and remove the profile, in that order.
+
+        A step that fails does not keep the later ones from running; its error
+        propagates once they have.
+        """
         loop = asyncio.get_running_loop()
-        await loop.run_in_executor(None, self._browser_process_manager.stop_process)
-        await self._close_connections()
-        await loop.run_in_executor(None, self._temp_directory_manager.cleanup)
+        try:
+            await loop.run_in_executor(None, self._browser_process_manager.stop_process)
+        finally:
+            try:
+                await self._close_connections()
+            finally:
+                await loop.run_in_executor(None, self._temp_directory_manager.cleanup)
 
     async def _close_connections(self) -> None:
         """Close the connection of every Tab handed out, then the browser-level one.
@@ -480,25 +495,21 @@ class Browser(ABC):  # noqa: PLR0904
             if target['type'] == 'page' and 'extension' not in target['url']
         }
         live_target_ids = {target['targetId'] for target in targets}
+        created_contexts = await self._created_browser_contexts()
         for stale_id in set(self._tabs_opened) - live_target_ids:
             await self._forget_tab(stale_id)
         existing_tabs = [
             tab for target_id, tab in self._tabs_opened.items() if target_id in valid_tab_targets
         ]
         remaining_target_ids = list(set(valid_tab_targets) - set(self._tabs_opened))
-        created_contexts = set(await self.get_browser_contexts())
         new_tabs = []
         for target_id in reversed(remaining_target_ids):
             context_id = valid_tab_targets[target_id].get('browserContextId')
-            tab = Tab(
-                self,
-                **self._get_tab_kwargs(
+            new_tabs.append(
+                await self._registered_tab(
                     target_id, context_id if context_id in created_contexts else None
-                ),
+                )
             )
-            await self._apply_user_agent_override(tab)
-            self._tabs_opened[target_id] = tab
-            new_tabs.append(tab)
         logger.debug('Opened tabs resolved: existing=%s, new=%s', len(existing_tabs), len(new_tabs))
         return existing_tabs + new_tabs
 
@@ -509,17 +520,44 @@ class Browser(ABC):  # noqa: PLR0904
             await tab._connection_handler.close()
 
     async def get_tab_by_target(self, target: TargetInfo) -> Tab:
-        """Build a Tab for a target, in the context it belongs to when that one was created."""
+        """The Tab of a target, in the context it belongs to when that one was created.
+
+        A target that already has a Tab gets that same Tab back. A new one is
+        kept by the browser like every other tab, so ``close()``, ``stop()``
+        and ``delete_browser_context()`` close its connection.
+        """
         context_id = target.get('browserContextId')
-        created_contexts = set(await self.get_browser_contexts())
-        tab = Tab(
-            self,
-            **self._get_tab_kwargs(
-                target['targetId'], context_id if context_id in created_contexts else None
-            ),
+        created_contexts = await self._created_browser_contexts()
+        return await self._registered_tab(
+            target['targetId'], context_id if context_id in created_contexts else None
         )
+
+    async def _registered_tab(self, target_id: str, browser_context_id: str | None) -> Tab:
+        """The Tab kept for a target, creating and keeping it first if there is none.
+
+        The Tab is kept before anything is awaited, so two callers racing for
+        the same new target share one Tab instead of leaving one unclosed.
+        """
+        tab = self._tabs_opened.get(target_id)
+        if tab is not None:
+            return tab
+        tab = Tab(self, **self._get_tab_kwargs(target_id, browser_context_id))
+        self._tabs_opened[target_id] = tab
         await self._apply_user_agent_override(tab)
         return tab
+
+    async def _created_browser_contexts(self) -> set[str]:
+        """Ids of the browser contexts there are, or none where the session may not list them.
+
+        Chrome answers ``Target.getBrowserContexts`` only on the browser
+        session; through ``connect()`` with a page's WebSocket address it
+        refuses, and tabs are then kept without a context, as before.
+        """
+        try:
+            return set(await self.get_browser_contexts())
+        except CommandFailed as exc:
+            logger.debug('Browser contexts unavailable on this session: %s', exc)
+            return set()
 
     async def set_download_path(self, path: str, browser_context_id: str | None = None):
         """Set download directory path (convenience method for set_download_behavior)."""
@@ -1094,8 +1132,8 @@ class Browser(ABC):  # noqa: PLR0904
     async def _answers_cdp(self, timeout: float) -> bool:
         """Whether the browser answers a CDP command within ``timeout`` seconds.
 
-        A pong does not prove it: on Linux a stopped (SIGSTOP) browser was seen
-        answering pings while leaving every command unanswered. A
+        A pong does not prove it: on the Linux CI runners a browser stopped with
+        SIGSTOP was seen answering pings while leaving every command unanswered. A
         ``Browser.getVersion`` round trip is answered only by a browser that
         processes commands.
         """
