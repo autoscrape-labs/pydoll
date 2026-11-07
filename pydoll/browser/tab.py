@@ -610,6 +610,7 @@ class Tab(FindElementsMixin):
         browser_handler = ConnectionHandler(
             connection_port=self._connection_port,
             ws_address=self._ws_address,
+            max_message_size=self._browser.options.max_message_size,
         )
         try:
             targets_response: GetTargetsResponse = await browser_handler.execute_command(
@@ -2072,15 +2073,18 @@ class Tab(FindElementsMixin):
         await self._connection_handler.clear_callbacks()
 
     def _get_connection_handler(self) -> ConnectionHandler:
+        max_message_size = self._browser.options.max_message_size
         if self._ws_address:
             logger.debug('Using WebSocket address for connection handler')
-            return ConnectionHandler(ws_address=self._ws_address)
+            return ConnectionHandler(ws_address=self._ws_address, max_message_size=max_message_size)
         logger.debug(
             'Using port/target for connection handler: port=%s, target_id=%s',
             self._connection_port,
             self._target_id,
         )
-        return ConnectionHandler(self._connection_port, self._target_id)
+        return ConnectionHandler(
+            self._connection_port, self._target_id, max_message_size=max_message_size
+        )
 
     @staticmethod
     def _get_evaluate_command(
@@ -2174,6 +2178,8 @@ class Tab(FindElementsMixin):
 
         Raises:
             PageLoadTimeout: If the page doesn't reach the target state in time.
+            WebSocketConnectionClosed: If the tab's connection drops before the
+                load event arrives, since the event can no longer be delivered.
         """
         target_state = self._browser.options.page_load_state
 
@@ -2192,7 +2198,7 @@ class Tab(FindElementsMixin):
 
         try:
             yield
-            await asyncio.wait_for(page_loaded.wait(), timeout=timeout)
+            await self._wait_loaded_or_disconnected(page_loaded, timeout)
             logger.debug('Page load event received: %s', event_name)
         except asyncio.TimeoutError:
             logger.error(f'Page load timeout after {timeout}s waiting for {event_name}')
@@ -2203,6 +2209,29 @@ class Tab(FindElementsMixin):
             if cleanup_page_events:
                 with contextlib.suppress(Exception):
                     await self.disable_page_events()
+
+    async def _wait_loaded_or_disconnected(self, page_loaded: asyncio.Event, timeout: int) -> None:
+        """Wait for the load event, failing at once if the tab's connection drops first.
+
+        Raises:
+            asyncio.TimeoutError: If neither happens within ``timeout`` seconds.
+            WebSocketConnectionClosed: If the connection drops before the event.
+        """
+        loaded = asyncio.ensure_future(page_loaded.wait())
+        disconnected = asyncio.ensure_future(self._connection_handler.wait_disconnected())
+        try:
+            await asyncio.wait(
+                {loaded, disconnected}, timeout=timeout, return_when=asyncio.FIRST_COMPLETED
+            )
+        finally:
+            loaded.cancel()
+            disconnected.cancel()
+        if page_loaded.is_set():
+            return
+        if disconnected.done() and not disconnected.cancelled():
+            logger.error('Tab connection closed while waiting for the page to load')
+            raise disconnected.result()
+        raise asyncio.TimeoutError()
 
     async def _find_cloudflare_shadow_root(self) -> ShadowRoot | None:
         """Return the Cloudflare Turnstile shadow root if currently present.

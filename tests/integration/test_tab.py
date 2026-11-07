@@ -15,7 +15,7 @@ from typing import Any, Callable
 
 import pytest
 
-from pydoll.exceptions import WaitTimeout
+from pydoll.exceptions import WaitTimeout, WebSocketConnectionClosed
 
 
 async def _wait_until(condition: Callable[[], Any], timeout: float = 2.0) -> Any:
@@ -78,6 +78,17 @@ async def test_go_to_navigates_waits_for_load_and_restores_page_events(cdp_serve
     navigate = cdp_server.commands_for('Page.navigate')[-1]
     assert navigate['params']['url'] == 'https://example.com'
     assert fake_tab.page_events_enabled is False
+
+
+@pytest.mark.asyncio
+async def test_go_to_fails_fast_when_the_connection_drops_while_waiting_for_load(
+    cdp_server, fake_tab
+):
+    navigation = asyncio.create_task(fake_tab.go_to('https://example.com', timeout=30))
+    await _wait_until(lambda: cdp_server.commands_for('Page.navigate'))
+    await cdp_server.drop_connections()
+    with pytest.raises(WebSocketConnectionClosed):
+        await asyncio.wait_for(navigation, timeout=5)
 
 
 @pytest.mark.asyncio

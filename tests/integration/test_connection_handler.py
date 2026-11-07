@@ -161,6 +161,105 @@ async def test_large_frame_is_received(cdp_server):
 
 
 @pytest.mark.asyncio
+async def test_default_size_limit_accepts_a_message_larger_than_ten_mebibytes(cdp_server):
+    big_payload = 'x' * (12 * 1024 * 1024)
+    cdp_server.set_result('Page.captureScreenshot', {'data': big_payload})
+    handler = ConnectionHandler(ws_address=cdp_server.ws_address)
+    try:
+        result = await handler.execute_command({'method': 'Page.captureScreenshot'})
+    finally:
+        await handler.close()
+
+    assert len(result['result']['data']) == len(big_payload)
+
+
+@pytest.mark.asyncio
+async def test_message_over_the_size_limit_closes_the_connection_and_names_the_limit(cdp_server):
+    cdp_server.hang('Runtime.evaluate')
+    handler = ConnectionHandler(ws_address=cdp_server.ws_address, max_message_size=64 * 1024)
+    try:
+        pending = asyncio.create_task(handler.execute_command({'method': 'Runtime.evaluate'}))
+        await _wait_until(lambda: bool(cdp_server.commands_for('Runtime.evaluate')))
+        await cdp_server.push_event(
+            'Network.requestWillBeSent', {'request': {'postData': 'y' * (128 * 1024)}}
+        )
+        with pytest.raises(WebSocketConnectionClosed, match='max_message_size'):
+            await asyncio.wait_for(pending, timeout=5)
+        assert handler.network_logs == []
+    finally:
+        await handler.close()
+
+
+@pytest.mark.asyncio
+async def test_browser_closing_with_message_too_big_is_not_blamed_on_the_limit(cdp_server):
+    cdp_server.hang('Runtime.evaluate')
+    handler = ConnectionHandler(ws_address=cdp_server.ws_address, max_message_size=64 * 1024)
+    try:
+        pending = asyncio.create_task(handler.execute_command({'method': 'Runtime.evaluate'}))
+        await _wait_until(lambda: bool(cdp_server.commands_for('Runtime.evaluate')))
+        await cdp_server.drop_connections(code=1009)
+        with pytest.raises(WebSocketConnectionClosed) as raised:
+            await asyncio.wait_for(pending, timeout=5)
+    finally:
+        await handler.close()
+
+    assert 'max_message_size' not in str(raised.value)
+
+
+@pytest.mark.asyncio
+async def test_connection_reopens_after_an_oversized_message(cdp_server):
+    cdp_server.set_result('Browser.getVersion', {'product': 'FakeChrome/1.0'})
+    handler = ConnectionHandler(ws_address=cdp_server.ws_address, max_message_size=64 * 1024)
+    try:
+        await handler.execute_command({'method': 'Browser.getVersion'})
+        await cdp_server.push_event('Network.webSocketFrameReceived', {'data': 'z' * (128 * 1024)})
+        await _wait_until(lambda: cdp_server.active_connections == 0)
+        result = await handler.execute_command({'method': 'Browser.getVersion'})
+    finally:
+        await handler.close()
+
+    assert result['result'] == {'product': 'FakeChrome/1.0'}
+    assert cdp_server.total_connections == 2
+
+
+@pytest.mark.asyncio
+async def test_wait_disconnected_returns_when_the_connection_drops(cdp_server):
+    handler = ConnectionHandler(ws_address=cdp_server.ws_address)
+    try:
+        await handler.execute_command({'method': 'Page.enable'})
+        waiter = asyncio.create_task(handler.wait_disconnected())
+        await asyncio.sleep(0.05)
+        assert not waiter.done()
+        await cdp_server.drop_connections()
+        error = await asyncio.wait_for(waiter, timeout=5)
+    finally:
+        await handler.close()
+
+    assert isinstance(error, WebSocketConnectionClosed)
+
+
+@pytest.mark.asyncio
+async def test_wait_disconnected_returns_at_once_without_a_connection(cdp_server):
+    handler = ConnectionHandler(ws_address=cdp_server.ws_address)
+    error = await asyncio.wait_for(handler.wait_disconnected(), timeout=1)
+    assert isinstance(error, WebSocketConnectionClosed)
+
+
+@pytest.mark.asyncio
+async def test_wait_disconnected_names_the_size_limit_after_an_oversized_message(cdp_server):
+    handler = ConnectionHandler(ws_address=cdp_server.ws_address, max_message_size=64 * 1024)
+    try:
+        await handler.execute_command({'method': 'Page.enable'})
+        waiter = asyncio.create_task(handler.wait_disconnected())
+        await cdp_server.push_event('Network.webSocketFrameReceived', {'data': 'z' * (128 * 1024)})
+        error = await asyncio.wait_for(waiter, timeout=5)
+    finally:
+        await handler.close()
+
+    assert 'max_message_size' in str(error)
+
+
+@pytest.mark.asyncio
 async def test_in_flight_command_fails_when_connection_drops(cdp_server):
     cdp_server.hang('Page.navigate')
     handler = ConnectionHandler(ws_address=cdp_server.ws_address)
@@ -282,9 +381,7 @@ async def test_command_after_server_shutdown_raises_without_hanging(cdp_server):
         await handler.execute_command({'method': 'Page.enable'})
         await cdp_server.stop()
         with pytest.raises((OSError, WebSocketConnectionClosed)):
-            await asyncio.wait_for(
-                handler.execute_command({'method': 'Page.enable'}), timeout=5
-            )
+            await asyncio.wait_for(handler.execute_command({'method': 'Page.enable'}), timeout=5)
     finally:
         await handler.close()
 

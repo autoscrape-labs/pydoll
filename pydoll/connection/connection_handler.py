@@ -9,9 +9,11 @@ from typing import TYPE_CHECKING, Sequence, cast
 
 import websockets
 from websockets.asyncio.client import ClientConnection
+from websockets.frames import CloseCode
 from websockets.protocol import State
 
 from pydoll.connection.managers import CommandsManager, EventsManager
+from pydoll.constants import DEFAULT_MAX_MESSAGE_SIZE
 from pydoll.exceptions import (
     CommandExecutionTimeout,
     CommandFailed,
@@ -46,6 +48,7 @@ class ConnectionHandler:
         ws_address_resolver: Callable[[int], Coroutine[Any, Any, str]] = get_browser_ws_address,
         ws_connector: type[Connect] = websockets.connect,
         ws_address: str | None = None,
+        max_message_size: int | None = DEFAULT_MAX_MESSAGE_SIZE,
     ):
         """
         Initialize connection handler.
@@ -56,16 +59,19 @@ class ConnectionHandler:
             ws_address_resolver: Function to resolve WebSocket URL from port.
             ws_connector: WebSocket connection factory (mainly for testing).
             ws_address: WebSocket address. It has priority over connection_port and page_id.
+            max_message_size: Largest message, in bytes, the connection accepts. A
+                larger one closes the connection. None removes the limit.
         """
         self._connection_port = connection_port
         self._page_id = page_id
         self._ws_address_resolver = ws_address_resolver
         self._ws_connector = ws_connector
         self._ws_address = ws_address
+        self._max_message_size = max_message_size
         self._ws_connection: ClientConnection | None = None
         self._command_manager = CommandsManager()
         self._events_handler = EventsManager()
-        self._receive_task: asyncio.Task | None = None
+        self._receive_task: asyncio.Task[WebSocketConnectionClosed] | None = None
         self._connection_lock = asyncio.Lock()
         logger.info('ConnectionHandler initialized.')
         logger.debug(
@@ -74,6 +80,11 @@ class ConnectionHandler:
             self._page_id,
             bool(self._ws_address),
         )
+
+    @property
+    def max_message_size(self) -> int | None:
+        """Largest message, in bytes, this connection accepts (None means no limit)."""
+        return self._max_message_size
 
     @property
     def network_logs(self):
@@ -94,6 +105,27 @@ class ConnectionHandler:
             logger.debug('Ping OK')
             return True
         return False
+
+    async def wait_disconnected(self) -> WebSocketConnectionClosed:
+        """Wait until the current connection stops receiving messages.
+
+        A caller waiting for an event, rather than for a command's answer, is
+        not failed when the connection drops, because no pending command
+        stands for it. Racing its wait against this lets it stop as soon as the
+        connection that would have delivered the event is gone.
+
+        Returns:
+            The error describing why the connection closed, the same one its
+            pending commands received. Returned at once when there is no live
+            connection.
+        """
+        receive_task = self._receive_task
+        if receive_task is None:
+            return WebSocketConnectionClosed()
+        await asyncio.wait({receive_task})
+        if receive_task.cancelled():
+            return WebSocketConnectionClosed()
+        return receive_task.result()
 
     async def execute_command(
         self, command: Command[T_CommandParams, T_CommandResponse], timeout: int = 60
@@ -343,7 +375,7 @@ class ConnectionHandler:
         logger.info('Connecting to %s', ws_address)
         self._ws_connection = await self._ws_connector(
             ws_address,
-            max_size=None,
+            max_size=self._max_message_size,
         )
         self._events_handler.start()
         self._receive_task = asyncio.create_task(self._receive_events())
@@ -381,14 +413,18 @@ class ConnectionHandler:
         await self._teardown_connection()
         logger.info('Connection resources cleaned up')
 
-    async def _receive_events(self):
+    async def _receive_events(self) -> WebSocketConnectionClosed:
         """Main loop for receiving and processing WebSocket messages.
 
         A single unparseable/malformed message is logged and skipped so it can
         never kill the reader. When the loop exits for any reason, all in-flight
         commands are failed so callers raise immediately instead of hanging
         until their timeout expires on a connection nobody is reading.
+
+        Returns:
+            The error those commands received, for ``wait_disconnected``.
         """
+        closed_error = WebSocketConnectionClosed()
         try:
             async for raw_message in self._incoming_messages():
                 try:
@@ -397,11 +433,37 @@ class ConnectionHandler:
                     logger.exception('Error processing WebSocket message; skipping')
         except websockets.ConnectionClosed as e:
             logger.info('WebSocket connection closed: %s', e)
+            closed_error = self._closed_error(e)
         except Exception:
             logger.exception('Fatal error in WebSocket receive loop')
         finally:
-            self._command_manager.fail_all_pending(WebSocketConnectionClosed())
+            self._command_manager.fail_all_pending(closed_error)
             await self._events_handler.stop()
+        return closed_error
+
+    def _closed_error(self, error: websockets.ConnectionClosed) -> WebSocketConnectionClosed:
+        """Build the error for commands left waiting on a closed connection.
+
+        When this side closed the connection because the browser sent a
+        message larger than ``max_message_size``, the error names the limit and
+        how to raise it, since nothing else tells the caller why a working tab
+        dropped. A 1009 the browser sent first is echoed back with the same
+        code, so ``rcvd_then_sent`` tells the two apart.
+        """
+        closed_for_size = (
+            error.sent is not None
+            and error.sent.code == CloseCode.MESSAGE_TOO_BIG
+            and error.rcvd_then_sent is not True
+        )
+        if not closed_for_size:
+            return WebSocketConnectionClosed()
+        message = (
+            f'The browser sent a CDP message larger than max_message_size '
+            f'({self._max_message_size} bytes), so the connection was closed. '
+            f'Raise ChromiumOptions.max_message_size to accept larger messages.'
+        )
+        logger.error(message)
+        return WebSocketConnectionClosed(message)
 
     async def _incoming_messages(self) -> AsyncGenerator[str | bytes, None]:
         """Generator yielding raw messages from WebSocket connection."""
@@ -410,7 +472,7 @@ class ConnectionHandler:
         while ws.state is not State.CLOSED:
             yield await ws.recv()
 
-    def _process_single_message(self, raw_message: str):
+    def _process_single_message(self, raw_message: str | bytes):
         """Route a single raw WebSocket message.
 
         Command responses are resolved inline (fast, synchronous) so they are
@@ -427,12 +489,12 @@ class ConnectionHandler:
             self._events_handler.enqueue_event(cast(CDPEvent, message))
 
     @staticmethod
-    def _parse_message(raw_message: str) -> CDPEvent | Response | None:
+    def _parse_message(raw_message: str | bytes) -> CDPEvent | Response | None:
         """Parse raw message string into JSON object."""
         try:
             return json.loads(raw_message)
         except json.JSONDecodeError:
-            logger.warning(f'Failed to parse message: {raw_message[:200]}...')
+            logger.warning('Failed to parse message: %r...', raw_message[:200])
             return None
 
     @staticmethod

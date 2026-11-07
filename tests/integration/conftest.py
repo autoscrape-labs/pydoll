@@ -98,10 +98,10 @@ class FakeCDPServer:
         """Send an arbitrary, possibly malformed, frame to every client."""
         await self._broadcast(payload)
 
-    async def drop_connections(self) -> None:
-        """Close every active client connection from the server side."""
+    async def drop_connections(self, code: int = 1000) -> None:
+        """Close every active client connection from the server side with a close code."""
         for connection in list(self._connections):
-            await connection.close()
+            await connection.close(code=code)
 
     async def _broadcast(self, payload: str) -> None:
         for connection in list(self._connections):
