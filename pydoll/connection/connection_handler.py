@@ -132,6 +132,7 @@ class ConnectionHandler:
         self._connection_lock = asyncio.Lock()
         self._target_crashed = False
         self._enabled_domains: dict[str, Command] = {}
+        self._session_domains: set[str] = set()
         logger.info('ConnectionHandler initialized.')
         logger.debug(
             'Init params: port=%s, page_id=%s, ws_address_set=%s',
@@ -220,6 +221,7 @@ class ConnectionHandler:
         """
         self._raise_if_target_crashed(command)
         await self._ensure_active_connection()
+        self._raise_if_target_crashed(command)
         return await self._send_command(command, timeout)
 
     async def _send_command(
@@ -231,10 +233,9 @@ class ConnectionHandler:
         holds the connection lock.
         """
         future = self._command_manager.create_command_future(command)
-        command_str = json.dumps(command)
-
         try:
-            ws = cast(ClientConnection, self._ws_connection)
+            command_str = json.dumps(command)
+            ws = self._current_connection()
             logger.debug(
                 'Sending command: id=%s, method=%s, timeout=%ss',
                 command.get('id'),
@@ -251,17 +252,30 @@ class ConnectionHandler:
             self._track_domain_state(command)
             return response_data
         except asyncio.TimeoutError:
-            self._command_manager.remove_pending_command(command['id'])
+            self._command_manager.remove_pending_command(command['id'], future)
             logger.error(
                 f'Command timeout: id={command.get("id")}, method={command.get("method")}, '
                 f'timeout={timeout}s'
             )
             raise CommandExecutionTimeout()
         except websockets.ConnectionClosed:
-            self._command_manager.remove_pending_command(command['id'])
+            self._command_manager.remove_pending_command(command['id'], future)
             await self._handle_connection_loss()
             logger.warning(f'WebSocket connection closed during command: id={command.get("id")}')
             raise WebSocketConnectionClosed()
+        except BaseException:
+            self._command_manager.remove_pending_command(command['id'], future)
+            raise
+
+    def _current_connection(self) -> ClientConnection:
+        """The open connection, or WebSocketConnectionClosed if it was torn down meanwhile.
+
+        Another task (``close()``, a dropped connection) can tear the connection
+        down between opening it and sending on it.
+        """
+        if self._ws_connection is None:
+            raise WebSocketConnectionClosed()
+        return self._ws_connection
 
     async def execute_command_nowait(
         self, command: Command[T_CommandParams, T_CommandResponse]
@@ -280,49 +294,68 @@ class ConnectionHandler:
 
         Raises:
             ConnectionFailed: If the connection cannot be (re)established.
+            WebSocketConnectionClosed: If the connection closes before the command is sent.
             TargetCrashed: If the target's renderer crashed and the command needs it.
         """
         self._raise_if_target_crashed(command)
         await self._ensure_active_connection()
+        self._raise_if_target_crashed(command)
         future = self._command_manager.create_command_future(command)
         future.add_done_callback(lambda done: self._log_discarded_answer(command, done))
-        ws = cast(ClientConnection, self._ws_connection)
         logger.debug(
             'Sending command without waiting: id=%s, method=%s',
             command.get('id'),
             command.get('method'),
         )
-        await ws.send(json.dumps(command))
+        try:
+            payload = json.dumps(command)
+            await self._current_connection().send(payload)
+        except websockets.ConnectionClosed:
+            self._command_manager.remove_pending_command(command['id'], future)
+            await self._handle_connection_loss()
+            raise WebSocketConnectionClosed()
+        except BaseException:
+            self._command_manager.remove_pending_command(command['id'], future)
+            raise
 
     def _track_domain_state(self, command: Command) -> None:
         """Remember which domains this session has enabled, and with what parameters.
 
         Domain state belongs to the CDP session, so a new connection starts
         with every domain off. What is remembered here is enabled again on it.
+        A command for a child session (an attached iframe or worker, sent with
+        ``sessionId``) belongs to that session, not to this connection's own.
         """
+        if 'sessionId' in command:
+            return
         method = self._method_name(command)
         if method in DOMAIN_DISABLE_FOR_ENABLE:
             self._enabled_domains[method] = {
                 'method': method,
                 'params': dict(command.get('params', {})),
             }
+            self._session_domains.add(method)
         elif method in DOMAIN_ENABLE_FOR_DISABLE:
-            self._enabled_domains.pop(DOMAIN_ENABLE_FOR_DISABLE[method], None)
+            enable = DOMAIN_ENABLE_FOR_DISABLE[method]
+            self._enabled_domains.pop(enable, None)
+            self._session_domains.discard(enable)
 
     async def _restore_enabled_domains(self) -> None:
-        """Enable again, on a new session, the domains the previous one had on.
+        """Enable on the current session the domains it lacks but should have on.
 
-        Runs before the command that triggered the reconnect, so it never runs
-        with less state than the tab reports. A domain the new session rejects
-        is logged and forgotten; a connection that fails meanwhile stops the
-        restore, and the caller's command reports it.
+        Runs before the caller's command, so it never runs with less state
+        than the tab reports. A domain the session rejects is logged and
+        forgotten. A crash stops the restore until the renderer is reloaded,
+        since a crashed renderer never answers. Any other failure (a timeout,
+        the connection closing, a cancellation) propagates, and
+        ``_restore_or_drop`` tears the connection down so the next command
+        starts over.
         """
-        if not self._enabled_domains:
-            return
         if self._target_crashed:
-            logger.warning('Not enabling domains again on a crashed target')
             return
         for method, enable in list(self._enabled_domains.items()):
+            if method in self._session_domains:
+                continue
             logger.info('Enabling %s again on the new session', method)
             try:
                 await self._send_command(
@@ -332,17 +365,42 @@ class ConnectionHandler:
             except (CommandFailed, InvalidResponse) as exc:
                 logger.warning('New session rejected %s, so it stays off: %s', method, exc)
                 self._enabled_domains.pop(method, None)
-            except (CommandExecutionTimeout, WebSocketConnectionClosed, TargetCrashed) as exc:
-                logger.warning('Could not enable %s again on the new session: %s', method, exc)
+            except TargetCrashed:
+                logger.warning(
+                    'Target crashed while enabling %s again; resuming after reload', method
+                )
                 return
+
+    async def _restore_or_drop(self) -> None:
+        """Restore the session's domains, tearing the connection down if that fails.
+
+        A session left half set up would report domains as on that are off, so
+        it is never handed to a caller.
+        """
+        try:
+            await self._restore_enabled_domains()
+        except BaseException:
+            await self._teardown_connection()
+            raise
+
+    def _session_lacks_domains(self) -> bool:
+        """Whether the live session misses a domain that should be on.
+
+        Happens after a restore cut short and after a renderer that crashed
+        while the connection was down is reloaded.
+        """
+        if self._target_crashed:
+            return False
+        return any(method not in self._session_domains for method in self._enabled_domains)
 
     def _raise_if_target_crashed(self, command: Command) -> None:
         """Refuse a command the crashed renderer would never answer.
 
         Commands the browser process serves (navigation, closing, cookies and
-        the browser-wide domains) still go through, so the tab can recover.
+        the browser-wide domains) still go through, so the tab can recover, and
+        so do commands for child sessions, which have renderers of their own.
         """
-        if not self._target_crashed:
+        if not self._target_crashed or 'sessionId' in command:
             return
         if command.get('method', '') in COMMANDS_ANSWERED_AFTER_CRASH:
             return
@@ -404,28 +462,56 @@ class ConnectionHandler:
         for command in commands:
             self._raise_if_target_crashed(command)
         await self._ensure_active_connection()
-        ws = cast(ClientConnection, self._ws_connection)
+        for command in commands:
+            self._raise_if_target_crashed(command)
         futures = [self._command_manager.create_command_future(command) for command in commands]
         try:
-            for command in commands:
-                await ws.send(json.dumps(command))
+            payloads = [json.dumps(command) for command in commands]
+            ws = self._current_connection()
+            for payload in payloads:
+                await ws.send(payload)
             responses: list[str] = await asyncio.wait_for(asyncio.gather(*futures), timeout)
         except asyncio.TimeoutError:
-            for command in commands:
-                self._command_manager.remove_pending_command(command['id'])
+            self._forget_batch(commands, futures)
             logger.error('Batch of %d commands timed out after %ss', len(commands), timeout)
             raise CommandExecutionTimeout()
         except websockets.ConnectionClosed:
-            for command in commands:
-                self._command_manager.remove_pending_command(command['id'])
+            self._forget_batch(commands, futures)
             await self._handle_connection_loss()
             raise WebSocketConnectionClosed()
+        except BaseException:
+            self._forget_batch(commands, futures)
+            raise
+        return self._batch_results(commands, responses)
+
+    def _forget_batch(self, commands: Sequence[Command], futures: list[asyncio.Future]) -> None:
+        """Drop a batch's commands from the pending table once nobody waits for them."""
+        for command, future in zip(commands, futures):
+            self._command_manager.remove_pending_command(command['id'], future)
+
+    def _batch_results(
+        self,
+        commands: Sequence[Command[T_CommandParams, T_CommandResponse]],
+        responses: list[str],
+    ) -> list[T_CommandResponse]:
+        """Parse a batch's answers, recording every command that succeeded.
+
+        A rejected command does not hide the domains the others enabled, so
+        all answers are read before the first failure is raised.
+        """
         results: list[T_CommandResponse] = []
+        failure: CommandFailed | InvalidResponse | None = None
         for command, raw in zip(commands, responses):
             response_data = json.loads(raw)
-            self._raise_if_failed(command, response_data)
+            try:
+                self._raise_if_failed(command, response_data)
+            except (CommandFailed, InvalidResponse) as exc:
+                failure = failure or exc
+                continue
             self._track_domain_state(command)
             results.append(response_data)
+        if failure is not None:
+            raise failure
         return results
 
     @staticmethod
@@ -489,20 +575,15 @@ class ConnectionHandler:
         """Close WebSocket connection and release resources.
 
         The domains this session had enabled are forgotten too, so a later
-        command opens a connection with every domain off.
+        command opens a connection with every domain off. A connection being
+        opened meanwhile is torn down once it is up, so none is left open.
         """
         await self.clear_callbacks()
         self._enabled_domains.clear()
+        await self._handle_connection_loss()
+        async with self._connection_lock:
+            await self._handle_connection_loss()
         await self._events_handler.stop()
-
-        if self._receive_task and not self._receive_task.done():
-            self._receive_task.cancel()
-            with suppress(asyncio.CancelledError, Exception):
-                await self._receive_task
-
-        if self._ws_connection is not None:
-            with suppress(websockets.ConnectionClosed, Exception):
-                await self._ws_connection.close()
         logger.info('WebSocket connection closed.')
 
     def _is_connection_healthy(self) -> bool:
@@ -526,12 +607,18 @@ class ConnectionHandler:
         still enabling its domains again, so this waits for the lock instead
         of sending ahead of that.
         """
-        if self._is_connection_healthy() and not self._connection_lock.locked():
+        if (
+            self._is_connection_healthy()
+            and not self._connection_lock.locked()
+            and not self._session_lacks_domains()
+        ):
             return
         async with self._connection_lock:
             if not self._is_connection_healthy():
                 logger.debug('No healthy WebSocket connection; establishing new one')
                 await self._establish_new_connection()
+            elif self._session_lacks_domains():
+                await self._restore_or_drop()
 
     async def _establish_new_connection(self):
         """Create fresh WebSocket connection and start event listening.
@@ -556,7 +643,7 @@ class ConnectionHandler:
         self._events_handler.start()
         self._receive_task = asyncio.create_task(self._receive_events())
         logger.debug('WebSocket connection established')
-        await self._restore_enabled_domains()
+        await self._restore_or_drop()
 
     @staticmethod
     def _without_credentials(ws_address: str) -> str:
@@ -569,17 +656,23 @@ class ConnectionHandler:
         return urlunsplit((parts.scheme, parts.netloc, parts.path, '', ''))
 
     async def _teardown_connection(self):
-        """Cancel the receive task and close any existing socket before reconnecting."""
-        if self._receive_task and not self._receive_task.done():
-            self._receive_task.cancel()
-            with suppress(asyncio.CancelledError, Exception):
-                await self._receive_task
+        """Cancel the receive task and close any existing socket before reconnecting.
+
+        The receive task is awaited with ``asyncio.wait``, which does not raise
+        its cancellation here, so a cancellation of the task calling this one
+        is not swallowed along with it.
+        """
+        receive_task = self._receive_task
+        if receive_task is not None and not receive_task.done():
+            receive_task.cancel()
+            await asyncio.wait({receive_task})
         self._receive_task = None
 
         if self._ws_connection is not None and self._ws_connection.state is not State.CLOSED:
             with suppress(Exception):
                 await self._ws_connection.close()
         self._ws_connection = None
+        self._session_domains.clear()
 
     async def _resolve_ws_address(self):
         """Determine correct WebSocket address based on page ID."""
@@ -608,6 +701,11 @@ class ConnectionHandler:
         commands are failed so callers raise immediately instead of hanging
         until their timeout expires on a connection nobody is reading.
 
+        The event worker is cancelled without being awaited: a callback running
+        in it may itself be waiting for this loop to end (tearing the
+        connection down to reconnect), and waiting on each other would hang
+        both forever.
+
         Returns:
             The error those commands received, for ``wait_disconnected``.
         """
@@ -625,7 +723,7 @@ class ConnectionHandler:
             logger.exception('Fatal error in WebSocket receive loop')
         finally:
             self._command_manager.fail_all_pending(closed_error)
-            await self._events_handler.stop()
+            self._events_handler.cancel_worker()
         return closed_error
 
     def _closed_error(self, error: websockets.ConnectionClosed) -> WebSocketConnectionClosed:
@@ -682,8 +780,12 @@ class ConnectionHandler:
         Handled here, in arrival order with command answers, rather than in
         the event worker: the commands pending when the renderer crashed fail
         at once, and the recovery event is seen before the answer to the
-        navigation that caused it.
+        navigation that caused it. Events of a child session (an attached
+        iframe with a renderer of its own) are about that session, not this
+        connection's target.
         """
+        if 'sessionId' in event:
+            return
         method = event.get('method')
         if method == InspectorEvent.TARGET_CRASHED:
             logger.error('Target renderer crashed; failing pending commands')

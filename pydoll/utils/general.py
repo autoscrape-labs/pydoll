@@ -117,6 +117,10 @@ def decode_base64_to_bytes(image: str) -> bytes:
     return base64.b64decode(image.encode('utf-8'))
 
 
+WS_ADDRESS_LOOKUP_TIMEOUT = 10
+"""Seconds to wait for the browser's /json/version answer before giving up."""
+
+
 async def get_browser_ws_address(port: int) -> str:
     """
     Fetches the WebSocket address for the browser instance.
@@ -129,8 +133,9 @@ async def get_browser_ws_address(port: int) -> str:
             or missing data.
         InvalidResponse: If the response is not valid JSON.
     """
+    timeout = aiohttp.ClientTimeout(total=WS_ADDRESS_LOOKUP_TIMEOUT)
     try:
-        async with aiohttp.ClientSession() as session:
+        async with aiohttp.ClientSession(timeout=timeout) as session:
             async with session.get(f'http://localhost:{port}/json/version') as response:
                 response.raise_for_status()
                 data = await response.json()
@@ -138,6 +143,12 @@ async def get_browser_ws_address(port: int) -> str:
 
     except aiohttp.ClientError as e:
         raise NetworkError(f'Failed to get browser ws address: {e}')
+
+    except asyncio.TimeoutError:
+        raise NetworkError(
+            f'Failed to get browser ws address: port {port} did not answer within '
+            f'{WS_ADDRESS_LOOKUP_TIMEOUT}s'
+        )
 
     except KeyError as e:
         raise InvalidResponse(f'Failed to get browser ws address: {e}')

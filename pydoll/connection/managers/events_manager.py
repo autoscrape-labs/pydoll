@@ -3,7 +3,6 @@ from __future__ import annotations
 import asyncio
 import logging
 from collections import deque
-from contextlib import suppress
 from typing import TYPE_CHECKING, cast
 
 from pydoll.protocol.page.events import (
@@ -60,18 +59,33 @@ class EventsManager:
         """
         self._event_queue.put_nowait(event_data)
 
+    def cancel_worker(self) -> None:
+        """Cancel the worker without waiting for it, and drop any queued events.
+
+        For the receive loop, which a callback running in the worker may itself
+        be waiting on. The cancelled task stays scheduled until it finishes,
+        and the worker loop only runs while it is the current worker, so a new
+        one started meanwhile never shares the queue with it.
+        """
+        if self._worker_task is not None and not self._worker_task.done():
+            self._worker_task.cancel()
+        self._worker_task = None
+        self._clear_queue()
+
     async def stop(self) -> None:
         """Cancel the worker, await its exit, and drop any queued events.
 
         Awaiting the cancelled task is what prevents "Task was destroyed but it
         is pending" warnings: the task is never garbage-collected while pending.
+        It is awaited with ``asyncio.wait`` so a cancellation of the caller is
+        not swallowed with the worker's, and not at all when the caller is the
+        worker itself (a callback closing its own connection), which would
+        wait for itself forever.
         """
-        if self._worker_task and not self._worker_task.done():
-            self._worker_task.cancel()
-            with suppress(asyncio.CancelledError, Exception):
-                await self._worker_task
-        self._worker_task = None
-        self._clear_queue()
+        worker = self._worker_task
+        self.cancel_worker()
+        if worker is not None and worker is not asyncio.current_task() and not worker.done():
+            await asyncio.wait({worker})
 
     def _clear_queue(self) -> None:
         """Discard events left over from a dead connection."""
@@ -84,8 +98,12 @@ class EventsManager:
                 self._event_queue.task_done()
 
     async def _process_event_queue(self) -> None:
-        """Drain queued events in order, isolating per-event failures."""
-        while True:
+        """Drain queued events in order, isolating per-event failures.
+
+        Stops once another worker replaced this one, so two never drain the
+        queue together even if a callback swallowed this one's cancellation.
+        """
+        while self._worker_task is asyncio.current_task():
             event_data = await self._event_queue.get()
             try:
                 await self.process_event(event_data)

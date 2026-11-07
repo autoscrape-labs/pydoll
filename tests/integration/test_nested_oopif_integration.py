@@ -6,6 +6,7 @@ that Pydoll correctly routes CDP commands through the right session
 handler when resolving nested iframes inside OOPIFs.
 """
 
+import asyncio
 import http.server
 import socket
 import threading
@@ -16,7 +17,9 @@ from _waits import wait_for_element_text, wait_for_js_value
 
 from pydoll.browser.chromium import Chrome
 from pydoll.browser.tab import Tab
-from pydoll.commands import RuntimeCommands
+from pydoll.commands import PageCommands, RuntimeCommands, TargetCommands
+from pydoll.protocol.inspector.events import InspectorEvent
+from pydoll.protocol.target.events import TargetEvent
 from pydoll.utils import get_browser_ws_address
 
 PAGES_DIR = Path(__file__).parent / 'pages' / 'oopif'
@@ -439,3 +442,41 @@ class TestRemoteConnectionIframeResolution:
                     return
 
             pytest.fail('Shadow root inside OOPIF not found over remote ws connection')
+
+
+@pytest.mark.asyncio
+async def test_a_crashed_cross_site_iframe_leaves_its_tab_usable(oopif_tab, cross_origin_servers):
+    """A crash reported on an attached iframe's session is not the tab's own crash."""
+    port_a, port_b = cross_origin_servers
+    attached: list[dict] = []
+    crashes: list[dict] = []
+    await oopif_tab.on(TargetEvent.ATTACHED_TO_TARGET, attached.append)
+    await oopif_tab.on(InspectorEvent.TARGET_CRASHED, crashes.append)
+    await oopif_tab.execute_command(
+        TargetCommands.set_auto_attach(
+            auto_attach=True, wait_for_debugger_on_start=False, flatten=True
+        )
+    )
+    await oopif_tab.go_to(_cross_site_main_url(port_a, port_b))
+    await oopif_tab.find(id='cross-origin-iframe', timeout=10)
+    loop = asyncio.get_running_loop()
+    deadline = loop.time() + 10
+    while not any(event['params']['targetInfo']['type'] == 'iframe' for event in attached):
+        assert loop.time() < deadline, 'the cross-site iframe was never attached'
+        await asyncio.sleep(0.05)
+    iframe_session = next(
+        event['params']['sessionId']
+        for event in attached
+        if event['params']['targetInfo']['type'] == 'iframe'
+    )
+    crash = PageCommands.crash()
+    crash['sessionId'] = iframe_session
+    await oopif_tab._connection_handler.execute_command_nowait(crash)
+    while not crashes:
+        assert loop.time() < deadline + 10, 'the iframe crash was never reported'
+        await asyncio.sleep(0.05)
+
+    response = await oopif_tab.execute_script('return 40 + 2')
+
+    assert response['result']['result']['value'] == 42
+    assert oopif_tab._connection_handler.target_crashed is False

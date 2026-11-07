@@ -32,6 +32,7 @@ class FakeCDPServer:
         self._errors: dict[str, dict] = {}
         self._bare_methods: set[str] = set()
         self._hung_methods: set[str] = set()
+        self._close_after: set[str] = set()
         self._total_connections = 0
 
     async def start(self) -> None:
@@ -90,6 +91,14 @@ class FakeCDPServer:
         """Receive a command method but never answer it, to test timeouts/drops."""
         self._hung_methods.add(method)
 
+    def stop_hanging(self, method: str) -> None:
+        """Answer a method again after ``hang`` (commands already hung stay unanswered)."""
+        self._hung_methods.discard(method)
+
+    def close_after_answering(self, method: str) -> None:
+        """Close the client's connection right after answering a command method."""
+        self._close_after.add(method)
+
     async def push_event(self, method: str, params: dict | None = None) -> None:
         """Send an unsolicited CDP event to every connected client."""
         await self._broadcast(json.dumps({'method': method, 'params': params or {}}))
@@ -132,6 +141,8 @@ class FakeCDPServer:
             return
         result = self._results.get(method, {})
         await connection.send(json.dumps({'id': message['id'], 'result': result}))
+        if method in self._close_after:
+            await connection.close()
 
 
 @pytest_asyncio.fixture
