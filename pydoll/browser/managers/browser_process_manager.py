@@ -1,4 +1,5 @@
 import logging
+import signal
 import subprocess
 import threading
 from collections import deque
@@ -97,6 +98,10 @@ class BrowserProcessManager:
         )
         return self._process
 
+    def was_launched(self) -> bool:
+        """Whether ``start_browser_process`` started a process, running or not."""
+        return self._process is not None
+
     def exit_code(self) -> int | None:
         """The process exit code, or None while it runs or before it was started."""
         if self._process is None:
@@ -139,15 +144,27 @@ class BrowserProcessManager:
         Terminate browser process with graceful shutdown.
 
         Attempts SIGTERM first, then SIGKILL after 15-second timeout.
-        Safe to call even if no process is running.
+        Safe to call even if no process is running or it already exited.
+
+        A stopped process (SIGSTOP, a debugger) keeps a SIGTERM pending until
+        it runs again, so on POSIX the process is also sent SIGCONT: it
+        handles the SIGTERM at once instead of waiting out the timeout. The
+        process is reaped after a SIGKILL so it does not linger as a zombie.
         """
-        if self._process:
-            logger.info(f'Stopping browser process pid={self._process.pid}')
-            self._process.terminate()
-            try:
-                self._process.wait(timeout=15)
-                logger.debug('Process terminated gracefully')
-            except subprocess.TimeoutExpired:
-                logger.warning('Process did not terminate in 15s; sending SIGKILL')
-                self._process.kill()
-                logger.debug('Process killed')
+        if not self._process:
+            return
+        if self._process.poll() is not None:
+            logger.debug(f'Browser process pid={self._process.pid} already exited')
+            return
+        logger.info(f'Stopping browser process pid={self._process.pid}')
+        self._process.terminate()
+        if hasattr(signal, 'SIGCONT'):
+            self._process.send_signal(signal.SIGCONT)
+        try:
+            self._process.wait(timeout=15)
+            logger.debug('Process terminated gracefully')
+        except subprocess.TimeoutExpired:
+            logger.warning('Process did not terminate in 15s; sending SIGKILL')
+            self._process.kill()
+            self._process.wait(timeout=5)
+            logger.debug('Process killed')

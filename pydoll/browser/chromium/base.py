@@ -34,6 +34,7 @@ from pydoll.exceptions import (
     InvalidWebSocketAddress,
     MissingTargetOrWebSocket,
     NoValidTabFound,
+    PydollException,
 )
 from pydoll.protocol.browser.types import DownloadBehavior
 from pydoll.protocol.fetch.events import FetchEvent
@@ -76,6 +77,12 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
+
+STOP_RESPONSIVE_TIMEOUT = 2
+"""Seconds stop() waits for the browser to answer before ending it without CDP."""
+
+BROWSER_CLOSE_TIMEOUT = 10
+"""Seconds stop() waits for Browser.close before ending the process anyway."""
 
 MIN_PING_TIMEOUT = 0.5
 """Shortest time a liveness ping waits for its pong, even past the polling deadline."""
@@ -150,7 +157,7 @@ class Browser(ABC):  # noqa: PLR0904
                     self._backup_preferences_dir,
                     os.path.join(user_data_dir, 'Default', 'Preferences'),
                 )
-        if await self._is_browser_running(timeout=2):
+        with suppress(BrowserNotRunning):
             await self.stop()
 
         await self._connection_handler.close()
@@ -221,25 +228,47 @@ class Browser(ABC):  # noqa: PLR0904
 
     async def stop(self):
         """
-        Stop browser process and cleanup resources.
+        Stop the browser and clean up what start() left behind.
 
-        Sends Browser.close command, terminates process, removes temp directories,
-        and closes WebSocket connections.
+        Asks the browser to close with ``Browser.close`` while it still
+        answers, then ends the process start() launched, closes the WebSocket
+        connection and removes the temporary profile. A browser that crashed
+        or froze cannot answer, so it is ended without CDP, and
+        ``Browser.close`` gets a short timeout after which the process is
+        ended anyway. Either way nothing is left behind.
 
         Raises:
-            BrowserNotRunning: If the browser is not currently running.
+            BrowserNotRunning: If there is nothing to stop: no process was
+                launched and no browser answers on the endpoint.
         """
-        if not await self._is_browser_running():
+        launched = self._browser_process_manager.was_launched()
+        exited = self._browser_process_manager.exit_code() is not None
+        responsive = not exited and await self._is_browser_running(timeout=STOP_RESPONSIVE_TIMEOUT)
+        if not launched and not responsive:
             logger.error('Stop called but browser is not running')
             raise BrowserNotRunning()
 
         logger.info('Stopping browser process')
-        await self._execute_command(BrowserCommands.close())
+        if responsive:
+            await self._request_browser_close()
+        else:
+            logger.warning('Browser does not answer; ending its process without Browser.close')
         loop = asyncio.get_running_loop()
         await loop.run_in_executor(None, self._browser_process_manager.stop_process)
         await self._connection_handler.close()
         await loop.run_in_executor(None, self._temp_directory_manager.cleanup)
         logger.info('Browser process stopped and resources cleaned up')
+
+    async def _request_browser_close(self) -> None:
+        """Ask the browser to close, giving up after a short timeout.
+
+        A browser that dies or freezes meanwhile must not keep stop() from
+        ending its process, so a failure is logged and shutdown goes on.
+        """
+        try:
+            await self._execute_command(BrowserCommands.close(), timeout=BROWSER_CLOSE_TIMEOUT)
+        except (PydollException, OSError) as exc:
+            logger.warning('Browser.close did not complete (%s); ending the process', exc)
 
     async def close(self):
         """

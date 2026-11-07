@@ -48,7 +48,7 @@ from urllib.parse import urlsplit, urlunsplit
 from pydoll.browser.managers import BrowserProcessManager, ProxyManager, TempDirectoryManager
 from pydoll.commands import BrowserCommands, EmulationCommands, FetchCommands, RuntimeCommands, StorageCommands, TargetCommands
 from pydoll.connection import ConnectionHandler
-from pydoll.exceptions import BrowserNotRunning, CommandFailed, FailedToStartBrowser, InvalidConnectionPort, InvalidWebSocketAddress, MissingTargetOrWebSocket, NoValidTabFound
+from pydoll.exceptions import BrowserNotRunning, CommandFailed, FailedToStartBrowser, InvalidConnectionPort, InvalidWebSocketAddress, MissingTargetOrWebSocket, NoValidTabFound, PydollException
 from pydoll.protocol.browser.types import DownloadBehavior
 from pydoll.protocol.fetch.events import FetchEvent
 from pydoll.protocol.fetch.types import AuthChallengeResponseType
@@ -240,13 +240,18 @@ class Chrome(SyncBase):
 
     def stop(self):
         """
-        Stop browser process and cleanup resources.
+        Stop the browser and clean up what start() left behind.
 
-        Sends Browser.close command, terminates process, removes temp directories,
-        and closes WebSocket connections.
+        Asks the browser to close with ``Browser.close`` while it still
+        answers, then ends the process start() launched, closes the WebSocket
+        connection and removes the temporary profile. A browser that crashed
+        or froze cannot answer, so it is ended without CDP, and
+        ``Browser.close`` gets a short timeout after which the process is
+        ended anyway. Either way nothing is left behind.
 
         Raises:
-            BrowserNotRunning: If the browser is not currently running.
+            BrowserNotRunning: If there is nothing to stop: no process was
+                launched and no browser answers on the endpoint.
         """
         return mapping.from_impl(self._run(self._impl.stop()))
 
@@ -565,13 +570,18 @@ class Edge(SyncBase):
 
     def stop(self):
         """
-        Stop browser process and cleanup resources.
+        Stop the browser and clean up what start() left behind.
 
-        Sends Browser.close command, terminates process, removes temp directories,
-        and closes WebSocket connections.
+        Asks the browser to close with ``Browser.close`` while it still
+        answers, then ends the process start() launched, closes the WebSocket
+        connection and removes the temporary profile. A browser that crashed
+        or froze cannot answer, so it is ended without CDP, and
+        ``Browser.close`` gets a short timeout after which the process is
+        ended anyway. Either way nothing is left behind.
 
         Raises:
-            BrowserNotRunning: If the browser is not currently running.
+            BrowserNotRunning: If there is nothing to stop: no process was
+                launched and no browser answers on the endpoint.
         """
         return mapping.from_impl(self._run(self._impl.stop()))
 

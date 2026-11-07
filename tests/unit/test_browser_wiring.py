@@ -7,6 +7,8 @@ with the fast unit suite while still covering the seams between modules.
 
 from __future__ import annotations
 
+import os
+
 import pytest
 
 from pydoll.browser.chromium import Chrome
@@ -14,7 +16,8 @@ from pydoll.browser.managers import BrowserProcessManager
 from pydoll.browser.managers.browser_options_manager import ChromiumOptionsManager
 from pydoll.browser.options import ChromiumOptions
 from pydoll.browser.tab import Tab
-from pydoll.exceptions import FailedToStartBrowser, InvalidOptionsObject
+from pydoll.browser.managers import TempDirectoryManager
+from pydoll.exceptions import BrowserNotRunning, FailedToStartBrowser, InvalidOptionsObject
 from tests.unit.conftest import FakeConnection
 
 
@@ -25,6 +28,7 @@ class _FakeProcess:
         self.pid = 4242
         self.terminated = False
         self.exit_code = exit_code
+        self.signals: list[int] = []
 
     def poll(self):
         return self.exit_code
@@ -37,6 +41,9 @@ class _FakeProcess:
 
     def kill(self):
         self.terminated = True
+
+    def send_signal(self, signal_number):
+        self.signals.append(signal_number)
 
 
 def test_chrome_applies_default_arguments_to_real_options():
@@ -149,3 +156,47 @@ async def test_readiness_poll_backs_off_so_a_dead_browser_costs_few_attempts():
     browser._connection_handler = connection
     assert await browser._is_browser_running(timeout=0.5) is False
     assert 2 <= connection.pings <= 10
+
+
+def _launched_browser(process: _FakeProcess, connection: FakeConnection) -> Chrome:
+    """A Chrome whose process was launched (as a fake) and whose profile is a real temp dir."""
+    browser = Chrome()
+    browser._connection_handler = connection
+    browser._temp_directory_manager = TempDirectoryManager()
+    browser._browser_process_manager = BrowserProcessManager(
+        process_creator=lambda command: process
+    )
+    browser._browser_process_manager.start_browser_process('/usr/bin/true', 9222, [])
+    return browser
+
+
+@pytest.mark.asyncio
+async def test_stop_cleans_up_a_browser_that_already_exited_without_cdp(fake_conn):
+    browser = _launched_browser(_FakeProcess(exit_code=-9), fake_conn)
+    profile = browser._temp_directory_manager.create_temp_dir().name
+
+    await browser.stop()
+
+    assert fake_conn.commands == []
+    assert not os.path.isdir(profile)
+
+
+@pytest.mark.asyncio
+async def test_stop_ends_the_process_when_browser_close_fails(fake_conn):
+    process = _FakeProcess()
+    browser = _launched_browser(process, fake_conn)
+    profile = browser._temp_directory_manager.create_temp_dir().name
+    fake_conn.set_failure('Browser.close', -32000, 'Browser.close failed')
+
+    await browser.stop()
+
+    assert process.terminated is True
+    assert not os.path.isdir(profile)
+
+
+@pytest.mark.asyncio
+async def test_stop_without_a_launched_process_or_a_browser_to_reach_raises():
+    browser = Chrome()
+    browser._connection_handler = _DeadConnection()
+    with pytest.raises(BrowserNotRunning):
+        await browser.stop()
