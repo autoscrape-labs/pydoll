@@ -54,7 +54,7 @@ from pydoll.protocol.fetch.events import FetchEvent
 from pydoll.protocol.fetch.types import AuthChallengeResponseType
 from pydoll.protocol.target.events import TargetEvent
 from pydoll.protocol.target.types import FilterEntry
-from pydoll.utils import PollInterval, find_free_port
+from pydoll.utils import PollInterval, find_free_port, is_port_free
 from pydoll.utils.fingerprint_builder import build_fingerprint_worker_js
 from pydoll.utils.user_agent_parser import ParsedUserAgent, UserAgentParser
 from tempfile import TemporaryDirectory
@@ -231,11 +231,17 @@ class Chrome(SyncBase):
         Returns:
             Initial tab for interaction.
 
+        A start that fails or is cancelled at any point after the process was
+        launched ends that process and removes its temporary profile before the
+        error propagates.
+
         Raises:
-            FailedToStartBrowser: If the executable cannot be launched, exits before
-                answering, or does not answer within ``options.start_timeout``. The
-                message carries the exit code and the last lines the browser wrote
-                to stderr, which is where Chrome explains what went wrong.
+            FailedToStartBrowser: If the browser this object started is still
+                running, if another process already listens on the debugging
+                port, or if the executable cannot be launched, exits before
+                answering, or does not answer within ``options.start_timeout``.
+                The message carries the exit code and the last lines the browser
+                wrote to stderr, which is where Chrome explains what went wrong.
         """
         return mapping.from_impl(self._run(self._impl.start()))
 
@@ -248,7 +254,9 @@ class Chrome(SyncBase):
         connection and removes the temporary profile. A browser that crashed
         or froze cannot answer, so it is ended without CDP, and
         ``Browser.close`` gets a short timeout after which the process is
-        ended anyway. Either way nothing is left behind.
+        ended anyway. Either way nothing is left behind, even when stop() is
+        cancelled midway: the cleanup completes before the cancellation
+        propagates.
 
         Raises:
             BrowserNotRunning: If there is nothing to stop: no process was
@@ -258,7 +266,10 @@ class Chrome(SyncBase):
 
     def close(self):
         """
-        Closes the WebSocket connection and releases resources.
+        Closes the WebSocket connections and releases resources.
+
+        The connections of the tabs this browser handed out are closed too, and
+        the tabs are dropped from it.
         """
         return mapping.from_impl(self._run(self._impl.close()))
 
@@ -563,11 +574,17 @@ class Edge(SyncBase):
         Returns:
             Initial tab for interaction.
 
+        A start that fails or is cancelled at any point after the process was
+        launched ends that process and removes its temporary profile before the
+        error propagates.
+
         Raises:
-            FailedToStartBrowser: If the executable cannot be launched, exits before
-                answering, or does not answer within ``options.start_timeout``. The
-                message carries the exit code and the last lines the browser wrote
-                to stderr, which is where Chrome explains what went wrong.
+            FailedToStartBrowser: If the browser this object started is still
+                running, if another process already listens on the debugging
+                port, or if the executable cannot be launched, exits before
+                answering, or does not answer within ``options.start_timeout``.
+                The message carries the exit code and the last lines the browser
+                wrote to stderr, which is where Chrome explains what went wrong.
         """
         return mapping.from_impl(self._run(self._impl.start()))
 
@@ -580,7 +597,9 @@ class Edge(SyncBase):
         connection and removes the temporary profile. A browser that crashed
         or froze cannot answer, so it is ended without CDP, and
         ``Browser.close`` gets a short timeout after which the process is
-        ended anyway. Either way nothing is left behind.
+        ended anyway. Either way nothing is left behind, even when stop() is
+        cancelled midway: the cleanup completes before the cancellation
+        propagates.
 
         Raises:
             BrowserNotRunning: If there is nothing to stop: no process was
@@ -590,7 +609,10 @@ class Edge(SyncBase):
 
     def close(self):
         """
-        Closes the WebSocket connection and releases resources.
+        Closes the WebSocket connections and releases resources.
+
+        The connections of the tabs this browser handed out are closed too, and
+        the tabs are dropped from it.
         """
         return mapping.from_impl(self._run(self._impl.close()))
 

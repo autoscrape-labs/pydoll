@@ -7,6 +7,7 @@ profile has to go, or a long-running program keeps one of each per crash.
 
 from __future__ import annotations
 
+import asyncio
 import os
 import signal
 import sys
@@ -15,6 +16,9 @@ import time
 import pytest
 
 from pydoll.browser.chromium import Chrome
+from pydoll.exceptions import FailedToStartBrowser, PydollException
+from pydoll.utils import get_browser_ws_address
+from tests.browser_options import ci_options
 
 
 def _profile_of(browser: Chrome) -> str:
@@ -72,3 +76,98 @@ async def test_stop_ends_a_frozen_browser_and_removes_its_profile(ci_chrome_opti
     assert elapsed < 10
     assert process.poll() is not None
     assert not os.path.isdir(profile)
+
+
+@pytest.mark.asyncio
+async def test_a_second_start_is_refused_and_stop_ends_the_first_browser(ci_chrome_options):
+    browser = Chrome(options=ci_chrome_options)
+    await browser.start()
+    process = browser._browser_process_manager._process
+    profile = _profile_of(browser)
+    try:
+        with pytest.raises(FailedToStartBrowser, match='already running'):
+            await browser.start()
+    finally:
+        await browser.stop()
+
+    assert process.poll() is not None
+    assert not os.path.isdir(profile)
+
+
+@pytest.mark.asyncio
+async def test_a_start_that_fails_after_the_port_opens_ends_the_process_and_profile(
+    ci_chrome_options,
+):
+    browser = Chrome(options=ci_chrome_options)
+    list_targets = browser.get_targets
+
+    async def get_targets_of_a_browser_that_just_died():
+        """Kill Chrome between the start check and Target.getTargets."""
+        process = browser._browser_process_manager._process
+        process.kill()
+        process.wait(timeout=10)
+        return await list_targets()
+
+    browser.get_targets = get_targets_of_a_browser_that_just_died
+    with pytest.raises(PydollException):
+        await browser.start()
+
+    assert browser._browser_process_manager._process.poll() is not None
+    assert not os.path.isdir(_profile_of(browser))
+
+
+@pytest.mark.asyncio
+async def test_a_start_cut_short_by_a_timeout_leaves_no_browser_behind(ci_chrome_options):
+    browser = Chrome(options=ci_chrome_options)
+    with pytest.raises(asyncio.TimeoutError):
+        await asyncio.wait_for(browser.start(), 0.3)
+
+    process = browser._browser_process_manager._process
+    assert process is None or process.poll() is not None
+    assert not os.path.isdir(_profile_of(browser))
+
+
+@pytest.mark.asyncio
+async def test_a_cancelled_stop_still_ends_the_process_and_removes_the_profile(
+    ci_chrome_options,
+):
+    browser = Chrome(options=ci_chrome_options)
+    await browser.start()
+    process = browser._browser_process_manager._process
+    profile = _profile_of(browser)
+    stopping = asyncio.create_task(browser.stop())
+    await asyncio.sleep(0.02)
+    stopping.cancel()
+    with pytest.raises(asyncio.CancelledError):
+        await stopping
+
+    assert process.poll() is not None
+    assert not os.path.isdir(profile)
+
+
+@pytest.mark.asyncio
+async def test_close_closes_the_connections_of_the_tabs_it_handed_out(ci_chrome_options):
+    async with Chrome(options=ci_chrome_options) as owner:
+        await owner.start()
+        client = Chrome(options=ci_options())
+        tab = await client.connect(await get_browser_ws_address(owner._connection_port))
+        await tab.execute_script('return 1')
+        callback_id = await tab.on('Page.loadEventFired', lambda _event: None)
+
+        await client.close()
+
+        assert await tab.remove_callback(callback_id) is False
+
+
+@pytest.mark.asyncio
+async def test_start_refuses_a_port_another_browser_already_answers_on(ci_chrome_options):
+    async with Chrome(options=ci_chrome_options) as first:
+        tab = await first.start()
+        second = Chrome(options=ci_options(), connection_port=first._connection_port)
+
+        with pytest.raises(FailedToStartBrowser, match='already in use'):
+            await second.start()
+
+        assert second._browser_process_manager._process is None
+        response = await tab.execute_script('return 1 + 1')
+        assert response['result']['result']['value'] == 2

@@ -41,7 +41,7 @@ from pydoll.protocol.fetch.events import FetchEvent
 from pydoll.protocol.fetch.types import AuthChallengeResponseType
 from pydoll.protocol.target.events import TargetEvent
 from pydoll.protocol.target.types import FilterEntry
-from pydoll.utils import PollInterval, find_free_port
+from pydoll.utils import PollInterval, find_free_port, is_port_free
 from pydoll.utils.fingerprint_builder import build_fingerprint_worker_js
 from pydoll.utils.user_agent_parser import ParsedUserAgent, UserAgentParser
 
@@ -166,7 +166,7 @@ class Browser(ABC):  # noqa: PLR0904
         with suppress(BrowserNotRunning):
             await self.stop()
 
-        await self._connection_handler.close()
+        await self._close_connections()
 
     async def connect(self, ws_address: str) -> Tab:
         """
@@ -199,12 +199,30 @@ class Browser(ABC):  # noqa: PLR0904
         Returns:
             Initial tab for interaction.
 
+        A start that fails or is cancelled at any point after the process was
+        launched ends that process and removes its temporary profile before the
+        error propagates.
+
         Raises:
-            FailedToStartBrowser: If the executable cannot be launched, exits before
-                answering, or does not answer within ``options.start_timeout``. The
-                message carries the exit code and the last lines the browser wrote
-                to stderr, which is where Chrome explains what went wrong.
+            FailedToStartBrowser: If the browser this object started is still
+                running, if another process already listens on the debugging
+                port, or if the executable cannot be launched, exits before
+                answering, or does not answer within ``options.start_timeout``.
+                The message carries the exit code and the last lines the browser
+                wrote to stderr, which is where Chrome explains what went wrong.
         """
+        if self._browser_process_manager.was_launched() and (
+            self._browser_process_manager.exit_code() is None
+        ):
+            raise FailedToStartBrowser(
+                'The browser is already running; call stop() before starting it again'
+            )
+        if not is_port_free(self._connection_port):
+            raise FailedToStartBrowser(
+                f'Port {self._connection_port} is already in use, probably by another '
+                f'browser. Pass a different connection_port, or use connect() to drive '
+                f'the browser that listens on it'
+            )
         binary_location = self.options.binary_location or self._get_default_binary_location()
         logger.debug('Resolved binary location: %s', binary_location)
 
@@ -218,17 +236,17 @@ class Browser(ABC):  # noqa: PLR0904
                 binary_location, self._connection_port, self.options.arguments
             )
             await self._verify_browser_running()
-        except FailedToStartBrowser:
-            await self._abandon_start()
-            raise
-        logger.info('Browser process started and responsive')
-        await self._configure_proxy(proxy_config[0], proxy_config[1])
+            logger.info('Browser process started and responsive')
+            await self._configure_proxy(proxy_config[0], proxy_config[1])
 
-        valid_tab_id = await self._get_valid_tab_id(await self.get_targets())
-        tab = Tab(self, target_id=valid_tab_id, connection_port=self._connection_port)
-        self._tabs_opened[valid_tab_id] = tab
-        await self._setup_worker_user_agent_override()
-        await self._apply_user_agent_override(tab)
+            valid_tab_id = await self._get_valid_tab_id(await self.get_targets())
+            tab = Tab(self, target_id=valid_tab_id, connection_port=self._connection_port)
+            self._tabs_opened[valid_tab_id] = tab
+            await self._setup_worker_user_agent_override()
+            await self._apply_user_agent_override(tab)
+        except BaseException:
+            await self._release_browser()
+            raise
         logger.info('Initial tab attached: %s', valid_tab_id)
         return tab
 
@@ -241,29 +259,69 @@ class Browser(ABC):  # noqa: PLR0904
         connection and removes the temporary profile. A browser that crashed
         or froze cannot answer, so it is ended without CDP, and
         ``Browser.close`` gets a short timeout after which the process is
-        ended anyway. Either way nothing is left behind.
+        ended anyway. Either way nothing is left behind, even when stop() is
+        cancelled midway: the cleanup completes before the cancellation
+        propagates.
 
         Raises:
             BrowserNotRunning: If there is nothing to stop: no process was
                 launched and no browser answers on the endpoint.
         """
         launched = self._browser_process_manager.was_launched()
-        exited = self._browser_process_manager.exit_code() is not None
-        responsive = not exited and await self._is_browser_running(timeout=STOP_RESPONSIVE_TIMEOUT)
-        if not launched and not responsive:
-            logger.error('Stop called but browser is not running')
-            raise BrowserNotRunning()
+        try:
+            exited = self._browser_process_manager.exit_code() is not None
+            responsive = not exited and await self._is_browser_running(
+                timeout=STOP_RESPONSIVE_TIMEOUT
+            )
+            if not launched and not responsive:
+                logger.error('Stop called but browser is not running')
+                raise BrowserNotRunning()
 
-        logger.info('Stopping browser process')
-        if responsive:
-            await self._request_browser_close()
-        else:
-            logger.warning('Browser does not answer; ending its process without Browser.close')
+            logger.info('Stopping browser process')
+            if responsive:
+                await self._request_browser_close()
+            else:
+                logger.warning('Browser does not answer; ending its process without Browser.close')
+        finally:
+            await self._release_browser()
+        logger.info('Browser process stopped and resources cleaned up')
+
+    async def _release_browser(self) -> None:
+        """End the launched process, close every connection and remove the temporary profile.
+
+        Safe to run when nothing was launched or the process already exited.
+        The release runs in its own task and is waited for even when the
+        caller is cancelled meanwhile (a timeout, a second Ctrl-C), so it
+        always finishes; the cancellation is raised once it has.
+        """
+        release = asyncio.ensure_future(self._end_process_and_connections())
+        cancelled = False
+        while not release.done():
+            try:
+                await asyncio.shield(release)
+            except asyncio.CancelledError:
+                cancelled = True
+        release.result()
+        if cancelled:
+            raise asyncio.CancelledError()
+
+    async def _end_process_and_connections(self) -> None:
+        """End the process, close the connections and remove the profile, in that order."""
         loop = asyncio.get_running_loop()
         await loop.run_in_executor(None, self._browser_process_manager.stop_process)
-        await self._connection_handler.close()
+        await self._close_connections()
         await loop.run_in_executor(None, self._temp_directory_manager.cleanup)
-        logger.info('Browser process stopped and resources cleaned up')
+
+    async def _close_connections(self) -> None:
+        """Close the connection of every Tab handed out, then the browser-level one.
+
+        Closed together, so a browser that stopped answering costs one close
+        timeout instead of one per tab.
+        """
+        await asyncio.gather(
+            *(self._forget_tab(target_id) for target_id in list(self._tabs_opened))
+        )
+        await self._connection_handler.close()
 
     async def _request_browser_close(self) -> None:
         """Ask the browser to close, giving up after a short timeout.
@@ -278,10 +336,13 @@ class Browser(ABC):  # noqa: PLR0904
 
     async def close(self):
         """
-        Closes the WebSocket connection and releases resources.
+        Closes the WebSocket connections and releases resources.
+
+        The connections of the tabs this browser handed out are closed too, and
+        the tabs are dropped from it.
         """
         logger.info('Closing browser WebSocket connection')
-        await self._connection_handler.close()
+        await self._close_connections()
 
     async def create_browser_context(
         self, proxy_server: str | None = None, proxy_bypass_list: str | None = None
@@ -422,8 +483,8 @@ class Browser(ABC):  # noqa: PLR0904
         for target_id in reversed(remaining_target_ids):
             tab = Tab(self, **self._get_tab_kwargs(target_id))
             await self._apply_user_agent_override(tab)
+            self._tabs_opened[target_id] = tab
             new_tabs.append(tab)
-        self._tabs_opened.update(dict(zip(remaining_target_ids, new_tabs)))
         logger.debug('Opened tabs resolved: existing=%s, new=%s', len(existing_tabs), len(new_tabs))
         return existing_tabs + new_tabs
 
@@ -1028,13 +1089,6 @@ class Browser(ABC):  # noqa: PLR0904
             message = f'{reason}. The browser wrote nothing to stderr'
         logger.error(message)
         return message
-
-    async def _abandon_start(self) -> None:
-        """Tear down what a failed start left behind: the process and the temp profile."""
-        loop = asyncio.get_running_loop()
-        if self._browser_process_manager.exit_code() is None:
-            await loop.run_in_executor(None, self._browser_process_manager.stop_process)
-        await loop.run_in_executor(None, self._temp_directory_manager.cleanup)
 
     async def _configure_proxy(
         self, private_proxy: bool, proxy_credentials: tuple[str | None, str | None]

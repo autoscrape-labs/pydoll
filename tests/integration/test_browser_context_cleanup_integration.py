@@ -11,6 +11,7 @@ import asyncio
 
 import pytest
 
+from pydoll.browser.chromium import Chrome
 from pydoll.commands import TargetCommands
 from pydoll.protocol.network.events import NetworkEvent
 
@@ -74,3 +75,34 @@ async def test_listing_tabs_forgets_a_tab_closed_outside_pydoll(browser, tab):
     assert tab not in opened
     assert tab.target_id not in browser._tabs_opened
     assert await tab.remove_callback(callback_id) is False
+
+
+@pytest.mark.asyncio
+async def test_listed_tabs_are_registered_under_their_own_targets(ci_chrome_options):
+    async with Chrome(options=ci_chrome_options) as browser:
+        await browser.start()
+        for _ in range(3):
+            await browser.execute_command(TargetCommands.create_target(url='about:blank'))
+
+        await browser.get_opened_tabs()
+
+        assert all(tab.target_id == key for key, tab in browser._tabs_opened.items())
+
+
+@pytest.mark.asyncio
+async def test_listing_tabs_again_drops_only_the_tab_whose_target_closed(ci_chrome_options):
+    async with Chrome(options=ci_chrome_options) as browser:
+        await browser.start()
+        for _ in range(3):
+            await browser.execute_command(TargetCommands.create_target(url='about:blank'))
+        tabs = await browser.get_opened_tabs()
+        closed = tabs[-1].target_id
+        await browser.execute_command(TargetCommands.close_target(closed))
+        for _ in range(100):
+            if closed not in [target['targetId'] for target in await browser.get_targets()]:
+                break
+            await asyncio.sleep(0.02)
+
+        remaining = {tab.target_id for tab in await browser.get_opened_tabs()}
+
+        assert remaining == {tab.target_id for tab in tabs} - {closed}

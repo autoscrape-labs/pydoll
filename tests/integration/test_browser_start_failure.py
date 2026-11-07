@@ -8,6 +8,7 @@ on a broken Chrome.
 from __future__ import annotations
 
 import os
+import subprocess
 import sys
 import time
 
@@ -21,10 +22,20 @@ pytestmark = pytest.mark.skipif(
 )
 
 
+WARM_UP_FLAG = '--warm-up'
+
+
 def _script(tmp_path, name: str, body: str) -> str:
+    """Write a fake browser and run it once before the timed start.
+
+    macOS checks a freshly written executable on its first run, which takes
+    from a few hundred milliseconds to over a second while other processes
+    start, longer than the one-second start_timeout some tests give.
+    """
     path = tmp_path / name
-    path.write_text(f'#!/bin/sh\n{body}\n')
+    path.write_text(f'#!/bin/sh\n[ "$1" = "{WARM_UP_FLAG}" ] && exit 0\n{body}\n')
     os.chmod(path, 0o755)
+    subprocess.run([str(path), WARM_UP_FLAG], check=True, timeout=30)
     return str(path)
 
 
@@ -54,7 +65,7 @@ async def test_a_browser_that_exits_reports_its_code_and_stderr_without_waiting(
 
 @pytest.mark.asyncio
 async def test_a_browser_that_never_answers_is_stopped_and_reports_the_timeout(tmp_path):
-    binary = _script(tmp_path, 'hangs.sh', 'echo "still starting" >&2\nsleep 60')
+    binary = _script(tmp_path, 'hangs.sh', 'echo "still starting" >&2\nexec sleep 60')
     browser = Chrome(options=_options(binary, start_timeout=1))
     with pytest.raises(FailedToStartBrowser) as raised:
         await browser.start()

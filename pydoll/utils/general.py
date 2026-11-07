@@ -1,5 +1,6 @@
 import asyncio
 import base64
+import errno
 import logging
 import os
 import re
@@ -315,6 +316,24 @@ def find_free_port() -> int:
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as probe:
         probe.bind(('127.0.0.1', 0))
         return probe.getsockname()[1]
+
+
+def is_port_free(port: int) -> bool:
+    """Whether no process already listens on the loopback port, over IPv4 or IPv6.
+
+    A browser started on a port another one already owns cannot listen on it,
+    and pydoll would end up driving the other browser. Binding is used rather
+    than connecting because it answers at once on every platform; connecting
+    to a closed port on Windows takes about two seconds.
+    """
+    for family, host in ((socket.AF_INET, '127.0.0.1'), (socket.AF_INET6, '::1')):
+        try:
+            with socket.socket(family, socket.SOCK_STREAM) as probe:
+                probe.bind((host, port))
+        except OSError as exc:
+            if exc.errno == errno.EADDRINUSE:
+                return False
+    return True
 
 
 class PollInterval:
