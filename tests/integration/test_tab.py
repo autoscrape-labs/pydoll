@@ -16,6 +16,7 @@ from typing import Any, Callable
 import pytest
 
 from pydoll.exceptions import WaitTimeout, WebSocketConnectionClosed
+from pydoll.protocol.inspector.events import InspectorEvent
 
 
 async def _wait_until(condition: Callable[[], Any], timeout: float = 2.0) -> Any:
@@ -89,6 +90,31 @@ async def test_go_to_fails_fast_when_the_connection_drops_while_waiting_for_load
     await cdp_server.drop_connections()
     with pytest.raises(WebSocketConnectionClosed):
         await asyncio.wait_for(navigation, timeout=5)
+
+
+@pytest.mark.asyncio
+async def test_go_to_on_a_crashed_tab_does_not_take_the_blank_page_load_for_its_own(
+    cdp_server, fake_tab
+):
+    """The about:blank navigation that recovers a crashed tab fires its own load
+    event; with Page events on, go_to must not finish on it."""
+    await fake_tab.enable_page_events()
+    await cdp_server.push_event(InspectorEvent.TARGET_CRASHED)
+    await _wait_until(lambda: fake_tab._connection_handler.target_crashed)
+
+    navigation = asyncio.create_task(fake_tab.go_to('https://example.com', timeout=10))
+    await _wait_until(
+        lambda: [c['params']['url'] for c in cdp_server.commands_for('Page.navigate')]
+        == ['about:blank']
+    )
+    await asyncio.sleep(0.1)
+    await cdp_server.push_event('Page.loadEventFired', {})
+    await _wait_until(lambda: len(cdp_server.commands_for('Page.navigate')) == 2)
+    await asyncio.sleep(0.2)
+    assert not navigation.done()
+
+    await cdp_server.push_event('Page.loadEventFired', {})
+    await asyncio.wait_for(navigation, timeout=5)
 
 
 @pytest.mark.asyncio

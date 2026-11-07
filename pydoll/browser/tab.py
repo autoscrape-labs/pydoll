@@ -133,6 +133,9 @@ logger = logging.getLogger(__name__)
 
 T = TypeVar('T', bound='ExtractionModel')
 
+RECOVERY_LOAD_TIMEOUT = 5
+"""Seconds a crashed tab's recovery waits for the blank page it loads to report its load."""
+
 _CLOUDFLARE_CHALLENGE_DOMAIN = 'challenges.cloudflare.com'
 _CLOUDFLARE_IFRAME_SELECTOR = f'iframe[src*="{_CLOUDFLARE_CHALLENGE_DOMAIN}"]'
 _CLOUDFLARE_CHECKBOX_SELECTOR = 'input[type="checkbox"]'
@@ -2236,18 +2239,35 @@ class Tab(FindElementsMixin):
         blank page brings the renderer back without a request or a load to
         miss, so the real navigation that follows runs on a live tab.
 
+        With Page events on, the blank page's own load event is waited for
+        here (briefly), so that it is not taken for the load of the navigation
+        that follows.
+
         Raises:
             TargetCrashed: If the renderer does not come back within ``timeout``.
         """
         logger.info('Tab renderer crashed; starting a new one before navigating')
-        await self._execute_command(PageCommands.navigate('about:blank'))
-        loop = asyncio.get_running_loop()
-        deadline = loop.time() + timeout
-        interval = PollInterval()
-        while self._connection_handler.target_crashed:
-            if loop.time() >= deadline:
-                raise TargetCrashed()
-            await interval.wait()
+        blank_loaded = asyncio.Event()
+        callback_id: int | None = None
+        if self._page_events_enabled:
+            load_event = self._PAGE_LOAD_EVENT_MAP[self._browser.options.page_load_state]
+            callback_id = await self.on(load_event, lambda _event: blank_loaded.set())
+        try:
+            await self._execute_command(PageCommands.navigate('about:blank'))
+            loop = asyncio.get_running_loop()
+            deadline = loop.time() + timeout
+            interval = PollInterval()
+            while self._connection_handler.target_crashed:
+                if loop.time() >= deadline:
+                    raise TargetCrashed()
+                await interval.wait()
+            if callback_id is not None:
+                with contextlib.suppress(asyncio.TimeoutError):
+                    await asyncio.wait_for(blank_loaded.wait(), RECOVERY_LOAD_TIMEOUT)
+        finally:
+            if callback_id is not None:
+                with contextlib.suppress(Exception):
+                    await self.remove_callback(callback_id)
 
     async def _wait_loaded_or_disconnected(self, page_loaded: asyncio.Event, timeout: int) -> None:
         """Wait for the load event, failing at once if the tab's connection drops first.

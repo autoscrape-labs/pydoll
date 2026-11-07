@@ -15,8 +15,8 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import pytest
 
 from pydoll.browser.chromium import Chrome
-from pydoll.commands import PageCommands
 from pydoll.browser.tab import Tab
+from pydoll.commands import PageCommands
 from pydoll.exceptions import PydollException, WebSocketConnectionClosed
 from pydoll.protocol.input.methods import InputMethod
 
@@ -48,24 +48,38 @@ async def test_tab_connection_accepts_the_same_message_under_the_default_limit(c
         assert value == 'x' * (512 * 1024)
 
 
-UPLOAD_PAGE = b"""<!doctype html><title>upload</title>
-<script>fetch('/upload', {method: 'POST', body: 'y'.repeat(1024 * 1024)});</script>
-<img src="/slow.png">"""
+LONG_URL_PAGE = b"""<!doctype html><title>long url</title>
+<script>fetch('/long?q=' + 'a'.repeat(400 * 1024)).catch(() => {});</script>
+<script src="/hold.js"></script>"""
+"""A page that requests a URL larger than the test's message limit, then waits on a script.
+
+Chrome puts the URL in ``Network.requestWillBeSent`` before the request goes
+out. That event comes from the network service and the load event from the
+renderer, with no order between them, so the server answers ``/hold.js``, which
+holds the load event back, only some time after the long request has arrived.
+"""
+
+HOLD_AFTER_LONG_REQUEST = 2
+"""Seconds /hold.js waits after the long request, far more than the two sources drift."""
 
 
-class _UploadHandler(BaseHTTPRequestHandler):
-    """Serve a page that posts a large body while an image holds its load event."""
+class _LongUrlHandler(BaseHTTPRequestHandler):
+    """Serve the long-URL page, and release /hold.js once the long request arrived."""
 
     def do_GET(self):
-        if self.path == '/slow.png':
-            time.sleep(2)
-            self._send(404, b'', 'image/png')
+        if self.path.startswith('/hold.js'):
+            self.server.long_request_seen.wait(10)
+            time.sleep(HOLD_AFTER_LONG_REQUEST)
+            self._send(200, b'', 'text/javascript')
             return
-        self._send(200, UPLOAD_PAGE, 'text/html')
+        self._send(200, LONG_URL_PAGE, 'text/html')
 
-    def do_POST(self):
-        self.rfile.read(int(self.headers.get('Content-Length', 0)))
-        self._send(200, b'ok', 'text/plain')
+    def handle_one_request(self):
+        """Note the long request even though the server refuses its request line (414)."""
+        line = self.rfile.peek(16)[:16] if hasattr(self.rfile, 'peek') else b''
+        if line.startswith(b'GET /long'):
+            self.server.long_request_seen.set()
+        super().handle_one_request()
 
     def _send(self, status: int, body: bytes, content_type: str) -> None:
         self.send_response(status)
@@ -79,8 +93,9 @@ class _UploadHandler(BaseHTTPRequestHandler):
 
 
 @pytest.fixture
-def upload_site():
-    server = ThreadingHTTPServer(('127.0.0.1', 0), _UploadHandler)
+def long_url_site():
+    server = ThreadingHTTPServer(('127.0.0.1', 0), _LongUrlHandler)
+    server.long_request_seen = threading.Event()
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
     try:
@@ -93,15 +108,19 @@ def upload_site():
 
 @pytest.mark.asyncio
 async def test_go_to_raises_at_once_when_the_page_sends_an_oversized_message(
-    ci_chrome_options, upload_site
+    ci_chrome_options, long_url_site
 ):
+    """Runs in a new blank tab: the first tab may still be loading Chrome's new tab
+    page, and a load event of it arriving late would end go_to before the test page
+    sends anything."""
     ci_chrome_options.max_message_size = 256 * 1024
     async with Chrome(options=ci_chrome_options) as browser:
-        tab = await browser.start()
+        await browser.start()
+        tab = await browser.new_tab()
         await tab.enable_network_events()
         started = time.monotonic()
         with pytest.raises(WebSocketConnectionClosed, match='max_message_size'):
-            await tab.go_to(upload_site, timeout=30)
+            await tab.go_to(long_url_site, timeout=30)
         assert time.monotonic() - started < 10
         assert await _evaluate(tab, '1 + 1') == 2
 
