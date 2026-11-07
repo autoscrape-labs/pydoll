@@ -59,7 +59,7 @@ from pydoll.utils.fingerprint_builder import build_fingerprint_worker_js
 from pydoll.utils.user_agent_parser import ParsedUserAgent, UserAgentParser
 from tempfile import TemporaryDirectory
 from pydoll.browser.interfaces import BrowserOptionsManager, Options
-from pydoll.protocol.base import Command, T_CommandParams, T_CommandResponse
+from pydoll.protocol.base import Command, EmptyResponse, T_CommandParams, T_CommandResponse
 from pydoll.protocol.browser.methods import GetVersionResponse, GetVersionResult, GetWindowForTargetResponse
 from pydoll.protocol.browser.types import Bounds, PermissionType
 from pydoll.protocol.fetch.events import RequestPausedEvent
@@ -118,6 +118,7 @@ from pydoll.elements.utils import SelectorParser
 from pydoll.exceptions import CommandFailed, ElementNotFound, ScriptException, WaitElementTimeout
 from pydoll.utils import PollInterval
 from typing import Literal
+from pydoll.protocol.base import Command, T_CommandParams, T_CommandResponse
 from pydoll.protocol.dom.methods import DescribeNodeResponse
 from pydoll.protocol.dom.types import Node
 from pydoll.protocol.runtime.methods import CallFunctionOnParams, CallFunctionOnResponse, EvaluateParams, EvaluateResponse, GetPropertiesResponse
@@ -285,7 +286,9 @@ class Chrome(SyncBase):
         The default browser context cannot be deleted.
 
         Note:
-            Closes all associated tabs immediately.
+            Closes all associated tabs immediately. Their Tab objects are
+            dropped from the browser and their connections closed, so they
+            release their callbacks and network logs.
         """
         return mapping.from_impl(self._run(self._impl.delete_browser_context(browser_context_id=mapping.to_impl(browser_context_id))))
 
@@ -615,7 +618,9 @@ class Edge(SyncBase):
         The default browser context cannot be deleted.
 
         Note:
-            Closes all associated tabs immediately.
+            Closes all associated tabs immediately. Their Tab objects are
+            dropped from the browser and their connections closed, so they
+            release their callbacks and network logs.
         """
         return mapping.from_impl(self._run(self._impl.delete_browser_context(browser_context_id=mapping.to_impl(browser_context_id))))
 
@@ -1041,7 +1046,9 @@ class Tab(SyncBase):
         Close this browser tab.
 
         Note:
-            Tab instance becomes invalid after calling this method.
+            Tab instance becomes invalid after calling this method. It is
+            removed from the browser and its connection is closed, which drops
+            its callbacks.
         """
         return mapping.from_impl(self._run(self._impl.close()))
 

@@ -200,3 +200,32 @@ async def test_stop_without_a_launched_process_or_a_browser_to_reach_raises():
     browser._connection_handler = _DeadConnection()
     with pytest.raises(BrowserNotRunning):
         await browser.stop()
+
+
+@pytest.mark.asyncio
+async def test_deleting_a_context_forgets_only_its_tabs_and_closes_their_connections(fake_conn):
+    browser = Chrome()
+    browser._connection_handler = fake_conn
+    in_context = FakeConnection()
+    elsewhere = FakeConnection()
+    for target_id, context_id, connection in (
+        ('tab-a', 'ctx-1', in_context),
+        ('tab-b', 'ctx-2', elsewhere),
+    ):
+        browser._tabs_opened[target_id] = Tab(
+            browser,
+            target_id=target_id,
+            browser_context_id=context_id,
+            connection_handler=connection,
+        )
+    await in_context.register_callback('Network.requestWillBeSent', lambda _event: None)
+    await elsewhere.register_callback('Network.requestWillBeSent', lambda _event: None)
+
+    await browser.delete_browser_context('ctx-1')
+
+    assert list(browser._tabs_opened) == ['tab-b']
+    assert in_context.callbacks_for('Network.requestWillBeSent') == []
+    assert len(elsewhere.callbacks_for('Network.requestWillBeSent')) == 1
+    assert fake_conn.last_command('Target.disposeBrowserContext')['params'] == {
+        'browserContextId': 'ctx-1'
+    }

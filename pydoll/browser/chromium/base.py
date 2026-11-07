@@ -49,7 +49,13 @@ if TYPE_CHECKING:
     from tempfile import TemporaryDirectory
 
     from pydoll.browser.interfaces import BrowserOptionsManager, Options
-    from pydoll.protocol.base import Command, Response, T_CommandParams, T_CommandResponse
+    from pydoll.protocol.base import (
+        Command,
+        EmptyResponse,
+        Response,
+        T_CommandParams,
+        T_CommandResponse,
+    )
     from pydoll.protocol.browser.methods import (
         GetVersionResponse,
         GetVersionResult,
@@ -324,7 +330,9 @@ class Browser(ABC):  # noqa: PLR0904
         The default browser context cannot be deleted.
 
         Note:
-            Closes all associated tabs immediately.
+            Closes all associated tabs immediately. Their Tab objects are
+            dropped from the browser and their connections closed, so they
+            release their callbacks and network logs.
         """
         logger.info('Deleting browser context: %s', browser_context_id)
         self._context_proxy_auth.pop(browser_context_id, None)
@@ -332,9 +340,13 @@ class Browser(ABC):  # noqa: PLR0904
         worker_callback_id = self._context_worker_callbacks.pop(browser_context_id, None)
         if worker_callback_id is not None:
             await self.remove_callback(worker_callback_id)
-        return await self._execute_command(
+        response: Response[EmptyResponse] = await self._execute_command(
             TargetCommands.dispose_browser_context(browser_context_id)
         )
+        for target_id, tab in list(self._tabs_opened.items()):
+            if tab.browser_context_id == browser_context_id:
+                await self._forget_tab(target_id)
+        return response
 
     async def get_browser_contexts(self) -> list[str]:
         """Get all browser context IDs including the default context."""
@@ -401,9 +413,8 @@ class Browser(ABC):  # noqa: PLR0904
             if target['type'] == 'page' and 'extension' not in target['url']
         ]
         all_target_ids = {target['targetId'] for target in valid_tab_targets}
-        # Prune stale entries: close tabs whose IDs no longer appear in targets.
         for stale_id in set(self._tabs_opened.keys()) - all_target_ids:
-            del self._tabs_opened[stale_id]
+            await self._forget_tab(stale_id)
         existing_target_ids = list(self._tabs_opened.keys())
         remaining_target_ids = list(all_target_ids - set(existing_target_ids))
         existing_tabs = [self._tabs_opened[target_id] for target_id in existing_target_ids]
@@ -415,6 +426,12 @@ class Browser(ABC):  # noqa: PLR0904
         self._tabs_opened.update(dict(zip(remaining_target_ids, new_tabs)))
         logger.debug('Opened tabs resolved: existing=%s, new=%s', len(existing_tabs), len(new_tabs))
         return existing_tabs + new_tabs
+
+    async def _forget_tab(self, target_id: str) -> None:
+        """Drop the Tab of a target that is gone and close its connection."""
+        tab = self._tabs_opened.pop(target_id, None)
+        if tab is not None:
+            await tab._connection_handler.close()
 
     async def get_tab_by_target(self, target: TargetInfo) -> Tab:
         tab = Tab(self, **self._get_tab_kwargs(target['targetId']))
