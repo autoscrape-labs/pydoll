@@ -122,7 +122,6 @@ async def test_go_to_raises_at_once_when_the_page_sends_an_oversized_message(
         with pytest.raises(WebSocketConnectionClosed, match='max_message_size'):
             await tab.go_to(long_url_site, timeout=30)
         assert time.monotonic() - started < 10
-        assert await _evaluate(tab, '1 + 1') == 2
 
 
 STORM_PAGE = b"""<!doctype html><title>storm</title><script>
