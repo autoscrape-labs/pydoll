@@ -8,6 +8,7 @@ uses one context per job would grow by one Tab per job.
 from __future__ import annotations
 
 import asyncio
+from contextlib import suppress
 
 import pytest
 
@@ -106,3 +107,90 @@ async def test_listing_tabs_again_drops_only_the_tab_whose_target_closed(ci_chro
         remaining = {tab.target_id for tab in await browser.get_opened_tabs()}
 
         assert remaining == {tab.target_id for tab in tabs} - {closed}
+
+
+async def _popup_target_id(browser, opener_id: str, context_id: str) -> str:
+    """Wait for the page target a window.open() in the context created."""
+    for _ in range(250):
+        for target in await browser.get_targets():
+            if (
+                target['type'] == 'page'
+                and target['targetId'] != opener_id
+                and target.get('browserContextId') == context_id
+            ):
+                return target['targetId']
+        await asyncio.sleep(0.02)
+    raise AssertionError('the popup never appeared')
+
+
+@pytest.mark.asyncio
+async def test_listing_tabs_keeps_a_live_tab_whose_url_mentions_extension(browser, tab):
+    callback_id = await tab.on(NetworkEvent.REQUEST_WILL_BE_SENT, lambda _event: None)
+    await tab.go_to('data:text/html,<title>browser extension guide</title>')
+
+    await browser.get_opened_tabs()
+
+    assert tab.target_id in browser._tabs_opened
+    assert await tab.remove_callback(callback_id) is True
+
+
+@pytest.mark.asyncio
+async def test_a_popup_listed_from_a_context_belongs_to_it_and_goes_with_it(browser):
+    context_id = await browser.create_browser_context()
+    opener = await browser.new_tab(
+        'data:text/html,<title>opener</title>', browser_context_id=context_id
+    )
+    await opener.execute_script('window.open("about:blank")', user_gesture=True)
+    popup_id = await _popup_target_id(browser, opener.target_id, context_id)
+
+    popup = next(tab for tab in await browser.get_opened_tabs() if tab.target_id == popup_id)
+    assert popup.browser_context_id == context_id
+
+    await browser.delete_browser_context(context_id)
+    assert popup_id not in browser._tabs_opened
+
+
+@pytest.mark.asyncio
+async def test_tabs_listed_in_the_default_context_report_no_context(browser):
+    tabs = await browser.get_opened_tabs()
+    default_tabs = [tab for tab in tabs if tab.target_id not in _created_context_tabs(browser)]
+    assert default_tabs
+    assert all(tab.browser_context_id is None for tab in default_tabs)
+
+
+def _created_context_tabs(browser) -> set[str]:
+    """Target ids of the registered tabs that new_tab() opened in a created context."""
+    return {
+        target_id
+        for target_id, tab in browser._tabs_opened.items()
+        if tab.browser_context_id is not None
+    }
+
+
+@pytest.mark.asyncio
+async def test_closing_a_tab_already_closed_elsewhere_still_unregisters_it(browser, tab):
+    """Closing raises, since the target is gone, but the tab is still released."""
+    callback_id = await tab.on(NetworkEvent.REQUEST_WILL_BE_SENT, lambda _event: None)
+    await browser.execute_command(TargetCommands.close_target(tab.target_id))
+    for _ in range(100):
+        if tab.target_id not in [target['targetId'] for target in await browser.get_targets()]:
+            break
+        await asyncio.sleep(0.02)
+
+    with suppress(Exception):
+        await tab.close()
+
+    assert tab.target_id not in browser._tabs_opened
+    assert await tab.remove_callback(callback_id) is False
+
+
+@pytest.mark.asyncio
+async def test_closing_a_second_tab_object_for_a_target_closes_the_registered_one(browser, tab):
+    callback_id = await tab.on(NetworkEvent.REQUEST_WILL_BE_SENT, lambda _event: None)
+    target = next(t for t in await browser.get_targets() if t['targetId'] == tab.target_id)
+    other = await browser.get_tab_by_target(target)
+
+    await other.close()
+
+    assert tab.target_id not in browser._tabs_opened
+    assert await tab.remove_callback(callback_id) is False

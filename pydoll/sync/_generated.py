@@ -338,12 +338,17 @@ class Chrome(SyncBase):
         Tabs that are already opened will be returned as is. If a new target is opened,
         a new Tab instance will be created.
 
+        Only Tabs whose target is gone are dropped (and their connections
+        closed); a Tab created in a context created with
+        ``create_browser_context`` reports that context.
+
         Returns:
             List of Tab instances. The last tab is the most recent one.
         """
         return mapping.from_impl(self._run(self._impl.get_opened_tabs()))
 
     def get_tab_by_target(self, target: TargetInfo) -> Tab:
+        """Build a Tab for a target, in the context it belongs to when that one was created."""
         return mapping.from_impl(self._run(self._impl.get_tab_by_target(target=mapping.to_impl(target))))
 
     def set_download_path(self, path: str, browser_context_id: str | None=None):
@@ -681,12 +686,17 @@ class Edge(SyncBase):
         Tabs that are already opened will be returned as is. If a new target is opened,
         a new Tab instance will be created.
 
+        Only Tabs whose target is gone are dropped (and their connections
+        closed); a Tab created in a context created with
+        ``create_browser_context`` reports that context.
+
         Returns:
             List of Tab instances. The last tab is the most recent one.
         """
         return mapping.from_impl(self._run(self._impl.get_opened_tabs()))
 
     def get_tab_by_target(self, target: TargetInfo) -> Tab:
+        """Build a Tab for a target, in the context it belongs to when that one was created."""
         return mapping.from_impl(self._run(self._impl.get_tab_by_target(target=mapping.to_impl(target))))
 
     def set_download_path(self, path: str, browser_context_id: str | None=None):
@@ -1070,7 +1080,9 @@ class Tab(SyncBase):
         Note:
             Tab instance becomes invalid after calling this method. It is
             removed from the browser and its connection is closed, which drops
-            its callbacks.
+            its callbacks, even when closing fails because the tab was already
+            closed elsewhere. Another Tab object the browser keeps for the same
+            target is dropped and closed with it.
         """
         return mapping.from_impl(self._run(self._impl.close()))
 

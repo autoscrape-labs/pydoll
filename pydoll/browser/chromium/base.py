@@ -464,24 +464,36 @@ class Browser(ABC):  # noqa: PLR0904
         Tabs that are already opened will be returned as is. If a new target is opened,
         a new Tab instance will be created.
 
+        Only Tabs whose target is gone are dropped (and their connections
+        closed); a Tab created in a context created with
+        ``create_browser_context`` reports that context.
+
         Returns:
             List of Tab instances. The last tab is the most recent one.
         """
         targets = await self.get_targets()
-        valid_tab_targets = [
-            target
+        valid_tab_targets = {
+            target['targetId']: target
             for target in targets
             if target['type'] == 'page' and 'extension' not in target['url']
-        ]
-        all_target_ids = {target['targetId'] for target in valid_tab_targets}
-        for stale_id in set(self._tabs_opened.keys()) - all_target_ids:
+        }
+        live_target_ids = {target['targetId'] for target in targets}
+        for stale_id in set(self._tabs_opened) - live_target_ids:
             await self._forget_tab(stale_id)
-        existing_target_ids = list(self._tabs_opened.keys())
-        remaining_target_ids = list(all_target_ids - set(existing_target_ids))
-        existing_tabs = [self._tabs_opened[target_id] for target_id in existing_target_ids]
+        existing_tabs = [
+            tab for target_id, tab in self._tabs_opened.items() if target_id in valid_tab_targets
+        ]
+        remaining_target_ids = list(set(valid_tab_targets) - set(self._tabs_opened))
+        created_contexts = set(await self.get_browser_contexts())
         new_tabs = []
         for target_id in reversed(remaining_target_ids):
-            tab = Tab(self, **self._get_tab_kwargs(target_id))
+            context_id = valid_tab_targets[target_id].get('browserContextId')
+            tab = Tab(
+                self,
+                **self._get_tab_kwargs(
+                    target_id, context_id if context_id in created_contexts else None
+                ),
+            )
             await self._apply_user_agent_override(tab)
             self._tabs_opened[target_id] = tab
             new_tabs.append(tab)
@@ -495,7 +507,15 @@ class Browser(ABC):  # noqa: PLR0904
             await tab._connection_handler.close()
 
     async def get_tab_by_target(self, target: TargetInfo) -> Tab:
-        tab = Tab(self, **self._get_tab_kwargs(target['targetId']))
+        """Build a Tab for a target, in the context it belongs to when that one was created."""
+        context_id = target.get('browserContextId')
+        created_contexts = set(await self.get_browser_contexts())
+        tab = Tab(
+            self,
+            **self._get_tab_kwargs(
+                target['targetId'], context_id if context_id in created_contexts else None
+            ),
+        )
         await self._apply_user_agent_override(tab)
         return tab
 
