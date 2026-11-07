@@ -16,6 +16,7 @@ import pytest
 
 from pydoll.connection import ConnectionHandler
 from pydoll.protocol.inspector.events import InspectorEvent
+from pydoll.protocol.network.events import NetworkEvent
 from pydoll.exceptions import (
     CommandExecutionTimeout,
     CommandFailed,
@@ -185,7 +186,7 @@ async def test_message_over_the_size_limit_closes_the_connection_and_names_the_l
         pending = asyncio.create_task(handler.execute_command({'method': 'Runtime.evaluate'}))
         await _wait_until(lambda: bool(cdp_server.commands_for('Runtime.evaluate')))
         await cdp_server.push_event(
-            'Network.requestWillBeSent', {'request': {'postData': 'y' * (128 * 1024)}}
+            NetworkEvent.REQUEST_WILL_BE_SENT, {'request': {'postData': 'y' * (128 * 1024)}}
         )
         with pytest.raises(WebSocketConnectionClosed, match='max_message_size'):
             await asyncio.wait_for(pending, timeout=5)
@@ -216,7 +217,9 @@ async def test_connection_reopens_after_an_oversized_message(cdp_server):
     handler = ConnectionHandler(ws_address=cdp_server.ws_address, max_message_size=64 * 1024)
     try:
         await handler.execute_command({'method': 'Browser.getVersion'})
-        await cdp_server.push_event('Network.webSocketFrameReceived', {'data': 'z' * (128 * 1024)})
+        await cdp_server.push_event(
+            NetworkEvent.WEBSOCKET_FRAME_RECEIVED, {'data': 'z' * (128 * 1024)}
+        )
         await _wait_until(lambda: cdp_server.active_connections == 0)
         result = await handler.execute_command({'method': 'Browser.getVersion'})
     finally:
@@ -255,7 +258,9 @@ async def test_wait_disconnected_names_the_size_limit_after_an_oversized_message
     try:
         await handler.execute_command({'method': 'Page.enable'})
         waiter = asyncio.create_task(handler.wait_disconnected())
-        await cdp_server.push_event('Network.webSocketFrameReceived', {'data': 'z' * (128 * 1024)})
+        await cdp_server.push_event(
+            NetworkEvent.WEBSOCKET_FRAME_RECEIVED, {'data': 'z' * (128 * 1024)}
+        )
         error = await asyncio.wait_for(waiter, timeout=5)
     finally:
         await handler.close()
