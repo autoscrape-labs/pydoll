@@ -43,6 +43,19 @@ class WebSocketConnectionClosed(ConnectionException):
     message = 'The WebSocket connection is closed'
 
 
+class TargetCrashed(PydollException):
+    """Raised when the tab's renderer process crashed.
+
+    Chrome stops answering every command that needs the renderer, so those
+    fail at once with this error instead of waiting out their timeout, until
+    the tab navigates (``go_to``, ``refresh``) or is closed.
+    """
+
+    message = (
+        'Target crashed: the page renderer is gone. Navigate, refresh or close the tab to recover'
+    )
+
+
 class NetworkError(ConnectionException):
     """Raised when a general network error occurs during browser communication."""
 

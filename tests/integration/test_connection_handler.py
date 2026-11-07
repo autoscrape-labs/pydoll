@@ -9,16 +9,19 @@ every assertion is on an observable result or state.
 from __future__ import annotations
 
 import asyncio
+import logging
 from typing import Callable
 
 import pytest
 
 from pydoll.connection import ConnectionHandler
+from pydoll.protocol.inspector.events import InspectorEvent
 from pydoll.exceptions import (
     CommandExecutionTimeout,
     CommandFailed,
     ConnectionFailed,
     InvalidResponse,
+    TargetCrashed,
     WebSocketConnectionClosed,
 )
 
@@ -625,3 +628,128 @@ async def test_handler_keeps_working_after_a_rejected_command(cdp_server):
         await handler.close()
 
     assert result['result'] == {'product': 'FakeChrome/1.0'}
+
+
+@pytest.mark.asyncio
+async def test_pending_command_fails_at_once_when_the_target_crashes(cdp_server):
+    cdp_server.hang('Runtime.evaluate')
+    handler = ConnectionHandler(ws_address=cdp_server.ws_address)
+    try:
+        pending = asyncio.create_task(handler.execute_command({'method': 'Runtime.evaluate'}))
+        await _wait_until(lambda: bool(cdp_server.commands_for('Runtime.evaluate')))
+        await cdp_server.push_event(InspectorEvent.TARGET_CRASHED)
+        with pytest.raises(TargetCrashed):
+            await asyncio.wait_for(pending, timeout=2)
+    finally:
+        await handler.close()
+
+
+@pytest.mark.asyncio
+async def test_renderer_commands_on_a_crashed_target_fail_without_being_sent(cdp_server):
+    handler = ConnectionHandler(ws_address=cdp_server.ws_address)
+    try:
+        await handler.execute_command({'method': 'Page.enable'})
+        await cdp_server.push_event(InspectorEvent.TARGET_CRASHED)
+        await _wait_until(lambda: handler.target_crashed)
+        with pytest.raises(TargetCrashed):
+            await handler.execute_command({'method': 'Runtime.evaluate'})
+        with pytest.raises(TargetCrashed):
+            await handler.execute_command_nowait({'method': 'Input.dispatchMouseEvent'})
+        with pytest.raises(TargetCrashed):
+            await handler.execute_commands([
+                {'method': 'Target.getTargets'},
+                {'method': 'DOM.enable'},
+            ])
+    finally:
+        await handler.close()
+
+    assert cdp_server.commands_for('Runtime.evaluate') == []
+    assert cdp_server.commands_for('Input.dispatchMouseEvent') == []
+    assert cdp_server.commands_for('DOM.enable') == []
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    'method',
+    [
+        'Page.navigate',
+        'Page.reload',
+        'Page.close',
+        'Page.getNavigationHistory',
+        'Network.setCookie',
+        'Fetch.continueRequest',
+        'Target.getTargets',
+        'Browser.getVersion',
+        'Storage.getCookies',
+    ],
+)
+async def test_commands_chrome_answers_on_a_crashed_target_still_go_through(cdp_server, method):
+    handler = ConnectionHandler(ws_address=cdp_server.ws_address)
+    try:
+        await handler.execute_command({'method': 'Page.enable'})
+        await cdp_server.push_event(InspectorEvent.TARGET_CRASHED)
+        await _wait_until(lambda: handler.target_crashed)
+        result = await handler.execute_command({'method': method})
+    finally:
+        await handler.close()
+
+    assert result['result'] == {}
+
+
+@pytest.mark.asyncio
+async def test_target_reloaded_after_crash_lets_renderer_commands_through_again(cdp_server):
+    handler = ConnectionHandler(ws_address=cdp_server.ws_address)
+    try:
+        await handler.execute_command({'method': 'Page.enable'})
+        await cdp_server.push_event(InspectorEvent.TARGET_CRASHED)
+        await _wait_until(lambda: handler.target_crashed)
+        await cdp_server.push_event(InspectorEvent.TARGET_RELOADED_AFTER_CRASH)
+        await _wait_until(lambda: not handler.target_crashed)
+        result = await handler.execute_command({'method': 'Runtime.evaluate'})
+    finally:
+        await handler.close()
+
+    assert result['result'] == {}
+
+
+@pytest.mark.asyncio
+async def test_crash_events_still_reach_registered_callbacks(cdp_server):
+    seen: list[str] = []
+    handler = ConnectionHandler(ws_address=cdp_server.ws_address)
+    try:
+        await handler.register_callback(
+            InspectorEvent.TARGET_CRASHED, lambda e: seen.append(e['method'])
+        )
+        await handler.execute_command({'method': 'Page.enable'})
+        await cdp_server.push_event(InspectorEvent.TARGET_CRASHED)
+        await _wait_until(lambda: seen == [InspectorEvent.TARGET_CRASHED.value])
+    finally:
+        await handler.close()
+
+
+async def _crash_target(cdp_server) -> None:
+    await cdp_server.push_event(InspectorEvent.TARGET_CRASHED)
+
+
+async def _drop_connection(cdp_server) -> None:
+    await cdp_server.drop_connections()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('fail', [_crash_target, _drop_connection], ids=['crash', 'drop'])
+async def test_unawaited_command_failed_by_a_crash_or_drop_raises_nothing_in_the_loop(
+    cdp_server, caplog, fail
+):
+    cdp_server.hang('Input.dispatchMouseEvent')
+    handler = ConnectionHandler(ws_address=cdp_server.ws_address)
+    caplog.set_level(logging.ERROR, logger='asyncio')
+    try:
+        await handler.execute_command_nowait({'method': 'Input.dispatchMouseEvent'})
+        await _wait_until(lambda: bool(cdp_server.commands_for('Input.dispatchMouseEvent')))
+        await fail(cdp_server)
+        await _wait_until(lambda: not handler._command_manager._pending_commands)
+        await asyncio.sleep(0.05)
+    finally:
+        await handler.close()
+
+    assert [record for record in caplog.records if record.name == 'asyncio'] == []

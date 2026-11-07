@@ -20,9 +20,17 @@ from pydoll.exceptions import (
     CommandFailed,
     ConnectionFailed,
     InvalidResponse,
+    TargetCrashed,
     WebSocketConnectionClosed,
 )
 from pydoll.protocol.base import CDPEvent, Response
+from pydoll.protocol.browser.methods import BrowserMethod
+from pydoll.protocol.fetch.methods import FetchMethod
+from pydoll.protocol.inspector.events import InspectorEvent
+from pydoll.protocol.network.methods import NetworkMethod
+from pydoll.protocol.page.methods import PageMethod
+from pydoll.protocol.storage.methods import StorageMethod
+from pydoll.protocol.target.methods import TargetMethod
 from pydoll.utils import get_browser_ws_address
 
 if TYPE_CHECKING:
@@ -33,6 +41,33 @@ if TYPE_CHECKING:
     from pydoll.protocol.base import Command, T_CommandParams, T_CommandResponse
 
 logger = logging.getLogger(__name__)
+
+COMMANDS_ANSWERED_AFTER_CRASH: frozenset[str] = frozenset({
+    *BrowserMethod,
+    *FetchMethod,
+    *StorageMethod,
+    *TargetMethod,
+    PageMethod.NAVIGATE,
+    PageMethod.RELOAD,
+    PageMethod.CLOSE,
+    PageMethod.STOP_LOADING,
+    PageMethod.BRING_TO_FRONT,
+    PageMethod.GET_NAVIGATION_HISTORY,
+    PageMethod.NAVIGATE_TO_HISTORY_ENTRY,
+    PageMethod.RESET_NAVIGATION_HISTORY,
+    NetworkMethod.GET_COOKIES,
+    NetworkMethod.SET_COOKIE,
+    NetworkMethod.SET_COOKIES,
+    NetworkMethod.DELETE_COOKIES,
+    NetworkMethod.CLEAR_BROWSER_COOKIES,
+})
+"""Commands Chrome still answers on a page session after the renderer crashed.
+
+Measured against Chrome: the Browser, Fetch, Storage and Target domains and
+the cookie methods are served by the browser process, and the navigation
+ones are how a crashed tab recovers. Every other command of a renderer domain
+waits for an answer that never comes.
+"""
 
 
 class ConnectionHandler:
@@ -75,6 +110,7 @@ class ConnectionHandler:
         self._events_handler = EventsManager()
         self._receive_task: asyncio.Task[WebSocketConnectionClosed] | None = None
         self._connection_lock = asyncio.Lock()
+        self._target_crashed = False
         logger.info('ConnectionHandler initialized.')
         logger.debug(
             'Init params: port=%s, page_id=%s, ws_address_set=%s',
@@ -87,6 +123,16 @@ class ConnectionHandler:
     def max_message_size(self) -> int | None:
         """Largest message, in bytes, this connection accepts (None means no limit)."""
         return self._max_message_size
+
+    @property
+    def target_crashed(self) -> bool:
+        """Whether the target's renderer crashed and has not been reloaded since.
+
+        Set by ``Inspector.targetCrashed`` and cleared by
+        ``Inspector.targetReloadedAfterCrash``, which Chrome sends once a
+        navigation or a reload starts a new renderer.
+        """
+        return self._target_crashed
 
     @property
     def network_logs(self):
@@ -148,7 +194,10 @@ class ConnectionHandler:
             CommandExecutionTimeout: If browser doesn't respond within timeout.
             WebSocketConnectionClosed: If connection closes during execution.
             ConnectionFailed: If the connection cannot be (re)established.
+            TargetCrashed: If the target's renderer crashed, for a command that
+                needs it, either before sending or while waiting for the answer.
         """
+        self._raise_if_target_crashed(command)
         await self._ensure_active_connection()
         future = self._command_manager.create_command_future(command)
         command_str = json.dumps(command)
@@ -199,7 +248,9 @@ class ConnectionHandler:
 
         Raises:
             ConnectionFailed: If the connection cannot be (re)established.
+            TargetCrashed: If the target's renderer crashed and the command needs it.
         """
+        self._raise_if_target_crashed(command)
         await self._ensure_active_connection()
         future = self._command_manager.create_command_future(command)
         future.add_done_callback(lambda done: self._log_discarded_answer(command, done))
@@ -211,10 +262,33 @@ class ConnectionHandler:
         )
         await ws.send(json.dumps(command))
 
+    def _raise_if_target_crashed(self, command: Command) -> None:
+        """Refuse a command the crashed renderer would never answer.
+
+        Commands the browser process serves (navigation, closing, cookies and
+        the browser-wide domains) still go through, so the tab can recover.
+        """
+        if not self._target_crashed:
+            return
+        if command.get('method', '') in COMMANDS_ANSWERED_AFTER_CRASH:
+            return
+        raise TargetCrashed()
+
+    @staticmethod
+    def _method_name(command: Command) -> str:
+        """The command's CDP method as a plain string (methods may be enums)."""
+        raw_method = command.get('method', '')
+        return raw_method.value if isinstance(raw_method, Enum) else raw_method
+
     @staticmethod
     def _log_discarded_answer(command: Command, future: asyncio.Future) -> None:
-        """Log a CDP error answered to a command whose result nobody awaits."""
-        if future.cancelled():
+        """Log a CDP error answered to a command whose result nobody awaits.
+
+        A future failed because the connection dropped or the target crashed
+        has no answer to read, and reading it would raise inside the event
+        loop's callback.
+        """
+        if future.cancelled() or future.exception() is not None:
             return
         response = json.loads(future.result())
         if 'error' in response:
@@ -249,9 +323,12 @@ class ConnectionHandler:
             CommandExecutionTimeout: If the answers do not all arrive in time.
             WebSocketConnectionClosed: If the connection closes meanwhile.
             ConnectionFailed: If the connection cannot be (re)established.
+            TargetCrashed: If the target's renderer crashed and any command needs it.
         """
         if not commands:
             return []
+        for command in commands:
+            self._raise_if_target_crashed(command)
         await self._ensure_active_connection()
         ws = cast(ClientConnection, self._ws_connection)
         futures = [self._command_manager.create_command_future(command) for command in commands]
@@ -283,8 +360,7 @@ class ConnectionHandler:
         The CDP dispatcher always emits exactly one of ``result`` or ``error`` for
         a command id, so a message with neither is treated as a broken peer.
         """
-        raw_method = command.get('method', '')
-        method = raw_method.value if isinstance(raw_method, Enum) else raw_method
+        method = ConnectionHandler._method_name(command)
         if 'error' in response:
             error = response['error']
             logger.debug('Command rejected: method=%s, error=%s', method, error)
@@ -511,7 +587,25 @@ class ConnectionHandler:
         if self._is_command_response(message):
             self._handle_command_message(cast(Response, message))
         else:
+            self._track_target_crash(cast(CDPEvent, message))
             self._events_handler.enqueue_event(cast(CDPEvent, message))
+
+    def _track_target_crash(self, event: CDPEvent) -> None:
+        """Follow the renderer crash state from the target's own events.
+
+        Handled here, in arrival order with command answers, rather than in
+        the event worker: the commands pending when the renderer crashed fail
+        at once, and the recovery event is seen before the answer to the
+        navigation that caused it.
+        """
+        method = event.get('method')
+        if method == InspectorEvent.TARGET_CRASHED:
+            logger.error('Target renderer crashed; failing pending commands')
+            self._target_crashed = True
+            self._command_manager.fail_all_pending(TargetCrashed())
+        elif method == InspectorEvent.TARGET_RELOADED_AFTER_CRASH:
+            logger.info('Target reloaded after crash')
+            self._target_crashed = False
 
     @staticmethod
     def _parse_message(raw_message: str | bytes) -> CDPEvent | Response | None:

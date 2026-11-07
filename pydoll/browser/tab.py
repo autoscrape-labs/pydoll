@@ -53,6 +53,7 @@ from pydoll.exceptions import (
     NoDialogPresent,
     PageLoadTimeout,
     ScriptEvaluationError,
+    TargetCrashed,
     TopLevelTargetRequired,
     WaitElementTimeout,
     WaitTimeout,
@@ -115,6 +116,7 @@ if TYPE_CHECKING:
     from pydoll.protocol.page.events import FileChooserOpenedEvent
     from pydoll.protocol.page.methods import (
         CaptureScreenshotResponse,
+        GetNavigationHistoryResponse,
         GetResourceContentResponse,
         GetResourceTreeResponse,
         NavigateResponse,
@@ -904,11 +906,16 @@ class Tab(FindElementsMixin):
             url: Target URL to navigate to.
             timeout: Maximum seconds to wait for page load (default 300).
 
+        On a tab whose renderer crashed, the navigation starts a new renderer
+        first, so the tab recovers.
+
         Raises:
             NavigationError: If the navigation fails (e.g., DNS error).
             PageLoadTimeout: If page doesn't finish loading within timeout.
         """
         logger.info('Navigating to URL: %s (timeout=%ss)', url, timeout)
+        if self._connection_handler.target_crashed:
+            await self._recover_crashed_renderer(timeout)
         async with self._wait_page_load(timeout=timeout):
             response: NavigateResponse = await self._execute_command(PageCommands.navigate(url))
             error_text = response['result'].get('errorText')
@@ -1304,6 +1311,10 @@ class Tab(FindElementsMixin):
         """
         Reload current page and wait for completion.
 
+        On a tab whose renderer crashed, there is no live page to reload: the
+        tab loads the crashed page's URL again in a new renderer, and
+        ``ignore_cache`` and ``script_to_evaluate_on_load`` do not apply.
+
         Args:
             ignore_cache: Bypass browser cache if True.
             script_to_evaluate_on_load: JavaScript to execute after load.
@@ -1316,6 +1327,13 @@ class Tab(FindElementsMixin):
             ignore_cache,
             bool(script_to_evaluate_on_load),
         )
+        if self._connection_handler.target_crashed:
+            history: GetNavigationHistoryResponse = await self._execute_command(
+                PageCommands.get_navigation_history()
+            )
+            entries = history['result']['entries']
+            await self.go_to(entries[history['result']['currentIndex']]['url'])
+            return
         async with self._wait_page_load():
             await self._execute_command(
                 PageCommands.reload(
@@ -2209,6 +2227,27 @@ class Tab(FindElementsMixin):
             if cleanup_page_events:
                 with contextlib.suppress(Exception):
                     await self.disable_page_events()
+
+    async def _recover_crashed_renderer(self, timeout: float) -> None:
+        """Start a new renderer in a crashed tab by navigating it to about:blank.
+
+        Page domain commands, which ``go_to`` needs to wait for the load, only
+        work once Chrome reports ``Inspector.targetReloadedAfterCrash``. A
+        blank page brings the renderer back without a request or a load to
+        miss, so the real navigation that follows runs on a live tab.
+
+        Raises:
+            TargetCrashed: If the renderer does not come back within ``timeout``.
+        """
+        logger.info('Tab renderer crashed; starting a new one before navigating')
+        await self._execute_command(PageCommands.navigate('about:blank'))
+        loop = asyncio.get_running_loop()
+        deadline = loop.time() + timeout
+        interval = PollInterval()
+        while self._connection_handler.target_crashed:
+            if loop.time() >= deadline:
+                raise TargetCrashed()
+            await interval.wait()
 
     async def _wait_loaded_or_disconnected(self, page_loaded: asyncio.Event, timeout: int) -> None:
         """Wait for the load event, failing at once if the tab's connection drops first.

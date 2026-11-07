@@ -34,6 +34,7 @@ class FakeConnection:
         self.commands: list[dict] = []
         self.network_logs: list[dict] = []
         self.max_message_size: int | None = DEFAULT_MAX_MESSAGE_SIZE
+        self.target_crashed = False
         self.dialog: dict = {}
         self._results: dict[str, dict] = {}
         self._failures: dict[str, CommandFailed] = {}
