@@ -135,7 +135,7 @@ class _DeadConnection(FakeConnection):
         super().__init__()
         self.pings = 0
 
-    async def ping(self) -> bool:
+    async def ping(self, timeout: float = 5) -> bool:
         self.pings += 1
         return False
 

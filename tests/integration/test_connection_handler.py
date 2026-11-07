@@ -282,9 +282,7 @@ async def test_command_after_server_shutdown_raises_without_hanging(cdp_server):
         await handler.execute_command({'method': 'Page.enable'})
         await cdp_server.stop()
         with pytest.raises((OSError, WebSocketConnectionClosed)):
-            await asyncio.wait_for(
-                handler.execute_command({'method': 'Page.enable'}), timeout=5
-            )
+            await asyncio.wait_for(handler.execute_command({'method': 'Page.enable'}), timeout=5)
     finally:
         await handler.close()
 
@@ -465,3 +463,16 @@ async def test_handler_keeps_working_after_a_rejected_command(cdp_server):
         await handler.close()
 
     assert result['result'] == {'product': 'FakeChrome/1.0'}
+
+
+@pytest.mark.asyncio
+async def test_ping_reports_false_when_the_peer_never_answers_the_ping(cdp_server):
+    handler = ConnectionHandler(ws_address=cdp_server.ws_address)
+    try:
+        assert await handler.ping() is True
+        cdp_server.freeze()
+        started = asyncio.get_running_loop().time()
+        assert await handler.ping(timeout=0.5) is False
+        assert asyncio.get_running_loop().time() - started < 2
+    finally:
+        await handler.close()

@@ -30,6 +30,9 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
+PING_TIMEOUT = 5
+"""Default seconds ``ping`` waits for the connection and the pong together."""
+
 
 class ConnectionHandler:
     """
@@ -85,15 +88,32 @@ class ConnectionHandler:
         """Access currently active JavaScript dialog information."""
         return self._events_handler.dialog
 
-    async def ping(self) -> bool:
-        """Test if WebSocket connection is active and responsive."""
+    async def ping(self, timeout: float = PING_TIMEOUT) -> bool:
+        """Test if the WebSocket connection is open and the browser answers on it.
+
+        Opens a connection when there is none, sends a ping frame and waits for
+        the pong. A stopped or frozen browser process keeps its socket open, so
+        sending the ping succeeds; only the pong shows it still reads input.
+
+        Args:
+            timeout: Seconds to wait for the connection and the pong together.
+
+        Returns:
+            True if the pong arrived within ``timeout``, False otherwise.
+        """
         with suppress(Exception):
             logger.debug('Pinging WebSocket connection')
-            await self._ensure_active_connection()
-            await cast(ClientConnection, self._ws_connection).ping()
+            await asyncio.wait_for(self._ping_and_wait_for_pong(), timeout)
             logger.debug('Ping OK')
             return True
+        logger.debug('Ping got no pong within %ss', timeout)
         return False
+
+    async def _ping_and_wait_for_pong(self) -> None:
+        """Open the connection if needed, send a ping and wait for its pong."""
+        await self._ensure_active_connection()
+        pong_waiter = await cast(ClientConnection, self._ws_connection).ping()
+        await pong_waiter
 
     async def execute_command(
         self, command: Command[T_CommandParams, T_CommandResponse], timeout: int = 60

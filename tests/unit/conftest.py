@@ -60,9 +60,7 @@ class FakeConnection:
     def callbacks_for(self, event_name: str) -> list:
         """Callbacks currently registered for an event name."""
         return [
-            data['callback']
-            for data in self._callbacks.values()
-            if data['event'] == event_name
+            data['callback'] for data in self._callbacks.values() if data['event'] == event_name
         ]
 
     async def execute_command(self, command: dict, timeout: int = 60) -> dict:
@@ -106,7 +104,7 @@ class FakeConnection:
         """Remove every registered callback."""
         self._callbacks.clear()
 
-    async def ping(self) -> bool:
+    async def ping(self, timeout: float = 5) -> bool:
         """A fake connection is always responsive."""
         return True
 

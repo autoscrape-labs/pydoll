@@ -77,6 +77,10 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
+MIN_PING_TIMEOUT = 0.5
+"""Shortest time a liveness ping waits for its pong, even past the polling deadline."""
+
+
 class Browser(ABC):  # noqa: PLR0904
     """
     Abstract base class for browser automation using Chrome DevTools Protocol.
@@ -939,7 +943,7 @@ class Browser(ABC):  # noqa: PLR0904
         deadline = loop.time() + timeout
         interval = PollInterval(cap=1.0)
         while True:
-            if await self._connection_handler.ping():
+            if await self._connection_handler.ping(timeout=self._ping_budget(deadline)):
                 return
             exit_code = self._browser_process_manager.exit_code()
             if exit_code is not None:
@@ -957,6 +961,16 @@ class Browser(ABC):  # noqa: PLR0904
                     )
                 )
             await interval.wait()
+
+    @staticmethod
+    def _ping_budget(deadline: float) -> float:
+        """Seconds one ping may wait for its pong before a polling deadline.
+
+        Never less than a short floor, so the last attempt before the deadline
+        still has time to reach a browser that is up.
+        """
+        remaining = deadline - asyncio.get_running_loop().time()
+        return max(remaining, MIN_PING_TIMEOUT)
 
     def _start_failure(self, reason: str) -> str:
         """Compose and log the start failure message, with the browser's last output."""
@@ -1043,12 +1057,14 @@ class Browser(ABC):  # noqa: PLR0904
         pause starts at 20 ms, so a browser that is up after 300 ms is not made
         to wait a full second, and backs off to one second, so a browser that
         is gone costs a handful of connection attempts instead of hundreds.
+        Each ping waits for its pong only as long as the deadline allows, so a
+        frozen browser is reported as not running once ``timeout`` elapses.
         """
         loop = asyncio.get_running_loop()
         deadline = loop.time() + timeout
         interval = PollInterval(cap=1.0)
         while True:
-            if await self._connection_handler.ping():
+            if await self._connection_handler.ping(timeout=self._ping_budget(deadline)):
                 return True
             if loop.time() >= deadline:
                 return False
