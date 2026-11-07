@@ -38,6 +38,7 @@ from pydoll.utils import validate_browser_paths
 from pydoll.browser.options import ChromiumOptions
 import asyncio
 import json
+import math
 import os
 import shutil
 from abc import ABC, abstractmethod
@@ -151,7 +152,6 @@ from pydoll.interactions.keyboard import CommandExecutor
 from pydoll.interactions.keyboard import TypoResult
 from pydoll.interactions.keyboard import TimingConfig
 from pydoll.interactions.keyboard import TypoConfig
-import math
 from pydoll.commands import InputCommands, RuntimeCommands
 from pydoll.constants import PRESSED_POINTER_FORCE
 from pydoll.interactions.utils import bezier_2d, fitts_duration, minimum_jerk, random_control_points

@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import math
 import os
 import shutil
 from abc import ABC, abstractmethod
@@ -90,8 +91,8 @@ STOP_RESPONSIVE_TIMEOUT = 2
 BROWSER_CLOSE_TIMEOUT = 10
 """Seconds stop() waits for Browser.close before ending the process anyway."""
 
-MIN_PING_TIMEOUT = 0.5
-"""Shortest time a liveness ping waits for its pong, even past the polling deadline."""
+MIN_PROBE_TIMEOUT = 0.5
+"""Shortest time a liveness probe waits for its answer, even past the polling deadline."""
 
 
 class Browser(ABC):  # noqa: PLR0904
@@ -1070,7 +1071,7 @@ class Browser(ABC):  # noqa: PLR0904
         deadline = loop.time() + timeout
         interval = PollInterval(cap=1.0)
         while True:
-            if await self._connection_handler.ping(timeout=self._ping_budget(deadline)):
+            if await self._answers_cdp(self._probe_budget(deadline)):
                 return
             exit_code = self._browser_process_manager.exit_code()
             if exit_code is not None:
@@ -1089,15 +1090,33 @@ class Browser(ABC):  # noqa: PLR0904
                 )
             await interval.wait()
 
+    async def _answers_cdp(self, timeout: float) -> bool:
+        """Whether the browser answers a CDP command within ``timeout`` seconds.
+
+        A pong does not prove it: on Linux a stopped (SIGSTOP) browser was seen
+        answering pings while leaving every command unanswered. A
+        ``Browser.getVersion`` round trip is answered only by a browser that
+        processes commands.
+        """
+        with suppress(Exception):
+            await asyncio.wait_for(
+                self._connection_handler.execute_command(
+                    BrowserCommands.get_version(), timeout=math.ceil(timeout)
+                ),
+                timeout,
+            )
+            return True
+        return False
+
     @staticmethod
-    def _ping_budget(deadline: float) -> float:
-        """Seconds one ping may wait for its pong before a polling deadline.
+    def _probe_budget(deadline: float) -> float:
+        """Seconds one liveness probe may wait for its answer before a polling deadline.
 
         Never less than a short floor, so the last attempt before the deadline
         still has time to reach a browser that is up.
         """
         remaining = deadline - asyncio.get_running_loop().time()
-        return max(remaining, MIN_PING_TIMEOUT)
+        return max(remaining, MIN_PROBE_TIMEOUT)
 
     def _start_failure(self, reason: str) -> str:
         """Compose and log the start failure message, with the browser's last output."""
@@ -1177,14 +1196,15 @@ class Browser(ABC):  # noqa: PLR0904
         pause starts at 20 ms, so a browser that is up after 300 ms is not made
         to wait a full second, and backs off to one second, so a browser that
         is gone costs a handful of connection attempts instead of hundreds.
-        Each ping waits for its pong only as long as the deadline allows, so a
-        frozen browser is reported as not running once ``timeout`` elapses.
+        Each probe is a CDP round trip that waits only as long as the deadline
+        allows, so a frozen browser is reported as not running once
+        ``timeout`` elapses.
         """
         loop = asyncio.get_running_loop()
         deadline = loop.time() + timeout
         interval = PollInterval(cap=1.0)
         while True:
-            if await self._connection_handler.ping(timeout=self._ping_budget(deadline)):
+            if await self._answers_cdp(self._probe_budget(deadline)):
                 return True
             if loop.time() >= deadline:
                 return False

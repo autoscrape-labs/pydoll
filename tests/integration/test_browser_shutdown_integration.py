@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import asyncio
 import os
+from contextlib import suppress
 import signal
 import sys
 import time
@@ -131,6 +132,8 @@ async def test_a_start_cut_short_by_a_timeout_leaves_no_browser_behind(ci_chrome
 async def test_a_cancelled_stop_still_ends_the_process_and_removes_the_profile(
     ci_chrome_options,
 ):
+    """Where the browser stops faster than the cancellation lands (Windows), stop()
+    simply completes; either way nothing is left behind."""
     browser = Chrome(options=ci_chrome_options)
     await browser.start()
     process = browser._browser_process_manager._process
@@ -138,7 +141,7 @@ async def test_a_cancelled_stop_still_ends_the_process_and_removes_the_profile(
     stopping = asyncio.create_task(browser.stop())
     await asyncio.sleep(0.02)
     stopping.cancel()
-    with pytest.raises(asyncio.CancelledError):
+    with suppress(asyncio.CancelledError):
         await stopping
 
     assert process.poll() is not None

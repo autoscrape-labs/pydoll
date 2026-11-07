@@ -1,7 +1,8 @@
 """Whether the browser is reported alive when its process is frozen.
 
-A stopped process keeps its TCP socket open, so sending a ping frame succeeds;
-only waiting for the pong tells a frozen browser from a responsive one.
+A stopped process keeps its TCP socket open, so sending a ping frame succeeds,
+and on Linux even the pong still arrives; only a CDP round trip tells a frozen
+browser from a responsive one.
 """
 
 from __future__ import annotations
@@ -28,9 +29,8 @@ async def test_frozen_browser_is_not_reported_as_running(ci_chrome_options):
     try:
         os.kill(pid, signal.SIGSTOP)
         started = time.monotonic()
-        assert await browser._connection_handler.ping(timeout=1) is False
-        assert time.monotonic() - started < 3
         assert await browser._is_browser_running(timeout=1) is False
+        assert time.monotonic() - started < 3
     finally:
         os.kill(pid, signal.SIGCONT)
 

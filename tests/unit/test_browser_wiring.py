@@ -17,7 +17,12 @@ from pydoll.browser.managers.browser_options_manager import ChromiumOptionsManag
 from pydoll.browser.options import ChromiumOptions
 from pydoll.browser.tab import Tab
 from pydoll.browser.managers import TempDirectoryManager
-from pydoll.exceptions import BrowserNotRunning, FailedToStartBrowser, InvalidOptionsObject
+from pydoll.exceptions import (
+    BrowserNotRunning,
+    ConnectionFailed,
+    FailedToStartBrowser,
+    InvalidOptionsObject,
+)
 from tests.unit.conftest import FakeConnection
 
 
@@ -136,15 +141,23 @@ async def test_a_browser_that_never_answers_is_stopped_and_reported_with_the_tim
 
 
 class _DeadConnection(FakeConnection):
-    """A connection whose endpoint never answers, counting the attempts."""
+    """A connection whose endpoint never answers, counting the attempts to reach it.
+
+    Like a real handler on a closed port, a ping reports False and a command
+    raises ConnectionFailed.
+    """
 
     def __init__(self):
         super().__init__()
-        self.pings = 0
+        self.attempts = 0
 
     async def ping(self, timeout: float = 5) -> bool:
-        self.pings += 1
+        self.attempts += 1
         return False
+
+    async def execute_command(self, command: dict, timeout: int = 60) -> dict:
+        self.attempts += 1
+        raise ConnectionFailed('Could not connect to the browser')
 
 
 @pytest.mark.asyncio
@@ -155,7 +168,7 @@ async def test_readiness_poll_backs_off_so_a_dead_browser_costs_few_attempts():
     browser = Chrome()
     browser._connection_handler = connection
     assert await browser._is_browser_running(timeout=0.5) is False
-    assert 2 <= connection.pings <= 10
+    assert 2 <= connection.attempts <= 10
 
 
 def _launched_browser(process: _FakeProcess, connection: FakeConnection) -> Chrome:
