@@ -30,9 +30,6 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-PING_TIMEOUT = 5
-"""Default seconds ``ping`` waits for the connection and the pong together."""
-
 
 class ConnectionHandler:
     """
@@ -41,6 +38,9 @@ class ConnectionHandler:
     Handles connection lifecycle, command execution, and event subscription
     for both browser-level and page-level CDP endpoints.
     """
+
+    _PING_TIMEOUT = 5
+    """Default seconds ``ping`` waits for the connection and the pong together."""
 
     def __init__(
         self,
@@ -88,7 +88,7 @@ class ConnectionHandler:
         """Access currently active JavaScript dialog information."""
         return self._events_handler.dialog
 
-    async def ping(self, timeout: float = PING_TIMEOUT) -> bool:
+    async def ping(self, timeout: float = _PING_TIMEOUT) -> bool:
         """Test if the WebSocket connection is open and the browser answers on it.
 
         Opens a connection when there is none, sends a ping frame and waits for

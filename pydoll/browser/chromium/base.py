@@ -85,16 +85,6 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-STOP_RESPONSIVE_TIMEOUT = 2
-"""Seconds stop() waits for the browser to answer before ending it without CDP."""
-
-BROWSER_CLOSE_TIMEOUT = 10
-"""Seconds stop() waits for Browser.close before ending the process anyway."""
-
-MIN_PROBE_TIMEOUT = 0.5
-"""Shortest time a liveness probe waits for its answer, even past the polling deadline."""
-
-
 class Browser(ABC):  # noqa: PLR0904
     """
     Abstract base class for browser automation using Chrome DevTools Protocol.
@@ -102,6 +92,15 @@ class Browser(ABC):  # noqa: PLR0904
     Provides comprehensive browser control including lifecycle management,
     context handling, network interception, cookie management, and CDP commands.
     """
+
+    _STOP_RESPONSIVE_TIMEOUT = 2
+    """Seconds stop() waits for the browser to answer before ending it without CDP."""
+
+    _BROWSER_CLOSE_TIMEOUT = 10
+    """Seconds stop() waits for Browser.close before ending the process anyway."""
+
+    _MIN_PROBE_TIMEOUT = 0.5
+    """Shortest time a liveness probe waits for its answer, even past the polling deadline."""
 
     def __init__(
         self,
@@ -272,7 +271,7 @@ class Browser(ABC):  # noqa: PLR0904
         try:
             exited = self._browser_process_manager.exit_code() is not None
             responsive = not exited and await self._is_browser_running(
-                timeout=STOP_RESPONSIVE_TIMEOUT
+                timeout=self._STOP_RESPONSIVE_TIMEOUT
             )
             if not launched and not responsive:
                 logger.error('Stop called but browser is not running')
@@ -331,7 +330,9 @@ class Browser(ABC):  # noqa: PLR0904
         ending its process, so a failure is logged and shutdown goes on.
         """
         try:
-            await self._execute_command(BrowserCommands.close(), timeout=BROWSER_CLOSE_TIMEOUT)
+            await self._execute_command(
+                BrowserCommands.close(), timeout=self._BROWSER_CLOSE_TIMEOUT
+            )
         except (PydollException, OSError) as exc:
             logger.warning('Browser.close did not complete (%s); ending the process', exc)
 
@@ -1108,15 +1109,15 @@ class Browser(ABC):  # noqa: PLR0904
             return True
         return False
 
-    @staticmethod
-    def _probe_budget(deadline: float) -> float:
+    @classmethod
+    def _probe_budget(cls, deadline: float) -> float:
         """Seconds one liveness probe may wait for its answer before a polling deadline.
 
         Never less than a short floor, so the last attempt before the deadline
         still has time to reach a browser that is up.
         """
         remaining = deadline - asyncio.get_running_loop().time()
-        return max(remaining, MIN_PROBE_TIMEOUT)
+        return max(remaining, cls._MIN_PROBE_TIMEOUT)
 
     def _start_failure(self, reason: str) -> str:
         """Compose and log the start failure message, with the browser's last output."""

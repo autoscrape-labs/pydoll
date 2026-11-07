@@ -20,6 +20,7 @@ from pydoll.exceptions import (
     InvalidResponse,
     WebSocketConnectionClosed,
 )
+from pydoll.protocol.page.methods import PageMethod
 
 
 async def _wait_until(condition: Callable[[], bool], timeout: float = 2.0) -> None:
@@ -282,7 +283,9 @@ async def test_command_after_server_shutdown_raises_without_hanging(cdp_server):
         await handler.execute_command({'method': 'Page.enable'})
         await cdp_server.stop()
         with pytest.raises((OSError, WebSocketConnectionClosed)):
-            await asyncio.wait_for(handler.execute_command({'method': 'Page.enable'}), timeout=5)
+            await asyncio.wait_for(
+                handler.execute_command({'method': PageMethod.ENABLE}), timeout=5
+            )
     finally:
         await handler.close()
 

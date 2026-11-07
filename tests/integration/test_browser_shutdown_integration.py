@@ -9,15 +9,16 @@ from __future__ import annotations
 
 import asyncio
 import os
-from contextlib import suppress
 import signal
 import sys
 import time
+from contextlib import suppress
 
 import pytest
 
 from pydoll.browser.chromium import Chrome
 from pydoll.exceptions import FailedToStartBrowser, PydollException
+from pydoll.protocol.page.events import PageEvent
 from pydoll.utils import get_browser_ws_address
 from tests.browser_options import ci_options
 
@@ -155,7 +156,7 @@ async def test_close_closes_the_connections_of_the_tabs_it_handed_out(ci_chrome_
         client = Chrome(options=ci_options())
         tab = await client.connect(await get_browser_ws_address(owner._connection_port))
         await tab.execute_script('return 1')
-        callback_id = await tab.on('Page.loadEventFired', lambda _event: None)
+        callback_id = await tab.on(PageEvent.LOAD_EVENT_FIRED, lambda _event: None)
 
         await client.close()
 

@@ -12,17 +12,19 @@ import os
 import pytest
 
 from pydoll.browser.chromium import Chrome
-from pydoll.browser.managers import BrowserProcessManager
+from pydoll.browser.managers import BrowserProcessManager, TempDirectoryManager
 from pydoll.browser.managers.browser_options_manager import ChromiumOptionsManager
 from pydoll.browser.options import ChromiumOptions
 from pydoll.browser.tab import Tab
-from pydoll.browser.managers import TempDirectoryManager
 from pydoll.exceptions import (
     BrowserNotRunning,
     ConnectionFailed,
     FailedToStartBrowser,
     InvalidOptionsObject,
 )
+from pydoll.protocol.browser.methods import BrowserMethod
+from pydoll.protocol.network.events import NetworkEvent
+from pydoll.protocol.target.methods import TargetMethod
 from tests.unit.conftest import FakeConnection
 
 
@@ -199,7 +201,7 @@ async def test_stop_ends_the_process_when_browser_close_fails(fake_conn):
     process = _FakeProcess()
     browser = _launched_browser(process, fake_conn)
     profile = browser._temp_directory_manager.create_temp_dir().name
-    fake_conn.set_failure('Browser.close', -32000, 'Browser.close failed')
+    fake_conn.set_failure(BrowserMethod.CLOSE, -32000, 'Browser.close failed')
 
     await browser.stop()
 
@@ -231,14 +233,14 @@ async def test_deleting_a_context_forgets_only_its_tabs_and_closes_their_connect
             browser_context_id=context_id,
             connection_handler=connection,
         )
-    await in_context.register_callback('Network.requestWillBeSent', lambda _event: None)
-    await elsewhere.register_callback('Network.requestWillBeSent', lambda _event: None)
+    await in_context.register_callback(NetworkEvent.REQUEST_WILL_BE_SENT, lambda _event: None)
+    await elsewhere.register_callback(NetworkEvent.REQUEST_WILL_BE_SENT, lambda _event: None)
 
     await browser.delete_browser_context('ctx-1')
 
     assert list(browser._tabs_opened) == ['tab-b']
-    assert in_context.callbacks_for('Network.requestWillBeSent') == []
-    assert len(elsewhere.callbacks_for('Network.requestWillBeSent')) == 1
-    assert fake_conn.last_command('Target.disposeBrowserContext')['params'] == {
+    assert in_context.callbacks_for(NetworkEvent.REQUEST_WILL_BE_SENT) == []
+    assert len(elsewhere.callbacks_for(NetworkEvent.REQUEST_WILL_BE_SENT)) == 1
+    assert fake_conn.last_command(TargetMethod.DISPOSE_BROWSER_CONTEXT)['params'] == {
         'browserContextId': 'ctx-1'
     }
