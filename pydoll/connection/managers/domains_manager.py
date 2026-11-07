@@ -71,6 +71,16 @@ class DomainsManager:
         elif method in DOMAIN_ENABLE_FOR_DISABLE:
             self.forget(DOMAIN_ENABLE_FOR_DISABLE[method])
 
+    def mark_live(self, enable_method: str) -> None:
+        """Note that the live session was sent the enable, so it no longer counts as missing."""
+        self._live.add(enable_method)
+
+    def reject(self, enable: Command) -> None:
+        """Stop wanting a domain the new session refused, unless it was enabled again since."""
+        method = self._method_name(enable)
+        if self._wanted.get(method) == {'method': method, 'params': dict(enable.get('params', {}))}:
+            self.forget(method)
+
     def forget(self, enable_method: str) -> None:
         """Stop wanting a domain on, for example because a new session rejected it."""
         self._wanted.pop(enable_method, None)

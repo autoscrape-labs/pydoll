@@ -975,12 +975,9 @@ async def test_a_domain_enabled_on_a_child_session_is_not_restored_on_the_main_o
     'send',
     [
         lambda handler: handler.execute_command({'method': RuntimeMethod.EVALUATE}),
-        lambda handler: handler.execute_command_nowait({
-            'method': InputMethod.DISPATCH_MOUSE_EVENT
-        }),
         lambda handler: handler.execute_commands([{'method': RuntimeMethod.EVALUATE}]),
     ],
-    ids=['execute_command', 'execute_command_nowait', 'execute_commands'],
+    ids=['execute_command', 'execute_commands'],
 )
 async def test_a_connection_lost_while_enabling_domains_raises_a_connection_error(cdp_server, send):
     handler = ConnectionHandler(ws_address=cdp_server.ws_address)
@@ -997,46 +994,51 @@ async def test_a_connection_lost_while_enabling_domains_raises_a_connection_erro
 
 
 @pytest.mark.asyncio
-async def test_a_connection_dropped_while_enabling_domains_fails_nowait_with_a_pydoll_error(
-    cdp_server,
-):
-    handler = ConnectionHandler(ws_address=cdp_server.ws_address)
-    try:
-        await handler.execute_command(NetworkCommands.enable())
-        await _drop_and_wait(handler, cdp_server)
-        cdp_server.hang(NetworkMethod.ENABLE)
-        sending = asyncio.create_task(
-            handler.execute_command_nowait({'method': InputMethod.DISPATCH_MOUSE_EVENT})
-        )
-        await _wait_until(lambda: len(cdp_server.commands_for(NetworkMethod.ENABLE)) == 2)
-        await cdp_server.drop_connections()
-        with pytest.raises(WebSocketConnectionClosed):
-            await asyncio.wait_for(sending, timeout=5)
-        assert handler._command_manager._pending_commands == {}
-    finally:
-        await handler.close()
-
-
-@pytest.mark.asyncio
-async def test_a_reconnect_cut_short_enables_the_domains_on_the_next_command(cdp_server):
+async def test_a_command_after_a_reconnect_is_answered_while_an_enable_hangs(cdp_server):
+    """A renderer kept busy by a dialog or a script must not hold up what the browser answers."""
     handler = ConnectionHandler(ws_address=cdp_server.ws_address)
     try:
         await handler.execute_command(NetworkCommands.enable())
         await handler.execute_command(PageCommands.enable())
         await _drop_and_wait(handler, cdp_server)
         cdp_server.hang(NetworkMethod.ENABLE)
-        with pytest.raises(asyncio.TimeoutError):
-            await asyncio.wait_for(
-                handler.execute_command({'method': BrowserMethod.GET_VERSION}), 0.3
-            )
-        cdp_server.stop_hanging(NetworkMethod.ENABLE)
-        await handler.execute_command({'method': BrowserMethod.GET_VERSION})
-        assert handler._command_manager._pending_commands == {}
+        await asyncio.wait_for(handler.execute_command({'method': BrowserMethod.GET_VERSION}), 2)
+        await asyncio.wait_for(handler.execute_command({'method': BrowserMethod.GET_VERSION}), 2)
     finally:
         await handler.close()
 
     methods = [command['method'] for command in cdp_server.received_commands]
-    assert methods[-3:] == [NetworkMethod.ENABLE, PageMethod.ENABLE, BrowserMethod.GET_VERSION]
+    assert methods[-4:] == [
+        NetworkMethod.ENABLE,
+        PageMethod.ENABLE,
+        BrowserMethod.GET_VERSION,
+        BrowserMethod.GET_VERSION,
+    ]
+    assert len(cdp_server.commands_for(NetworkMethod.ENABLE)) == 2
+
+
+@pytest.mark.asyncio
+async def test_a_domain_enabled_again_meanwhile_survives_the_rejection_of_the_restore(cdp_server):
+    handler = ConnectionHandler(ws_address=cdp_server.ws_address)
+    try:
+        await handler.execute_command(NetworkCommands.enable())
+        await _drop_and_wait(handler, cdp_server)
+        cdp_server.hang(NetworkMethod.ENABLE)
+        await handler.execute_command({'method': BrowserMethod.GET_VERSION})
+        cdp_server.stop_hanging(NetworkMethod.ENABLE)
+        await handler.execute_command(NetworkCommands.enable(max_total_buffer_size=1024))
+        restore = cdp_server.commands_for(NetworkMethod.ENABLE)[1]
+        await cdp_server.send_raw(
+            json.dumps({'id': restore['id'], 'error': {'code': -32000, 'message': 'no'}})
+        )
+        await _wait_until(lambda: not handler._command_manager._pending_commands)
+        await _drop_and_wait(handler, cdp_server)
+        await handler.execute_command({'method': BrowserMethod.GET_VERSION})
+    finally:
+        await handler.close()
+
+    replayed = cdp_server.commands_for(NetworkMethod.ENABLE)[-1]
+    assert replayed['params'] == {'maxTotalBufferSize': 1024}
 
 
 @pytest.mark.asyncio
@@ -1075,8 +1077,6 @@ async def test_a_crash_while_the_domains_are_enabled_again_fails_the_command_at_
             await asyncio.wait_for(pending, timeout=2)
     finally:
         await handler.close()
-
-    assert cdp_server.commands_for(RuntimeMethod.EVALUATE) == []
 
 
 @pytest.mark.asyncio
@@ -1232,3 +1232,23 @@ async def test_an_address_lookup_the_browser_never_answers_fails_in_time(monkeyp
             writer.close()
         server.close()
         await server.wait_closed()
+
+
+@pytest.mark.asyncio
+async def test_a_callback_that_closes_its_own_connection_runs_to_its_end(cdp_server):
+    handler = ConnectionHandler(ws_address=cdp_server.ws_address)
+    finished: list[bool] = []
+
+    async def close_from_callback(_event):
+        await handler.close()
+        finished.append(True)
+
+    try:
+        await handler.execute_command(PageCommands.enable())
+        await handler.register_callback(PageEvent.LOAD_EVENT_FIRED, close_from_callback)
+        await cdp_server.push_event(PageEvent.LOAD_EVENT_FIRED)
+        await _wait_until(lambda: finished == [True])
+        await _wait_until(lambda: cdp_server.active_connections == 0)
+    finally:
+        await handler.close()
+

@@ -84,3 +84,41 @@ def test_clear_forgets_every_domain():
     manager.clear()
     manager.reset_session()
     assert manager.missing == []
+
+
+def test_a_domain_marked_live_is_no_longer_missing():
+    manager = DomainsManager()
+    manager.record(NetworkCommands.enable())
+    manager.record(PageCommands.enable())
+    manager.reset_session()
+
+    manager.mark_live(NetworkMethod.ENABLE)
+
+    assert _methods(manager) == [PageMethod.ENABLE]
+
+
+def test_a_rejected_restore_stops_the_domain_from_being_wanted():
+    manager = DomainsManager()
+    manager.record(NetworkCommands.enable())
+    manager.reset_session()
+    restore = manager.missing[0]
+
+    manager.reject(restore)
+    manager.reset_session()
+
+    assert manager.missing == []
+
+
+def test_a_rejected_restore_keeps_a_domain_enabled_again_since_with_other_parameters():
+    manager = DomainsManager()
+    manager.record(NetworkCommands.enable())
+    manager.reset_session()
+    restore = manager.missing[0]
+    manager.record(NetworkCommands.enable(max_total_buffer_size=1024))
+
+    manager.reject(restore)
+    manager.reset_session()
+
+    assert manager.missing == [
+        {'method': NetworkMethod.ENABLE, 'params': {'maxTotalBufferSize': 1024}}
+    ]

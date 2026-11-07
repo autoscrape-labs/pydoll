@@ -64,6 +64,7 @@ from pydoll.interactions import KeyboardAPI, MouseAPI, ScrollAPI
 from pydoll.interactions.iframe import IFrameContext
 from pydoll.protocol.browser.types import DownloadBehavior, DownloadProgressState
 from pydoll.protocol.dom.types import Node, ShadowRootType
+from pydoll.protocol.inspector.events import InspectorEvent
 from pydoll.protocol.network.events import NetworkEvent
 from pydoll.protocol.network.types import ResourceType
 from pydoll.protocol.page.events import PageEvent
@@ -2201,10 +2202,13 @@ class Tab(FindElementsMixin):
             PageLoadTimeout: If the page doesn't reach the target state in time.
             WebSocketConnectionClosed: If the tab's connection drops before the
                 load event arrives, since the event can no longer be delivered.
+            TargetCrashed: If the renderer crashes before the load event, which
+                a crashed renderer never sends.
         """
         target_state = self._browser.options.page_load_state
 
         page_loaded = asyncio.Event()
+        renderer_crashed = asyncio.Event()
         event_name = self._PAGE_LOAD_EVENT_MAP[target_state]
         cleanup_page_events = not self._page_events_enabled
 
@@ -2214,12 +2218,16 @@ class Tab(FindElementsMixin):
         def on_loaded(_: dict):
             page_loaded.set()
 
+        def on_crashed(_: dict):
+            renderer_crashed.set()
+
         callback_id = await self.on(event_name, on_loaded)
+        crash_callback_id = await self.on(InspectorEvent.TARGET_CRASHED, on_crashed)
         logger.debug('Waiting for page load via %s (timeout=%ss)', event_name, timeout)
 
         try:
             yield
-            await self._wait_loaded_or_disconnected(page_loaded, timeout)
+            await self._wait_loaded_or_lost(page_loaded, renderer_crashed, timeout)
             logger.debug('Page load event received: %s', event_name)
         except asyncio.TimeoutError:
             logger.error(f'Page load timeout after {timeout}s waiting for {event_name}')
@@ -2227,6 +2235,8 @@ class Tab(FindElementsMixin):
         finally:
             with contextlib.suppress(Exception):
                 await self.remove_callback(callback_id)
+            with contextlib.suppress(Exception):
+                await self.remove_callback(crash_callback_id)
             if cleanup_page_events:
                 with contextlib.suppress(Exception):
                     await self.disable_page_events()
@@ -2269,24 +2279,34 @@ class Tab(FindElementsMixin):
                 with contextlib.suppress(Exception):
                     await self.remove_callback(callback_id)
 
-    async def _wait_loaded_or_disconnected(self, page_loaded: asyncio.Event, timeout: int) -> None:
-        """Wait for the load event, failing at once if the tab's connection drops first.
+    async def _wait_loaded_or_lost(
+        self, page_loaded: asyncio.Event, renderer_crashed: asyncio.Event, timeout: int
+    ) -> None:
+        """Wait for the load event, failing at once if the connection drops or the renderer crashes.
 
         Raises:
-            asyncio.TimeoutError: If neither happens within ``timeout`` seconds.
+            asyncio.TimeoutError: If none of them happens within ``timeout`` seconds.
             WebSocketConnectionClosed: If the connection drops before the event.
+            TargetCrashed: If the renderer crashes before the event.
         """
         loaded = asyncio.ensure_future(page_loaded.wait())
+        crashed = asyncio.ensure_future(renderer_crashed.wait())
         disconnected = asyncio.ensure_future(self._connection_handler.wait_disconnected())
         try:
             await asyncio.wait(
-                {loaded, disconnected}, timeout=timeout, return_when=asyncio.FIRST_COMPLETED
+                {loaded, crashed, disconnected},
+                timeout=timeout,
+                return_when=asyncio.FIRST_COMPLETED,
             )
         finally:
             loaded.cancel()
+            crashed.cancel()
             disconnected.cancel()
         if page_loaded.is_set():
             return
+        if renderer_crashed.is_set():
+            logger.error('Tab renderer crashed while waiting for the page to load')
+            raise TargetCrashed()
         if disconnected.done() and not disconnected.cancelled():
             logger.error('Tab connection closed while waiting for the page to load')
             raise disconnected.result()

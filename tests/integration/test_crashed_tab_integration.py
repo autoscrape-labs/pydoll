@@ -9,7 +9,9 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import threading
 import time
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 import pytest
 
@@ -17,6 +19,7 @@ from pydoll.browser.tab import Tab
 from pydoll.commands import PageCommands, RuntimeCommands
 from pydoll.exceptions import TargetCrashed
 from pydoll.protocol.network.events import NetworkEvent
+from tests.integration._waits import wait_until
 
 
 async def _crash(tab: Tab) -> None:
@@ -99,12 +102,12 @@ async def test_a_crashed_tab_can_still_be_closed(browser, tab):
 
 
 async def _wait_crashed(tab: Tab) -> None:
-    """Wait until the tab's connection has seen the crash event."""
-    loop = asyncio.get_running_loop()
-    deadline = loop.time() + 5
-    while not tab._connection_handler.target_crashed:
-        assert loop.time() < deadline, 'the crash event never arrived'
-        await asyncio.sleep(0.02)
+    """Wait until the tab's connection has seen the crash event (slow on loaded CI runners)."""
+
+    async def crashed() -> bool:
+        return tab._connection_handler.target_crashed
+
+    await wait_until(crashed, timeout=15, message='the crash event never arrived')
 
 
 @pytest.mark.asyncio
@@ -129,3 +132,57 @@ async def test_a_crashed_tab_whose_connection_dropped_recovers_with_its_domains(
 
     assert await tab.title() == 'after'
     assert seen
+
+
+class _HeldImageHandler(BaseHTTPRequestHandler):
+    """Serves a page whose image is never sent, so its load event never fires."""
+
+    def do_GET(self):
+        if self.path.startswith('/held'):
+            self.server.held_requested.set()
+            self.server.release.wait(30)
+            return
+        body = b'<!doctype html><title>loading</title><img src="/held.png">'
+        self.send_response(200)
+        self.send_header('Content-Type', 'text/html')
+        self.send_header('Content-Length', str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def log_message(self, *args):
+        pass
+
+
+@pytest.fixture
+def held_load_site():
+    server = ThreadingHTTPServer(('127.0.0.1', 0), _HeldImageHandler)
+    server.daemon_threads = True
+    server.held_requested = threading.Event()
+    server.release = threading.Event()
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        yield server
+    finally:
+        server.release.set()
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=5)
+
+
+@pytest.mark.asyncio
+async def test_a_go_to_waiting_for_the_load_fails_at_once_when_the_renderer_crashes(
+    tab, held_load_site
+):
+    url = f'http://127.0.0.1:{held_load_site.server_address[1]}/'
+    loading = asyncio.create_task(tab.go_to(url, timeout=30))
+
+    async def image_requested() -> bool:
+        return held_load_site.held_requested.is_set()
+
+    await wait_until(image_requested, timeout=10, message='the page never asked for its image')
+    await _crash(tab)
+
+    with pytest.raises(TargetCrashed):
+        await asyncio.wait_for(loading, timeout=15)
+

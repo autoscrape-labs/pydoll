@@ -5,6 +5,7 @@ import json
 import logging
 from contextlib import suppress
 from enum import Enum
+from functools import partial
 from typing import TYPE_CHECKING, Sequence, cast
 from urllib.parse import urlsplit, urlunsplit
 
@@ -49,9 +50,6 @@ class ConnectionHandler:
     Handles connection lifecycle, command execution, and event subscription
     for both browser-level and page-level CDP endpoints.
     """
-
-    _RESTORE_DOMAIN_TIMEOUT = 10
-    """Seconds to wait for each domain the new session enables again."""
 
     def __init__(
         self,
@@ -274,31 +272,50 @@ class ConnectionHandler:
             raise
 
     async def _restore_enabled_domains(self) -> None:
-        """Enable on the current session the domains it lacks but should have on.
+        """Enable again, on the current session, the domains it lacks but should have on.
 
-        Runs before the caller's command, so it never runs with less state
-        than the tab reports. A domain the session rejects is logged and
-        forgotten. A crash stops the restore until the renderer is reloaded,
-        since a crashed renderer never answers. Any other failure (a timeout,
-        the connection closing, a cancellation) propagates, and
+        The enables are sent ahead of the caller's command without waiting
+        for their answers. Chrome handles a session's commands in order, so
+        the caller's command still runs with every domain on, but one the
+        browser answers itself (cookies, ``Page.navigate``, ``Page.close``) is
+        not held up by a renderer that cannot answer yet, because a dialog is
+        open or a script is busy. A domain the session rejects is logged and
+        forgotten when its answer arrives.
+
+        Nothing is sent while the target is crashed: Chrome drops those
+        enables instead of handing them to the next renderer, so the restore
+        runs on the first command after the tab is reloaded. If sending fails,
         ``_restore_or_drop`` tears the connection down so the next command
         starts over.
         """
         if self._crash_manager.crashed:
             return
-        for enable in self._domains_manager.missing:
-            method = enable['method']
-            logger.info('Enabling %s again on the new session', method)
+        missing = self._domains_manager.missing
+        for enable in missing:
+            self._domains_manager.mark_live(enable['method'])
+        for enable in missing:
+            logger.info('Enabling %s again on the new session', enable['method'])
+            future = self._command_manager.create_command_future(enable)
+            future.add_done_callback(partial(self._forget_if_rejected, enable))
             try:
-                await self._send_command(enable, self._RESTORE_DOMAIN_TIMEOUT)
-            except (CommandFailed, InvalidResponse) as exc:
-                logger.warning('New session rejected %s, so it stays off: %s', method, exc)
-                self._domains_manager.forget(method)
-            except TargetCrashed:
-                logger.warning(
-                    'Target crashed while enabling %s again; resuming after reload', method
-                )
-                return
+                await self._current_connection().send(json.dumps(enable))
+            except BaseException:
+                self._command_manager.remove_pending_command(enable['id'], future)
+                raise
+
+    def _forget_if_rejected(self, enable: Command, future: asyncio.Future) -> None:
+        """Forget a domain whose enable the new session answered with an error.
+
+        A future failed because the connection dropped has no answer to read;
+        the next session enables the domain again.
+        """
+        if future.cancelled() or future.exception() is not None:
+            return
+        try:
+            self._raise_if_failed(enable, json.loads(future.result()))
+        except (CommandFailed, InvalidResponse) as exc:
+            logger.warning('New session rejected %s, so it stays off: %s', enable['method'], exc)
+            self._domains_manager.reject(enable)
 
     async def _restore_or_drop(self) -> None:
         """Restore the session's domains, tearing the connection down if that fails.
@@ -578,8 +595,11 @@ class ConnectionHandler:
 
         The receive task is awaited with ``asyncio.wait``, which does not raise
         its cancellation here, so a cancellation of the task calling this one
-        is not swallowed along with it.
+        is not swallowed along with it. A callback tearing down its own
+        connection detaches the event worker it runs in first, so the receive
+        loop ending does not cancel it halfway.
         """
+        self._events_handler.detach_current_worker()
         receive_task = self._receive_task
         if receive_task is not None and not receive_task.done():
             receive_task.cancel()

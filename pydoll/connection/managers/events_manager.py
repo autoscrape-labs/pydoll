@@ -72,19 +72,32 @@ class EventsManager:
         self._worker_task = None
         self._clear_queue()
 
+    def detach_current_worker(self) -> None:
+        """Let the worker finish the callback calling this, then exit, instead of cancelling it.
+
+        A callback that closes or reconnects its own connection runs in the
+        worker, and tearing the connection down cancels the worker, which
+        would cut the callback short halfway through. Detached, the worker is
+        no longer the current one, so it stops after this event and a new one
+        takes over. Does nothing when called from any other task.
+        """
+        if self._worker_task is asyncio.current_task():
+            self._worker_task = None
+
     async def stop(self) -> None:
         """Cancel the worker, await its exit, and drop any queued events.
 
         Awaiting the cancelled task is what prevents "Task was destroyed but it
         is pending" warnings: the task is never garbage-collected while pending.
         It is awaited with ``asyncio.wait`` so a cancellation of the caller is
-        not swallowed with the worker's, and not at all when the caller is the
-        worker itself (a callback closing its own connection), which would
-        wait for itself forever.
+        not swallowed with the worker's. Called from the worker itself (a
+        callback closing its own connection), the worker is detached instead,
+        so the callback runs to its end.
         """
+        self.detach_current_worker()
         worker = self._worker_task
         self.cancel_worker()
-        if worker is not None and worker is not asyncio.current_task() and not worker.done():
+        if worker is not None and not worker.done():
             await asyncio.wait({worker})
 
     def _clear_queue(self) -> None:

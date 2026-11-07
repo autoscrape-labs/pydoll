@@ -88,6 +88,7 @@ from pydoll.extractor.engine import ExtractionEngine
 from pydoll.interactions.iframe import IFrameContext
 from pydoll.protocol.browser.types import DownloadBehavior, DownloadProgressState
 from pydoll.protocol.dom.types import Node, ShadowRootType
+from pydoll.protocol.inspector.events import InspectorEvent
 from pydoll.protocol.network.events import NetworkEvent
 from pydoll.protocol.network.types import ResourceType
 from pydoll.protocol.page.events import PageEvent

@@ -15,8 +15,10 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import pytest
 
 from pydoll.browser.tab import Tab
+from pydoll.commands import RuntimeCommands
 from pydoll.protocol.fetch.events import FetchEvent
 from pydoll.protocol.network.events import NetworkEvent
+from tests.integration._waits import wait_until
 
 PAGE = b'<!doctype html><title>t</title><img src="/pixel.png">'
 
@@ -99,3 +101,20 @@ async def test_go_to_still_sees_the_load_event_after_a_dropped_connection(tab):
     await _drop_tab_connection(tab)
     await tab.go_to('data:text/html,<title>after</title>', timeout=5)
     assert await tab.title() == 'after'
+
+
+@pytest.mark.asyncio
+async def test_a_tab_with_a_dialog_open_still_answers_after_a_dropped_connection(browser):
+    """The new session's Page.enable waits for the dialog; what the browser answers must not."""
+    tab = await browser.new_tab()
+    await tab.enable_page_events()
+    await tab._connection_handler.execute_command_nowait(RuntimeCommands.evaluate("alert('x')"))
+    await wait_until(tab.has_dialog, timeout=5, message='the dialog never opened')
+    await _drop_tab_connection(tab)
+
+    cookies = await asyncio.wait_for(tab.get_cookies(), timeout=5)
+    await asyncio.wait_for(tab.close(), timeout=5)
+
+    assert cookies == []
+    assert tab.target_id not in [target['targetId'] for target in await browser.get_targets()]
+
