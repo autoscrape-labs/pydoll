@@ -51,6 +51,9 @@ class ConnectionHandler:
     for both browser-level and page-level CDP endpoints.
     """
 
+    _RESTORE_ANSWER_TIMEOUT = 3
+    """Seconds a reconnect waits for the domains it enables again to be acknowledged."""
+
     def __init__(
         self,
         connection_port: int | None = None,
@@ -271,28 +274,24 @@ class ConnectionHandler:
             self._command_manager.remove_pending_command(command['id'], future)
             raise
 
-    async def _restore_enabled_domains(self) -> None:
-        """Enable again, on the current session, the domains it lacks but should have on.
+    async def _restore_enabled_domains(self) -> list[asyncio.Future]:
+        """Send again, on the current session, the enables of the domains it lacks.
 
-        The enables are sent ahead of the caller's command without waiting
-        for their answers. Chrome handles a session's commands in order, so
-        the caller's command still runs with every domain on, but one the
-        browser answers itself (cookies, ``Page.navigate``, ``Page.close``) is
-        not held up by a renderer that cannot answer yet, because a dialog is
-        open or a script is busy. A domain the session rejects is logged and
-        forgotten when its answer arrives.
+        The enables are all sent before any answer is awaited, and the
+        futures of their answers are returned for ``_restore_or_drop`` to wait
+        on. A domain counts as live as soon as its enable is sent, and one the
+        session rejects is logged and forgotten when its answer arrives.
 
         Nothing is sent while the target is crashed: Chrome drops those
         enables instead of handing them to the next renderer, so the restore
-        runs on the first command after the tab is reloaded. If sending fails,
-        ``_restore_or_drop`` tears the connection down so the next command
-        starts over.
+        runs on the first command after the tab is reloaded.
         """
         if self._crash_manager.crashed:
-            return
+            return []
         missing = self._domains_manager.missing
         for enable in missing:
             self._domains_manager.mark_live(enable['method'])
+        answers = []
         for enable in missing:
             logger.info('Enabling %s again on the new session', enable['method'])
             future = self._command_manager.create_command_future(enable)
@@ -302,6 +301,32 @@ class ConnectionHandler:
             except BaseException:
                 self._command_manager.remove_pending_command(enable['id'], future)
                 raise
+            answers.append(future)
+        return answers
+
+    async def _wait_for_restored_domains(self, answers: list[asyncio.Future]) -> None:
+        """Give the new session a moment to acknowledge the domains enabled again.
+
+        A navigation that moves the tab to a new renderer hands it the domains
+        Chrome already acknowledged; an enable still in flight is sent to the
+        new renderer only after it attached, and a page that loads at once can
+        fire its load event first. So the caller's command waits for the
+        answers. A renderer that cannot answer (a dialog is open, a script is
+        busy) would hold every command, though, so after a short wait the
+        command goes out anyway: Chrome answers what the browser handles
+        (cookies, ``Page.navigate``, ``Page.close``) and the enables are
+        answered once the renderer frees up.
+        """
+        if not answers:
+            return
+        _, unanswered = await asyncio.wait(answers, timeout=self._RESTORE_ANSWER_TIMEOUT)
+        if unanswered:
+            logger.warning(
+                '%s domain enable(s) not answered within %ss (a dialog open or a busy '
+                'script?); sending the next command without waiting for them',
+                len(unanswered),
+                self._RESTORE_ANSWER_TIMEOUT,
+            )
 
     def _forget_if_rejected(self, enable: Command, future: asyncio.Future) -> None:
         """Forget a domain whose enable the new session answered with an error.
@@ -318,16 +343,18 @@ class ConnectionHandler:
             self._domains_manager.reject(enable)
 
     async def _restore_or_drop(self) -> None:
-        """Restore the session's domains, tearing the connection down if that fails.
+        """Restore the session's domains, tearing the connection down if sending fails.
 
         A session left half set up would report domains as on that are off, so
-        it is never handed to a caller.
+        it is never handed to a caller. Once every enable is sent the session
+        is complete, so waiting for the answers is left out of the teardown.
         """
         try:
-            await self._restore_enabled_domains()
+            answers = await self._restore_enabled_domains()
         except BaseException:
             await self._teardown_connection()
             raise
+        await self._wait_for_restored_domains(answers)
 
     def _session_lacks_domains(self) -> bool:
         """Whether the live session misses a domain that should be on.

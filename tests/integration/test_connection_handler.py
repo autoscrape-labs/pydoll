@@ -975,9 +975,12 @@ async def test_a_domain_enabled_on_a_child_session_is_not_restored_on_the_main_o
     'send',
     [
         lambda handler: handler.execute_command({'method': RuntimeMethod.EVALUATE}),
+        lambda handler: handler.execute_command_nowait({
+            'method': InputMethod.DISPATCH_MOUSE_EVENT
+        }),
         lambda handler: handler.execute_commands([{'method': RuntimeMethod.EVALUATE}]),
     ],
-    ids=['execute_command', 'execute_commands'],
+    ids=['execute_command', 'execute_command_nowait', 'execute_commands'],
 )
 async def test_a_connection_lost_while_enabling_domains_raises_a_connection_error(cdp_server, send):
     handler = ConnectionHandler(ws_address=cdp_server.ws_address)
@@ -994,16 +997,62 @@ async def test_a_connection_lost_while_enabling_domains_raises_a_connection_erro
 
 
 @pytest.mark.asyncio
-async def test_a_command_after_a_reconnect_is_answered_while_an_enable_hangs(cdp_server):
+async def test_a_connection_dropped_while_enabling_domains_fails_nowait_with_a_pydoll_error(
+    cdp_server,
+):
+    handler = ConnectionHandler(ws_address=cdp_server.ws_address)
+    try:
+        await handler.execute_command(NetworkCommands.enable())
+        await _drop_and_wait(handler, cdp_server)
+        cdp_server.hang(NetworkMethod.ENABLE)
+        sending = asyncio.create_task(
+            handler.execute_command_nowait({'method': InputMethod.DISPATCH_MOUSE_EVENT})
+        )
+        await _wait_until(lambda: len(cdp_server.commands_for(NetworkMethod.ENABLE)) == 2)
+        await cdp_server.drop_connections()
+        with pytest.raises(WebSocketConnectionClosed):
+            await asyncio.wait_for(sending, timeout=5)
+        assert handler._command_manager._pending_commands == {}
+    finally:
+        await handler.close()
+
+
+@pytest.mark.asyncio
+async def test_a_command_after_a_reconnect_waits_for_the_domains_to_be_acknowledged(cdp_server):
+    """A navigation must not move the tab to a new renderer before Page.enable is answered."""
+    handler = ConnectionHandler(ws_address=cdp_server.ws_address)
+    try:
+        await handler.execute_command(NetworkCommands.enable())
+        await _drop_and_wait(handler, cdp_server)
+        cdp_server.hang(NetworkMethod.ENABLE)
+        pending = asyncio.create_task(
+            handler.execute_command({'method': BrowserMethod.GET_VERSION})
+        )
+        await _wait_until(lambda: len(cdp_server.commands_for(NetworkMethod.ENABLE)) == 2)
+        await asyncio.sleep(0.2)
+        assert cdp_server.commands_for(BrowserMethod.GET_VERSION) == []
+        restore = cdp_server.commands_for(NetworkMethod.ENABLE)[1]
+        await cdp_server.send_raw(json.dumps({'id': restore['id'], 'result': {}}))
+        await asyncio.wait_for(pending, timeout=2)
+    finally:
+        await handler.close()
+
+
+@pytest.mark.asyncio
+async def test_a_command_after_a_reconnect_goes_out_once_an_enable_stays_unanswered(cdp_server):
     """A renderer kept busy by a dialog or a script must not hold up what the browser answers."""
     handler = ConnectionHandler(ws_address=cdp_server.ws_address)
+    handler._RESTORE_ANSWER_TIMEOUT = 0.3
     try:
         await handler.execute_command(NetworkCommands.enable())
         await handler.execute_command(PageCommands.enable())
         await _drop_and_wait(handler, cdp_server)
         cdp_server.hang(NetworkMethod.ENABLE)
         await asyncio.wait_for(handler.execute_command({'method': BrowserMethod.GET_VERSION}), 2)
-        await asyncio.wait_for(handler.execute_command({'method': BrowserMethod.GET_VERSION}), 2)
+        loop = asyncio.get_running_loop()
+        started = loop.time()
+        await handler.execute_command({'method': BrowserMethod.GET_VERSION})
+        assert loop.time() - started < 0.2
     finally:
         await handler.close()
 
@@ -1020,6 +1069,7 @@ async def test_a_command_after_a_reconnect_is_answered_while_an_enable_hangs(cdp
 @pytest.mark.asyncio
 async def test_a_domain_enabled_again_meanwhile_survives_the_rejection_of_the_restore(cdp_server):
     handler = ConnectionHandler(ws_address=cdp_server.ws_address)
+    handler._RESTORE_ANSWER_TIMEOUT = 0.3
     try:
         await handler.execute_command(NetworkCommands.enable())
         await _drop_and_wait(handler, cdp_server)
