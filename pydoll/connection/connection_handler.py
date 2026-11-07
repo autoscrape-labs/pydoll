@@ -6,6 +6,7 @@ import logging
 from contextlib import suppress
 from enum import Enum
 from typing import TYPE_CHECKING, Sequence, cast
+from urllib.parse import urlsplit, urlunsplit
 
 import websockets
 from websockets.asyncio.client import ClientConnection
@@ -17,6 +18,7 @@ from pydoll.constants import DEFAULT_MAX_MESSAGE_SIZE
 from pydoll.exceptions import (
     CommandExecutionTimeout,
     CommandFailed,
+    ConnectionFailed,
     InvalidResponse,
     WebSocketConnectionClosed,
 )
@@ -145,6 +147,7 @@ class ConnectionHandler:
             InvalidResponse: If the response carries neither a result nor an error.
             CommandExecutionTimeout: If browser doesn't respond within timeout.
             WebSocketConnectionClosed: If connection closes during execution.
+            ConnectionFailed: If the connection cannot be (re)established.
         """
         await self._ensure_active_connection()
         future = self._command_manager.create_command_future(command)
@@ -195,7 +198,7 @@ class ConnectionHandler:
             command: CDP command to send.
 
         Raises:
-            WebSocketConnectionClosed: If the connection cannot be (re)established.
+            ConnectionFailed: If the connection cannot be (re)established.
         """
         await self._ensure_active_connection()
         future = self._command_manager.create_command_future(command)
@@ -245,6 +248,7 @@ class ConnectionHandler:
             CommandFailed: If the browser rejects any command in the batch.
             CommandExecutionTimeout: If the answers do not all arrive in time.
             WebSocketConnectionClosed: If the connection closes meanwhile.
+            ConnectionFailed: If the connection cannot be (re)established.
         """
         if not commands:
             return []
@@ -369,17 +373,38 @@ class ConnectionHandler:
                 await self._establish_new_connection()
 
     async def _establish_new_connection(self):
-        """Create fresh WebSocket connection and start event listening."""
+        """Create fresh WebSocket connection and start event listening.
+
+        Raises:
+            ConnectionFailed: If the socket or the WebSocket handshake fails,
+                for example because the browser exited or the target is gone,
+                with the underlying error as its cause.
+        """
         await self._teardown_connection()
         ws_address = await self._resolve_ws_address()
         logger.info('Connecting to %s', ws_address)
-        self._ws_connection = await self._ws_connector(
-            ws_address,
-            max_size=self._max_message_size,
-        )
+        try:
+            self._ws_connection = await self._ws_connector(
+                ws_address,
+                max_size=self._max_message_size,
+            )
+        except (OSError, asyncio.TimeoutError, websockets.WebSocketException) as exc:
+            address = self._without_credentials(ws_address)
+            logger.warning('Could not connect to %s: %s', address, exc)
+            raise ConnectionFailed(f'Could not connect to {address}: {exc}') from exc
         self._events_handler.start()
         self._receive_task = asyncio.create_task(self._receive_events())
         logger.debug('WebSocket connection established')
+
+    @staticmethod
+    def _without_credentials(ws_address: str) -> str:
+        """Drop the query and fragment, where hosted browsers put access tokens.
+
+        The address goes into an exception message that can end up in logs or
+        an error tracker, so only the scheme, host and path are kept.
+        """
+        parts = urlsplit(ws_address)
+        return urlunsplit((parts.scheme, parts.netloc, parts.path, '', ''))
 
     async def _teardown_connection(self):
         """Cancel the receive task and close any existing socket before reconnecting."""

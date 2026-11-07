@@ -17,6 +17,7 @@ from pydoll.connection import ConnectionHandler
 from pydoll.exceptions import (
     CommandExecutionTimeout,
     CommandFailed,
+    ConnectionFailed,
     InvalidResponse,
     WebSocketConnectionClosed,
 )
@@ -380,8 +381,70 @@ async def test_command_after_server_shutdown_raises_without_hanging(cdp_server):
     try:
         await handler.execute_command({'method': 'Page.enable'})
         await cdp_server.stop()
-        with pytest.raises((OSError, WebSocketConnectionClosed)):
+        with pytest.raises((ConnectionFailed, WebSocketConnectionClosed)):
             await asyncio.wait_for(handler.execute_command({'method': 'Page.enable'}), timeout=5)
+    finally:
+        await handler.close()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    'send',
+    [
+        lambda handler: handler.execute_command({'method': 'Page.enable'}),
+        lambda handler: handler.execute_command_nowait({'method': 'Input.dispatchMouseEvent'}),
+        lambda handler: handler.execute_commands([{'method': 'Page.enable'}]),
+    ],
+    ids=['execute_command', 'execute_command_nowait', 'execute_commands'],
+)
+async def test_command_after_the_peer_is_gone_raises_connection_failed(cdp_server, send):
+    handler = ConnectionHandler(ws_address=cdp_server.ws_address)
+    try:
+        await handler.execute_command({'method': 'Page.enable'})
+        await cdp_server.stop()
+        await asyncio.wait_for(handler.wait_disconnected(), timeout=5)
+        with pytest.raises(ConnectionFailed) as raised:
+            await asyncio.wait_for(send(handler), timeout=5)
+    finally:
+        await handler.close()
+
+    assert isinstance(raised.value.__cause__, OSError)
+
+
+@pytest.mark.asyncio
+async def test_first_connection_to_a_closed_port_raises_connection_failed(cdp_server):
+    address = cdp_server.ws_address
+    await cdp_server.stop()
+    handler = ConnectionHandler(ws_address=address)
+    try:
+        with pytest.raises(ConnectionFailed, match=address):
+            await asyncio.wait_for(handler.execute_command({'method': 'Page.enable'}), timeout=5)
+    finally:
+        await handler.close()
+
+
+@pytest.mark.asyncio
+async def test_connection_failed_message_leaves_out_the_access_token(cdp_server):
+    address = cdp_server.ws_address
+    await cdp_server.stop()
+    handler = ConnectionHandler(ws_address=f'{address}/devtools/browser/abc?token=SECRET')
+    try:
+        with pytest.raises(ConnectionFailed) as raised:
+            await asyncio.wait_for(handler.execute_command({'method': 'Page.enable'}), timeout=5)
+    finally:
+        await handler.close()
+
+    assert f'{address}/devtools/browser/abc' in str(raised.value)
+    assert 'SECRET' not in str(raised.value)
+
+
+@pytest.mark.asyncio
+async def test_ping_still_reports_false_when_the_peer_is_gone(cdp_server):
+    address = cdp_server.ws_address
+    await cdp_server.stop()
+    handler = ConnectionHandler(ws_address=address)
+    try:
+        assert await handler.ping() is False
     finally:
         await handler.close()
 
