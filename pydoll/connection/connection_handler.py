@@ -13,7 +13,12 @@ from websockets.asyncio.client import ClientConnection
 from websockets.frames import CloseCode
 from websockets.protocol import State
 
-from pydoll.connection.managers import CommandsManager, EventsManager
+from pydoll.connection.managers import (
+    CommandsManager,
+    DomainsManager,
+    EventsManager,
+    TargetCrashManager,
+)
 from pydoll.constants import DEFAULT_MAX_MESSAGE_SIZE
 from pydoll.exceptions import (
     CommandExecutionTimeout,
@@ -23,17 +28,7 @@ from pydoll.exceptions import (
     TargetCrashed,
     WebSocketConnectionClosed,
 )
-from pydoll.protocol.accessibility.methods import AccessibilityMethod
 from pydoll.protocol.base import CDPEvent, Response
-from pydoll.protocol.browser.methods import BrowserMethod
-from pydoll.protocol.dom.methods import DomMethod
-from pydoll.protocol.fetch.methods import FetchMethod
-from pydoll.protocol.inspector.events import InspectorEvent
-from pydoll.protocol.network.methods import NetworkMethod
-from pydoll.protocol.page.methods import PageMethod
-from pydoll.protocol.runtime.methods import RuntimeMethod
-from pydoll.protocol.storage.methods import StorageMethod
-from pydoll.protocol.target.methods import TargetMethod
 from pydoll.utils import get_browser_ws_address
 
 if TYPE_CHECKING:
@@ -44,47 +39,6 @@ if TYPE_CHECKING:
     from pydoll.protocol.base import Command, T_CommandParams, T_CommandResponse
 
 logger = logging.getLogger(__name__)
-
-COMMANDS_ANSWERED_AFTER_CRASH: frozenset[str] = frozenset({
-    *BrowserMethod,
-    *FetchMethod,
-    *StorageMethod,
-    *TargetMethod,
-    PageMethod.NAVIGATE,
-    PageMethod.RELOAD,
-    PageMethod.CLOSE,
-    PageMethod.STOP_LOADING,
-    PageMethod.BRING_TO_FRONT,
-    PageMethod.GET_NAVIGATION_HISTORY,
-    PageMethod.NAVIGATE_TO_HISTORY_ENTRY,
-    PageMethod.RESET_NAVIGATION_HISTORY,
-    NetworkMethod.GET_COOKIES,
-    NetworkMethod.SET_COOKIE,
-    NetworkMethod.SET_COOKIES,
-    NetworkMethod.DELETE_COOKIES,
-    NetworkMethod.CLEAR_BROWSER_COOKIES,
-})
-"""Commands Chrome still answers on a page session after the renderer crashed.
-
-Measured against Chrome: the Browser, Fetch, Storage and Target domains and
-the cookie methods are served by the browser process, and the navigation
-ones are how a crashed tab recovers. Every other command of a renderer domain
-waits for an answer that never comes.
-"""
-
-DOMAIN_DISABLE_FOR_ENABLE: dict[str, str] = {
-    AccessibilityMethod.ENABLE: AccessibilityMethod.DISABLE,
-    DomMethod.ENABLE: DomMethod.DISABLE,
-    FetchMethod.ENABLE: FetchMethod.DISABLE,
-    NetworkMethod.ENABLE: NetworkMethod.DISABLE,
-    PageMethod.ENABLE: PageMethod.DISABLE,
-    RuntimeMethod.ENABLE: RuntimeMethod.DISABLE,
-}
-"""Domain enable commands whose effect a new session has to repeat, with their disable."""
-
-DOMAIN_ENABLE_FOR_DISABLE: dict[str, str] = {
-    disable: enable for enable, disable in DOMAIN_DISABLE_FOR_ENABLE.items()
-}
 
 RESTORE_DOMAIN_TIMEOUT = 10
 """Seconds to wait for each domain the new session enables again."""
@@ -130,9 +84,8 @@ class ConnectionHandler:
         self._events_handler = EventsManager()
         self._receive_task: asyncio.Task[WebSocketConnectionClosed] | None = None
         self._connection_lock = asyncio.Lock()
-        self._target_crashed = False
-        self._enabled_domains: dict[str, Command] = {}
-        self._session_domains: set[str] = set()
+        self._crash_manager = TargetCrashManager()
+        self._domains_manager = DomainsManager()
         logger.info('ConnectionHandler initialized.')
         logger.debug(
             'Init params: port=%s, page_id=%s, ws_address_set=%s',
@@ -154,7 +107,7 @@ class ConnectionHandler:
         ``Inspector.targetReloadedAfterCrash``, which Chrome sends once a
         navigation or a reload starts a new renderer.
         """
-        return self._target_crashed
+        return self._crash_manager.crashed
 
     @property
     def network_logs(self):
@@ -219,9 +172,9 @@ class ConnectionHandler:
             TargetCrashed: If the target's renderer crashed, for a command that
                 needs it, either before sending or while waiting for the answer.
         """
-        self._raise_if_target_crashed(command)
+        self._crash_manager.check(command)
         await self._ensure_active_connection()
-        self._raise_if_target_crashed(command)
+        self._crash_manager.check(command)
         return await self._send_command(command, timeout)
 
     async def _send_command(
@@ -249,7 +202,7 @@ class ConnectionHandler:
             logger.debug('Command completed: id=%s in %.3fs', command.get('id'), elapsed)
             response_data = json.loads(response)
             self._raise_if_failed(command, response_data)
-            self._track_domain_state(command)
+            self._domains_manager.record(command)
             return response_data
         except asyncio.TimeoutError:
             self._command_manager.remove_pending_command(command['id'], future)
@@ -297,9 +250,9 @@ class ConnectionHandler:
             WebSocketConnectionClosed: If the connection closes before the command is sent.
             TargetCrashed: If the target's renderer crashed and the command needs it.
         """
-        self._raise_if_target_crashed(command)
+        self._crash_manager.check(command)
         await self._ensure_active_connection()
-        self._raise_if_target_crashed(command)
+        self._crash_manager.check(command)
         future = self._command_manager.create_command_future(command)
         future.add_done_callback(lambda done: self._log_discarded_answer(command, done))
         logger.debug(
@@ -318,28 +271,6 @@ class ConnectionHandler:
             self._command_manager.remove_pending_command(command['id'], future)
             raise
 
-    def _track_domain_state(self, command: Command) -> None:
-        """Remember which domains this session has enabled, and with what parameters.
-
-        Domain state belongs to the CDP session, so a new connection starts
-        with every domain off. What is remembered here is enabled again on it.
-        A command for a child session (an attached iframe or worker, sent with
-        ``sessionId``) belongs to that session, not to this connection's own.
-        """
-        if 'sessionId' in command:
-            return
-        method = self._method_name(command)
-        if method in DOMAIN_DISABLE_FOR_ENABLE:
-            self._enabled_domains[method] = {
-                'method': method,
-                'params': dict(command.get('params', {})),
-            }
-            self._session_domains.add(method)
-        elif method in DOMAIN_ENABLE_FOR_DISABLE:
-            enable = DOMAIN_ENABLE_FOR_DISABLE[method]
-            self._enabled_domains.pop(enable, None)
-            self._session_domains.discard(enable)
-
     async def _restore_enabled_domains(self) -> None:
         """Enable on the current session the domains it lacks but should have on.
 
@@ -351,20 +282,16 @@ class ConnectionHandler:
         ``_restore_or_drop`` tears the connection down so the next command
         starts over.
         """
-        if self._target_crashed:
+        if self._crash_manager.crashed:
             return
-        for method, enable in list(self._enabled_domains.items()):
-            if method in self._session_domains:
-                continue
+        for enable in self._domains_manager.missing:
+            method = enable['method']
             logger.info('Enabling %s again on the new session', method)
             try:
-                await self._send_command(
-                    {'method': method, 'params': dict(enable.get('params', {}))},
-                    RESTORE_DOMAIN_TIMEOUT,
-                )
+                await self._send_command(enable, RESTORE_DOMAIN_TIMEOUT)
             except (CommandFailed, InvalidResponse) as exc:
                 logger.warning('New session rejected %s, so it stays off: %s', method, exc)
-                self._enabled_domains.pop(method, None)
+                self._domains_manager.forget(method)
             except TargetCrashed:
                 logger.warning(
                     'Target crashed while enabling %s again; resuming after reload', method
@@ -389,22 +316,9 @@ class ConnectionHandler:
         Happens after a restore cut short and after a renderer that crashed
         while the connection was down is reloaded.
         """
-        if self._target_crashed:
+        if self._crash_manager.crashed:
             return False
-        return any(method not in self._session_domains for method in self._enabled_domains)
-
-    def _raise_if_target_crashed(self, command: Command) -> None:
-        """Refuse a command the crashed renderer would never answer.
-
-        Commands the browser process serves (navigation, closing, cookies and
-        the browser-wide domains) still go through, so the tab can recover, and
-        so do commands for child sessions, which have renderers of their own.
-        """
-        if not self._target_crashed or 'sessionId' in command:
-            return
-        if command.get('method', '') in COMMANDS_ANSWERED_AFTER_CRASH:
-            return
-        raise TargetCrashed()
+        return bool(self._domains_manager.missing)
 
     @staticmethod
     def _method_name(command: Command) -> str:
@@ -460,10 +374,10 @@ class ConnectionHandler:
         if not commands:
             return []
         for command in commands:
-            self._raise_if_target_crashed(command)
+            self._crash_manager.check(command)
         await self._ensure_active_connection()
         for command in commands:
-            self._raise_if_target_crashed(command)
+            self._crash_manager.check(command)
         futures = [self._command_manager.create_command_future(command) for command in commands]
         try:
             payloads = [json.dumps(command) for command in commands]
@@ -508,7 +422,7 @@ class ConnectionHandler:
             except (CommandFailed, InvalidResponse) as exc:
                 failure = failure or exc
                 continue
-            self._track_domain_state(command)
+            self._domains_manager.record(command)
             results.append(response_data)
         if failure is not None:
             raise failure
@@ -579,7 +493,7 @@ class ConnectionHandler:
         opened meanwhile is torn down once it is up, so none is left open.
         """
         await self.clear_callbacks()
-        self._enabled_domains.clear()
+        self._domains_manager.clear()
         await self._handle_connection_loss()
         async with self._connection_lock:
             await self._handle_connection_loss()
@@ -672,7 +586,7 @@ class ConnectionHandler:
             with suppress(Exception):
                 await self._ws_connection.close()
         self._ws_connection = None
-        self._session_domains.clear()
+        self._domains_manager.reset_session()
 
     async def _resolve_ws_address(self):
         """Determine correct WebSocket address based on page ID."""
@@ -780,20 +694,10 @@ class ConnectionHandler:
         Handled here, in arrival order with command answers, rather than in
         the event worker: the commands pending when the renderer crashed fail
         at once, and the recovery event is seen before the answer to the
-        navigation that caused it. Events of a child session (an attached
-        iframe with a renderer of its own) are about that session, not this
-        connection's target.
+        navigation that caused it.
         """
-        if 'sessionId' in event:
-            return
-        method = event.get('method')
-        if method == InspectorEvent.TARGET_CRASHED:
-            logger.error('Target renderer crashed; failing pending commands')
-            self._target_crashed = True
+        if self._crash_manager.track(event):
             self._command_manager.fail_all_pending(TargetCrashed())
-        elif method == InspectorEvent.TARGET_RELOADED_AFTER_CRASH:
-            logger.info('Target reloaded after crash')
-            self._target_crashed = False
 
     @staticmethod
     def _parse_message(raw_message: str | bytes) -> CDPEvent | Response | None:
