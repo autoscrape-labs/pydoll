@@ -78,3 +78,36 @@ def test_a_crashed_target_lets_child_session_commands_through():
     manager = TargetCrashManager()
     manager.track({'method': InspectorEvent.TARGET_CRASHED, 'params': {}})
     manager.check({'method': RuntimeMethod.EVALUATE, 'sessionId': 'IFRAME'})
+
+
+def _crashed_manager() -> TargetCrashManager:
+    manager = TargetCrashManager()
+    manager.track({'method': InspectorEvent.TARGET_CRASHED, 'params': {}})
+    return manager
+
+
+@pytest.mark.parametrize(
+    'method', [PageMethod.NAVIGATE, PageMethod.RELOAD, PageMethod.NAVIGATE_TO_HISTORY_ENTRY]
+)
+def test_a_successful_navigation_recovers_a_crashed_target(method):
+    manager = _crashed_manager()
+    manager.observe_answer({'method': method}, {'id': 1, 'result': {'frameId': 'F'}})
+    assert manager.crashed is False
+
+
+def test_a_navigation_that_failed_leaves_the_target_crashed():
+    manager = _crashed_manager()
+    manager.observe_answer(
+        {'method': PageMethod.NAVIGATE},
+        {'id': 1, 'result': {'frameId': 'F', 'errorText': 'net::ERR_NAME_NOT_RESOLVED'}},
+    )
+    assert manager.crashed is True
+
+
+def test_other_answers_leave_the_target_crashed():
+    manager = _crashed_manager()
+    manager.observe_answer({'method': PageMethod.GET_NAVIGATION_HISTORY}, {'id': 1, 'result': {}})
+    manager.observe_answer(
+        {'method': PageMethod.NAVIGATE, 'sessionId': 'IFRAME'}, {'id': 2, 'result': {}}
+    )
+    assert manager.crashed is True

@@ -16,6 +16,7 @@ import pytest
 from pydoll.browser.tab import Tab
 from pydoll.commands import PageCommands, RuntimeCommands
 from pydoll.exceptions import TargetCrashed
+from pydoll.protocol.network.events import NetworkEvent
 
 
 async def _crash(tab: Tab) -> None:
@@ -104,3 +105,27 @@ async def _wait_crashed(tab: Tab) -> None:
     while not tab._connection_handler.target_crashed:
         assert loop.time() < deadline, 'the crash event never arrived'
         await asyncio.sleep(0.02)
+
+
+@pytest.mark.asyncio
+async def test_a_crashed_tab_whose_connection_dropped_recovers_with_its_domains(tab):
+    """A session opened after the crash never hears that the renderer is back."""
+    seen: list[str] = []
+    await tab.enable_page_events()
+    await tab.enable_network_events()
+    await tab.on(
+        NetworkEvent.REQUEST_WILL_BE_SENT,
+        lambda event: seen.append(event['params']['request']['url']),
+    )
+    await tab.go_to('data:text/html,<title>before</title>')
+    await _crash(tab)
+    await _wait_crashed(tab)
+    handler = tab._connection_handler
+    await handler._ws_connection.close()
+    await asyncio.wait_for(handler.wait_disconnected(), timeout=5)
+    seen.clear()
+
+    await tab.go_to('data:text/html,<title>after</title>', timeout=10)
+
+    assert await tab.title() == 'after'
+    assert seen

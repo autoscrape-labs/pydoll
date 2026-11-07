@@ -203,6 +203,7 @@ class ConnectionHandler:
             response_data = json.loads(response)
             self._raise_if_failed(command, response_data)
             self._domains_manager.record(command)
+            self._crash_manager.observe_answer(command, response_data)
             return response_data
         except asyncio.TimeoutError:
             self._command_manager.remove_pending_command(command['id'], future)
@@ -423,6 +424,7 @@ class ConnectionHandler:
                 failure = failure or exc
                 continue
             self._domains_manager.record(command)
+            self._crash_manager.observe_answer(command, response_data)
             results.append(response_data)
         if failure is not None:
             raise failure

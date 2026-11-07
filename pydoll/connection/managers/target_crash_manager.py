@@ -13,7 +13,7 @@ from pydoll.protocol.storage.methods import StorageMethod
 from pydoll.protocol.target.methods import TargetMethod
 
 if TYPE_CHECKING:
-    from pydoll.protocol.base import CDPEvent, Command
+    from pydoll.protocol.base import CDPEvent, Command, Response
 
 logger = logging.getLogger(__name__)
 
@@ -43,6 +43,14 @@ the cookie methods are served by the browser process, and the navigation
 ones are how a crashed tab recovers. Every other command of a renderer domain
 waits for an answer that never comes.
 """
+
+
+NAVIGATIONS_THAT_RELOAD_A_CRASHED_TARGET: frozenset[str] = frozenset({
+    PageMethod.NAVIGATE,
+    PageMethod.RELOAD,
+    PageMethod.NAVIGATE_TO_HISTORY_ENTRY,
+})
+"""Commands whose success starts a new renderer in a crashed target."""
 
 
 class TargetCrashManager:
@@ -84,6 +92,25 @@ class TargetCrashManager:
             logger.info('Target reloaded after crash')
             self._crashed = False
         return False
+
+    def observe_answer(self, command: Command, response: Response) -> None:
+        """Treat a successful navigation of a crashed target as its recovery.
+
+        On the target's own session Chrome reports the recovery with
+        ``Inspector.targetReloadedAfterCrash``, but a session opened after the
+        crash (the connection dropped meanwhile) never gets that event. A
+        navigation Chrome accepted without an error has started a new renderer
+        either way.
+        """
+        if not self._crashed or 'sessionId' in command:
+            return
+        if command.get('method', '') not in NAVIGATIONS_THAT_RELOAD_A_CRASHED_TARGET:
+            return
+        result = response.get('result', {})
+        if result.get('errorText'):
+            return
+        logger.info('Navigation started a new renderer for the crashed target')
+        self._crashed = False
 
     def check(self, command: Command) -> None:
         """Refuse a command the crashed renderer would never answer.
