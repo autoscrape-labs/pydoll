@@ -23,12 +23,15 @@ from pydoll.exceptions import (
     TargetCrashed,
     WebSocketConnectionClosed,
 )
+from pydoll.protocol.accessibility.methods import AccessibilityMethod
 from pydoll.protocol.base import CDPEvent, Response
 from pydoll.protocol.browser.methods import BrowserMethod
+from pydoll.protocol.dom.methods import DomMethod
 from pydoll.protocol.fetch.methods import FetchMethod
 from pydoll.protocol.inspector.events import InspectorEvent
 from pydoll.protocol.network.methods import NetworkMethod
 from pydoll.protocol.page.methods import PageMethod
+from pydoll.protocol.runtime.methods import RuntimeMethod
 from pydoll.protocol.storage.methods import StorageMethod
 from pydoll.protocol.target.methods import TargetMethod
 from pydoll.utils import get_browser_ws_address
@@ -68,6 +71,23 @@ the cookie methods are served by the browser process, and the navigation
 ones are how a crashed tab recovers. Every other command of a renderer domain
 waits for an answer that never comes.
 """
+
+DOMAIN_DISABLE_FOR_ENABLE: dict[str, str] = {
+    AccessibilityMethod.ENABLE: AccessibilityMethod.DISABLE,
+    DomMethod.ENABLE: DomMethod.DISABLE,
+    FetchMethod.ENABLE: FetchMethod.DISABLE,
+    NetworkMethod.ENABLE: NetworkMethod.DISABLE,
+    PageMethod.ENABLE: PageMethod.DISABLE,
+    RuntimeMethod.ENABLE: RuntimeMethod.DISABLE,
+}
+"""Domain enable commands whose effect a new session has to repeat, with their disable."""
+
+DOMAIN_ENABLE_FOR_DISABLE: dict[str, str] = {
+    disable: enable for enable, disable in DOMAIN_DISABLE_FOR_ENABLE.items()
+}
+
+RESTORE_DOMAIN_TIMEOUT = 10
+"""Seconds to wait for each domain the new session enables again."""
 
 
 class ConnectionHandler:
@@ -111,6 +131,7 @@ class ConnectionHandler:
         self._receive_task: asyncio.Task[WebSocketConnectionClosed] | None = None
         self._connection_lock = asyncio.Lock()
         self._target_crashed = False
+        self._enabled_domains: dict[str, Command] = {}
         logger.info('ConnectionHandler initialized.')
         logger.debug(
             'Init params: port=%s, page_id=%s, ws_address_set=%s',
@@ -199,6 +220,16 @@ class ConnectionHandler:
         """
         self._raise_if_target_crashed(command)
         await self._ensure_active_connection()
+        return await self._send_command(command, timeout)
+
+    async def _send_command(
+        self, command: Command[T_CommandParams, T_CommandResponse], timeout: float
+    ) -> T_CommandResponse:
+        """Send a command on the current connection and await its answer.
+
+        Does not open a connection, so the reconnect path can use it while it
+        holds the connection lock.
+        """
         future = self._command_manager.create_command_future(command)
         command_str = json.dumps(command)
 
@@ -217,6 +248,7 @@ class ConnectionHandler:
             logger.debug('Command completed: id=%s in %.3fs', command.get('id'), elapsed)
             response_data = json.loads(response)
             self._raise_if_failed(command, response_data)
+            self._track_domain_state(command)
             return response_data
         except asyncio.TimeoutError:
             self._command_manager.remove_pending_command(command['id'])
@@ -261,6 +293,48 @@ class ConnectionHandler:
             command.get('method'),
         )
         await ws.send(json.dumps(command))
+
+    def _track_domain_state(self, command: Command) -> None:
+        """Remember which domains this session has enabled, and with what parameters.
+
+        Domain state belongs to the CDP session, so a new connection starts
+        with every domain off. What is remembered here is enabled again on it.
+        """
+        method = self._method_name(command)
+        if method in DOMAIN_DISABLE_FOR_ENABLE:
+            self._enabled_domains[method] = {
+                'method': method,
+                'params': dict(command.get('params', {})),
+            }
+        elif method in DOMAIN_ENABLE_FOR_DISABLE:
+            self._enabled_domains.pop(DOMAIN_ENABLE_FOR_DISABLE[method], None)
+
+    async def _restore_enabled_domains(self) -> None:
+        """Enable again, on a new session, the domains the previous one had on.
+
+        Runs before the command that triggered the reconnect, so it never runs
+        with less state than the tab reports. A domain the new session rejects
+        is logged and forgotten; a connection that fails meanwhile stops the
+        restore, and the caller's command reports it.
+        """
+        if not self._enabled_domains:
+            return
+        if self._target_crashed:
+            logger.warning('Not enabling domains again on a crashed target')
+            return
+        for method, enable in list(self._enabled_domains.items()):
+            logger.info('Enabling %s again on the new session', method)
+            try:
+                await self._send_command(
+                    {'method': method, 'params': dict(enable.get('params', {}))},
+                    RESTORE_DOMAIN_TIMEOUT,
+                )
+            except (CommandFailed, InvalidResponse) as exc:
+                logger.warning('New session rejected %s, so it stays off: %s', method, exc)
+                self._enabled_domains.pop(method, None)
+            except (CommandExecutionTimeout, WebSocketConnectionClosed, TargetCrashed) as exc:
+                logger.warning('Could not enable %s again on the new session: %s', method, exc)
+                return
 
     def _raise_if_target_crashed(self, command: Command) -> None:
         """Refuse a command the crashed renderer would never answer.
@@ -350,6 +424,7 @@ class ConnectionHandler:
         for command, raw in zip(commands, responses):
             response_data = json.loads(raw)
             self._raise_if_failed(command, response_data)
+            self._track_domain_state(command)
             results.append(response_data)
         return results
 
@@ -411,8 +486,13 @@ class ConnectionHandler:
         self._events_handler.clear_callbacks()
 
     async def close(self):
-        """Close WebSocket connection and release resources."""
+        """Close WebSocket connection and release resources.
+
+        The domains this session had enabled are forgotten too, so a later
+        command opens a connection with every domain off.
+        """
         await self.clear_callbacks()
+        self._enabled_domains.clear()
         await self._events_handler.stop()
 
         if self._receive_task and not self._receive_task.done():
@@ -440,8 +520,13 @@ class ConnectionHandler:
         )
 
     async def _ensure_active_connection(self):
-        """Ensure a healthy connection exists, establishing a new one if needed."""
-        if self._is_connection_healthy():
+        """Ensure a healthy connection exists, establishing a new one if needed.
+
+        While another caller holds the lock, the connection may be open but
+        still enabling its domains again, so this waits for the lock instead
+        of sending ahead of that.
+        """
+        if self._is_connection_healthy() and not self._connection_lock.locked():
             return
         async with self._connection_lock:
             if not self._is_connection_healthy():
@@ -471,6 +556,7 @@ class ConnectionHandler:
         self._events_handler.start()
         self._receive_task = asyncio.create_task(self._receive_events())
         logger.debug('WebSocket connection established')
+        await self._restore_enabled_domains()
 
     @staticmethod
     def _without_credentials(ws_address: str) -> str:

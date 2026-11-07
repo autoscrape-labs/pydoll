@@ -14,8 +14,10 @@ from typing import Callable
 
 import pytest
 
+from pydoll.commands import FetchCommands, NetworkCommands, PageCommands
 from pydoll.connection import ConnectionHandler
 from pydoll.protocol.inspector.events import InspectorEvent
+from pydoll.protocol.fetch.types import RequestStage
 from pydoll.protocol.network.events import NetworkEvent
 from pydoll.exceptions import (
     CommandExecutionTimeout,
@@ -758,3 +760,114 @@ async def test_unawaited_command_failed_by_a_crash_or_drop_raises_nothing_in_the
         await handler.close()
 
     assert [record for record in caplog.records if record.name == 'asyncio'] == []
+
+
+async def _reconnect_after_drop(handler: ConnectionHandler, cdp_server) -> list[dict]:
+    """Drop the connection, run one command, and return what the new session received."""
+    await cdp_server.drop_connections()
+    await asyncio.wait_for(handler.wait_disconnected(), timeout=5)
+    received_before = len(cdp_server.received_commands)
+    await handler.execute_command({'method': 'Browser.getVersion'})
+    return cdp_server.received_commands[received_before:]
+
+
+@pytest.mark.asyncio
+async def test_reconnect_enables_again_what_the_previous_session_had_on(cdp_server):
+    fetch_enable = FetchCommands.enable(
+        handle_auth_requests=True, url_pattern='*.png', request_stage=RequestStage.RESPONSE
+    )
+    handler = ConnectionHandler(ws_address=cdp_server.ws_address)
+    try:
+        await handler.execute_command(NetworkCommands.enable())
+        await handler.execute_command(fetch_enable)
+        replayed = await _reconnect_after_drop(handler, cdp_server)
+    finally:
+        await handler.close()
+
+    assert [command['method'] for command in replayed] == [
+        'Network.enable',
+        'Fetch.enable',
+        'Browser.getVersion',
+    ]
+    assert replayed[1]['params'] == fetch_enable['params']
+
+
+@pytest.mark.asyncio
+async def test_reconnect_leaves_off_a_domain_that_was_disabled(cdp_server):
+    handler = ConnectionHandler(ws_address=cdp_server.ws_address)
+    try:
+        await handler.execute_command(PageCommands.enable())
+        await handler.execute_command(NetworkCommands.enable())
+        await handler.execute_command(PageCommands.disable())
+        replayed = await _reconnect_after_drop(handler, cdp_server)
+    finally:
+        await handler.close()
+
+    assert [command['method'] for command in replayed] == ['Network.enable', 'Browser.getVersion']
+
+
+@pytest.mark.asyncio
+async def test_reconnect_after_close_starts_with_no_domains_on(cdp_server):
+    handler = ConnectionHandler(ws_address=cdp_server.ws_address)
+    try:
+        await handler.execute_command(NetworkCommands.enable())
+        await handler.close()
+        received_before = len(cdp_server.received_commands)
+        await handler.execute_command({'method': 'Browser.getVersion'})
+    finally:
+        await handler.close()
+
+    replayed = cdp_server.received_commands[received_before:]
+    assert [command['method'] for command in replayed] == ['Browser.getVersion']
+
+
+@pytest.mark.asyncio
+async def test_domain_the_new_session_rejects_is_logged_and_not_retried(cdp_server, caplog):
+    handler = ConnectionHandler(ws_address=cdp_server.ws_address)
+    caplog.set_level(logging.WARNING, logger='pydoll.connection.connection_handler')
+    try:
+        await handler.execute_command(NetworkCommands.enable())
+        await handler.execute_command(PageCommands.enable())
+        cdp_server.set_error('Network.enable', -32000, 'Network domain unavailable')
+        first = await _reconnect_after_drop(handler, cdp_server)
+        second = await _reconnect_after_drop(handler, cdp_server)
+    finally:
+        await handler.close()
+
+    assert [command['method'] for command in first] == [
+        'Network.enable',
+        'Page.enable',
+        'Browser.getVersion',
+    ]
+    assert [command['method'] for command in second] == ['Page.enable', 'Browser.getVersion']
+    assert any('Network.enable' in record.getMessage() for record in caplog.records)
+
+
+@pytest.mark.asyncio
+async def test_a_command_waits_while_the_connection_is_being_set_up(cdp_server):
+    handler = ConnectionHandler(ws_address=cdp_server.ws_address)
+    try:
+        await handler.execute_command(PageCommands.enable())
+        async with handler._connection_lock:
+            pending = asyncio.create_task(handler.execute_command({'method': 'Browser.getVersion'}))
+            await asyncio.sleep(0.1)
+            assert cdp_server.commands_for('Browser.getVersion') == []
+        await asyncio.wait_for(pending, timeout=5)
+    finally:
+        await handler.close()
+
+    assert len(cdp_server.commands_for('Browser.getVersion')) == 1
+
+
+@pytest.mark.asyncio
+async def test_changing_a_command_after_sending_it_does_not_change_what_is_restored(cdp_server):
+    fetch_enable = FetchCommands.enable(handle_auth_requests=False, url_pattern='*.png')
+    handler = ConnectionHandler(ws_address=cdp_server.ws_address)
+    try:
+        await handler.execute_command(fetch_enable)
+        fetch_enable['params']['patterns'] = []
+        replayed = await _reconnect_after_drop(handler, cdp_server)
+    finally:
+        await handler.close()
+
+    assert replayed[0]['params']['patterns'] != []
