@@ -133,9 +133,6 @@ logger = logging.getLogger(__name__)
 
 T = TypeVar('T', bound='ExtractionModel')
 
-RECOVERY_LOAD_TIMEOUT = 5
-"""Seconds a crashed tab's recovery waits for the blank page it loads to report its load."""
-
 _CLOUDFLARE_CHALLENGE_DOMAIN = 'challenges.cloudflare.com'
 _CLOUDFLARE_IFRAME_SELECTOR = f'iframe[src*="{_CLOUDFLARE_CHALLENGE_DOMAIN}"]'
 _CLOUDFLARE_CHECKBOX_SELECTOR = 'input[type="checkbox"]'
@@ -149,6 +146,9 @@ class Tab(FindElementsMixin):
     JavaScript execution, event handling, network monitoring, and specialized tasks
     like Cloudflare Turnstile handling.
     """
+
+    _RECOVERY_LOAD_TIMEOUT = 5
+    """Seconds a crashed tab's recovery waits for the blank page it loads to report its load."""
 
     def __init__(
         self,
@@ -2263,7 +2263,7 @@ class Tab(FindElementsMixin):
                 await interval.wait()
             if callback_id is not None:
                 with contextlib.suppress(asyncio.TimeoutError):
-                    await asyncio.wait_for(blank_loaded.wait(), RECOVERY_LOAD_TIMEOUT)
+                    await asyncio.wait_for(blank_loaded.wait(), self._RECOVERY_LOAD_TIMEOUT)
         finally:
             if callback_id is not None:
                 with contextlib.suppress(Exception):

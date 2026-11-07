@@ -11,6 +11,9 @@ from pydoll.protocol.inspector.events import InspectorEvent
 from pydoll.protocol.network.methods import NetworkMethod
 from pydoll.protocol.page.methods import PageMethod
 from pydoll.protocol.runtime.methods import RuntimeMethod
+from pydoll.protocol.page.events import PageEvent
+from pydoll.protocol.dom.methods import DomMethod
+from pydoll.protocol.target.methods import TargetMethod
 
 
 def test_starts_alive_and_accepts_every_command():
@@ -41,13 +44,13 @@ def test_events_of_a_child_session_leave_the_target_alone():
 
 def test_other_events_change_nothing():
     manager = TargetCrashManager()
-    assert manager.track({'method': 'Page.loadEventFired', 'params': {}}) is False
+    assert manager.track({'method': PageEvent.LOAD_EVENT_FIRED, 'params': {}}) is False
     assert manager.crashed is False
 
 
 @pytest.mark.parametrize(
     'method',
-    [RuntimeMethod.EVALUATE, PageMethod.ENABLE, NetworkMethod.ENABLE, 'DOM.getDocument'],
+    [RuntimeMethod.EVALUATE, PageMethod.ENABLE, NetworkMethod.ENABLE, DomMethod.GET_DOCUMENT],
 )
 def test_a_crashed_target_refuses_commands_that_need_its_renderer(method):
     manager = TargetCrashManager()
@@ -65,7 +68,7 @@ def test_a_crashed_target_refuses_commands_that_need_its_renderer(method):
         NetworkMethod.SET_COOKIE,
         BrowserMethod.GET_VERSION,
         'Page.navigate',
-        'Target.getTargets',
+        TargetMethod.GET_TARGETS,
     ],
 )
 def test_a_crashed_target_still_takes_commands_the_browser_answers(method):

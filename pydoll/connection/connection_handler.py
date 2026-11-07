@@ -40,9 +40,6 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-RESTORE_DOMAIN_TIMEOUT = 10
-"""Seconds to wait for each domain the new session enables again."""
-
 
 class ConnectionHandler:
     """
@@ -51,6 +48,9 @@ class ConnectionHandler:
     Handles connection lifecycle, command execution, and event subscription
     for both browser-level and page-level CDP endpoints.
     """
+
+    _RESTORE_DOMAIN_TIMEOUT = 10
+    """Seconds to wait for each domain the new session enables again."""
 
     def __init__(
         self,
@@ -289,7 +289,7 @@ class ConnectionHandler:
             method = enable['method']
             logger.info('Enabling %s again on the new session', method)
             try:
-                await self._send_command(enable, RESTORE_DOMAIN_TIMEOUT)
+                await self._send_command(enable, self._RESTORE_DOMAIN_TIMEOUT)
             except (CommandFailed, InvalidResponse) as exc:
                 logger.warning('New session rejected %s, so it stays off: %s', method, exc)
                 self._domains_manager.forget(method)
