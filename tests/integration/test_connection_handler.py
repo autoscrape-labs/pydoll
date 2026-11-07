@@ -18,13 +18,6 @@ from websockets.asyncio.server import ServerConnection, serve
 
 from pydoll.commands import FetchCommands, NetworkCommands, PageCommands
 from pydoll.connection import ConnectionHandler
-from pydoll.protocol.inspector.events import InspectorEvent
-from pydoll.protocol.fetch.types import RequestStage
-from pydoll.protocol.network.events import NetworkEvent
-from pydoll.protocol.network.methods import NetworkMethod
-from pydoll.protocol.page.methods import PageMethod
-from pydoll.protocol.runtime.methods import RuntimeMethod
-from pydoll.utils import general
 from pydoll.exceptions import (
     CommandExecutionTimeout,
     CommandFailed,
@@ -37,10 +30,17 @@ from pydoll.exceptions import (
 from pydoll.protocol.browser.methods import BrowserMethod
 from pydoll.protocol.dom.methods import DomMethod
 from pydoll.protocol.fetch.methods import FetchMethod
+from pydoll.protocol.fetch.types import RequestStage
 from pydoll.protocol.input.methods import InputMethod
+from pydoll.protocol.inspector.events import InspectorEvent
+from pydoll.protocol.network.events import NetworkEvent
+from pydoll.protocol.network.methods import NetworkMethod
+from pydoll.protocol.page.events import PageEvent
+from pydoll.protocol.page.methods import PageMethod
+from pydoll.protocol.runtime.methods import RuntimeMethod
 from pydoll.protocol.storage.methods import StorageMethod
 from pydoll.protocol.target.methods import TargetMethod
-from pydoll.protocol.page.events import PageEvent
+from pydoll.utils import general
 
 
 async def _wait_until(condition: Callable[[], bool], timeout: float = 2.0) -> None:
@@ -211,6 +211,26 @@ async def test_message_over_the_size_limit_closes_the_connection_and_names_the_l
         with pytest.raises(WebSocketConnectionClosed, match='max_message_size'):
             await asyncio.wait_for(pending, timeout=5)
         assert handler.network_logs == []
+    finally:
+        await handler.close()
+
+
+@pytest.mark.asyncio
+async def test_oversized_message_fails_at_once_when_the_browser_never_closes_the_socket(
+    cdp_server,
+):
+    """After refusing a frame, websockets waits for the peer to close TCP; nothing bounds it."""
+    cdp_server.hang(RuntimeMethod.EVALUATE)
+    handler = ConnectionHandler(ws_address=cdp_server.ws_address, max_message_size=64 * 1024)
+    try:
+        pending = asyncio.create_task(handler.execute_command({'method': RuntimeMethod.EVALUATE}))
+        await _wait_until(lambda: bool(cdp_server.commands_for(RuntimeMethod.EVALUATE)))
+        cdp_server.freeze()
+        await cdp_server.push_event(
+            NetworkEvent.WEBSOCKET_FRAME_RECEIVED, {'data': 'z' * (128 * 1024)}
+        )
+        with pytest.raises(WebSocketConnectionClosed, match='max_message_size'):
+            await asyncio.wait_for(pending, timeout=2)
     finally:
         await handler.close()
 

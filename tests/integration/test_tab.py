@@ -16,12 +16,12 @@ from typing import Any, Callable
 import pytest
 
 from pydoll.exceptions import WaitTimeout, WebSocketConnectionClosed
-from pydoll.protocol.inspector.events import InspectorEvent
-from pydoll.protocol.page.events import PageEvent
-from pydoll.protocol.page.methods import PageMethod
 from pydoll.protocol.dom.methods import DomMethod
+from pydoll.protocol.inspector.events import InspectorEvent
 from pydoll.protocol.network.events import NetworkEvent
 from pydoll.protocol.network.methods import NetworkMethod
+from pydoll.protocol.page.events import PageEvent
+from pydoll.protocol.page.methods import PageMethod
 from pydoll.protocol.runtime.methods import RuntimeMethod
 
 

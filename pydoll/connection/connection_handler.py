@@ -13,6 +13,7 @@ from websockets.asyncio.client import ClientConnection
 from websockets.frames import CloseCode
 from websockets.protocol import State
 
+from pydoll.connection.fail_fast_connection import FailFastConnection
 from pydoll.connection.managers import (
     CommandsManager,
     DomainsManager,
@@ -551,6 +552,7 @@ class ConnectionHandler:
             self._ws_connection = await self._ws_connector(
                 ws_address,
                 max_size=self._max_message_size,
+                create_connection=FailFastConnection,
             )
         except (OSError, asyncio.TimeoutError, websockets.WebSocketException) as exc:
             address = self._without_credentials(ws_address)

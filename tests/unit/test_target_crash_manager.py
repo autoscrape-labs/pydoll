@@ -7,12 +7,12 @@ import pytest
 from pydoll.connection.managers import TargetCrashManager
 from pydoll.exceptions import TargetCrashed
 from pydoll.protocol.browser.methods import BrowserMethod
+from pydoll.protocol.dom.methods import DomMethod
 from pydoll.protocol.inspector.events import InspectorEvent
 from pydoll.protocol.network.methods import NetworkMethod
+from pydoll.protocol.page.events import PageEvent
 from pydoll.protocol.page.methods import PageMethod
 from pydoll.protocol.runtime.methods import RuntimeMethod
-from pydoll.protocol.page.events import PageEvent
-from pydoll.protocol.dom.methods import DomMethod
 from pydoll.protocol.target.methods import TargetMethod
 
 

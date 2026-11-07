@@ -40,8 +40,14 @@ class FakeCDPServer:
         self._server = await serve(self._handle_client, '127.0.0.1', 0)
 
     async def stop(self) -> None:
-        """Close the server and wait for it to release the port (idempotent)."""
+        """Close the server and wait for it to release the port (idempotent).
+
+        Frozen connections read again first, so closing them does not wait out
+        the close timeout for a client frame they would never read.
+        """
         if self._server is not None:
+            for connection in self._connections:
+                connection.transport.resume_reading()
             self._server.close()
             await self._server.wait_closed()
             self._server = None
@@ -111,6 +117,15 @@ class FakeCDPServer:
         """Close every active client connection from the server side with a close code."""
         for connection in list(self._connections):
             await connection.close(code=code)
+
+    def freeze(self) -> None:
+        """Stop reading from every client, like a peer whose process is stopped.
+
+        The TCP connection stays open, but no frame is read any more, so a
+        ping never gets its pong and no command gets its answer.
+        """
+        for connection in self._connections:
+            connection.transport.pause_reading()
 
     async def _broadcast(self, payload: str) -> None:
         for connection in list(self._connections):
