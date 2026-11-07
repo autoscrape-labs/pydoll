@@ -58,11 +58,11 @@
   </tr>
   <tr>
     <td width="300" align="center" valign="middle">
-      <a href="https://go.nodemaven.com/pydollaugust"><img src="public/images/nodemaven-banner.png" width="280" alt="NodeMaven" /></a>
+      <a href="https://go.nodemaven.com/pydolloctober"><img src="public/images/nodemaven-banner.png" width="280" alt="NodeMaven" /></a>
     </td>
     <td valign="middle">
-      <b><a href="https://go.nodemaven.com/pydollaugust">NodeMaven</a></b><br />
-      <sub>The most efficient proxy provider for web scraping and automation: ZIP targeting, 99.9% uptime, filtered high-quality IPs, no KYC. Use <code>PYDOLL35</code> for 35% off Mobile &amp; Residential, or <code>PYDOLL40</code> for 40% off ISP (Static) proxies.</sub>
+      <b><a href="https://go.nodemaven.com/pydolloctober">NodeMaven</a></b><br />
+      <sub>The most efficient proxy provider for web scraping and automation: ZIP targeting, 99.9% uptime, filtered high-quality IPs, no KYC. Use <code>PYDOLL2X</code> for 2X traffic during Black Friday, <code>PYDOLL35</code> for 35% off Mobile &amp; Residential, or <code>PYDOLL40</code> for 40% off ISP (Static) proxies.</sub>
     </td>
   </tr>
   <tr>
@@ -80,27 +80,34 @@
 
 <table>
   <tr>
-    <td align="center" valign="middle" width="20%">
+    <td align="center" valign="middle" width="33%">
       <a href="https://proxy-seller.com/?partner=8DES01TZ1QGWR3"><img src="public/images/proxy-seller-logo-white.svg" height="30" alt="Proxy-Seller" /></a>
       <br />
       <sub><code>PYDOLL</code> 15% off</sub>
     </td>
-    <td align="center" valign="middle" width="20%">
+    <td align="center" valign="middle" width="33%">
       <a href="https://www.thordata.com/?ls=github&lk=pydoll"><img src="public/images/Thordata-logo.png" height="30" alt="Thordata" /></a>
       <br />
       <sub><b>1GB free</b> via our link</sub>
     </td>
-    <td align="center" valign="middle" width="20%">
+    <td align="center" valign="middle" width="33%">
       <a href="https://www.testmuai.com/?utm_medium=sponsor&utm_source=pydoll"><img src="public/images/logo-lamda-test.svg" height="30" width="130" alt="TestMu AI by LambdaTest" /></a>
       <br />
       <sub>AI-native testing cloud</sub>
     </td>
-    <td align="center" valign="middle" width="20%">
+  </tr>
+  <tr>
+    <td align="center" valign="middle" width="33%">
       <a href="https://www.swiftproxy.net/?ref=pydoll"><img src="public/images/swiftproxy-logo.png" height="30" alt="Swiftproxy" /></a>
       <br />
       <sub>Proxies for automation</sub>
     </td>
-    <td align="center" valign="middle" width="20%">
+    <td align="center" valign="middle" width="33%">
+      <a href="https://singaporemobileproxy.com/?utm_source=pydoll&utm_medium=sponsor&utm_campaign=paid_test_q4"><img src="public/images/singaporemobileproxy-logo.png" height="30" alt="Singapore Mobile Proxy" /></a>
+      <br />
+      <sub>Dedicated 4G/LTE mobile proxies</sub>
+    </td>
+    <td align="center" valign="middle" width="33%">
       <a href="https://github.com/sponsors/thalissonvs"><b>➕ Your logo here</b></a>
       <br />
       <sub>Become a sponsor</sub>

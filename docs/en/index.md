@@ -213,12 +213,13 @@ Locators, `get_by_role`, auto-waiting, routes, dialogs and downloads keep their 
       <span class="sponsor-desc">The #1 newsletter dedicated to web scraping. Read their full review of Pydoll.</span>
     </span>
   </a>
-  <a class="sponsor-card" href="https://go.nodemaven.com/pydollaugust" target="_blank" rel="noopener nofollow sponsored">
-    <span class="sponsor-banner"><img src="/docs/resources/images/nodemaven-banner.png" alt="NodeMaven" /></span>
+  <a class="sponsor-card" href="https://go.nodemaven.com/pydolloctober" target="_blank" rel="noopener nofollow sponsored">
+    <span class="sponsor-banner sponsor-banner--nodemaven"><img src="/docs/resources/images/nodemaven-banner.png" alt="NodeMaven" /></span>
     <span class="sponsor-body">
       <span class="sponsor-name">NodeMaven</span>
       <span class="sponsor-desc">High-quality proxies for scraping and automation. ZIP targeting, 99.9% uptime, no KYC.</span>
       <span class="sponsor-chips">
+        <span class="sponsor-chip"><code>PYDOLL2X</code> 2X traffic for Black Friday</span>
         <span class="sponsor-chip"><code>PYDOLL35</code> 35% off</span>
         <span class="sponsor-chip"><code>PYDOLL40</code> 40% off ISP</span>
       </span>
@@ -258,6 +259,10 @@ Sponsors keep the project running and help fund ongoing development. Thanks to e
   <a class="sponsor-card sponsor-tile" href="https://www.swiftproxy.net/?ref=pydoll" target="_blank" rel="noopener nofollow sponsored">
     <span class="sponsor-tile-logo"><img src="/docs/resources/images/swiftproxy-logo.png" alt="Swiftproxy" /></span>
     <span class="sponsor-desc">Proxies for web scraping &amp; automation</span>
+  </a>
+  <a class="sponsor-card sponsor-tile" href="https://singaporemobileproxy.com/?utm_source=pydoll&utm_medium=sponsor&utm_campaign=paid_test_q4" target="_blank" rel="noopener nofollow sponsored">
+    <span class="sponsor-tile-logo"><img src="/docs/resources/images/singaporemobileproxy-logo.png" alt="Singapore Mobile Proxy" /></span>
+    <span class="sponsor-desc">Dedicated 4G/LTE mobile proxies in Singapore</span>
   </a>
   <a class="sponsor-card sponsor-tile sponsor-tile--ghost" href="https://github.com/sponsors/thalissonvs" target="_blank" rel="noopener">
     <span class="sponsor-ghost-plus">+</span>

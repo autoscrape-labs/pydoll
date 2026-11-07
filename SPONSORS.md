@@ -28,11 +28,11 @@ Read a full review of Pydoll on **[The Web Scraping Club](https://substack.thewe
 
 ---
 
-<a href="https://go.nodemaven.com/pydollaugust">
+<a href="https://go.nodemaven.com/pydolloctober">
 <img width="100%" alt="NodeMaven" src="public/images/nodemaven-banner.png" />
 </a>
 
-**[NodeMaven](https://go.nodemaven.com/pydollaugust)** is the most efficient proxy provider for web scraping and automation, with the highest quality IPs on the market: ZIP targeting, 99.9% uptime, IP filtering (every proxy has a fraud score below 97%), no KYC required, and unique free tools like the Proxy Bandwidth Checker, Meta Tag Checker and IP Lookup. Pydoll users get exclusive discounts: use code **PYDOLL35** for 35% off Mobile and Residential proxies, or **PYDOLL40** for 40% off ISP (Static) proxies.
+**[NodeMaven](https://go.nodemaven.com/pydolloctober)** is the most efficient proxy provider for web scraping and automation, with the highest quality IPs on the market: ZIP targeting, 99.9% uptime, IP filtering (every proxy has a fraud score below 97%), no KYC required, and unique free tools like the Proxy Bandwidth Checker, Meta Tag Checker and IP Lookup. Pydoll users get exclusive deals: use code **PYDOLL2X** for 2X traffic during Black Friday, **PYDOLL35** for 35% off Mobile and Residential proxies, or **PYDOLL40** for 40% off ISP (Static) proxies.
 
 ---
 
@@ -84,6 +84,16 @@ Pydoll is proudly sponsored by **[Thordata](https://www.thordata.com/?ls=github&
 Pydoll is also sponsored by **[Swiftproxy](https://www.swiftproxy.net/?ref=pydoll)**: a proxy provider for web scraping and automation.
 
 **[Sign up through our link](https://www.swiftproxy.net/?ref=pydoll)** to support the project.
+
+---
+
+<a href="https://singaporemobileproxy.com/?utm_source=pydoll&utm_medium=sponsor&utm_campaign=paid_test_q4">
+<img width="400" alt="Singapore Mobile Proxy" src="public/images/singaporemobileproxy-logo.png" />
+</a>
+
+Pydoll is also sponsored by **[Singapore Mobile Proxy](https://singaporemobileproxy.com/?utm_source=pydoll&utm_medium=sponsor&utm_campaign=paid_test_q4)**: dedicated 4G/LTE mobile proxies from real modems on the Singtel and M1 networks, with IP rotation on demand.
+
+**[Sign up through our link](https://singaporemobileproxy.com/?utm_source=pydoll&utm_medium=sponsor&utm_campaign=paid_test_q4)** to support the project.
 
 ---
 
