@@ -134,7 +134,9 @@ class Browser(ABC):  # noqa: PLR0904
         self._browser_process_manager = browser_process_manager or BrowserProcessManager()
         self._temp_directory_manager = temp_directory_manager or TempDirectoryManager()
         self._ws_address: str | None = None
-        self._connection_handler = connection_handler or ConnectionHandler(self._connection_port)
+        self._connection_handler = connection_handler or ConnectionHandler(
+            self._connection_port, max_message_size=self.options.max_message_size
+        )
         self._backup_preferences_dir = ''
         self._tabs_opened: dict[str, Tab] = {}
         self._context_proxy_auth: dict[str, tuple[str, str]] = {}

@@ -95,6 +95,17 @@ options = ChromiumOptions()
 options.start_timeout = 20   # 秒，默认 10
 ```
 
+## 限制 CDP 消息的大小
+
+`max_message_size` 是 Pydoll 在任何一条连接上（浏览器的连接、每个标签页的连接以及每个 iframe 的连接）从浏览器接收的最大消息字节数。有些消息的大小由页面决定。POST 请求体会出现在 `Network.requestWillBeSent` 和 `Fetch.requestPaused` 里，WebSocket 帧会出现在 `Network.webSocketFrameReceived` 里，所以在开启网络事件或请求拦截时，页面可以发出几十兆字节的消息。超过限制的消息会关闭那条连接，正在等待它的命令会抛出 `WebSocketConnectionClosed`，错误信息中会写明这个限制。下一条命令会打开新的连接。
+
+默认值是 256 MiB。在开启网络事件浏览不可信的页面时，把它调低。当整页截图或响应体比这更大时，把它调高，或者设为 `None` 取消限制：
+
+```python
+options = ChromiumOptions()
+options.max_message_size = 32 * 1024 * 1024   # 字节，默认 256 MiB
+```
+
 ## 选择导航何时算完成
 
 `page_load_state` 决定 `tab.go_to()` 何时返回。`COMPLETE`（默认）会等待每个资源；`INTERACTIVE` 会在 DOM 就绪后立即返回，当你只读取文本或标记时这样更快。

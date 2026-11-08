@@ -55,11 +55,21 @@ class CommandsManager:
             future.set_result(result)
             logger.debug('Resolved command future id=%s', response_id)
 
-    def remove_pending_command(self, command_id: int):
-        """Remove pending command without resolving (for timeouts/cancellations)."""
+    def remove_pending_command(self, command_id: int, future: asyncio.Future | None = None):
+        """Remove pending command without resolving (for timeouts/cancellations).
+
+        When the caller gives up on ``future``, it is cancelled, or its failure
+        is marked as seen, so asyncio never reports an exception nobody read.
+        """
         if command_id in self._pending_commands:
             del self._pending_commands[command_id]
             logger.debug('Removed pending command id=%s', command_id)
+        if future is None:
+            return
+        if not future.done():
+            future.cancel()
+        elif not future.cancelled():
+            future.exception()
 
     def fail_all_pending(self, exc: BaseException):
         """Fail every pending command future with the given exception and clear them.

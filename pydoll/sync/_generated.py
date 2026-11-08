@@ -84,11 +84,12 @@ from pydoll.browser.fingerprint_applier import FingerprintApplier
 from pydoll.commands import DomCommands, FetchCommands, NetworkCommands, PageCommands, RuntimeCommands, StorageCommands, TargetCommands
 from pydoll.constants import PageLoadState
 from pydoll.elements.mixins import FindElementsMixin
-from pydoll.exceptions import CommandExecutionTimeout, CommandFailed, DownloadTimeout, InvalidFileExtension, InvalidScriptWithElement, InvalidTabInitialization, MissingScreenshotPath, NavigationError, NetworkEventsNotEnabled, NoDialogPresent, PageLoadTimeout, ScriptEvaluationError, TopLevelTargetRequired, WaitElementTimeout, WaitTimeout, WebSocketConnectionClosed
+from pydoll.exceptions import CommandExecutionTimeout, CommandFailed, DownloadTimeout, InvalidFileExtension, InvalidScriptWithElement, InvalidTabInitialization, MissingScreenshotPath, NavigationError, NetworkEventsNotEnabled, NoDialogPresent, PageLoadTimeout, ScriptEvaluationError, TargetCrashed, TopLevelTargetRequired, WaitElementTimeout, WaitTimeout, WebSocketConnectionClosed
 from pydoll.extractor.engine import ExtractionEngine
 from pydoll.interactions.iframe import IFrameContext
 from pydoll.protocol.browser.types import DownloadBehavior, DownloadProgressState
 from pydoll.protocol.dom.types import Node, ShadowRootType
+from pydoll.protocol.inspector.events import InspectorEvent
 from pydoll.protocol.network.events import NetworkEvent
 from pydoll.protocol.network.types import ResourceType
 from pydoll.protocol.page.events import PageEvent
@@ -107,7 +108,7 @@ from pydoll.protocol.network.methods import GetCookiesResponse as NetworkGetCook
 from pydoll.protocol.network.methods import GetResponseBodyResponse
 from pydoll.protocol.network.types import Cookie, CookieParam, ErrorReason, RequestMethod
 from pydoll.protocol.page.events import FileChooserOpenedEvent
-from pydoll.protocol.page.methods import CaptureScreenshotResponse, GetResourceContentResponse, GetResourceTreeResponse, NavigateResponse, PrintToPDFResponse
+from pydoll.protocol.page.methods import CaptureScreenshotResponse, GetNavigationHistoryResponse, GetResourceContentResponse, GetResourceTreeResponse, NavigateResponse, PrintToPDFResponse
 from pydoll.protocol.runtime.methods import EvaluateResponse
 from pydoll.protocol.target.methods import AttachToTargetResponse, GetTargetsResponse
 T = TypeVar('T', bound='ExtractionModel')
@@ -1221,6 +1222,9 @@ class Tab(SyncBase):
             url: Target URL to navigate to.
             timeout: Maximum seconds to wait for page load (default 300).
 
+        On a tab whose renderer crashed, the navigation starts a new renderer
+        first, so the tab recovers.
+
         Raises:
             NavigationError: If the navigation fails (e.g., DNS error).
             PageLoadTimeout: If page doesn't finish loading within timeout.
@@ -1368,6 +1372,10 @@ class Tab(SyncBase):
     def refresh(self, ignore_cache: bool=False, script_to_evaluate_on_load: str | None=None):
         """
         Reload current page and wait for completion.
+
+        On a tab whose renderer crashed, there is no live page to reload: the
+        tab loads the crashed page's URL again in a new renderer, and
+        ``ignore_cache`` and ``script_to_evaluate_on_load`` do not apply.
 
         Args:
             ignore_cache: Bypass browser cache if True.

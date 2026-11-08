@@ -16,6 +16,10 @@ class PageLoadState(str, Enum):
     LOADING = 'loading'
 
 
+DEFAULT_MAX_MESSAGE_SIZE = 256 * 1024 * 1024
+"""Largest CDP message, in bytes, a connection accepts before closing (256 MiB, as in Puppeteer)."""
+
+
 class ScrollPosition(str, Enum):
     UP = 'up'
     DOWN = 'down'

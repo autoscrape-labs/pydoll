@@ -349,6 +349,7 @@ class IFrameContextResolver:
         browser_handler = ConnectionHandler(
             connection_port=element_handler._connection_port,
             ws_address=element_handler._ws_address,
+            max_message_size=element_handler.max_message_size,
         )
         try:
             return await self._try_resolve_oopif(

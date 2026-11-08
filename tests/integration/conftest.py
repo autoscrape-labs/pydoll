@@ -32,6 +32,7 @@ class FakeCDPServer:
         self._errors: dict[str, dict] = {}
         self._bare_methods: set[str] = set()
         self._hung_methods: set[str] = set()
+        self._close_after: set[str] = set()
         self._total_connections = 0
 
     async def start(self) -> None:
@@ -39,8 +40,14 @@ class FakeCDPServer:
         self._server = await serve(self._handle_client, '127.0.0.1', 0)
 
     async def stop(self) -> None:
-        """Close the server and wait for it to release the port (idempotent)."""
+        """Close the server and wait for it to release the port (idempotent).
+
+        Frozen connections read again first, so closing them does not wait out
+        the close timeout for a client frame they would never read.
+        """
         if self._server is not None:
+            for connection in self._connections:
+                connection.transport.resume_reading()
             self._server.close()
             await self._server.wait_closed()
             self._server = None
@@ -90,6 +97,12 @@ class FakeCDPServer:
         """Receive a command method but never answer it, to test timeouts/drops."""
         self._hung_methods.add(method)
 
+    def stop_hanging(self, method: str) -> None:
+        self._hung_methods.discard(method)
+
+    def close_after_answering(self, method: str) -> None:
+        self._close_after.add(method)
+
     async def push_event(self, method: str, params: dict | None = None) -> None:
         """Send an unsolicited CDP event to every connected client."""
         await self._broadcast(json.dumps({'method': method, 'params': params or {}}))
@@ -98,10 +111,13 @@ class FakeCDPServer:
         """Send an arbitrary, possibly malformed, frame to every client."""
         await self._broadcast(payload)
 
-    async def drop_connections(self) -> None:
-        """Close every active client connection from the server side."""
+    async def drop_connections(self, code: int = 1000) -> None:
         for connection in list(self._connections):
-            await connection.close()
+            await connection.close(code=code)
+
+    def freeze(self) -> None:
+        for connection in self._connections:
+            connection.transport.pause_reading()
 
     def freeze(self) -> None:
         """Stop reading from every client, like a peer whose process is stopped.
@@ -141,6 +157,8 @@ class FakeCDPServer:
             return
         result = self._results.get(method, {})
         await connection.send(json.dumps({'id': message['id'], 'result': result}))
+        if method in self._close_after:
+            await connection.close()
 
 
 @pytest_asyncio.fixture
