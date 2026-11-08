@@ -211,6 +211,18 @@ class TestActions:
         assert await page.text_content('#mouse') == '2:0'
 
     @pytest.mark.asyncio
+    async def test_drag_from_an_element_that_cannot_be_dragged_still_releases_the_mouse(
+        self, page
+    ):
+        await page.goto(page_url('playwright_events.html'))
+        await page.evaluate(
+            "document.addEventListener('mouseup', e => { window.__released = e.target.id; })"
+        )
+        await page.locator('#mouse').drag_to(page.locator('#drop-target'))
+        assert await page.evaluate('window.__released') == 'drop-target'
+        assert await page.text_content('#drop-result') == ''
+
+    @pytest.mark.asyncio
     async def test_focus_blur_and_select_text(self, page):
         await page.goto(page_url('playwright_events.html'))
         await page.locator('#name').focus()
