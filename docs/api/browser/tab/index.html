@@ -6438,7 +6438,11 @@ Fields are resolved relative to each scope container.</p>
 
 <details class="note" open>
   <summary>Note</summary>
-  <p>Tab instance becomes invalid after calling this method.</p>
+  <p>Tab instance becomes invalid after calling this method. It is
+removed from the browser and its connection is closed, which drops
+its callbacks, even when closing fails because the tab was already
+closed elsewhere. Another Tab object the browser keeps for the same
+target is dropped and closed with it.</p>
 </details>
 
     </div>

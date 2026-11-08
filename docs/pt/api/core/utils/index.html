@@ -3710,6 +3710,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#pydoll.utils.is_port_free" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;is_port_free
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#pydoll.utils.is_script_already_function" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -5157,6 +5168,34 @@ or missing data.</p>
           </tr>
       </tbody>
     </table>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="pydoll.utils.is_port_free" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">is_port_free</span>
+
+
+</h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">is_port_free</span><span class="p">(</span><span class="n">port</span><span class="p">)</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Whether no process already listens on the port, on loopback or a wildcard address.</p>
+<p>A browser started on a port another one already owns cannot listen on it,
+and pydoll would end up driving the other browser. Binding is used rather
+than connecting because it answers at once on every platform; connecting
+to a closed port on Windows takes about two seconds.</p>
+<p>On POSIX the probe sets <code>SO_REUSEADDR</code>, as Chrome does for its own
+listener, so the connections a previous browser left in TIME_WAIT (up to
+a minute after it stopped) do not read as a listener. Windows takes that
+option as leave to share a port in use, so the probe there binds without it.</p>
 
 
     </div>

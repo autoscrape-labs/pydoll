@@ -3469,6 +3469,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#pydoll.browser.managers.BrowserProcessManager.was_launched" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;was_launched
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#pydoll.browser.managers.BrowserProcessManager.exit_code" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3696,6 +3707,17 @@
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;start_browser_process
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pydoll.browser.managers.browser_process_manager.BrowserProcessManager.was_launched" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;was_launched
       
     </span>
   </a>
@@ -4470,6 +4492,26 @@ Uses default subprocess implementation if None.</p>
 <div class="doc doc-object doc-function">
 
 
+<h4 id="pydoll.browser.managers.BrowserProcessManager.was_launched" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">was_launched</span>
+
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">was_launched</span><span class="p">()</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Whether <code>start_browser_process</code> started a process, running or not.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
 <h4 id="pydoll.browser.managers.BrowserProcessManager.exit_code" class="doc doc-heading">
 <code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">exit_code</span>
 
@@ -4524,7 +4566,11 @@ to deliver the lines it wrote on its way out.</p>
 
         <p>Terminate browser process with graceful shutdown.</p>
 <p>Attempts SIGTERM first, then SIGKILL after 15-second timeout.
-Safe to call even if no process is running.</p>
+Safe to call even if no process is running or it already exited.</p>
+<p>A stopped process (SIGSTOP, a debugger) keeps a SIGTERM pending until
+it runs again, so on POSIX the process is also sent SIGCONT: it
+handles the SIGTERM at once instead of waiting out the timeout. The
+process is reaped after a SIGKILL so it does not linger as a zombie.</p>
 
 
     </div>
@@ -5357,6 +5403,26 @@ Uses default subprocess implementation if None.</p>
 <div class="doc doc-object doc-function">
 
 
+<h5 id="pydoll.browser.managers.browser_process_manager.BrowserProcessManager.was_launched" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">was_launched</span>
+
+
+</h5>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">was_launched</span><span class="p">()</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Whether <code>start_browser_process</code> started a process, running or not.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
 <h5 id="pydoll.browser.managers.browser_process_manager.BrowserProcessManager.exit_code" class="doc doc-heading">
 <code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">exit_code</span>
 
@@ -5411,7 +5477,11 @@ to deliver the lines it wrote on its way out.</p>
 
         <p>Terminate browser process with graceful shutdown.</p>
 <p>Attempts SIGTERM first, then SIGKILL after 15-second timeout.
-Safe to call even if no process is running.</p>
+Safe to call even if no process is running or it already exited.</p>
+<p>A stopped process (SIGSTOP, a debugger) keeps a SIGTERM pending until
+it runs again, so on POSIX the process is also sent SIGCONT: it
+handles the SIGTERM at once instead of waiting out the timeout. The
+process is reaped after a SIGKILL so it does not linger as a zombie.</p>
 
 
     </div>

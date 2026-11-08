@@ -4600,6 +4600,9 @@ that is already running.</p>
           </tr>
       </tbody>
     </table>
+        <p>A start that fails or is cancelled at any point after the process was
+launched ends that process and removes its temporary profile before the
+error propagates.</p>
 
 
 <table>
@@ -4618,10 +4621,12 @@ that is already running.</p>
             </td>
             <td class="doc-raises-details">
               <div class="doc-md-description">
-                <p>If the executable cannot be launched, exits before
-answering, or does not answer within <code>options.start_timeout</code>. The
-message carries the exit code and the last lines the browser wrote
-to stderr, which is where Chrome explains what went wrong.</p>
+                <p>If the browser this object started is still
+running, if another process already listens on the debugging
+port, or if the executable cannot be launched, exits before
+answering, or does not answer within <code>options.start_timeout</code>.
+The message carries the exit code and the last lines the browser
+wrote to stderr, which is where Chrome explains what went wrong.</p>
               </div>
             </td>
           </tr>
@@ -4650,9 +4655,18 @@ to stderr, which is where Chrome explains what went wrong.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Stop browser process and cleanup resources.</p>
-<p>Sends Browser.close command, terminates process, removes temp directories,
-and closes WebSocket connections.</p>
+        <p>Stop the browser and clean up what start() left behind.</p>
+<p>Asks the browser to close with <code>Browser.close</code> while it still
+answers, then ends the process start() launched, closes the WebSocket
+connection and removes the temporary profile. A browser that crashed
+or froze cannot answer, so it is ended without CDP, and
+<code>Browser.close</code> gets a short timeout after which the process is
+ended anyway. Either way nothing is left behind, even when stop() is
+cancelled midway: the cleanup completes before the cancellation
+propagates.</p>
+<p>Only a browser this object launched, or reached with <code>connect()</code>,
+is asked to close: after a start() refused because another browser
+holds the port, that browser is left alone.</p>
 
 
 <table>
@@ -4671,7 +4685,8 @@ and closes WebSocket connections.</p>
             </td>
             <td class="doc-raises-details">
               <div class="doc-md-description">
-                <p>If the browser is not currently running.</p>
+                <p>If there is nothing to stop: no process was
+launched and no browser reached with <code>connect()</code> answers.</p>
               </div>
             </td>
           </tr>
@@ -4700,7 +4715,9 @@ and closes WebSocket connections.</p>
 
     <div class="doc doc-contents ">
 
-        <p>Closes the WebSocket connection and releases resources.</p>
+        <p>Closes the WebSocket connections and releases resources.</p>
+<p>The connections of the tabs this browser handed out are closed too, and
+the tabs are dropped from it.</p>
 
 
     </div>
@@ -4833,7 +4850,9 @@ The default browser context cannot be deleted.</p>
 
 <details class="note" open>
   <summary>Note</summary>
-  <p>Closes all associated tabs immediately.</p>
+  <p>Closes all associated tabs immediately. Their Tab objects are
+dropped from the browser and their connections closed, so they
+release their callbacks and network logs.</p>
 </details>
 
     </div>
@@ -5034,6 +5053,9 @@ Useful for debugging and managing multiple tabs.</p>
         <p>Get all opened tabs that are not extensions and have the type 'page'.
 Tabs that are already opened will be returned as is. If a new target is opened,
 a new Tab instance will be created.</p>
+<p>Only Tabs whose target is gone are dropped (and their connections
+closed); a Tab created in a context created with
+<code>create_browser_context</code> reports that context.</p>
 
 
 <table>
@@ -5080,6 +5102,11 @@ a new Tab instance will be created.</p>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
+
+        <p>The Tab of a target, in the context it belongs to when that one was created.</p>
+<p>A target that already has a Tab gets that same Tab back. A new one is
+kept by the browser like every other tab, so <code>close()</code>, <code>stop()</code>
+and <code>delete_browser_context()</code> close its connection.</p>
 
 
     </div>

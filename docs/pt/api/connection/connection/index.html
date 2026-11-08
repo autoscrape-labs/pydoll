@@ -4140,12 +4140,74 @@ navigation or a reload starts a new renderer.</p>
   </span>
 
 </h3>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">ping</span><span class="p">()</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">ping</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="n"><span title="pydoll.connection.connection_handler.ConnectionHandler._PING_TIMEOUT">_PING_TIMEOUT</span></span><span class="p">)</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
 
-        <p>Test if WebSocket connection is active and responsive.</p>
+        <p>Test if the WebSocket connection is open and the browser answers on it.</p>
+<p>Opens a connection when there is none, sends a ping frame and waits for
+the pong. A stopped or frozen browser process keeps its socket open, so
+sending the ping succeeds; the pong shows the connection is still read.
+It does not prove that commands are processed: on the Linux CI runners a
+browser stopped with SIGSTOP was seen answering pings, which is why the
+Browser's own liveness checks send a CDP command instead.</p>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">PARAMETER</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>timeout</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>Seconds to wait for the connection and the pong together.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="float">float</span></code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code><span title="pydoll.connection.connection_handler.ConnectionHandler._PING_TIMEOUT">_PING_TIMEOUT</span></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">RETURNS</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <span class="doc-returns-annotation">
+                    <code><span title="bool">bool</span></code>
+                </span>
+            </td>
+            <td class="doc-returns-details">
+              <div class="doc-md-description">
+                <p>True if the pong arrived within <code>timeout</code>, False otherwise.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
     </div>
