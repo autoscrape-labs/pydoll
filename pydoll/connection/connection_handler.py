@@ -174,10 +174,25 @@ class ConnectionHandler:
             TargetCrashed: If the target's renderer crashed, for a command that
                 needs it, either before sending or while waiting for the answer.
         """
-        self._crash_manager.check(command)
-        await self._ensure_active_connection()
-        self._crash_manager.check(command)
+        await self._prepare_to_send((command,))
         return await self._send_command(command, timeout)
+
+    async def _prepare_to_send(self, commands: Sequence[Command]) -> None:
+        """Make sure the connection is up for commands the target can still answer.
+
+        Checked before connecting, so a command to a crashed tab fails at once
+        instead of opening a connection first, and again after, because the
+        crash event can arrive while the connection is being opened.
+
+        Raises:
+            TargetCrashed: If the target's renderer crashed and a command needs it.
+            ConnectionFailed: If the connection cannot be (re)established.
+        """
+        for command in commands:
+            self._crash_manager.check(command)
+        await self._ensure_active_connection()
+        for command in commands:
+            self._crash_manager.check(command)
 
     async def _send_command(
         self, command: Command[T_CommandParams, T_CommandResponse], timeout: float
@@ -253,9 +268,7 @@ class ConnectionHandler:
             WebSocketConnectionClosed: If the connection closes before the command is sent.
             TargetCrashed: If the target's renderer crashed and the command needs it.
         """
-        self._crash_manager.check(command)
-        await self._ensure_active_connection()
-        self._crash_manager.check(command)
+        await self._prepare_to_send((command,))
         future = self._command_manager.create_command_future(command)
         future.add_done_callback(lambda done: self._log_discarded_answer(command, done))
         logger.debug(
@@ -419,11 +432,7 @@ class ConnectionHandler:
         """
         if not commands:
             return []
-        for command in commands:
-            self._crash_manager.check(command)
-        await self._ensure_active_connection()
-        for command in commands:
-            self._crash_manager.check(command)
+        await self._prepare_to_send(commands)
         futures = [self._command_manager.create_command_future(command) for command in commands]
         try:
             payloads = [json.dumps(command) for command in commands]
