@@ -321,31 +321,26 @@ class TestRetryDecoratorWithDelay:
         assert call_times[2] - call_times[1] >= 0.05
 
     @pytest.mark.asyncio
-    async def test_exponential_backoff(self):
-        """Test exponential backoff increases delay."""
-        call_times = []
+    async def test_exponential_backoff(self, monkeypatch):
+        """Test exponential backoff doubles the delay between attempts."""
+        slept = []
+
+        async def record(seconds):
+            slept.append(seconds)
+
+        monkeypatch.setattr('pydoll.decorators.asyncio.sleep', record)
+        attempts = []
 
         @retry(max_retries=3, exceptions=[ElementNotFound], delay=0.1, exponential_backoff=True)
         async def exponential_function():
-            call_times.append(asyncio.get_event_loop().time())
-            if len(call_times) < 4:
+            attempts.append(None)
+            if len(attempts) < 4:
                 raise ElementNotFound('Retry')
             return 'success'
 
-        await exponential_function()
-
-        # max_retries=3 means 4 attempts (1 original + 3 retries)
-        assert len(call_times) == 4
-        # First delay: ~0.1s (2^0 * 0.1)
-        # Second delay: ~0.2s (2^1 * 0.1)
-        # Third delay: ~0.4s (2^2 * 0.1)
-        delay1 = call_times[1] - call_times[0]
-        delay2 = call_times[2] - call_times[1]
-        delay3 = call_times[3] - call_times[2]
-
-        # Each delay should roughly double (with tolerance)
-        assert delay2 > delay1 * 1.5
-        assert delay3 > delay2 * 1.5
+        assert await exponential_function() == 'success'
+        assert len(attempts) == 4
+        assert slept == pytest.approx([0.2, 0.4, 0.8])
 
 
 class TestRetryDecoratorWithCallback:
