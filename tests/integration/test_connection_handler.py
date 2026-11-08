@@ -1299,3 +1299,15 @@ async def test_a_callback_that_closes_its_own_connection_runs_to_its_end(cdp_ser
     finally:
         await handler.close()
 
+
+@pytest.mark.asyncio
+async def test_ping_reports_false_when_the_peer_never_answers_the_ping(cdp_server):
+    handler = ConnectionHandler(ws_address=cdp_server.ws_address)
+    try:
+        assert await handler.ping() is True
+        cdp_server.freeze()
+        started = asyncio.get_running_loop().time()
+        assert await handler.ping(timeout=0.5) is False
+        assert asyncio.get_running_loop().time() - started < 2
+    finally:
+        await handler.close()

@@ -3,6 +3,7 @@ import pytest
 from aioresponses import aioresponses
 import tempfile
 import os
+import socket
 import sys
 from unittest.mock import patch
 
@@ -14,6 +15,7 @@ from pydoll.utils import (
     decode_base64_to_bytes,
     get_browser_ws_address,
     has_return_outside_function,
+    is_port_free,
     is_script_already_function,
     normalize_synthetic_xpath,
     validate_browser_paths,
@@ -454,3 +456,48 @@ class TestScriptAnalysisFunctions:
                 '<template>hidden</template></div>')
         result = extract_text_from_html(html, strip=True, separator="/")
         assert result == 'Hello/world'
+
+
+def _listener(family: int, host: str) -> socket.socket:
+    """A socket listening on an ephemeral port, with SO_REUSEADDR set the way Chrome sets it."""
+    listener = socket.socket(family, socket.SOCK_STREAM)
+    if os.name != 'nt':
+        listener.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    try:
+        listener.bind((host, 0))
+    except OSError:
+        listener.close()
+        pytest.skip(f'cannot listen on {host}')
+    listener.listen()
+    return listener
+
+
+@pytest.mark.parametrize(
+    ('family', 'host'),
+    [
+        (socket.AF_INET, '127.0.0.1'),
+        (socket.AF_INET, '0.0.0.0'),
+        (socket.AF_INET6, '::1'),
+        (socket.AF_INET6, '::'),
+    ],
+)
+def test_is_port_free_sees_a_listener_on_loopback_or_a_wildcard_address(family, host):
+    listener = _listener(family, host)
+    try:
+        assert is_port_free(listener.getsockname()[1]) is False
+    finally:
+        listener.close()
+
+
+def test_is_port_free_does_not_count_connections_left_in_time_wait():
+    """The side that closes first keeps the port in TIME_WAIT, as a stopped Chrome does."""
+    listener = _listener(socket.AF_INET, '127.0.0.1')
+    port = listener.getsockname()[1]
+    client = socket.create_connection(('127.0.0.1', port))
+    accepted, _ = listener.accept()
+    accepted.close()
+    client.close()
+    listener.close()
+
+    assert is_port_free(port) is True
+

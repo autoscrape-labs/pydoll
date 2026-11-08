@@ -108,7 +108,7 @@ class FakeConnection:
         """Remove every registered callback."""
         self._callbacks.clear()
 
-    async def ping(self) -> bool:
+    async def ping(self, timeout: float = 5) -> bool:
         """A fake connection is always responsive."""
         return True
 

@@ -119,6 +119,15 @@ class FakeCDPServer:
         for connection in self._connections:
             connection.transport.pause_reading()
 
+    def freeze(self) -> None:
+        """Stop reading from every client, like a peer whose process is stopped.
+
+        The TCP connection stays open, but no frame is read any more, so a
+        ping never gets its pong and no command gets its answer.
+        """
+        for connection in self._connections:
+            connection.transport.pause_reading()
+
     async def _broadcast(self, payload: str) -> None:
         for connection in list(self._connections):
             await connection.send(payload)

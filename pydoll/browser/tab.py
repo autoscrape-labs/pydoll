@@ -495,11 +495,21 @@ class Tab(FindElementsMixin):
         Close this browser tab.
 
         Note:
-            Tab instance becomes invalid after calling this method.
+            Tab instance becomes invalid after calling this method. It is
+            removed from the browser and its connection is closed, which drops
+            its callbacks, even when closing fails because the tab was already
+            closed elsewhere. Another Tab object the browser keeps for the same
+            target is dropped and closed with it.
         """
         logger.info('Closing tab: target_id=%s', self._target_id)
-        result = await self._execute_command(PageCommands.close())
-        self._browser._tabs_opened.pop(self._target_id, None)
+        registered = self._browser._tabs_opened.get(self._target_id) if self._target_id else None
+        try:
+            result = await self._execute_command(PageCommands.close())
+        finally:
+            if self._target_id:
+                await self._browser._forget_tab(self._target_id)
+            if registered is not self:
+                await self._connection_handler.close()
         logger.debug('Tab closed and removed from browser registry')
         return result
 

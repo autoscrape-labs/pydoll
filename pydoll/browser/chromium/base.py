@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
+import math
 import os
 import shutil
 from abc import ABC, abstractmethod
@@ -34,13 +35,14 @@ from pydoll.exceptions import (
     InvalidWebSocketAddress,
     MissingTargetOrWebSocket,
     NoValidTabFound,
+    PydollException,
 )
 from pydoll.protocol.browser.types import DownloadBehavior
 from pydoll.protocol.fetch.events import FetchEvent
 from pydoll.protocol.fetch.types import AuthChallengeResponseType
 from pydoll.protocol.target.events import TargetEvent
 from pydoll.protocol.target.types import FilterEntry
-from pydoll.utils import PollInterval, find_free_port
+from pydoll.utils import PollInterval, find_free_port, is_port_free
 from pydoll.utils.fingerprint_builder import build_fingerprint_worker_js
 from pydoll.utils.user_agent_parser import ParsedUserAgent, UserAgentParser
 
@@ -48,7 +50,13 @@ if TYPE_CHECKING:
     from tempfile import TemporaryDirectory
 
     from pydoll.browser.interfaces import BrowserOptionsManager, Options
-    from pydoll.protocol.base import Command, Response, T_CommandParams, T_CommandResponse
+    from pydoll.protocol.base import (
+        Command,
+        EmptyResponse,
+        Response,
+        T_CommandParams,
+        T_CommandResponse,
+    )
     from pydoll.protocol.browser.methods import (
         GetVersionResponse,
         GetVersionResult,
@@ -84,6 +92,15 @@ class Browser(ABC):  # noqa: PLR0904
     Provides comprehensive browser control including lifecycle management,
     context handling, network interception, cookie management, and CDP commands.
     """
+
+    _STOP_RESPONSIVE_TIMEOUT = 2
+    """Seconds stop() waits for the browser to answer before ending it without CDP."""
+
+    _BROWSER_CLOSE_TIMEOUT = 10
+    """Seconds stop() waits for Browser.close before ending the process anyway."""
+
+    _MIN_PROBE_TIMEOUT = 0.5
+    """Shortest time a liveness probe waits for its answer, even past the polling deadline."""
 
     def __init__(
         self,
@@ -148,10 +165,10 @@ class Browser(ABC):  # noqa: PLR0904
                     self._backup_preferences_dir,
                     os.path.join(user_data_dir, 'Default', 'Preferences'),
                 )
-        if await self._is_browser_running(timeout=2):
+        with suppress(BrowserNotRunning):
             await self.stop()
 
-        await self._connection_handler.close()
+        await self._close_connections()
 
     async def connect(self, ws_address: str) -> Tab:
         """
@@ -184,12 +201,30 @@ class Browser(ABC):  # noqa: PLR0904
         Returns:
             Initial tab for interaction.
 
+        A start that fails or is cancelled at any point after the process was
+        launched ends that process and removes its temporary profile before the
+        error propagates.
+
         Raises:
-            FailedToStartBrowser: If the executable cannot be launched, exits before
-                answering, or does not answer within ``options.start_timeout``. The
-                message carries the exit code and the last lines the browser wrote
-                to stderr, which is where Chrome explains what went wrong.
+            FailedToStartBrowser: If the browser this object started is still
+                running, if another process already listens on the debugging
+                port, or if the executable cannot be launched, exits before
+                answering, or does not answer within ``options.start_timeout``.
+                The message carries the exit code and the last lines the browser
+                wrote to stderr, which is where Chrome explains what went wrong.
         """
+        if self._browser_process_manager.was_launched() and (
+            self._browser_process_manager.exit_code() is None
+        ):
+            raise FailedToStartBrowser(
+                'The browser is already running; call stop() before starting it again'
+            )
+        if not is_port_free(self._connection_port):
+            raise FailedToStartBrowser(
+                f'Port {self._connection_port} is already in use, probably by another '
+                f'browser. Pass a different connection_port, or use connect() to drive '
+                f'the browser that listens on it'
+            )
         binary_location = self.options.binary_location or self._get_default_binary_location()
         logger.debug('Resolved binary location: %s', binary_location)
 
@@ -203,48 +238,130 @@ class Browser(ABC):  # noqa: PLR0904
                 binary_location, self._connection_port, self.options.arguments
             )
             await self._verify_browser_running()
-        except FailedToStartBrowser:
-            await self._abandon_start()
-            raise
-        logger.info('Browser process started and responsive')
-        await self._configure_proxy(proxy_config[0], proxy_config[1])
+            logger.info('Browser process started and responsive')
+            await self._configure_proxy(proxy_config[0], proxy_config[1])
 
-        valid_tab_id = await self._get_valid_tab_id(await self.get_targets())
-        tab = Tab(self, target_id=valid_tab_id, connection_port=self._connection_port)
-        self._tabs_opened[valid_tab_id] = tab
-        await self._setup_worker_user_agent_override()
-        await self._apply_user_agent_override(tab)
+            valid_tab_id = await self._get_valid_tab_id(await self.get_targets())
+            tab = Tab(self, target_id=valid_tab_id, connection_port=self._connection_port)
+            self._tabs_opened[valid_tab_id] = tab
+            await self._setup_worker_user_agent_override()
+            await self._apply_user_agent_override(tab)
+        except BaseException:
+            await self._release_browser()
+            raise
         logger.info('Initial tab attached: %s', valid_tab_id)
         return tab
 
     async def stop(self):
         """
-        Stop browser process and cleanup resources.
+        Stop the browser and clean up what start() left behind.
 
-        Sends Browser.close command, terminates process, removes temp directories,
-        and closes WebSocket connections.
+        Asks the browser to close with ``Browser.close`` while it still
+        answers, then ends the process start() launched, closes the WebSocket
+        connection and removes the temporary profile. A browser that crashed
+        or froze cannot answer, so it is ended without CDP, and
+        ``Browser.close`` gets a short timeout after which the process is
+        ended anyway. Either way nothing is left behind, even when stop() is
+        cancelled midway: the cleanup completes before the cancellation
+        propagates.
+
+        Only a browser this object launched, or reached with ``connect()``,
+        is asked to close: after a start() refused because another browser
+        holds the port, that browser is left alone.
 
         Raises:
-            BrowserNotRunning: If the browser is not currently running.
+            BrowserNotRunning: If there is nothing to stop: no process was
+                launched and no browser reached with ``connect()`` answers.
         """
-        if not await self._is_browser_running():
-            logger.error('Stop called but browser is not running')
-            raise BrowserNotRunning()
+        launched = self._browser_process_manager.was_launched()
+        connected = self._ws_address is not None
+        try:
+            exited = self._browser_process_manager.exit_code() is not None
+            responsive = (
+                (launched or connected)
+                and not exited
+                and await self._is_browser_running(timeout=self._STOP_RESPONSIVE_TIMEOUT)
+            )
+            if not launched and not responsive:
+                logger.error('Stop called but browser is not running')
+                raise BrowserNotRunning()
 
-        logger.info('Stopping browser process')
-        await self._execute_command(BrowserCommands.close())
-        loop = asyncio.get_running_loop()
-        await loop.run_in_executor(None, self._browser_process_manager.stop_process)
-        await self._connection_handler.close()
-        await loop.run_in_executor(None, self._temp_directory_manager.cleanup)
+            logger.info('Stopping browser process')
+            if responsive:
+                await self._request_browser_close()
+            else:
+                logger.warning('Browser does not answer; ending its process without Browser.close')
+        finally:
+            await self._release_browser()
         logger.info('Browser process stopped and resources cleaned up')
+
+    async def _release_browser(self) -> None:
+        """End the launched process, close every connection and remove the temporary profile.
+
+        Safe to run when nothing was launched or the process already exited.
+        The release runs in its own task and is waited for even when the
+        caller is cancelled meanwhile (a timeout, a second Ctrl-C), so it
+        always finishes; the cancellation is raised once it has.
+        """
+        release = asyncio.ensure_future(self._end_process_and_connections())
+        cancelled = False
+        while not release.done():
+            try:
+                await asyncio.shield(release)
+            except asyncio.CancelledError:
+                cancelled = True
+        release.result()
+        if cancelled:
+            raise asyncio.CancelledError()
+
+    async def _end_process_and_connections(self) -> None:
+        """End the process, close the connections and remove the profile, in that order.
+
+        A step that fails does not keep the later ones from running; its error
+        propagates once they have.
+        """
+        loop = asyncio.get_running_loop()
+        try:
+            await loop.run_in_executor(None, self._browser_process_manager.stop_process)
+        finally:
+            try:
+                await self._close_connections()
+            finally:
+                await loop.run_in_executor(None, self._temp_directory_manager.cleanup)
+
+    async def _close_connections(self) -> None:
+        """Close the connection of every Tab handed out, then the browser-level one.
+
+        Closed together, so a browser that stopped answering costs one close
+        timeout instead of one per tab.
+        """
+        await asyncio.gather(
+            *(self._forget_tab(target_id) for target_id in list(self._tabs_opened))
+        )
+        await self._connection_handler.close()
+
+    async def _request_browser_close(self) -> None:
+        """Ask the browser to close, giving up after a short timeout.
+
+        A browser that dies or freezes meanwhile must not keep stop() from
+        ending its process, so a failure is logged and shutdown goes on.
+        """
+        try:
+            await self._execute_command(
+                BrowserCommands.close(), timeout=self._BROWSER_CLOSE_TIMEOUT
+            )
+        except (PydollException, OSError) as exc:
+            logger.warning('Browser.close did not complete (%s); ending the process', exc)
 
     async def close(self):
         """
-        Closes the WebSocket connection and releases resources.
+        Closes the WebSocket connections and releases resources.
+
+        The connections of the tabs this browser handed out are closed too, and
+        the tabs are dropped from it.
         """
         logger.info('Closing browser WebSocket connection')
-        await self._connection_handler.close()
+        await self._close_connections()
 
     async def create_browser_context(
         self, proxy_server: str | None = None, proxy_bypass_list: str | None = None
@@ -293,7 +410,9 @@ class Browser(ABC):  # noqa: PLR0904
         The default browser context cannot be deleted.
 
         Note:
-            Closes all associated tabs immediately.
+            Closes all associated tabs immediately. Their Tab objects are
+            dropped from the browser and their connections closed, so they
+            release their callbacks and network logs.
         """
         logger.info('Deleting browser context: %s', browser_context_id)
         self._context_proxy_auth.pop(browser_context_id, None)
@@ -301,9 +420,13 @@ class Browser(ABC):  # noqa: PLR0904
         worker_callback_id = self._context_worker_callbacks.pop(browser_context_id, None)
         if worker_callback_id is not None:
             await self.remove_callback(worker_callback_id)
-        return await self._execute_command(
+        response: Response[EmptyResponse] = await self._execute_command(
             TargetCommands.dispose_browser_context(browser_context_id)
         )
+        for target_id, tab in list(self._tabs_opened.items()):
+            if tab.browser_context_id == browser_context_id:
+                await self._forget_tab(target_id)
+        return response
 
     async def get_browser_contexts(self) -> list[str]:
         """Get all browser context IDs including the default context."""
@@ -360,35 +483,83 @@ class Browser(ABC):  # noqa: PLR0904
         Tabs that are already opened will be returned as is. If a new target is opened,
         a new Tab instance will be created.
 
+        Only Tabs whose target is gone are dropped (and their connections
+        closed); a Tab created in a context created with
+        ``create_browser_context`` reports that context.
+
         Returns:
             List of Tab instances. The last tab is the most recent one.
         """
         targets = await self.get_targets()
-        valid_tab_targets = [
-            target
+        valid_tab_targets = {
+            target['targetId']: target
             for target in targets
             if target['type'] == 'page' and 'extension' not in target['url']
+        }
+        live_target_ids = {target['targetId'] for target in targets}
+        created_contexts = await self._created_browser_contexts()
+        for stale_id in set(self._tabs_opened) - live_target_ids:
+            await self._forget_tab(stale_id)
+        existing_tabs = [
+            tab for target_id, tab in self._tabs_opened.items() if target_id in valid_tab_targets
         ]
-        all_target_ids = {target['targetId'] for target in valid_tab_targets}
-        # Prune stale entries: close tabs whose IDs no longer appear in targets.
-        for stale_id in set(self._tabs_opened.keys()) - all_target_ids:
-            del self._tabs_opened[stale_id]
-        existing_target_ids = list(self._tabs_opened.keys())
-        remaining_target_ids = list(all_target_ids - set(existing_target_ids))
-        existing_tabs = [self._tabs_opened[target_id] for target_id in existing_target_ids]
+        remaining_target_ids = list(set(valid_tab_targets) - set(self._tabs_opened))
         new_tabs = []
         for target_id in reversed(remaining_target_ids):
-            tab = Tab(self, **self._get_tab_kwargs(target_id))
-            await self._apply_user_agent_override(tab)
-            new_tabs.append(tab)
-        self._tabs_opened.update(dict(zip(remaining_target_ids, new_tabs)))
+            context_id = valid_tab_targets[target_id].get('browserContextId')
+            new_tabs.append(
+                await self._registered_tab(
+                    target_id, context_id if context_id in created_contexts else None
+                )
+            )
         logger.debug('Opened tabs resolved: existing=%s, new=%s', len(existing_tabs), len(new_tabs))
         return existing_tabs + new_tabs
 
+    async def _forget_tab(self, target_id: str) -> None:
+        """Drop the Tab of a target that is gone and close its connection."""
+        tab = self._tabs_opened.pop(target_id, None)
+        if tab is not None:
+            await tab._connection_handler.close()
+
     async def get_tab_by_target(self, target: TargetInfo) -> Tab:
-        tab = Tab(self, **self._get_tab_kwargs(target['targetId']))
+        """The Tab of a target, in the context it belongs to when that one was created.
+
+        A target that already has a Tab gets that same Tab back. A new one is
+        kept by the browser like every other tab, so ``close()``, ``stop()``
+        and ``delete_browser_context()`` close its connection.
+        """
+        context_id = target.get('browserContextId')
+        created_contexts = await self._created_browser_contexts()
+        return await self._registered_tab(
+            target['targetId'], context_id if context_id in created_contexts else None
+        )
+
+    async def _registered_tab(self, target_id: str, browser_context_id: str | None) -> Tab:
+        """The Tab kept for a target, creating and keeping it first if there is none.
+
+        The Tab is kept before anything is awaited, so two callers racing for
+        the same new target share one Tab instead of leaving one unclosed.
+        """
+        tab = self._tabs_opened.get(target_id)
+        if tab is not None:
+            return tab
+        tab = Tab(self, **self._get_tab_kwargs(target_id, browser_context_id))
+        self._tabs_opened[target_id] = tab
         await self._apply_user_agent_override(tab)
         return tab
+
+    async def _created_browser_contexts(self) -> set[str]:
+        """Ids of the browser contexts there are, or none where the session may not list them.
+
+        Chrome answers ``Target.getBrowserContexts`` only on the browser
+        session; through ``connect()`` with a page's WebSocket address it
+        refuses, and tabs are then kept without a context, as before.
+        """
+        try:
+            return set(await self.get_browser_contexts())
+        except CommandFailed as exc:
+            logger.debug('Browser contexts unavailable on this session: %s', exc)
+            return set()
 
     async def set_download_path(self, path: str, browser_context_id: str | None = None):
         """Set download directory path (convenience method for set_download_behavior)."""
@@ -941,7 +1112,7 @@ class Browser(ABC):  # noqa: PLR0904
         deadline = loop.time() + timeout
         interval = PollInterval(cap=1.0)
         while True:
-            if await self._connection_handler.ping():
+            if await self._answers_cdp(self._probe_budget(deadline)):
                 return
             exit_code = self._browser_process_manager.exit_code()
             if exit_code is not None:
@@ -960,6 +1131,34 @@ class Browser(ABC):  # noqa: PLR0904
                 )
             await interval.wait()
 
+    async def _answers_cdp(self, timeout: float) -> bool:
+        """Whether the browser answers a CDP command within ``timeout`` seconds.
+
+        A pong does not prove it: on the Linux CI runners a browser stopped with
+        SIGSTOP was seen answering pings while leaving every command unanswered. A
+        ``Browser.getVersion`` round trip is answered only by a browser that
+        processes commands.
+        """
+        with suppress(Exception):
+            await asyncio.wait_for(
+                self._connection_handler.execute_command(
+                    BrowserCommands.get_version(), timeout=math.ceil(timeout)
+                ),
+                timeout,
+            )
+            return True
+        return False
+
+    @classmethod
+    def _probe_budget(cls, deadline: float) -> float:
+        """Seconds one liveness probe may wait for its answer before a polling deadline.
+
+        Never less than a short floor, so the last attempt before the deadline
+        still has time to reach a browser that is up.
+        """
+        remaining = deadline - asyncio.get_running_loop().time()
+        return max(remaining, cls._MIN_PROBE_TIMEOUT)
+
     def _start_failure(self, reason: str) -> str:
         """Compose and log the start failure message, with the browser's last output."""
         output = self._browser_process_manager.recent_stderr()
@@ -970,13 +1169,6 @@ class Browser(ABC):  # noqa: PLR0904
             message = f'{reason}. The browser wrote nothing to stderr'
         logger.error(message)
         return message
-
-    async def _abandon_start(self) -> None:
-        """Tear down what a failed start left behind: the process and the temp profile."""
-        loop = asyncio.get_running_loop()
-        if self._browser_process_manager.exit_code() is None:
-            await loop.run_in_executor(None, self._browser_process_manager.stop_process)
-        await loop.run_in_executor(None, self._temp_directory_manager.cleanup)
 
     async def _configure_proxy(
         self, private_proxy: bool, proxy_credentials: tuple[str | None, str | None]
@@ -1045,12 +1237,15 @@ class Browser(ABC):  # noqa: PLR0904
         pause starts at 20 ms, so a browser that is up after 300 ms is not made
         to wait a full second, and backs off to one second, so a browser that
         is gone costs a handful of connection attempts instead of hundreds.
+        Each probe is a CDP round trip that waits only as long as the deadline
+        allows, so a frozen browser is reported as not running once
+        ``timeout`` elapses.
         """
         loop = asyncio.get_running_loop()
         deadline = loop.time() + timeout
         interval = PollInterval(cap=1.0)
         while True:
-            if await self._connection_handler.ping():
+            if await self._answers_cdp(self._probe_budget(deadline)):
                 return True
             if loop.time() >= deadline:
                 return False
