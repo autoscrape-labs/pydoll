@@ -3523,6 +3523,28 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#pydoll.connection.managers.events_manager.EventsManager.cancel_worker" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;cancel_worker
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pydoll.connection.managers.events_manager.EventsManager.detach_current_worker" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;detach_current_worker
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#pydoll.connection.managers.events_manager.EventsManager.stop" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3765,12 +3787,14 @@ Popping and checking done() avoids InvalidStateError in that window.</p>
 
 
 </h4>
-<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">remove_pending_command</span><span class="p">(</span><span class="n">command_id</span><span class="p">)</span>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">remove_pending_command</span><span class="p">(</span><span class="n">command_id</span><span class="p">,</span> <span class="n">future</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents ">
 
         <p>Remove pending command without resolving (for timeouts/cancellations).</p>
+<p>When the caller gives up on <code>future</code>, it is cancelled, or its failure
+is marked as seen, so asyncio never reports an exception nobody read.</p>
 
 
     </div>
@@ -3949,6 +3973,42 @@ delay delivery of command responses on the read loop.</p>
 <div class="doc doc-object doc-function">
 
 
+<h4 id="pydoll.connection.managers.events_manager.EventsManager.cancel_worker" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">cancel_worker</span>
+
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">cancel_worker</span><span class="p">()</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="pydoll.connection.managers.events_manager.EventsManager.detach_current_worker" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">detach_current_worker</span>
+
+
+</h4>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">detach_current_worker</span><span class="p">()</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
 <h4 id="pydoll.connection.managers.events_manager.EventsManager.stop" class="doc doc-heading">
 <code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">stop</span>
 
@@ -3965,7 +4025,11 @@ delay delivery of command responses on the read loop.</p>
 
         <p>Cancel the worker, await its exit, and drop any queued events.</p>
 <p>Awaiting the cancelled task is what prevents "Task was destroyed but it
-is pending" warnings: the task is never garbage-collected while pending.</p>
+is pending" warnings: the task is never garbage-collected while pending.
+It is awaited with <code>asyncio.wait</code> so a cancellation of the caller is
+not swallowed with the worker's. Called from the worker itself (a
+callback closing its own connection), the worker is detached instead,
+so the callback runs to its end.</p>
 
 
     </div>

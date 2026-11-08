@@ -1750,6 +1750,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#limit-the-size-of-cdp-messages" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Limit the size of CDP messages
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#choose-when-navigation-finishes" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3623,6 +3634,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#limit-the-size-of-cdp-messages" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Limit the size of CDP messages
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#choose-when-navigation-finishes" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3851,43 +3873,49 @@
 <div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">options</span> <span class="o">=</span> <span class="n">ChromiumOptions</span><span class="p">()</span>
 </span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="n">options</span><span class="o">.</span><span class="n">start_timeout</span> <span class="o">=</span> <span class="mi">20</span>   <span class="c1"># seconds, default 10</span>
 </span></code></pre></div>
+<h2 id="limit-the-size-of-cdp-messages">Limit the size of CDP messages</h2>
+<p><code>max_message_size</code> is the largest message, in bytes, Pydoll accepts from the browser on any of its connections: the browser's, each tab's and each iframe's. The page decides how large some messages are. A POST body travels inside <code>Network.requestWillBeSent</code> and <code>Fetch.requestPaused</code>, and a WebSocket frame inside <code>Network.webSocketFrameReceived</code>, so with network events or request interception on, a page can send messages of tens of megabytes. A message over the limit closes that connection, and the commands waiting on it raise <code>WebSocketConnectionClosed</code> with a message that names the limit. The next command opens a new connection.</p>
+<p>The default is 256 MiB. Lower it when you browse pages you don't trust with network events on. Raise it, or set it to <code>None</code> to remove the limit, when a full-page screenshot or a response body is larger than that:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">options</span> <span class="o">=</span> <span class="n">ChromiumOptions</span><span class="p">()</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="n">options</span><span class="o">.</span><span class="n">max_message_size</span> <span class="o">=</span> <span class="mi">32</span> <span class="o">*</span> <span class="mi">1024</span> <span class="o">*</span> <span class="mi">1024</span>   <span class="c1"># bytes, default 256 MiB</span>
+</span></code></pre></div>
 <h2 id="choose-when-navigation-finishes">Choose when navigation finishes</h2>
 <p><code>page_load_state</code> decides when <code>tab.go_to()</code> returns. <code>COMPLETE</code> (the default) waits for every resource; <code>INTERACTIVE</code> returns as soon as the DOM is ready, which is faster when you only read text or markup.</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.constants</span><span class="w"> </span><span class="kn">import</span> <span class="n">PageLoadState</span>
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="n">options</span> <span class="o">=</span> <span class="n">ChromiumOptions</span><span class="p">()</span>
-</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="n">options</span><span class="o">.</span><span class="n">page_load_state</span> <span class="o">=</span> <span class="n">PageLoadState</span><span class="o">.</span><span class="n">INTERACTIVE</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pydoll.constants</span><span class="w"> </span><span class="kn">import</span> <span class="n">PageLoadState</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="n">options</span> <span class="o">=</span> <span class="n">ChromiumOptions</span><span class="p">()</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="n">options</span><span class="o">.</span><span class="n">page_load_state</span> <span class="o">=</span> <span class="n">PageLoadState</span><span class="o">.</span><span class="n">INTERACTIVE</span>
 </span></code></pre></div>
 <p>The three states are <code>PageLoadState.COMPLETE</code>, <code>PageLoadState.INTERACTIVE</code>, and <code>PageLoadState.LOADING</code>.</p>
 <h2 id="set-the-download-folder-and-languages">Set the download folder and languages</h2>
 <p>Two helpers cover the most common preferences without touching the raw preference dict:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">options</span> <span class="o">=</span> <span class="n">ChromiumOptions</span><span class="p">()</span>
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="n">options</span><span class="o">.</span><span class="n">set_default_download_directory</span><span class="p">(</span><span class="s1">'/home/user/downloads'</span><span class="p">)</span>
-</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="n">options</span><span class="o">.</span><span class="n">set_accept_languages</span><span class="p">(</span><span class="s1">'en-US,en;q=0.9'</span><span class="p">)</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">options</span> <span class="o">=</span> <span class="n">ChromiumOptions</span><span class="p">()</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="n">options</span><span class="o">.</span><span class="n">set_default_download_directory</span><span class="p">(</span><span class="s1">'/home/user/downloads'</span><span class="p">)</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="n">options</span><span class="o">.</span><span class="n">set_accept_languages</span><span class="p">(</span><span class="s1">'en-US,en;q=0.9'</span><span class="p">)</span>
 </span></code></pre></div>
 <p>For anything deeper in Chromium's preferences, see <a href="../browser-preferences/">Browser preferences</a>.</p>
 <h2 id="quiet-the-browser">Quiet the browser</h2>
 <p>A set of boolean properties toggle the interruptions that get in the way of automation:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">options</span> <span class="o">=</span> <span class="n">ChromiumOptions</span><span class="p">()</span>
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="n">options</span><span class="o">.</span><span class="n">block_popups</span> <span class="o">=</span> <span class="kc">True</span>
-</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="n">options</span><span class="o">.</span><span class="n">block_notifications</span> <span class="o">=</span> <span class="kc">True</span>
-</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="n">options</span><span class="o">.</span><span class="n">password_manager_enabled</span> <span class="o">=</span> <span class="kc">False</span>
-</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="n">options</span><span class="o">.</span><span class="n">prompt_for_download</span> <span class="o">=</span> <span class="kc">False</span>
-</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="n">options</span><span class="o">.</span><span class="n">allow_automatic_downloads</span> <span class="o">=</span> <span class="kc">True</span>
-</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="n">options</span><span class="o">.</span><span class="n">open_pdf_externally</span> <span class="o">=</span> <span class="kc">True</span>   <span class="c1"># download PDFs instead of opening the viewer</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">options</span> <span class="o">=</span> <span class="n">ChromiumOptions</span><span class="p">()</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="n">options</span><span class="o">.</span><span class="n">block_popups</span> <span class="o">=</span> <span class="kc">True</span>
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="n">options</span><span class="o">.</span><span class="n">block_notifications</span> <span class="o">=</span> <span class="kc">True</span>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="n">options</span><span class="o">.</span><span class="n">password_manager_enabled</span> <span class="o">=</span> <span class="kc">False</span>
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="n">options</span><span class="o">.</span><span class="n">prompt_for_download</span> <span class="o">=</span> <span class="kc">False</span>
+</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="n">options</span><span class="o">.</span><span class="n">allow_automatic_downloads</span> <span class="o">=</span> <span class="kc">True</span>
+</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="n">options</span><span class="o">.</span><span class="n">open_pdf_externally</span> <span class="o">=</span> <span class="kc">True</span>   <span class="c1"># download PDFs instead of opening the viewer</span>
 </span></code></pre></div>
 <h2 id="protect-against-webrtc-ip-leaks">Protect against WebRTC IP leaks</h2>
 <p>WebRTC can reveal your real IP even behind a proxy. <code>webrtc_leak_protection</code> adds the flag that blocks non-proxied UDP:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">options</span> <span class="o">=</span> <span class="n">ChromiumOptions</span><span class="p">()</span>
-</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="n">options</span><span class="o">.</span><span class="n">webrtc_leak_protection</span> <span class="o">=</span> <span class="kc">True</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">options</span> <span class="o">=</span> <span class="n">ChromiumOptions</span><span class="p">()</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="n">options</span><span class="o">.</span><span class="n">webrtc_leak_protection</span> <span class="o">=</span> <span class="kc">True</span>
 </span></code></pre></div>
 <p>Reach for this when you route traffic through a <a href="../proxies/">proxy</a>.</p>
 <h2 id="run-in-docker-or-ci">Run in Docker or CI</h2>
 <p>Containers need two flags: <code>--no-sandbox</code> (the sandbox clashes with container isolation) and <code>--disable-dev-shm-usage</code> (containers often have a tiny <code>/dev/shm</code>).</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">options</span> <span class="o">=</span> <span class="n">ChromiumOptions</span><span class="p">()</span>
-</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="n">options</span><span class="o">.</span><span class="n">headless</span> <span class="o">=</span> <span class="kc">True</span>
-</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="n">options</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">'--no-sandbox'</span><span class="p">)</span>
-</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="n">options</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">'--disable-dev-shm-usage'</span><span class="p">)</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="n">options</span> <span class="o">=</span> <span class="n">ChromiumOptions</span><span class="p">()</span>
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="n">options</span><span class="o">.</span><span class="n">headless</span> <span class="o">=</span> <span class="kc">True</span>
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="n">options</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">'--no-sandbox'</span><span class="p">)</span>
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="n">options</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">'--disable-dev-shm-usage'</span><span class="p">)</span>
 </span></code></pre></div>
 <div class="admonition warning">
 <p class="admonition-title"><code>--no-sandbox</code> lowers Chrome's security</p>

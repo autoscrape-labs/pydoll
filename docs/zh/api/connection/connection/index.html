@@ -3283,6 +3283,28 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#pydoll.connection.connection_handler.ConnectionHandler.max_message_size" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;max_message_size
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pydoll.connection.connection_handler.ConnectionHandler.target_crashed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;target_crashed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#pydoll.connection.connection_handler.ConnectionHandler.network_logs" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3309,6 +3331,17 @@
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;ping
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pydoll.connection.connection_handler.ConnectionHandler.wait_disconnected" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;wait_disconnected
       
     </span>
   </a>
@@ -3579,6 +3612,28 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#pydoll.connection.connection_handler.ConnectionHandler.max_message_size" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;max_message_size
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pydoll.connection.connection_handler.ConnectionHandler.target_crashed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;target_crashed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#pydoll.connection.connection_handler.ConnectionHandler.network_logs" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3605,6 +3660,17 @@
     <span class="md-ellipsis">
       
         <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;ping
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pydoll.connection.connection_handler.ConnectionHandler.wait_disconnected" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;wait_disconnected
       
     </span>
   </a>
@@ -3779,7 +3845,12 @@
 
   &lt;span class=&quot;doc doc-labels&quot;&gt;
       &lt;small class=&quot;doc doc-label doc-label-async&quot;&gt;&lt;code&gt;async&lt;/code&gt;&lt;/small&gt;
-  &lt;/span&gt; (&lt;code&gt;pydoll.utils.get_browser_ws_address&lt;/code&gt;)" href="../../../../api/core/utils/#pydoll.utils.get_browser_ws_address">get_browser_ws_address</a></span><span class="p">,</span> <span class="n">ws_connector</span><span class="o">=</span><span class="n"><span title="websockets.connect">connect</span></span><span class="p">,</span> <span class="n">ws_address</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+  &lt;/span&gt; (&lt;code&gt;pydoll.utils.get_browser_ws_address&lt;/code&gt;)" href="../../../../api/core/utils/#pydoll.utils.get_browser_ws_address">get_browser_ws_address</a></span><span class="p">,</span> <span class="n">ws_connector</span><span class="o">=</span><span class="n"><span title="websockets.connect">connect</span></span><span class="p">,</span> <span class="n">ws_address</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">max_message_size</span><span class="o">=</span><span class="n"><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-attribute&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-attribute-name&quot;&gt;DEFAULT_MAX_MESSAGE_SIZE&lt;/span&gt;
+
+
+  &lt;span class=&quot;doc doc-labels&quot;&gt;
+      &lt;small class=&quot;doc doc-label doc-label-module-attribute&quot;&gt;&lt;code&gt;module-attribute&lt;/code&gt;&lt;/small&gt;
+  &lt;/span&gt; (&lt;code&gt;pydoll.constants.DEFAULT_MAX_MESSAGE_SIZE&lt;/code&gt;)" href="../../../../api/core/constants/#pydoll.constants.DEFAULT_MAX_MESSAGE_SIZE">DEFAULT_MAX_MESSAGE_SIZE</a></span><span class="p">)</span>
 </span></code></pre></div>
 
     <div class="doc doc-contents first">
@@ -3906,6 +3977,32 @@ for both browser-level and page-level CDP endpoints.</p>
               </p>
             </td>
           </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>max_message_size</code>
+            </td>
+            <td class="doc-param-details">
+              <div class="doc-md-description">
+                <p>Largest message, in bytes, the connection accepts. A
+larger one closes the connection. None removes the limit.</p>
+              </div>
+              <p>
+                  <span class="doc-param-annotation">
+                    <b>TYPE:</b>
+                      <code><span title="int">int</span> | None</code>
+                  </span>
+                  <span class="doc-param-default">
+                    <b>DEFAULT:</b>
+                      <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-attribute&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-attribute-name&quot;&gt;DEFAULT_MAX_MESSAGE_SIZE&lt;/span&gt;
+
+
+  &lt;span class=&quot;doc doc-labels&quot;&gt;
+      &lt;small class=&quot;doc doc-label doc-label-module-attribute&quot;&gt;&lt;code&gt;module-attribute&lt;/code&gt;&lt;/small&gt;
+  &lt;/span&gt; (&lt;code&gt;pydoll.constants.DEFAULT_MAX_MESSAGE_SIZE&lt;/code&gt;)" href="../../../../api/core/constants/#pydoll.constants.DEFAULT_MAX_MESSAGE_SIZE">DEFAULT_MAX_MESSAGE_SIZE</a></code>
+                  </span>
+              </p>
+            </td>
+          </tr>
       </tbody>
     </table>
 
@@ -3926,6 +4023,57 @@ for both browser-level and page-level CDP endpoints.</p>
 
 
 
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="pydoll.connection.connection_handler.ConnectionHandler.max_message_size" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">max_message_size</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">max_message_size</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Largest message, in bytes, this connection accepts (None means no limit).</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="pydoll.connection.connection_handler.ConnectionHandler.target_crashed" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">target_crashed</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">target_crashed</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Whether the target's renderer crashed and has not been reloaded since.</p>
+<p>Set by <code>Inspector.targetCrashed</code> and cleared by
+<code>Inspector.targetReloadedAfterCrash</code>, which Chrome sends once a
+navigation or a reload starts a new renderer.</p>
+
+    </div>
+
+</div>
 
 <div class="doc doc-object doc-attribute">
 
@@ -3996,6 +4144,82 @@ for both browser-level and page-level CDP endpoints.</p>
     <div class="doc doc-contents ">
 
         <p>Test if WebSocket connection is active and responsive.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="pydoll.connection.connection_handler.ConnectionHandler.wait_disconnected" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">wait_disconnected</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-async"><code>async</code></small>
+  </span>
+
+</h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nf">wait_disconnected</span><span class="p">()</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Wait until the current connection stops receiving messages.</p>
+<p>A caller waiting for an event, rather than for a command's answer, is
+not failed when the connection drops, because no pending command
+stands for it. Racing its wait against this lets it stop as soon as the
+connection that would have delivered the event is gone.</p>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">RETURNS</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <span class="doc-returns-annotation">
+                    <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;WebSocketConnectionClosed&lt;/span&gt; (&lt;code&gt;pydoll.exceptions.WebSocketConnectionClosed&lt;/code&gt;)" href="../../../../api/core/exceptions/#pydoll.exceptions.WebSocketConnectionClosed">WebSocketConnectionClosed</a></code>
+                </span>
+            </td>
+            <td class="doc-returns-details">
+              <div class="doc-md-description">
+                <p>The error describing why the connection closed, the same one its</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <span class="doc-returns-annotation">
+                    <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;WebSocketConnectionClosed&lt;/span&gt; (&lt;code&gt;pydoll.exceptions.WebSocketConnectionClosed&lt;/code&gt;)" href="../../../../api/core/exceptions/#pydoll.exceptions.WebSocketConnectionClosed">WebSocketConnectionClosed</a></code>
+                </span>
+            </td>
+            <td class="doc-returns-details">
+              <div class="doc-md-description">
+                <p>pending commands received. Returned at once when there is no live</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <span class="doc-returns-annotation">
+                    <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;WebSocketConnectionClosed&lt;/span&gt; (&lt;code&gt;pydoll.exceptions.WebSocketConnectionClosed&lt;/code&gt;)" href="../../../../api/core/exceptions/#pydoll.exceptions.WebSocketConnectionClosed">WebSocketConnectionClosed</a></code>
+                </span>
+            </td>
+            <td class="doc-returns-details">
+              <div class="doc-md-description">
+                <p>connection.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
 
     </div>
@@ -4165,6 +4389,31 @@ for both browser-level and page-level CDP endpoints.</p>
               </div>
             </td>
           </tr>
+          <tr class="doc-section-item">
+            <td>
+              <span class="doc-raises-annotation">
+                  <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;ConnectionFailed&lt;/span&gt; (&lt;code&gt;pydoll.exceptions.ConnectionFailed&lt;/code&gt;)" href="../../../../api/core/exceptions/#pydoll.exceptions.ConnectionFailed">ConnectionFailed</a></code>
+              </span>
+            </td>
+            <td class="doc-raises-details">
+              <div class="doc-md-description">
+                <p>If the connection cannot be (re)established.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+              <span class="doc-raises-annotation">
+                  <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;TargetCrashed&lt;/span&gt; (&lt;code&gt;pydoll.exceptions.TargetCrashed&lt;/code&gt;)" href="../../../../api/core/exceptions/#pydoll.exceptions.TargetCrashed">TargetCrashed</a></code>
+              </span>
+            </td>
+            <td class="doc-raises-details">
+              <div class="doc-md-description">
+                <p>If the target's renderer crashed, for a command that
+needs it, either before sending or while waiting for the answer.</p>
+              </div>
+            </td>
+          </tr>
       </tbody>
     </table>
 
@@ -4247,12 +4496,36 @@ moves, which no real input device has.</p>
           <tr class="doc-section-item">
             <td>
               <span class="doc-raises-annotation">
-                  <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;WebSocketConnectionClosed&lt;/span&gt; (&lt;code&gt;pydoll.exceptions.WebSocketConnectionClosed&lt;/code&gt;)" href="../../../../api/core/exceptions/#pydoll.exceptions.WebSocketConnectionClosed">WebSocketConnectionClosed</a></code>
+                  <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;ConnectionFailed&lt;/span&gt; (&lt;code&gt;pydoll.exceptions.ConnectionFailed&lt;/code&gt;)" href="../../../../api/core/exceptions/#pydoll.exceptions.ConnectionFailed">ConnectionFailed</a></code>
               </span>
             </td>
             <td class="doc-raises-details">
               <div class="doc-md-description">
                 <p>If the connection cannot be (re)established.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+              <span class="doc-raises-annotation">
+                  <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;WebSocketConnectionClosed&lt;/span&gt; (&lt;code&gt;pydoll.exceptions.WebSocketConnectionClosed&lt;/code&gt;)" href="../../../../api/core/exceptions/#pydoll.exceptions.WebSocketConnectionClosed">WebSocketConnectionClosed</a></code>
+              </span>
+            </td>
+            <td class="doc-raises-details">
+              <div class="doc-md-description">
+                <p>If the connection closes before the command is sent.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+              <span class="doc-raises-annotation">
+                  <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;TargetCrashed&lt;/span&gt; (&lt;code&gt;pydoll.exceptions.TargetCrashed&lt;/code&gt;)" href="../../../../api/core/exceptions/#pydoll.exceptions.TargetCrashed">TargetCrashed</a></code>
+              </span>
+            </td>
+            <td class="doc-raises-details">
+              <div class="doc-md-description">
+                <p>If the target's renderer crashed and the command needs it.</p>
               </div>
             </td>
           </tr>
@@ -4416,6 +4689,30 @@ round trip for the whole batch instead of one per command.</p>
             <td class="doc-raises-details">
               <div class="doc-md-description">
                 <p>If the connection closes meanwhile.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+              <span class="doc-raises-annotation">
+                  <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;ConnectionFailed&lt;/span&gt; (&lt;code&gt;pydoll.exceptions.ConnectionFailed&lt;/code&gt;)" href="../../../../api/core/exceptions/#pydoll.exceptions.ConnectionFailed">ConnectionFailed</a></code>
+              </span>
+            </td>
+            <td class="doc-raises-details">
+              <div class="doc-md-description">
+                <p>If the connection cannot be (re)established.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+              <span class="doc-raises-annotation">
+                  <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;TargetCrashed&lt;/span&gt; (&lt;code&gt;pydoll.exceptions.TargetCrashed&lt;/code&gt;)" href="../../../../api/core/exceptions/#pydoll.exceptions.TargetCrashed">TargetCrashed</a></code>
+              </span>
+            </td>
+            <td class="doc-raises-details">
+              <div class="doc-md-description">
+                <p>If the target's renderer crashed and any command needs it.</p>
               </div>
             </td>
           </tr>
@@ -4610,6 +4907,9 @@ round trip for the whole batch instead of one per command.</p>
     <div class="doc doc-contents ">
 
         <p>Close WebSocket connection and release resources.</p>
+<p>The domains this session had enabled are forgotten too, so a later
+command opens a connection with every domain off. A connection being
+opened meanwhile is torn down once it is up, so none is left open.</p>
 
 
     </div>

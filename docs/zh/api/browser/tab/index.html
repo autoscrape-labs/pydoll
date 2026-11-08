@@ -7073,6 +7073,8 @@ page, same-origin frames, and workers.</p>
           </tr>
       </tbody>
     </table>
+        <p>On a tab whose renderer crashed, the navigation starts a new renderer
+first, so the tab recovers.</p>
 
 
 <table>
@@ -7983,6 +7985,9 @@ its load as aborted), so it completes with an empty body.</p>
     <div class="doc doc-contents ">
 
         <p>Reload current page and wait for completion.</p>
+<p>On a tab whose renderer crashed, there is no live page to reload: the
+tab loads the crashed page's URL again in a new renderer, and
+<code>ignore_cache</code> and <code>script_to_evaluate_on_load</code> do not apply.</p>
 
 
 <table>

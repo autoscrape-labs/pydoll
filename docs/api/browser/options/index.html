@@ -3067,6 +3067,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#pydoll.browser.options.ChromiumOptions.max_message_size" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;max_message_size
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#pydoll.browser.options.ChromiumOptions.browser_preferences" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3687,6 +3698,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#pydoll.browser.options.ChromiumOptions.max_message_size" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;max_message_size
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#pydoll.browser.options.ChromiumOptions.browser_preferences" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -4129,6 +4151,61 @@ for the binary location of the browser.</p>
                       <code><span title="int">int</span></code>
                   </span>
                 </p>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="pydoll.browser.options.ChromiumOptions.max_message_size" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">max_message_size</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+      <small class="doc doc-label doc-label-writable"><code>writable</code></small>
+  </span>
+
+</h3>
+<div class="language-python doc-signature highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">max_message_size</span>
+</span></code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Gets the largest CDP message, in bytes, a connection accepts.</p>
+<p>A page controls the size of some CDP messages (a POST body in
+<code>Network.requestWillBeSent</code> or <code>Fetch.requestPaused</code>, a WebSocket
+frame), so the limit applies to every connection Pydoll opens: the
+browser's, each tab's and each iframe's. A larger message closes that
+connection, and the commands waiting on it raise
+<code>WebSocketConnectionClosed</code>. The next command opens a new connection.</p>
+
+
+<table>
+      <thead>
+        <tr>
+          <th><span class="doc-section-title">RETURNS</span></th>
+          <th><span>DESCRIPTION</span></th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <span class="doc-returns-annotation">
+                    <code><span title="int">int</span> | None</code>
+                </span>
+            </td>
+            <td class="doc-returns-details">
+              <div class="doc-md-description">
+                <p>int | None: The limit in bytes (256 MiB by default), or None for no limit.</p>
+              </div>
             </td>
           </tr>
       </tbody>
