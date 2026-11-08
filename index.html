@@ -580,7 +580,7 @@ svg.i{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-l
       <a href="#start">quickstart</a>
       <a href="https://pydoll.tech/docs/">docs</a>
       <a href="#sponsors">sponsors</a>
-      <a class="nav-ghost" href="https://github.com/autoscrape-labs/pydoll" target="_blank" rel="noopener">github <b>★ 7,034</b></a>
+      <a class="nav-ghost" href="https://github.com/autoscrape-labs/pydoll" target="_blank" rel="noopener">github <b>★ <span data-stars>7,135</span></b></a>
       <a class="nav-cta" href="#start">Get started</a>
     </nav>
     <button class="nav-toggle" aria-label="Menu"><svg class="i" viewBox="0 0 24 24" width="20" height="20"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
@@ -599,7 +599,7 @@ svg.i{fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-l
         <div class="install"><span class="p">$</span><code>pip install pydoll-python</code><button id="copyBtn">copy</button></div>
       </div>
       <div class="microproof">
-        <span><b class="ok">7,034</b> stars</span>
+        <span><b class="ok" data-stars>7,135</b> stars</span>
         <span><b>MIT</b></span>
         <span>python <b>3.10+</b></span>
         <span><b class="ok">0</b> detections · CreepJS · SannySoft · BrowserScan · BrowserLeaks</span>
@@ -839,7 +839,7 @@ asyncio.<span class="fn">run</span>(<span class="fn">main</span>())</pre>
     <h3>Help us reach 10k stars</h3>
     <p>The next milestone unlocks <b>Firefox support</b>, a big step that opens a whole new range for the library. Momentum is the incentive that makes a feature that large worth taking on.</p>
     <div class="bar-track"><div class="bar-fill" id="goalBar"></div></div>
-    <div class="meta"><span>7,034 / 10,000</span><span>70%</span></div>
+    <div class="meta"><span><span data-stars>7,135</span> / 10,000</span><span data-stars-pct>71%</span></div>
   </div>
 </section>
 
@@ -872,7 +872,7 @@ asyncio.<span class="fn">run</span>(<span class="fn">main</span>())</pre>
     <h2>Open source, and staying that way</h2>
     <p>Pydoll is MIT licensed. Read the source, ship with it, contribute, or sponsor a maintainer doing this mostly solo.</p>
     <div class="love-stats">
-      <div><b>7,034+</b><span>stars on GitHub</span></div>
+      <div><b><span data-stars>7,135</span>+</b><span>stars on GitHub</span></div>
       <div><b>MIT</b><span>open source license</span></div>
       <div><b>Firefox</b><span>next, at 10k stars</span></div>
     </div>
@@ -1090,9 +1090,34 @@ titles = <span class="kw">await</span> asyncio.<span class="fn">gather</span>(
   }
   if(sw){sw.addEventListener('click',function(){setStealth(!gauntlet.classList.contains('stealth-on'))});}
 
-  /* ---------- goal bar ---------- */
-  var gb=document.getElementById('goalBar'), gio=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){gb.style.width='70%';gio.unobserve(e.target)}})},{threshold:.4});
-  if(gb)gio.observe(gb);
+  /* ---------- stars: live count from the GitHub API, cached for an hour ---------- */
+  var STAR_GOAL=10000, STAR_CACHE='pydoll-stars', STAR_TTL=3600000;
+  var firstStars=document.querySelector('[data-stars]');
+  var stars=firstStars?Number(firstStars.textContent.replace(/\D/g,''))||0:0;
+  var gb=document.getElementById('goalBar'), barShown=false;
+  function starPct(n){return Math.min(100,Math.round(n/STAR_GOAL*100))}
+  function showStars(n){
+    stars=n;
+    document.querySelectorAll('[data-stars]').forEach(function(el){el.textContent=n.toLocaleString('en-US')});
+    document.querySelectorAll('[data-stars-pct]').forEach(function(el){el.textContent=starPct(n)+'%'});
+    if(barShown&&gb)gb.style.width=starPct(n)+'%';
+  }
+  if(gb){
+    if('IntersectionObserver' in window){
+      var gio=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){barShown=true;gb.style.width=starPct(stars)+'%';gio.unobserve(e.target)}})},{threshold:.4});
+      gio.observe(gb);
+    }else{barShown=true;gb.style.width=starPct(stars)+'%'}
+  }
+  var cachedStars=null;
+  try{cachedStars=JSON.parse(localStorage.getItem(STAR_CACHE))}catch(_e){}
+  if(cachedStars&&typeof cachedStars.n==='number'&&Date.now()-cachedStars.at<STAR_TTL){showStars(cachedStars.n)}
+  else if(window.fetch){
+    fetch('https://api.github.com/repos/autoscrape-labs/pydoll').then(function(r){return r.ok?r.json():null}).then(function(d){
+      if(!d||typeof d.stargazers_count!=='number')return;
+      showStars(d.stargazers_count);
+      try{localStorage.setItem(STAR_CACHE,JSON.stringify({n:d.stargazers_count,at:Date.now()}))}catch(_e){}
+    }).catch(function(){});
+  }
 })();
 </script>
 </body>
