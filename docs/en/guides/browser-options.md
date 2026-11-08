@@ -95,6 +95,17 @@ options = ChromiumOptions()
 options.start_timeout = 20   # seconds, default 10
 ```
 
+## Limit the size of CDP messages
+
+`max_message_size` is the largest message, in bytes, Pydoll accepts from the browser on any of its connections: the browser's, each tab's and each iframe's. The page decides how large some messages are. A POST body travels inside `Network.requestWillBeSent` and `Fetch.requestPaused`, and a WebSocket frame inside `Network.webSocketFrameReceived`, so with network events or request interception on, a page can send messages of tens of megabytes. A message over the limit closes that connection, and the commands waiting on it raise `WebSocketConnectionClosed` with a message that names the limit. The next command opens a new connection.
+
+The default is 256 MiB. Lower it when you browse pages you don't trust with network events on. Raise it, or set it to `None` to remove the limit, when a full-page screenshot or a response body is larger than that:
+
+```python
+options = ChromiumOptions()
+options.max_message_size = 32 * 1024 * 1024   # bytes, default 256 MiB
+```
+
 ## Choose when navigation finishes
 
 `page_load_state` decides when `tab.go_to()` returns. `COMPLETE` (the default) waits for every resource; `INTERACTIVE` returns as soon as the DOM is ready, which is faster when you only read text or markup.

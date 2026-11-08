@@ -10,13 +10,15 @@ the real handler and FakeCDPServer in the integration suite instead.
 
 from __future__ import annotations
 
+import asyncio
 from typing import Awaitable, Callable
 
 import pytest
 
 from pydoll.browser.chromium import Chrome
 from pydoll.browser.tab import Tab
-from pydoll.exceptions import CommandFailed
+from pydoll.constants import DEFAULT_MAX_MESSAGE_SIZE
+from pydoll.exceptions import CommandFailed, WebSocketConnectionClosed
 
 
 class FakeConnection:
@@ -31,6 +33,8 @@ class FakeConnection:
     def __init__(self) -> None:
         self.commands: list[dict] = []
         self.network_logs: list[dict] = []
+        self.max_message_size: int | None = DEFAULT_MAX_MESSAGE_SIZE
+        self.target_crashed = False
         self.dialog: dict = {}
         self._results: dict[str, dict] = {}
         self._failures: dict[str, CommandFailed] = {}
@@ -60,9 +64,7 @@ class FakeConnection:
     def callbacks_for(self, event_name: str) -> list:
         """Callbacks currently registered for an event name."""
         return [
-            data['callback']
-            for data in self._callbacks.values()
-            if data['event'] == event_name
+            data['callback'] for data in self._callbacks.values() if data['event'] == event_name
         ]
 
     async def execute_command(self, command: dict, timeout: int = 60) -> dict:
@@ -109,6 +111,10 @@ class FakeConnection:
     async def ping(self) -> bool:
         """A fake connection is always responsive."""
         return True
+
+    async def wait_disconnected(self) -> WebSocketConnectionClosed:
+        await asyncio.Event().wait()
+        return WebSocketConnectionClosed()
 
     async def close(self) -> None:
         """Drop callbacks, mirroring the real handler's cleanup."""

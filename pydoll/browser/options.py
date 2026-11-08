@@ -1,7 +1,7 @@
 from contextlib import suppress
 
 from pydoll.browser.interfaces import Options
-from pydoll.constants import PageLoadState
+from pydoll.constants import DEFAULT_MAX_MESSAGE_SIZE, PageLoadState
 from pydoll.exceptions import (
     ArgumentAlreadyExistsInOptions,
     ArgumentNotFoundInOptions,
@@ -27,6 +27,7 @@ class ChromiumOptions(Options):
         self._arguments = []
         self._binary_location = ''
         self._start_timeout = 10
+        self._max_message_size = DEFAULT_MAX_MESSAGE_SIZE
         self._browser_preferences = {}
         self._headless = False
         self._webrtc_leak_protection = False
@@ -91,6 +92,38 @@ class ChromiumOptions(Options):
             timeout (int): The timeout in seconds.
         """
         self._start_timeout = timeout
+
+    @property
+    def max_message_size(self) -> int | None:
+        """
+        Gets the largest CDP message, in bytes, a connection accepts.
+
+        A page controls the size of some CDP messages (a POST body in
+        ``Network.requestWillBeSent`` or ``Fetch.requestPaused``, a WebSocket
+        frame), so the limit applies to every connection Pydoll opens: the
+        browser's, each tab's and each iframe's. A larger message closes that
+        connection, and the commands waiting on it raise
+        ``WebSocketConnectionClosed``. The next command opens a new connection.
+
+        Returns:
+            int | None: The limit in bytes (256 MiB by default), or None for no limit.
+        """
+        return self._max_message_size
+
+    @max_message_size.setter
+    def max_message_size(self, size: int | None):
+        """
+        Sets the largest CDP message, in bytes, a connection accepts.
+
+        Args:
+            size (int | None): A positive number of bytes, or None to remove the limit.
+
+        Raises:
+            ValueError: If size is neither None nor a positive int.
+        """
+        if size is not None and (isinstance(size, bool) or not isinstance(size, int) or size <= 0):
+            raise ValueError(f'max_message_size must be a positive int or None, got {size!r}')
+        self._max_message_size = size
 
     def add_argument(self, argument: str):
         """

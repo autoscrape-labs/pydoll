@@ -32,6 +32,30 @@ def test_set_start_timeout():
     assert options.start_timeout == 30
 
 
+def test_max_message_size_defaults_to_256_mebibytes():
+    options = Options()
+    assert options.max_message_size == 256 * 1024 * 1024
+
+
+def test_set_max_message_size():
+    options = Options()
+    options.max_message_size = 32 * 1024 * 1024
+    assert options.max_message_size == 32 * 1024 * 1024
+
+
+def test_max_message_size_none_removes_the_limit():
+    options = Options()
+    options.max_message_size = None
+    assert options.max_message_size is None
+
+
+@pytest.mark.parametrize('size', [0, -1, 1.5, '1024', True])
+def test_max_message_size_rejects_values_that_are_not_a_positive_int(size):
+    options = Options()
+    with pytest.raises(ValueError, match='max_message_size'):
+        options.max_message_size = size
+
+
 def test_initial_page_load_state():
     options = Options()
     assert options.page_load_state == PageLoadState.COMPLETE
@@ -245,7 +269,7 @@ def test_options_interface_enforcement():
         def page_load_state(self, state):
             pass
 
-    CompleteOptions()
+    assert CompleteOptions().max_message_size == 256 * 1024 * 1024
 
 def test_set_headless():
     options = Options()

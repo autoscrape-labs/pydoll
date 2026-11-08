@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from pydoll.constants import PageLoadState
+from pydoll.constants import DEFAULT_MAX_MESSAGE_SIZE, PageLoadState
 
 
 class Options(ABC):
@@ -18,6 +18,15 @@ class Options(ABC):
     @abstractmethod
     def start_timeout(self) -> int:
         pass
+
+    @property
+    def max_message_size(self) -> int | None:
+        """Largest CDP message, in bytes, a connection accepts (None means no limit).
+
+        Not abstract, so an Options implementation written before the limit
+        existed keeps working with the default.
+        """
+        return DEFAULT_MAX_MESSAGE_SIZE
 
     @abstractmethod
     def add_argument(self, argument: str):

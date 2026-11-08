@@ -12,6 +12,7 @@ import asyncio
 import base64
 import mimetypes
 import random
+from contextlib import suppress
 from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Sequence
@@ -22,7 +23,14 @@ from pydoll.exceptions import PydollException
 from pydoll.playwright._errors import Error, TimeoutError
 from pydoll.playwright._events import Deadline
 from pydoll.playwright._keys import modifier_bits
-from pydoll.protocol.input.types import MouseButton, MouseEventType, TouchEventType
+from pydoll.protocol.input.events import InputEvent
+from pydoll.protocol.input.types import (
+    DragData,
+    DragEventType,
+    MouseButton,
+    MouseEventType,
+    TouchEventType,
+)
 from pydoll.protocol.runtime.types import CallArgument
 
 if TYPE_CHECKING:
@@ -64,6 +72,29 @@ class _Point:
 
 class Actions:
     """Element operations bound to one frame."""
+
+    _DRAG_INTERCEPT_TIMEOUT = 5
+    """Seconds to wait for Chrome to report a drag the page started."""
+
+    _DROP_SEQUENCE = (DragEventType.DRAG_ENTER, DragEventType.DRAG_OVER, DragEventType.DROP)
+
+    _WATCH_DRAG_START = """
+        const view = this.ownerDocument.defaultView;
+        let started = null;
+        const onDragStart = (event) => { started = event; };
+        view.addEventListener('dragstart', onDragStart, { once: true, capture: true });
+        view.__pydollDragStarted = () => new Promise((resolve) => setTimeout(() => {
+            view.removeEventListener('dragstart', onDragStart, { capture: true });
+            delete view.__pydollDragStarted;
+            resolve(Boolean(started) && !started.defaultPrevented);
+        }, 0));
+        return true;
+    """
+
+    _DRAG_STARTED = """
+        const check = this.ownerDocument.defaultView.__pydollDragStarted;
+        return check ? check() : false;
+    """
 
     def __init__(self, frame: Frame) -> None:
         self._frame = frame
@@ -355,13 +386,28 @@ class Actions:
         no_wait_after: bool | None = None,
         trial: bool | None = None,
     ) -> None:
+        pressed: WebElement | None = None
+
         async def press(element: WebElement, point: _Point) -> None:
+            nonlocal pressed
             await self._mouse(element, MouseEventType.MOUSE_MOVED, point)
             await self._mouse(element, MouseEventType.MOUSE_PRESSED, point, MouseButton.LEFT, 1)
+            await self._engine(element, self._WATCH_DRAG_START, [])
+            pressed = element
 
         async def release(element: WebElement, point: _Point) -> None:
-            await self._mouse(element, MouseEventType.MOUSE_MOVED, point, MouseButton.LEFT)
-            await self._mouse(element, MouseEventType.MOUSE_RELEASED, point, MouseButton.LEFT, 1)
+            drag = await self._move_intercepting_drag(pressed, element, point)
+            if drag is None:
+                await self._mouse(
+                    element, MouseEventType.MOUSE_RELEASED, point, MouseButton.LEFT, 1
+                )
+                return
+            for drag_type in self._DROP_SEQUENCE:
+                await self._frame.page._send(
+                    InputCommands.dispatch_drag_event(
+                        type=drag_type, x=int(point.input_x), y=int(point.input_y), data=drag
+                    )
+                )
 
         await self._pointer_action(
             source,
@@ -385,6 +431,44 @@ class Actions:
             trial=trial,
             modifiers=None,
         )
+
+    async def _move_intercepting_drag(
+        self, source: WebElement | None, target: WebElement, point: _Point
+    ) -> DragData | None:
+        """Move onto the target with the button down, taking over the drag it starts.
+
+        As Playwright does on Chromium, the drag is intercepted
+        (``Input.setInterceptDrags``) and later delivered with
+        ``Input.dispatchDragEvent``, so the drop does not depend on Chrome's
+        native drag session being up before the button is released.
+
+        Returns:
+            The drag data, or None when the move started no drag.
+        """
+        page = self._frame.page
+        intercepted: asyncio.Future[DragData] = asyncio.get_running_loop().create_future()
+
+        def on_intercepted(event: dict) -> None:
+            if not intercepted.done():
+                intercepted.set_result(event['params']['data'])
+
+        callback_id = await page.tab.on(InputEvent.DRAG_INTERCEPTED, on_intercepted)
+        try:
+            await page._send(InputCommands.set_intercept_drags(enabled=True))
+            await self._mouse(target, MouseEventType.MOUSE_MOVED, point, MouseButton.LEFT)
+            started = source is not None and await self._engine(
+                source, self._DRAG_STARTED, [], True
+            )
+            if not started:
+                return None
+            try:
+                return await asyncio.wait_for(intercepted, self._DRAG_INTERCEPT_TIMEOUT)
+            except asyncio.TimeoutError:
+                raise Error('The page started a drag that Chrome never reported')
+        finally:
+            with suppress(Error):
+                await page._send(InputCommands.set_intercept_drags(enabled=False))
+            await page.tab.remove_callback(callback_id)
 
     async def fill(
         self,

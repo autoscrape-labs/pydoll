@@ -53,6 +53,7 @@ from pydoll.exceptions import (
     NoDialogPresent,
     PageLoadTimeout,
     ScriptEvaluationError,
+    TargetCrashed,
     TopLevelTargetRequired,
     WaitElementTimeout,
     WaitTimeout,
@@ -63,6 +64,7 @@ from pydoll.interactions import KeyboardAPI, MouseAPI, ScrollAPI
 from pydoll.interactions.iframe import IFrameContext
 from pydoll.protocol.browser.types import DownloadBehavior, DownloadProgressState
 from pydoll.protocol.dom.types import Node, ShadowRootType
+from pydoll.protocol.inspector.events import InspectorEvent
 from pydoll.protocol.network.events import NetworkEvent
 from pydoll.protocol.network.types import ResourceType
 from pydoll.protocol.page.events import PageEvent
@@ -115,6 +117,7 @@ if TYPE_CHECKING:
     from pydoll.protocol.page.events import FileChooserOpenedEvent
     from pydoll.protocol.page.methods import (
         CaptureScreenshotResponse,
+        GetNavigationHistoryResponse,
         GetResourceContentResponse,
         GetResourceTreeResponse,
         NavigateResponse,
@@ -144,6 +147,8 @@ class Tab(FindElementsMixin):
     JavaScript execution, event handling, network monitoring, and specialized tasks
     like Cloudflare Turnstile handling.
     """
+
+    _RECOVERY_LOAD_TIMEOUT = 5
 
     def __init__(
         self,
@@ -610,6 +615,7 @@ class Tab(FindElementsMixin):
         browser_handler = ConnectionHandler(
             connection_port=self._connection_port,
             ws_address=self._ws_address,
+            max_message_size=self._browser.options.max_message_size,
         )
         try:
             targets_response: GetTargetsResponse = await browser_handler.execute_command(
@@ -903,11 +909,16 @@ class Tab(FindElementsMixin):
             url: Target URL to navigate to.
             timeout: Maximum seconds to wait for page load (default 300).
 
+        On a tab whose renderer crashed, the navigation starts a new renderer
+        first, so the tab recovers.
+
         Raises:
             NavigationError: If the navigation fails (e.g., DNS error).
             PageLoadTimeout: If page doesn't finish loading within timeout.
         """
         logger.info('Navigating to URL: %s (timeout=%ss)', url, timeout)
+        if self._connection_handler.target_crashed:
+            await self._recover_crashed_renderer(timeout)
         async with self._wait_page_load(timeout=timeout):
             response: NavigateResponse = await self._execute_command(PageCommands.navigate(url))
             error_text = response['result'].get('errorText')
@@ -1303,6 +1314,10 @@ class Tab(FindElementsMixin):
         """
         Reload current page and wait for completion.
 
+        On a tab whose renderer crashed, there is no live page to reload: the
+        tab loads the crashed page's URL again in a new renderer, and
+        ``ignore_cache`` and ``script_to_evaluate_on_load`` do not apply.
+
         Args:
             ignore_cache: Bypass browser cache if True.
             script_to_evaluate_on_load: JavaScript to execute after load.
@@ -1315,6 +1330,13 @@ class Tab(FindElementsMixin):
             ignore_cache,
             bool(script_to_evaluate_on_load),
         )
+        if self._connection_handler.target_crashed:
+            history: GetNavigationHistoryResponse = await self._execute_command(
+                PageCommands.get_navigation_history()
+            )
+            entries = history['result']['entries']
+            await self.go_to(entries[history['result']['currentIndex']]['url'])
+            return
         async with self._wait_page_load():
             await self._execute_command(
                 PageCommands.reload(
@@ -2072,15 +2094,18 @@ class Tab(FindElementsMixin):
         await self._connection_handler.clear_callbacks()
 
     def _get_connection_handler(self) -> ConnectionHandler:
+        max_message_size = self._browser.options.max_message_size
         if self._ws_address:
             logger.debug('Using WebSocket address for connection handler')
-            return ConnectionHandler(ws_address=self._ws_address)
+            return ConnectionHandler(ws_address=self._ws_address, max_message_size=max_message_size)
         logger.debug(
             'Using port/target for connection handler: port=%s, target_id=%s',
             self._connection_port,
             self._target_id,
         )
-        return ConnectionHandler(self._connection_port, self._target_id)
+        return ConnectionHandler(
+            self._connection_port, self._target_id, max_message_size=max_message_size
+        )
 
     @staticmethod
     def _get_evaluate_command(
@@ -2156,28 +2181,10 @@ class Tab(FindElementsMixin):
 
     @asynccontextmanager
     async def _wait_page_load(self, timeout: int = 300):
-        """Wait for page to reach the configured load state using CDP events.
-
-        Registers a CDP event listener **before** yielding so the navigation
-        command can be issued inside the ``async with`` block without race
-        conditions.  This replaces the former ``document.readyState`` polling
-        loop, eliminating the dependency on ``Runtime.evaluate`` during page
-        load and the risk of inner command timeouts.
-
-        The CDP event used depends on ``browser.options.page_load_state``:
-
-        * ``INTERACTIVE`` — waits for ``Page.domContentEventFired``.
-        * ``COMPLETE`` — waits for ``Page.loadEventFired``.
-
-        Args:
-            timeout: Maximum seconds to wait for the target load state.
-
-        Raises:
-            PageLoadTimeout: If the page doesn't reach the target state in time.
-        """
         target_state = self._browser.options.page_load_state
 
         page_loaded = asyncio.Event()
+        renderer_crashed = asyncio.Event()
         event_name = self._PAGE_LOAD_EVENT_MAP[target_state]
         cleanup_page_events = not self._page_events_enabled
 
@@ -2187,12 +2194,16 @@ class Tab(FindElementsMixin):
         def on_loaded(_: dict):
             page_loaded.set()
 
+        def on_crashed(_: dict):
+            renderer_crashed.set()
+
         callback_id = await self.on(event_name, on_loaded)
+        crash_callback_id = await self.on(InspectorEvent.TARGET_CRASHED, on_crashed)
         logger.debug('Waiting for page load via %s (timeout=%ss)', event_name, timeout)
 
         try:
             yield
-            await asyncio.wait_for(page_loaded.wait(), timeout=timeout)
+            await self._wait_loaded_or_lost(page_loaded, renderer_crashed, timeout)
             logger.debug('Page load event received: %s', event_name)
         except asyncio.TimeoutError:
             logger.error(f'Page load timeout after {timeout}s waiting for {event_name}')
@@ -2200,9 +2211,61 @@ class Tab(FindElementsMixin):
         finally:
             with contextlib.suppress(Exception):
                 await self.remove_callback(callback_id)
+            with contextlib.suppress(Exception):
+                await self.remove_callback(crash_callback_id)
             if cleanup_page_events:
                 with contextlib.suppress(Exception):
                     await self.disable_page_events()
+
+    async def _recover_crashed_renderer(self, timeout: float) -> None:
+        logger.info('Tab renderer crashed; starting a new one before navigating')
+        blank_loaded = asyncio.Event()
+        callback_id: int | None = None
+        if self._page_events_enabled:
+            load_event = self._PAGE_LOAD_EVENT_MAP[self._browser.options.page_load_state]
+            callback_id = await self.on(load_event, lambda _event: blank_loaded.set())
+        try:
+            await self._execute_command(PageCommands.navigate('about:blank'))
+            loop = asyncio.get_running_loop()
+            deadline = loop.time() + timeout
+            interval = PollInterval()
+            while self._connection_handler.target_crashed:
+                if loop.time() >= deadline:
+                    raise TargetCrashed()
+                await interval.wait()
+            if callback_id is not None:
+                with contextlib.suppress(asyncio.TimeoutError):
+                    await asyncio.wait_for(blank_loaded.wait(), self._RECOVERY_LOAD_TIMEOUT)
+        finally:
+            if callback_id is not None:
+                with contextlib.suppress(Exception):
+                    await self.remove_callback(callback_id)
+
+    async def _wait_loaded_or_lost(
+        self, page_loaded: asyncio.Event, renderer_crashed: asyncio.Event, timeout: int
+    ) -> None:
+        loaded = asyncio.ensure_future(page_loaded.wait())
+        crashed = asyncio.ensure_future(renderer_crashed.wait())
+        disconnected = asyncio.ensure_future(self._connection_handler.wait_disconnected())
+        try:
+            await asyncio.wait(
+                {loaded, crashed, disconnected},
+                timeout=timeout,
+                return_when=asyncio.FIRST_COMPLETED,
+            )
+        finally:
+            loaded.cancel()
+            crashed.cancel()
+            disconnected.cancel()
+        if page_loaded.is_set():
+            return
+        if renderer_crashed.is_set():
+            logger.error('Tab renderer crashed while waiting for the page to load')
+            raise TargetCrashed()
+        if disconnected.done() and not disconnected.cancelled():
+            logger.error('Tab connection closed while waiting for the page to load')
+            raise disconnected.result()
+        raise asyncio.TimeoutError()
 
     async def _find_cloudflare_shadow_root(self) -> ShadowRoot | None:
         """Return the Cloudflare Turnstile shadow root if currently present.

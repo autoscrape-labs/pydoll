@@ -3,7 +3,6 @@ from __future__ import annotations
 import asyncio
 import logging
 from collections import deque
-from contextlib import suppress
 from typing import TYPE_CHECKING, cast
 
 from pydoll.protocol.page.events import (
@@ -60,18 +59,31 @@ class EventsManager:
         """
         self._event_queue.put_nowait(event_data)
 
+    def cancel_worker(self) -> None:
+        if self._worker_task is not None and not self._worker_task.done():
+            self._worker_task.cancel()
+        self._worker_task = None
+        self._clear_queue()
+
+    def detach_current_worker(self) -> None:
+        if self._worker_task is asyncio.current_task():
+            self._worker_task = None
+
     async def stop(self) -> None:
         """Cancel the worker, await its exit, and drop any queued events.
 
         Awaiting the cancelled task is what prevents "Task was destroyed but it
         is pending" warnings: the task is never garbage-collected while pending.
+        It is awaited with ``asyncio.wait`` so a cancellation of the caller is
+        not swallowed with the worker's. Called from the worker itself (a
+        callback closing its own connection), the worker is detached instead,
+        so the callback runs to its end.
         """
-        if self._worker_task and not self._worker_task.done():
-            self._worker_task.cancel()
-            with suppress(asyncio.CancelledError, Exception):
-                await self._worker_task
-        self._worker_task = None
-        self._clear_queue()
+        self.detach_current_worker()
+        worker = self._worker_task
+        self.cancel_worker()
+        if worker is not None and not worker.done():
+            await asyncio.wait({worker})
 
     def _clear_queue(self) -> None:
         """Discard events left over from a dead connection."""
@@ -84,8 +96,7 @@ class EventsManager:
                 self._event_queue.task_done()
 
     async def _process_event_queue(self) -> None:
-        """Drain queued events in order, isolating per-event failures."""
-        while True:
+        while self._worker_task is asyncio.current_task():
             event_data = await self._event_queue.get()
             try:
                 await self.process_event(event_data)
