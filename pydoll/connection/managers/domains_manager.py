@@ -24,7 +24,6 @@ DOMAIN_DISABLE_FOR_ENABLE: dict[str, str] = {
     PageMethod.ENABLE: PageMethod.DISABLE,
     RuntimeMethod.ENABLE: RuntimeMethod.DISABLE,
 }
-"""Domain enable commands whose effect a new session has to repeat, with their disable."""
 
 DOMAIN_ENABLE_FOR_DISABLE: dict[str, str] = {
     disable: enable for enable, disable in DOMAIN_DISABLE_FOR_ENABLE.items()
@@ -43,13 +42,11 @@ class DomainsManager:
     """
 
     def __init__(self) -> None:
-        """Initialize with no domain enabled."""
         self._wanted: dict[str, Command] = {}
         self._live: set[str] = set()
 
     @property
     def missing(self) -> list[Command]:
-        """Enable commands the live session lacks, in the order they were first enabled."""
         return [
             {'method': method, 'params': dict(enable.get('params', {}))}
             for method, enable in self._wanted.items()
@@ -72,31 +69,25 @@ class DomainsManager:
             self.forget(DOMAIN_ENABLE_FOR_DISABLE[method])
 
     def mark_live(self, enable_method: str) -> None:
-        """Note that the live session was sent the enable, so it no longer counts as missing."""
         self._live.add(enable_method)
 
     def reject(self, enable: Command) -> None:
-        """Stop wanting a domain the new session refused, unless it was enabled again since."""
         method = self._method_name(enable)
         if self._wanted.get(method) == {'method': method, 'params': dict(enable.get('params', {}))}:
             self.forget(method)
 
     def forget(self, enable_method: str) -> None:
-        """Stop wanting a domain on, for example because a new session rejected it."""
         self._wanted.pop(enable_method, None)
         self._live.discard(enable_method)
 
     def reset_session(self) -> None:
-        """Note that the live session is gone, so every wanted domain is missing again."""
         self._live.clear()
 
     def clear(self) -> None:
-        """Forget every domain, wanted and live."""
         self._wanted.clear()
         self._live.clear()
 
     @staticmethod
     def _method_name(command: Command) -> str:
-        """The command's CDP method as a plain string (methods may be enums)."""
         raw_method = command.get('method', '')
         return raw_method.value if isinstance(raw_method, Enum) else raw_method

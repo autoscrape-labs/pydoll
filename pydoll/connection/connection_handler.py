@@ -52,7 +52,6 @@ class ConnectionHandler:
     """
 
     _RESTORE_ANSWER_TIMEOUT = 3
-    """Seconds a reconnect waits for the domains it enables again to be acknowledged."""
 
     def __init__(
         self,
@@ -178,16 +177,6 @@ class ConnectionHandler:
         return await self._send_command(command, timeout)
 
     async def _prepare_to_send(self, commands: Sequence[Command]) -> None:
-        """Make sure the connection is up for commands the target can still answer.
-
-        Checked before connecting, so a command to a crashed tab fails at once
-        instead of opening a connection first, and again after, because the
-        crash event can arrive while the connection is being opened.
-
-        Raises:
-            TargetCrashed: If the target's renderer crashed and a command needs it.
-            ConnectionFailed: If the connection cannot be (re)established.
-        """
         for command in commands:
             self._crash_manager.check(command)
         await self._ensure_active_connection()
@@ -197,11 +186,6 @@ class ConnectionHandler:
     async def _send_command(
         self, command: Command[T_CommandParams, T_CommandResponse], timeout: float
     ) -> T_CommandResponse:
-        """Send a command on the current connection and await its answer.
-
-        Does not open a connection, so the reconnect path can use it while it
-        holds the connection lock.
-        """
         future = self._command_manager.create_command_future(command)
         try:
             command_str = json.dumps(command)
@@ -239,11 +223,6 @@ class ConnectionHandler:
             raise
 
     def _current_connection(self) -> ClientConnection:
-        """The open connection, or WebSocketConnectionClosed if it was torn down meanwhile.
-
-        Another task (``close()``, a dropped connection) can tear the connection
-        down between opening it and sending on it.
-        """
         if self._ws_connection is None:
             raise WebSocketConnectionClosed()
         return self._ws_connection
@@ -318,18 +297,6 @@ class ConnectionHandler:
         return answers
 
     async def _wait_for_restored_domains(self, answers: list[asyncio.Future]) -> None:
-        """Give the new session a moment to acknowledge the domains enabled again.
-
-        A navigation that moves the tab to a new renderer hands it the domains
-        Chrome already acknowledged; an enable still in flight is sent to the
-        new renderer only after it attached, and a page that loads at once can
-        fire its load event first. So the caller's command waits for the
-        answers. A renderer that cannot answer (a dialog is open, a script is
-        busy) would hold every command, though, so after a short wait the
-        command goes out anyway: Chrome answers what the browser handles
-        (cookies, ``Page.navigate``, ``Page.close``) and the enables are
-        answered once the renderer frees up.
-        """
         if not answers:
             return
         _, unanswered = await asyncio.wait(answers, timeout=self._RESTORE_ANSWER_TIMEOUT)
@@ -342,11 +309,6 @@ class ConnectionHandler:
             )
 
     def _forget_if_rejected(self, enable: Command, future: asyncio.Future) -> None:
-        """Forget a domain whose enable the new session answered with an error.
-
-        A future failed because the connection dropped has no answer to read;
-        the next session enables the domain again.
-        """
         if future.cancelled() or future.exception() is not None:
             return
         try:
@@ -356,12 +318,6 @@ class ConnectionHandler:
             self._domains_manager.reject(enable)
 
     async def _restore_or_drop(self) -> None:
-        """Restore the session's domains, tearing the connection down if sending fails.
-
-        A session left half set up would report domains as on that are off, so
-        it is never handed to a caller. Once every enable is sent the session
-        is complete, so waiting for the answers is left out of the teardown.
-        """
         try:
             answers = await self._restore_enabled_domains()
         except BaseException:
@@ -370,29 +326,17 @@ class ConnectionHandler:
         await self._wait_for_restored_domains(answers)
 
     def _session_lacks_domains(self) -> bool:
-        """Whether the live session misses a domain that should be on.
-
-        Happens after a restore cut short and after a renderer that crashed
-        while the connection was down is reloaded.
-        """
         if self._crash_manager.crashed:
             return False
         return bool(self._domains_manager.missing)
 
     @staticmethod
     def _method_name(command: Command) -> str:
-        """The command's CDP method as a plain string (methods may be enums)."""
         raw_method = command.get('method', '')
         return raw_method.value if isinstance(raw_method, Enum) else raw_method
 
     @staticmethod
     def _log_discarded_answer(command: Command, future: asyncio.Future) -> None:
-        """Log a CDP error answered to a command whose result nobody awaits.
-
-        A future failed because the connection dropped or the target crashed
-        has no answer to read, and reading it would raise inside the event
-        loop's callback.
-        """
         if future.cancelled() or future.exception() is not None:
             return
         response = json.loads(future.result())
@@ -454,7 +398,6 @@ class ConnectionHandler:
         return self._batch_results(commands, responses)
 
     def _forget_batch(self, commands: Sequence[Command], futures: list[asyncio.Future]) -> None:
-        """Drop a batch's commands from the pending table once nobody waits for them."""
         for command, future in zip(commands, futures):
             self._command_manager.remove_pending_command(command['id'], future)
 
@@ -463,11 +406,6 @@ class ConnectionHandler:
         commands: Sequence[Command[T_CommandParams, T_CommandResponse]],
         responses: list[str],
     ) -> list[T_CommandResponse]:
-        """Parse a batch's answers, recording every command that succeeded.
-
-        A rejected command does not hide the domains the others enabled, so
-        all answers are read before the first failure is raised.
-        """
         results: list[T_CommandResponse] = []
         failure: CommandFailed | InvalidResponse | None = None
         for command, raw in zip(commands, responses):
@@ -571,12 +509,6 @@ class ConnectionHandler:
         )
 
     async def _ensure_active_connection(self):
-        """Ensure a healthy connection exists, establishing a new one if needed.
-
-        While another caller holds the lock, the connection may be open but
-        still enabling its domains again, so this waits for the lock instead
-        of sending ahead of that.
-        """
         if (
             self._is_connection_healthy()
             and not self._connection_lock.locked()
@@ -591,13 +523,6 @@ class ConnectionHandler:
                 await self._restore_or_drop()
 
     async def _establish_new_connection(self):
-        """Create fresh WebSocket connection and start event listening.
-
-        Raises:
-            ConnectionFailed: If the socket or the WebSocket handshake fails,
-                for example because the browser exited or the target is gone,
-                with the underlying error as its cause.
-        """
         await self._teardown_connection()
         ws_address = await self._resolve_ws_address()
         logger.info('Connecting to %s', ws_address)
@@ -668,21 +593,6 @@ class ConnectionHandler:
         logger.info('Connection resources cleaned up')
 
     async def _receive_events(self) -> WebSocketConnectionClosed:
-        """Main loop for receiving and processing WebSocket messages.
-
-        A single unparseable/malformed message is logged and skipped so it can
-        never kill the reader. When the loop exits for any reason, all in-flight
-        commands are failed so callers raise immediately instead of hanging
-        until their timeout expires on a connection nobody is reading.
-
-        The event worker is cancelled without being awaited: a callback running
-        in it may itself be waiting for this loop to end (tearing the
-        connection down to reconnect), and waiting on each other would hang
-        both forever.
-
-        Returns:
-            The error those commands received, for ``wait_disconnected``.
-        """
         closed_error = WebSocketConnectionClosed()
         try:
             async for raw_message in self._incoming_messages():
@@ -749,13 +659,6 @@ class ConnectionHandler:
             self._events_handler.enqueue_event(cast(CDPEvent, message))
 
     def _track_target_crash(self, event: CDPEvent) -> None:
-        """Follow the renderer crash state from the target's own events.
-
-        Handled here, in arrival order with command answers, rather than in
-        the event worker: the commands pending when the renderer crashed fail
-        at once, and the recovery event is seen before the answer to the
-        navigation that caused it.
-        """
         if self._crash_manager.track(event):
             self._command_manager.fail_all_pending(TargetCrashed())
 

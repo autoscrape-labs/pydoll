@@ -1,5 +1,3 @@
-"""Unit tests for DomainsManager: wanted domains versus what the live session has on."""
-
 from __future__ import annotations
 
 from pydoll.commands import FetchCommands, NetworkCommands, PageCommands

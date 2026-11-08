@@ -98,11 +98,9 @@ class FakeCDPServer:
         self._hung_methods.add(method)
 
     def stop_hanging(self, method: str) -> None:
-        """Answer a method again after ``hang`` (commands already hung stay unanswered)."""
         self._hung_methods.discard(method)
 
     def close_after_answering(self, method: str) -> None:
-        """Close the client's connection right after answering a command method."""
         self._close_after.add(method)
 
     async def push_event(self, method: str, params: dict | None = None) -> None:
@@ -114,16 +112,10 @@ class FakeCDPServer:
         await self._broadcast(payload)
 
     async def drop_connections(self, code: int = 1000) -> None:
-        """Close every active client connection from the server side with a close code."""
         for connection in list(self._connections):
             await connection.close(code=code)
 
     def freeze(self) -> None:
-        """Stop reading from every client, like a peer whose process is stopped.
-
-        The TCP connection stays open, but no frame is read any more, so a
-        ping never gets its pong and no command gets its answer.
-        """
         for connection in self._connections:
             connection.transport.pause_reading()
 

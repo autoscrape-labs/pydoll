@@ -16,7 +16,6 @@ class FailFastConnection(ClientConnection):
     """
 
     def data_received(self, data: bytes) -> None:
-        """Feed the frame to websockets, then close the socket if parsing failed."""
         super().data_received(data)
         if self.protocol.parser_exc is not None:
             self.transport.close()

@@ -446,7 +446,6 @@ class TestRemoteConnectionIframeResolution:
 
 @pytest.mark.asyncio
 async def test_a_crashed_cross_site_iframe_leaves_its_tab_usable(oopif_tab, cross_origin_servers):
-    """A crash reported on an attached iframe's session is not the tab's own crash."""
     port_a, port_b = cross_origin_servers
     attached: list[dict] = []
     crashes: list[dict] = []

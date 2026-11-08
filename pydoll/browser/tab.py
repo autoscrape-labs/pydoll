@@ -149,7 +149,6 @@ class Tab(FindElementsMixin):
     """
 
     _RECOVERY_LOAD_TIMEOUT = 5
-    """Seconds a crashed tab's recovery waits for the blank page it loads to report its load."""
 
     def __init__(
         self,
@@ -2182,29 +2181,6 @@ class Tab(FindElementsMixin):
 
     @asynccontextmanager
     async def _wait_page_load(self, timeout: int = 300):
-        """Wait for page to reach the configured load state using CDP events.
-
-        Registers a CDP event listener **before** yielding so the navigation
-        command can be issued inside the ``async with`` block without race
-        conditions.  This replaces the former ``document.readyState`` polling
-        loop, eliminating the dependency on ``Runtime.evaluate`` during page
-        load and the risk of inner command timeouts.
-
-        The CDP event used depends on ``browser.options.page_load_state``:
-
-        * ``INTERACTIVE`` — waits for ``Page.domContentEventFired``.
-        * ``COMPLETE`` — waits for ``Page.loadEventFired``.
-
-        Args:
-            timeout: Maximum seconds to wait for the target load state.
-
-        Raises:
-            PageLoadTimeout: If the page doesn't reach the target state in time.
-            WebSocketConnectionClosed: If the tab's connection drops before the
-                load event arrives, since the event can no longer be delivered.
-            TargetCrashed: If the renderer crashes before the load event, which
-                a crashed renderer never sends.
-        """
         target_state = self._browser.options.page_load_state
 
         page_loaded = asyncio.Event()
@@ -2242,20 +2218,6 @@ class Tab(FindElementsMixin):
                     await self.disable_page_events()
 
     async def _recover_crashed_renderer(self, timeout: float) -> None:
-        """Start a new renderer in a crashed tab by navigating it to about:blank.
-
-        Page domain commands, which ``go_to`` needs to wait for the load, only
-        work once Chrome reports ``Inspector.targetReloadedAfterCrash``. A
-        blank page brings the renderer back without a request or a load to
-        miss, so the real navigation that follows runs on a live tab.
-
-        With Page events on, the blank page's own load event is waited for
-        here (briefly), so that it is not taken for the load of the navigation
-        that follows.
-
-        Raises:
-            TargetCrashed: If the renderer does not come back within ``timeout``.
-        """
         logger.info('Tab renderer crashed; starting a new one before navigating')
         blank_loaded = asyncio.Event()
         callback_id: int | None = None
@@ -2282,13 +2244,6 @@ class Tab(FindElementsMixin):
     async def _wait_loaded_or_lost(
         self, page_loaded: asyncio.Event, renderer_crashed: asyncio.Event, timeout: int
     ) -> None:
-        """Wait for the load event, failing at once if the connection drops or the renderer crashes.
-
-        Raises:
-            asyncio.TimeoutError: If none of them happens within ``timeout`` seconds.
-            WebSocketConnectionClosed: If the connection drops before the event.
-            TargetCrashed: If the renderer crashes before the event.
-        """
         loaded = asyncio.ensure_future(page_loaded.wait())
         crashed = asyncio.ensure_future(renderer_crashed.wait())
         disconnected = asyncio.ensure_future(self._connection_handler.wait_disconnected())

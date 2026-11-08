@@ -23,7 +23,6 @@ from tests.integration._waits import wait_until
 
 
 async def _crash(tab: Tab) -> None:
-    """Crash the tab's renderer the way an out-of-memory page would."""
     await tab._connection_handler.execute_command_nowait(PageCommands.crash())
 
 
@@ -102,8 +101,6 @@ async def test_a_crashed_tab_can_still_be_closed(browser, tab):
 
 
 async def _wait_crashed(tab: Tab) -> None:
-    """Wait until the tab's connection has seen the crash event (slow on loaded CI runners)."""
-
     async def crashed() -> bool:
         return tab._connection_handler.target_crashed
 
@@ -135,8 +132,6 @@ async def test_a_crashed_tab_whose_connection_dropped_recovers_with_its_domains(
 
 
 class _HeldImageHandler(BaseHTTPRequestHandler):
-    """Serves a page whose image is never sent, so its load event never fires."""
-
     def do_GET(self):
         if self.path.startswith('/held'):
             self.server.held_requested.set()

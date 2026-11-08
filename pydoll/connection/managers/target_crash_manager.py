@@ -50,7 +50,6 @@ NAVIGATIONS_THAT_RELOAD_A_CRASHED_TARGET: frozenset[str] = frozenset({
     PageMethod.RELOAD,
     PageMethod.NAVIGATE_TO_HISTORY_ENTRY,
 })
-"""Commands whose success starts a new renderer in a crashed target."""
 
 
 class TargetCrashManager:
@@ -64,12 +63,10 @@ class TargetCrashManager:
     """
 
     def __init__(self) -> None:
-        """Initialize with the target alive."""
         self._crashed = False
 
     @property
     def crashed(self) -> bool:
-        """Whether the target's renderer crashed and has not been reloaded since."""
         return self._crashed
 
     def track(self, event: CDPEvent) -> bool:

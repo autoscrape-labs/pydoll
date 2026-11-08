@@ -102,8 +102,6 @@ async def test_go_to_fails_fast_when_the_connection_drops_while_waiting_for_load
 async def test_go_to_on_a_crashed_tab_does_not_take_the_blank_page_load_for_its_own(
     cdp_server, fake_tab
 ):
-    """The about:blank navigation that recovers a crashed tab fires its own load
-    event; with Page events on, go_to must not finish on it."""
     await fake_tab.enable_page_events()
     await cdp_server.push_event(InspectorEvent.TARGET_CRASHED)
     await _wait_until(lambda: fake_tab._connection_handler.target_crashed)

@@ -60,27 +60,12 @@ class EventsManager:
         self._event_queue.put_nowait(event_data)
 
     def cancel_worker(self) -> None:
-        """Cancel the worker without waiting for it, and drop any queued events.
-
-        For the receive loop, which a callback running in the worker may itself
-        be waiting on. The cancelled task stays scheduled until it finishes,
-        and the worker loop only runs while it is the current worker, so a new
-        one started meanwhile never shares the queue with it.
-        """
         if self._worker_task is not None and not self._worker_task.done():
             self._worker_task.cancel()
         self._worker_task = None
         self._clear_queue()
 
     def detach_current_worker(self) -> None:
-        """Let the worker finish the callback calling this, then exit, instead of cancelling it.
-
-        A callback that closes or reconnects its own connection runs in the
-        worker, and tearing the connection down cancels the worker, which
-        would cut the callback short halfway through. Detached, the worker is
-        no longer the current one, so it stops after this event and a new one
-        takes over. Does nothing when called from any other task.
-        """
         if self._worker_task is asyncio.current_task():
             self._worker_task = None
 
@@ -111,11 +96,6 @@ class EventsManager:
                 self._event_queue.task_done()
 
     async def _process_event_queue(self) -> None:
-        """Drain queued events in order, isolating per-event failures.
-
-        Stops once another worker replaced this one, so two never drain the
-        queue together even if a callback swallowed this one's cancellation.
-        """
         while self._worker_task is asyncio.current_task():
             event_data = await self._event_queue.get()
             try:

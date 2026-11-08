@@ -50,7 +50,6 @@ def site():
 
 
 async def _drop_tab_connection(tab: Tab) -> None:
-    """Close the tab's WebSocket the way a network interruption would."""
     handler = tab._connection_handler
     await handler._ws_connection.close()
     await asyncio.wait_for(handler.wait_disconnected(), timeout=5)
@@ -105,11 +104,6 @@ async def test_go_to_still_sees_the_load_event_after_a_dropped_connection(tab):
 
 @pytest.mark.asyncio
 async def test_a_tab_with_a_dialog_open_still_answers_after_a_dropped_connection(browser):
-    """The new session's Page.enable waits for the dialog; what the browser answers must not.
-
-    The wait for the enables is shortened so the test leaves room for a slow
-    reconnect (Windows runners) within its own timeouts.
-    """
     tab = await browser.new_tab()
     tab._connection_handler._RESTORE_ANSWER_TIMEOUT = 0.5
     await tab.enable_page_events()

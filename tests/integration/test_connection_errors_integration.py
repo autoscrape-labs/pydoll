@@ -1,10 +1,3 @@
-"""What a tab command raises once the browser it talks to is gone.
-
-Code that catches ``PydollException`` or ``ConnectionException`` to notice a
-lost browser has to see a Pydoll exception here, not the socket layer's
-``OSError``.
-"""
-
 from __future__ import annotations
 
 import asyncio

@@ -113,7 +113,6 @@ class FakeConnection:
         return True
 
     async def wait_disconnected(self) -> WebSocketConnectionClosed:
-        """A fake connection never drops, so this waits until cancelled."""
         await asyncio.Event().wait()
         return WebSocketConnectionClosed()
 

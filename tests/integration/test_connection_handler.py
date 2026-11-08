@@ -811,7 +811,6 @@ async def test_unawaited_command_failed_by_a_crash_or_drop_raises_nothing_in_the
 
 
 async def _reconnect_after_drop(handler: ConnectionHandler, cdp_server) -> list[dict]:
-    """Drop the connection, run one command, and return what the new session received."""
     await cdp_server.drop_connections()
     await asyncio.wait_for(handler.wait_disconnected(), timeout=5)
     received_before = len(cdp_server.received_commands)
@@ -930,7 +929,6 @@ async def test_changing_a_command_after_sending_it_does_not_change_what_is_resto
 
 
 async def _drop_and_wait(handler: ConnectionHandler, cdp_server) -> None:
-    """Close the connection from the server side and wait until the handler sees it."""
     await cdp_server.drop_connections()
     await asyncio.wait_for(handler.wait_disconnected(), timeout=5)
 
@@ -1019,7 +1017,6 @@ async def test_a_connection_dropped_while_enabling_domains_fails_nowait_with_a_p
 
 @pytest.mark.asyncio
 async def test_a_command_after_a_reconnect_waits_for_the_domains_to_be_acknowledged(cdp_server):
-    """A navigation must not move the tab to a new renderer before Page.enable is answered."""
     handler = ConnectionHandler(ws_address=cdp_server.ws_address)
     try:
         await handler.execute_command(NetworkCommands.enable())

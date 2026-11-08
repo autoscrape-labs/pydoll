@@ -118,7 +118,6 @@ def decode_base64_to_bytes(image: str) -> bytes:
 
 
 WS_ADDRESS_LOOKUP_TIMEOUT = 10
-"""Seconds to wait for the browser's /json/version answer before giving up."""
 
 
 async def get_browser_ws_address(port: int) -> str:

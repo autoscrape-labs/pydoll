@@ -1,10 +1,3 @@
-"""The CDP message size limit set on the browser options reaches every connection.
-
-A page decides how large some CDP messages are (a POST body in
-``Network.requestWillBeSent``, a WebSocket frame), so the limit has to apply to
-the tab connections Pydoll opens internally, not only to the browser one.
-"""
-
 from __future__ import annotations
 
 import asyncio
@@ -24,7 +17,6 @@ LARGE_STRING = "'x'.repeat(512 * 1024)"
 
 
 async def _evaluate(tab: Tab, expression: str) -> object:
-    """Run a script on the tab and return the value it produced."""
     response = await tab.execute_script(f'return {expression}')
     return response['result']['result']['value']
 
@@ -60,12 +52,9 @@ holds the load event back, only some time after the long request has arrived.
 """
 
 HOLD_AFTER_LONG_REQUEST = 2
-"""Seconds /hold.js waits after the long request, far more than the two sources drift."""
 
 
 class _LongUrlHandler(BaseHTTPRequestHandler):
-    """Serve the long-URL page, and release /hold.js once the long request arrived."""
-
     def do_GET(self):
         if self.path.startswith('/hold.js'):
             self.server.long_request_seen.wait(10)
@@ -131,8 +120,6 @@ setInterval(() => { fetch('/sink', {method: 'POST', body}).catch(() => {}); }, 5
 
 
 class _StormHandler(BaseHTTPRequestHandler):
-    """Serve a page that keeps posting bodies larger than the test's message limit."""
-
     def do_GET(self):
         self.send_response(200)
         self.send_header('Content-Type', 'text/html')
@@ -166,9 +153,6 @@ def storm_site():
 async def test_commands_amid_repeated_oversized_messages_raise_only_pydoll_errors(
     ci_chrome_options, storm_site
 ):
-    """Each oversized message drops the connection, and every reconnect enables
-    Network again while the page keeps posting: commands may fail, but only
-    with Pydoll errors, and none is left pending."""
     ci_chrome_options.max_message_size = 64 * 1024
     move = {
         'method': InputMethod.DISPATCH_MOUSE_EVENT,
