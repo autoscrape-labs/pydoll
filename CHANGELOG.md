@@ -1,3 +1,33 @@
+## 3.0.1 (2026-11-08)
+
+### Fix
+
+- **playwright**: intercept the drag in drag_to instead of relying on a native drag
+- **connection**: wait briefly for the restored domains before the next command
+- **connection**: restore domains without waiting on the renderer, fail a load on a crash
+- **connection**: end the connection at once after refusing an oversized message
+- **tab**: keep a crashed tab's recovery load out of the next navigation
+- **connection**: treat a successful navigation as the recovery of a crashed target
+- **connection**: harden reconnects, child sessions and teardown
+- **connection**: enable again on a new session the domains the old one had on
+- **connection**: fail commands at once when the tab's renderer crashes
+- **connection**: raise ConnectionFailed when a connection cannot be opened
+- **connection**: cap the size of CDP messages a connection accepts
+- **browser**: restart on a port in TIME_WAIT, one Tab per target, leave unowned browsers alone
+- **browser**: tell a frozen browser by a CDP round trip, not a pong
+- **browser**: keep the tab registry true to the targets Chrome has
+- **browser**: leave nothing behind when start or stop fails, is cancelled or is repeated
+- **browser**: forget the tabs of a deleted context and close their connections
+- **browser**: end the process and remove the profile even when the browser is gone
+- **browser**: wait for the pong before reporting the browser responsive
+
+### Refactor
+
+- **connection**: check the crash state around connecting in one place
+- keep the recovery and restore timeouts on their classes, name CDP methods by enum in tests
+- **connection**: keep crash and domain state in their own managers
+- keep the stop, close, probe and ping timeouts on their classes, name CDP methods by enum in tests
+
 ## 3.0.0 (2026-09-29)
 
 ### BREAKING CHANGE
