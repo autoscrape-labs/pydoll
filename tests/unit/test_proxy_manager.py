@@ -6,6 +6,10 @@ tuple and the resulting (sanitized) arguments, never the parsing steps.
 
 from __future__ import annotations
 
+import logging
+
+import pytest
+
 from pydoll.browser.managers import ProxyManager
 from pydoll.browser.options import ChromiumOptions
 
@@ -52,3 +56,21 @@ def test_password_containing_colon_is_preserved():
     private, credentials = manager.get_proxy_credentials()
     assert private is True
     assert credentials == ('user', 'p:a:ss')
+
+
+@pytest.mark.parametrize(
+    'proxy',
+    [
+        'http://synthetic-proxy-user:synthetic-proxy-password@host:8080',
+        'synthetic-proxy-user:synthetic-proxy-password@host:8080',
+        'http://synthetic-proxy-user@host:8080',
+    ],
+)
+def test_proxy_credentials_are_not_logged(proxy, caplog):
+    with caplog.at_level(logging.DEBUG):
+        manager, _ = _manager_with_args(f'--proxy-server={proxy}')
+        manager.get_proxy_credentials()
+
+    assert caplog.records
+    assert 'synthetic-proxy-user' not in caplog.text
+    assert 'synthetic-proxy-password' not in caplog.text
